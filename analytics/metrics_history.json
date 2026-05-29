@@ -1,0 +1,57 @@
+{
+  "channel_id": "UCkW7fqkJiaej2PeNcP4PejQ",
+  "snapshots": [
+    {
+      "timestamp": "2026-05-29T13:06:09.854015+05:30",
+      "date": "2026-05-29",
+      "channel": {
+        "total_views": 1465,
+        "subscribers": 1,
+        "video_count": 0
+      },
+      "videos": {
+        "total": 3,
+        "public": 3,
+        "shorts": 2,
+        "total_views": 1467,
+        "total_likes": 6,
+        "total_comments": 0
+      },
+      "top_videos": [
+        {
+          "id": "x_hJsch7-Mg",
+          "title": "Andhra's 'Rich' Villagers: No Work for 700 Rupees? #Shorts",
+          "views": 1465,
+          "likes": 6,
+          "comments": 0,
+          "privacy": "public",
+          "published": "2026-05-28T08:37:20Z",
+          "is_short": true,
+          "duration_seconds": 22
+        },
+        {
+          "id": "8fXr1HmGd2I",
+          "title": "The Viral DNA - Channel Trailer | Real News. Real Voices. Built with AI.",
+          "views": 1,
+          "likes": 0,
+          "comments": 0,
+          "privacy": "public",
+          "published": "2026-05-28T08:26:59Z",
+          "is_short": true,
+          "duration_seconds": 52
+        },
+        {
+          "id": "JDEvBAqd44g",
+          "title": "Andhra Pradesh: Too Much Money, No Workers? | ViralDNA",
+          "views": 1,
+          "likes": 0,
+          "comments": 0,
+          "privacy": "public",
+          "published": "2026-05-28T08:06:49Z",
+          "is_short": false,
+          "duration_seconds": 110
+        }
+      ]
+    }
+  ]
+}
