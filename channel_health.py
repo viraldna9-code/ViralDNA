@@ -272,16 +272,26 @@ def auto_fix(token, channel_data, videos, playlists):
     # 3. Channel description — CRITICAL for discovery and branding
     snippet = channel_data.get("snippet", {})
     current_desc = snippet.get("description", "").strip()
-    if len(current_desc) < 50:
+    if len(current_desc) < 200:
         CHANNEL_DESCRIPTION = (
             "The ViralDNA — Real News. Real Voices. Built with AI.\n\n"
-            "Your trusted source for breaking news from Andhra Pradesh, Telangana, "
-            "and across India — covering politics, Tollywood, Telugu culture, and stories "
-            "that matter to Telugu people everywhere.\n\n"
-            "📰 Daily news coverage in English\n"
-            "🎯 Covering: AP News | Telangana News | Telugu States | India News | Entertainment\n"
-            "🔔 Subscribe for daily updates\n\n"
-            "#TeluguNews #AndhraPradesh #Telangana #IndiaNews #Tollywood"
+            "Breaking news from Andhra Pradesh, Telangana, and India. "
+            "Daily Telugu news, AP news, Telangana news, India news, Tollywood, "
+            "cricket, politics, and stories for Telugu communities worldwide.\n\n"
+            "📌 What we cover:\n"
+            "• AP news — politics, government schemes, development\n"
+            "• Telangana news — CM Revanth Reddy, state policies, Hyderabad\n"
+            "• India news — elections, Modi government, economy, RBI\n"
+            "• Tollywood — Prabhas, Allu Arjun, Jr NTR, Mahesh Babu, Ram Charan, "
+            "Chiranjeevi, Balakrishna, Pawan Kalyan, Ravi Teja, Nagarjuna, SS Rajamouli\n"
+            "• Politics — TDP, YSRCP, BRS, BJP, Congress in Telugu states\n"
+            "• Telugu diaspora — Gulf, USA, UK, Australia NRI updates\n"
+            "• Breaking news and viral stories from South India\n"
+            "• Entertainment, sports, technology, business\n\n"
+            "🔔 Subscribe for daily updates. "
+            "Morning 9AM | Evening 7PM IST | Shorts daily\n\n"
+            "#TeluguNews #AndhraPradesh #Telangana #TeluguNewsToday #IndiaNews "
+            "#Tollywood #APNews #TelanganaNews #TeluguPeople #BreakingNews"
         )
         body = json.dumps({
             "id": CHANNEL_ID,
@@ -370,9 +380,9 @@ def detect_issues(channel_data, videos, playlists, health_state):
         issues.append(("HIGH", "seo",
             "Channel description is EMPTY — hurts search/discovery and looks unprofessional",
             "Auto-fix will set it on next health run"))
-    elif len(channel_desc) < 100:
+    elif len(channel_desc) < 200:
         issues.append(("MEDIUM", "seo",
-            f"Channel description is very short ({len(channel_desc)} chars)",
+            f"Channel description is short ({len(channel_desc)}/1000 chars) — should use full 1000 for SEO",
             "Auto-fix will update it on next health run"))
 
     empty_playlists = [p for p in playlists if p["item_count"] == 0]
