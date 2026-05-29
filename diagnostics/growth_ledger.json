@@ -1,0 +1,1706 @@
+{
+    "system_version": "55.0",
+    "created_at": "2026-05-21T08:06:17.168266",
+    "execution_history": [
+        {
+            "timestamp": "2026-05-21T08:06:17.168332",
+            "topic_used": "Andhra Pradesh bans bulk fuel sales at 4,500 outlets, caps container fills at 200 litres - The Hindu",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 12.404038216998742,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 1.8095000996254385e-05,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.000393042999348836,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 21.072141534001275,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 1.855800292105414e-05,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 8.145216911998432,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 9.938998118741438e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 6.439000571845099e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 6.742000550730154e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.0870324690004054,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 2.7224999939789996e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 189.33201304900285,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 2.001668722998147,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 41.87734258099954
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "failed",
+                "main_id": "none",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-21T08:40:59.476575",
+            "topic_used": "Andhra Pradesh appoints 25 artistes to Nataka Academy; members meet Minister Durgesh - The Hindu",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 8.071410493001167,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 1.4902998373145238e-05,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.00034041500111925416,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 11.506298714000877,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 1.4436001947615296e-05,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 5.246421638999891,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 9.344003046862781e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 6.280999514274299e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 7.768001523800194e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.03439593900111504,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 1.555600101710297e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 121.80414524799926,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 62.2434417350014,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 20.349682289997872,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 19.53797704599856,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 19.53832860499824,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 1.5645848290005233,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 47.661543163001625
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "t14mPHLQgZk",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-21T10:23:17.952655",
+            "topic_used": "Andhra Pradesh appoints 25 artistes to Nataka Academy; members meet Minister Durgesh - The Hindu",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 5.337400078999053,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 1.5924000763334334e-05,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.0002698170028452296,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 8.876623323001695,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 1.4709999959450215e-05,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 1.0376245330007805,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 1.2173000868642703e-05,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 7.808001100784168e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 1.0980998922605067e-05,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.03823348700097995,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 2.056800076388754e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 49.743933107001794,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 23.41759595700205,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 8.795149196001148,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 8.787006817001384,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 8.615380808998452,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 1.5189468280004803,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 46.08150469099928
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "8dUDxL4cQrg",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-21T10:29:33.439168",
+            "topic_used": "Andhra Pradesh appoints 25 artistes to Nataka Academy; members meet Minister Durgesh - The Hindu",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 2.5886061339988373,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 3.5660013963934034e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 7.270700007211417e-05,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 0.9437570480004069,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 4.287001502234489e-06,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 0.838059763002093,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 2.4559994926676154e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 1.8550017557572573e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 1.8089995137415826e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.014930549998098286,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 2.149000283679925e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 5.320697830000427,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 1.2227091130007466,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 1.4309179820011195,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 1.1966586800008372,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 1.2663902589993086,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 4.8494267409987515,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 45.916649538001366
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "6t8tzwfzzoA",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-21T10:37:30.438449",
+            "topic_used": "When Jeff Bezos gave the Smithsonian $200 million, the impact went far beyond one museum",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 3.8577610880020075,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 1.0145999112864956e-05,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.00018614600048749708,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 0.9596195140002237,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 5.8777997764991596e-05,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 0.9889735940014361,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 1.2974000128451735e-05,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 9.845000022323802e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 5.877001967746764e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.028139305002696346,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 2.1740001102443784e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 4.78667687000052,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 1.4073566179977206,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 0.936089193000953,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 1.0713607649995538,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 1.2012835500026995,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 5.0508293410021,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 54.43394597000224
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "oLnWY7Nu6Fg",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-21T10:59:57.120338",
+            "topic_used": "When Jeff Bezos gave the Smithsonian $200 million, the impact went far beyond one museum",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 2.6162703209993197,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 3.991000994574279e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 9.300300007453188e-05,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 0.8322749690050841,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 7.337002898566425e-06,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 0.851659528001619,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 3.1800009310245514e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 2.053006028290838e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 1.624997821636498e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.022240790000068955,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 3.8145000871736556e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 80.44528496299608,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 11.776142802998947,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 10.847735345996625,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 10.393623884003318,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 9.786509358003968,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 1.7515267319977283,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 54.226947839000786
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "Agz9UjvDnQs",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-21T11:20:26.002292",
+            "topic_used": "When Jeff Bezos gave the Smithsonian $200 million, the impact went far beyond one museum",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 3.2174990869971225,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 1.6391997633036226e-05,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.0002973119990201667,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 1.2035926960015786,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 1.5418998373206705e-05,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 0.9672264250039007,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 1.8808997992891818e-05,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 1.0577998182270676e-05,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 9.354000212624669e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.030418684000323992,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 9.767005394678563e-06,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 54.16742077800154,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 9.122320562004461,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 8.021853875994566,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 7.619781737994344,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 7.248840162996203,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 1.5811623169938684,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 57.210470942998654
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "VgmbLaxxOSc",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-21T13:04:26.408046",
+            "topic_used": "Visakhapatnam air pollution: Citizens\u2019 Forum seeks six-point action plan from administration",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 6.862237162000383,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 4.3359978008084e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.000676049996400252,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 1.0448150569936843,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 5.964000592939556e-06,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 0.8752984200036735,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 2.516993845347315e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 2.5420013116672635e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 1.7739948816597462e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.03281298599904403,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 1.19440010166727e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 62.7897643949982,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 11.40990943399811,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 10.509613517999242,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 8.825289453998266,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 8.739975963995676,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 3.3576339909996022,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 57.543991866994475
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "PeYarTYHRwA",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-22T05:43:47.476817",
+            "topic_used": "Andhra photographer Rukhiya Mohammed on her award-winning photographs of Eastern Ghats",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 5.497683998000866,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 4.530003934632987e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.00012726400018436834,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 11.391514402006578,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 5.73100260226056e-06,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 0.858578088998911,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 8.584996976424009e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 1.1490003089420497e-05,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 5.750000127591193e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.05049675800546538,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 1.31960041471757e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 213.47753188399656,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 95.73578650299896,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 23.153674130997388,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 15.033524768994539,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 17.52388901800441,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 5.279157209006371,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 59.89022820199898
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "g1DNPyDfDwQ",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-22T09:30:24.482623",
+            "topic_used": "Visakhapatnam MP Sribharat meets TDP cadre; ward reorganisation, port dust among issues raised",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 RSS Feeds & RAG Lookup": 2.235306294000111,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.0007684779993724078,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 16.338302195001233,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 0.9154477830015821,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 84.80232560200056,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 11.029544717001045,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 12.58964781800023,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 12.840726020998773,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 2.3500307010017423,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.04530798300038441,
+                "Phase 7: Assembly::7.1 Multi-Threaded Compilation": 40.98692116500024,
+                "Phase 7: Upload::7.2 API Uploading": 48.98570325400033
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "ppeCBa0HmVQ",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-22T12:46:06.213465",
+            "topic_used": "Home Guards health insurance scheme launched in Visakhapatnam, a first in Andhra Pradesh",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 RSS Feeds & RAG Lookup": 3.287258101000134,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.00030755500029044924,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 12.987783530999877,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 1.966172199999619,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (main)": 39.34603536500026,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (short_1)": 10.121935180000037,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (short_2)": 6.374055895999845,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (short_3)": 11.570195380999394,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 2.4305943790004676,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.03299000200058799,
+                "Phase 7: Assembly::7.1 Multi-Threaded Compilation": 126.0016223929997,
+                "Phase 7: Upload::7.2 API Uploading": 61.700074085999404
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "_rOVaHF1zHU",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-22T13:00:00.594278",
+            "topic_used": "Home Guards health insurance scheme launched in Visakhapatnam, a first in Andhra Pradesh",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 RSS Feeds & RAG Lookup": 3.048164376999921,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.00036185099997965153,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 5.48598634300015,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 1.5668871620000573,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (main)": 38.87625503700019,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (short_1)": 21.86931817200002,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (short_2)": 14.026769994999995,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (short_3)": 11.534312900999794,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 2.4319414040000993,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.02191073799986043,
+                "Phase 7: Assembly::7.1 Multi-Threaded Compilation": 36.86524211000051,
+                "Phase 7: Upload::7.2 API Uploading": 65.04364764399998
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "DncahMFEEZQ",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-22T13:16:11.908916",
+            "topic_used": "UK airlines easyJet and Jet2 assure holidaymakers: No extra charges for summer flights despite rising fuel costs",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 6.152748174000408,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 4.429000000527594e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.0016212619993893895,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 5.261002356000063,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 1.203299962071469e-05,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 1.3727337540003646,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 7.3460005296510644e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 3.5170005503459834e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 2.925000444520265e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.039191051000670996,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 8.914000318327453e-06,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 102.56243726899993,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 42.60835978999967,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 11.376923963000081,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 10.325654882999515,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 9.842664583000442,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 5.441542354000376,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 48.01754983700084
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "34qLWS_Za7E",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-22T23:47:50.973469",
+            "topic_used": "'Go home' for Green Card rule: Immigration attorney Rahul Reddy explains what H-1B visa holders should do now",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 RSS Feeds & RAG Lookup": 3.0318748600002436,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.0044397040001058485,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 10.719967403001647,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 0.0003201549989171326,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (main)": 88.83585483599745,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (short_1)": 11.516668536001816,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (short_2)": 6.253757140999369,
+                "Phase 5: Voiceover::5.1 Fallback Synthesis (short_3)": 8.09810144400035,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 3.791894965997926,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.048324463998142164,
+                "Phase 7: Assembly::7.1 Multi-Threaded Compilation": 107.1519231050006,
+                "Phase 7: Upload::7.2 API Uploading": 64.75552600599985
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "Cvf2ZcHyvWU",
+                "shorts_count": 3
+            }
+        },
+        {
+            "timestamp": "2026-05-23T11:03:55.461838",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 12.04398845400101,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 3.13300006382633e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.0017487569984950824,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 0.000405300999773317,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 3.3109990908997133e-06,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 3.394899977138266e-05,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 1.4390006981557235e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 2.503000359865837e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 1.4289998944150284e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.04773309399934078,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 9.150000551017001e-06,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 82.87432027900104,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 16.56761376399845,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 5.803630907001207,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 5.020770831999471,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 6.525125296999249,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 6.4344771490013954,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 0.21167882199915766
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "failed",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-23T11:34:27.368487",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 13.247696195001481,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 4.252000508131459e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.0035244319988123607,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 0.0005911990010645241,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 5.923997377976775e-06,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 5.851099922438152e-05,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 2.5740009732544422e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 3.9000005926936865e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 2.2370004444383085e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.03672555799857946,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 8.019997039809823e-06,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 68.91889377999905,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 10.386965622998105,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 3.8145663750001404,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 3.145771853000042,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 3.763843706001353,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 5.28790871900128,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 0.005997745000058785
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "failed",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-23T12:20:00.112130",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 14.194831631000852,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.002299152998602949,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 8.95221112299987,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 9.847000183071941e-05,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 11.867944154000725,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 2.077035934999003,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 2.9921920190026867,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 4.113726809002401,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 1.8079617330004112,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.06314747999931569,
+                "Phase 7: Assembly::7.1 Multi-Threaded Compilation": 45.630845149997185,
+                "Phase 7: Upload::7.2 API Uploading": 48.28252069099835
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-25T06:17:10.280426",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.0006278599976212718,
+                "Pre-Pipeline::License Compliance": 6.815000233473256e-06,
+                "Pre-Pipeline::Upload Time Optimization": 4.4919979700353e-06,
+                "Pre-Pipeline::Content Calendar": 3.0890005291439593e-06,
+                "Pre-Pipeline::Scheduling": 4.7618999815313146e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 16.899200815001677,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.005129302000568714,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 9.378852705998725,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 6.126999869593419e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 8.660700041218661e-05,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 18.251713106998068,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 8.334488381999108,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 6.063712963001308,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 5.123880765000649,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 2.0066401709991624,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.0924654520022159,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 3.9460999687435105e-05,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 57.06377892999808,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 1.2712939599987294,
+                "Phase 7: Upload::7.2 API Uploading": 19.929900958999497,
+                "Post-Pipeline::Feedback Collection": 9.99650001176633e-05,
+                "Post-Pipeline::Analytics Pull": 6.865999966976233e-05,
+                "Post-Pipeline::Community Engagement": 1.5623998478986323e-05,
+                "Post-Pipeline::Competitor Intel": 7.424999785143882e-05,
+                "Post-Pipeline::Retention Optimization": 1.5454999811481684e-05,
+                "Post-Pipeline::Shorts Optimization": 1.5240999346133322e-05,
+                "Post-Pipeline::Content Quality": 1.4026998542249203e-05,
+                "Post-Pipeline::Reliability Check": 9.49300010688603e-06,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 1.0114999895449728e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 1.9032999261980876e-05,
+                "Post-Pipeline::H3.5 Newsletter Digest": 8.355000318260863e-06,
+                "Post-Pipeline::H3.2 Community Poster": 8.344999514520168e-06,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 1.3699998817173764e-05,
+                "Post-Pipeline::Intelligence Analysis": 0.0032081079989438877
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-25T06:33:04.944527",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.003207865000149468,
+                "Pre-Pipeline::License Compliance": 1.018900002236478e-05,
+                "Pre-Pipeline::Upload Time Optimization": 4.980000085197389e-06,
+                "Pre-Pipeline::Content Calendar": 4.182998964097351e-06,
+                "Pre-Pipeline::Scheduling": 5.93250006204471e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 16.683551080001052,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.004528498000581749,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 10.057993124002678,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 7.038799958536401e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 2.747799953795038e-05,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 19.70720820600036,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 9.822967370000697,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 9.842151969998667,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 7.157936072002485,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 2.82100578400059,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.10264864599957946,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.00010455399751663208,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 89.84828589699828,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 3.166999699998996,
+                "Phase 7: Upload::7.2 API Uploading": 14.876623283998924,
+                "Post-Pipeline::Feedback Collection": 2.2645999706583098e-05,
+                "Post-Pipeline::Analytics Pull": 2.3617001716047525e-05,
+                "Post-Pipeline::Community Engagement": 5.997997504891828e-06,
+                "Post-Pipeline::Competitor Intel": 2.8226997528690845e-05,
+                "Post-Pipeline::Retention Optimization": 7.208000170066953e-06,
+                "Post-Pipeline::Shorts Optimization": 4.644000000553206e-06,
+                "Post-Pipeline::Content Quality": 1.626399898668751e-05,
+                "Post-Pipeline::Reliability Check": 4.958998033544049e-06,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 4.7860012273304164e-06,
+                "Post-Pipeline::H3.4 Blog Companion": 1.9603998225647956e-05,
+                "Post-Pipeline::H3.5 Newsletter Digest": 6.632999429712072e-06,
+                "Post-Pipeline::H3.2 Community Poster": 2.3997999960556626e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 5.779998900834471e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.0051858620026905555
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-25T07:12:23.791416",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.004072435000125552,
+                "Pre-Pipeline::License Compliance": 6.571997801074758e-06,
+                "Pre-Pipeline::Upload Time Optimization": 6.963000487303361e-06,
+                "Pre-Pipeline::Content Calendar": 4.583998816087842e-06,
+                "Pre-Pipeline::Scheduling": 4.7358000301755965e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 16.182862516001478,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.005505802000698168,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 7.995383595000021,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 9.457099804421887e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 2.0209998183418065e-05,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 19.160836120001477,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 6.164595248999831,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 4.320074843999464,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 4.864830687998619,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 2.5717458819999592,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.10715112000252702,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 6.502000178443268e-05,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 150.95789953799977,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 3.23301150000043,
+                "Phase 7: Upload::7.2 API Uploading": 4.564499977277592e-05,
+                "Post-Pipeline::Feedback Collection": 3.2488002034369856e-05,
+                "Post-Pipeline::Analytics Pull": 7.1450012910645455e-06,
+                "Post-Pipeline::Community Engagement": 5.867001164006069e-06,
+                "Post-Pipeline::Competitor Intel": 2.884700006688945e-05,
+                "Post-Pipeline::Retention Optimization": 1.4540000847773626e-05,
+                "Post-Pipeline::Shorts Optimization": 6.5259991970378906e-06,
+                "Post-Pipeline::Content Quality": 2.303200017195195e-05,
+                "Post-Pipeline::Reliability Check": 3.878001734847203e-06,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 9.416999091627076e-06,
+                "Post-Pipeline::H3.4 Blog Companion": 8.341001375811175e-06,
+                "Post-Pipeline::H3.5 Newsletter Digest": 2.1471998479682952e-05,
+                "Post-Pipeline::H3.2 Community Poster": 4.821999027626589e-06,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 3.5519988159649074e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.004867748997639865
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "skipped",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-25T13:06:22.773174",
+            "topic_used": "I have an O1 visa. Do I still need an ESTA for a holiday in the USA?",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 16.09535288699408,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 6.73800241202116e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.0059873840000364,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 10.024800870996842,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 1.2822005373891443e-05,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 0.00016883799980860204,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 4.699002602137625e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 8.167997293639928e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 4.148998414166272e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.13525949500035495,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 3.360499977134168e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 178.07588456500525,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 42.839385885999945,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 10.517917596000188,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 7.211131363001186,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 6.383126433000143,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 12.165390930000285,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 0.002894737001042813
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "skipped",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-25T13:37:24.810463",
+            "topic_used": "Immigration attorney needed",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 19.795071223998093,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 8.679002348799258e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.006299501001194585,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 11.840909735998139,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 2.1965999621897936e-05,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 0.00034000600135186687,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 0.00021629199909511954,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 2.3685002815909684e-05,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 5.985995812807232e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.13118612099788152,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 1.8790000467561185e-05,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 181.83937335600058,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 23.845344131004822,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 6.516508290005731,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_2)": 7.208054139002343,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_3)": 7.157876351993764,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 12.259576204996847,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 0.0002110050045303069
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "skipped",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-25T19:08:38.989160",
+            "topic_used": "UK \u2192 US B2 visa refusal (INA 214(b)) and Reapplying",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.001345254000625573,
+                "Pre-Pipeline::License Compliance": 7.180002285167575e-06,
+                "Pre-Pipeline::Upload Time Optimization": 3.816996468231082e-06,
+                "Pre-Pipeline::Content Calendar": 1.9562998204492033e-05,
+                "Pre-Pipeline::Scheduling": 5.542500002775341e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 14.903464178001741,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.0030801129978499375,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 9.681384940995486,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 7.172999903559685e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 1.0449999535921961e-05,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 25.532297518999258,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 6.2297872100025415,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 6.231928904999222,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 5.194386119001138,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 5.841027344002214,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.06953917899954831,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.00035446199763100594,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 168.39221647399972,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.8281113900011405,
+                "Phase 7: Upload::7.2 API Uploading": 53.202263510997,
+                "Post-Pipeline::Feedback Collection": 0.00010499500058358535,
+                "Post-Pipeline::Analytics Pull": 2.976399991894141e-05,
+                "Post-Pipeline::Community Engagement": 0.000103979000414256,
+                "Post-Pipeline::Competitor Intel": 2.2630003513768315e-05,
+                "Post-Pipeline::Retention Optimization": 2.68340008915402e-05,
+                "Post-Pipeline::Shorts Optimization": 1.883500226540491e-05,
+                "Post-Pipeline::Content Quality": 1.9740997231565416e-05,
+                "Post-Pipeline::Reliability Check": 1.545000122860074e-05,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 1.2857999536208808e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 2.7034002414438874e-05,
+                "Post-Pipeline::H3.5 Newsletter Digest": 1.5058998542372137e-05,
+                "Post-Pipeline::H3.2 Community Poster": 1.7221005691681057e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 1.92929946933873e-05,
+                "Post-Pipeline::Intelligence Analysis": 0.00854393000190612
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-25T19:49:40.163913",
+            "topic_used": "Travel on existing ESTA after UK Caution (Possession of Bladed Article / No Arrest) before CR1 Visa",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.002523167997424025,
+                "Pre-Pipeline::License Compliance": 6.370995834004134e-06,
+                "Pre-Pipeline::Upload Time Optimization": 5.692003469448537e-06,
+                "Pre-Pipeline::Content Calendar": 4.430999979376793e-06,
+                "Pre-Pipeline::Scheduling": 8.593399979872629e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 19.596864492996247,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.0028696859953925014,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 9.378515841002809,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 6.548200326506048e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 2.0120998669881374e-05,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 19.367670820000058,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 5.767125669000961,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 5.747146301997418,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 4.812580917001469,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 4.096438050997676,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.07219599400559673,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 5.521900311578065e-05,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 143.66133154099953,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.1740639739946346,
+                "Phase 7: Upload::7.2 API Uploading": 53.82273187999817,
+                "Post-Pipeline::Feedback Collection": 7.165100396377966e-05,
+                "Post-Pipeline::Analytics Pull": 2.5023000489454716e-05,
+                "Post-Pipeline::Community Engagement": 2.7405003493186086e-05,
+                "Post-Pipeline::Competitor Intel": 1.8328995793126523e-05,
+                "Post-Pipeline::Retention Optimization": 1.9380000594537705e-05,
+                "Post-Pipeline::Shorts Optimization": 1.3176999345887452e-05,
+                "Post-Pipeline::Content Quality": 1.887100370367989e-05,
+                "Post-Pipeline::Reliability Check": 1.0761003068182617e-05,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 1.2147000234108418e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 2.0574996597133577e-05,
+                "Post-Pipeline::H3.5 Newsletter Digest": 9.9300013971515e-06,
+                "Post-Pipeline::H3.2 Community Poster": 9.31799877434969e-06,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 7.909999112598598e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.006633247998252045
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-25T19:57:32.268257",
+            "topic_used": "Travel on existing ESTA after UK Caution (Possession of Bladed Article / No Arrest) before CR1 Visa",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.002023395005380735,
+                "Pre-Pipeline::License Compliance": 1.2384000001475215e-05,
+                "Pre-Pipeline::Upload Time Optimization": 3.764005668926984e-06,
+                "Pre-Pipeline::Content Calendar": 3.993998689111322e-06,
+                "Pre-Pipeline::Scheduling": 5.208599759498611e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 15.644996902003186,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.0044618269967031665,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 9.280588734000048,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 3.867300256388262e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 8.990995411295444e-06,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 19.087245171998802,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 8.591895559999102,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 5.597719121004047,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 6.452527569999802,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 3.1854811030061683,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.06737754999630852,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 3.5124001442454755e-05,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 164.45452155399835,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 3.1209002760006115,
+                "Phase 7: Upload::7.2 API Uploading": 48.29373076400225,
+                "Post-Pipeline::Feedback Collection": 0.00013334600225789472,
+                "Post-Pipeline::Analytics Pull": 3.9749997085891664e-05,
+                "Post-Pipeline::Community Engagement": 2.673799463082105e-05,
+                "Post-Pipeline::Competitor Intel": 1.3811993994750082e-05,
+                "Post-Pipeline::Retention Optimization": 2.7678004698827863e-05,
+                "Post-Pipeline::Shorts Optimization": 1.5218000044114888e-05,
+                "Post-Pipeline::Content Quality": 7.752900273771957e-05,
+                "Post-Pipeline::Reliability Check": 1.416700251866132e-05,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 1.0714997188188136e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 5.07950026076287e-05,
+                "Post-Pipeline::H3.5 Newsletter Digest": 1.2071999663021415e-05,
+                "Post-Pipeline::H3.2 Community Poster": 1.0622003173921257e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 8.65399488247931e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.004224774005706422
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-25T20:41:27.852232",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.0019543680027709343,
+                "Pre-Pipeline::License Compliance": 7.231006748043001e-06,
+                "Pre-Pipeline::Upload Time Optimization": 3.920002200175077e-06,
+                "Pre-Pipeline::Content Calendar": 4.606998118106276e-06,
+                "Pre-Pipeline::Scheduling": 4.530500154942274e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 14.807879902000423,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.0031590680009685457,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 7.389540319003572,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 0.0001949560028151609,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 1.6222002159338444e-05,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 16.14187906099687,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 5.582490209999378,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 7.284138459006499,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 5.283022937997885,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 2.6624391400036984,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.06542135400377447,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 3.052299871342257e-05,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 154.49866178700177,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.8855024840013357,
+                "Phase 7: Upload::7.2 API Uploading": 48.76483737100352,
+                "Post-Pipeline::Feedback Collection": 5.8206998801324517e-05,
+                "Post-Pipeline::Analytics Pull": 2.2557003831025213e-05,
+                "Post-Pipeline::Community Engagement": 2.9658003768417984e-05,
+                "Post-Pipeline::Competitor Intel": 2.0134997612331063e-05,
+                "Post-Pipeline::Retention Optimization": 1.9383995095267892e-05,
+                "Post-Pipeline::Shorts Optimization": 1.2574004358612001e-05,
+                "Post-Pipeline::Content Quality": 2.1857005776837468e-05,
+                "Post-Pipeline::Reliability Check": 7.4169947765767574e-06,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 8.428003638982773e-06,
+                "Post-Pipeline::H3.4 Blog Companion": 2.468999446136877e-05,
+                "Post-Pipeline::H3.5 Newsletter Digest": 9.233001037500799e-06,
+                "Post-Pipeline::H3.2 Community Poster": 9.283001418225467e-06,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 1.3192999176681042e-05,
+                "Post-Pipeline::Intelligence Analysis": 0.006713486000080593
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-26T11:04:28.950949",
+            "topic_used": "US I-130 Expedition",
+            "cvi_score": 0,
+            "durations": {
+                "Phase 1: Discovery::1.1 Regional RSS Crawler": 16.291472670003714,
+                "Phase 1: Discovery::1.2 Wikipedia RAG Lookup": 3.5869961720891297e-06,
+                "Phase 2: Weighting::2.1 CPM Filtering": 0.002372050999838393,
+                "Phase 3: Scripting::3.1 Dynamic Gemini AI Writer": 9.043217486992944,
+                "Phase 3: Scripting::3.2 Script Duration & Word Audit": 4.339999577496201e-06,
+                "Phase 4: Safety::4.1 Dynamic Legal Audit": 5.422999674919993e-05,
+                "Phase 4: Safety::4.2 Zero-Tolerance Regex Blacklist": 2.038999809883535e-06,
+                "Phase 5: Voice & Visuals::5.1-5.3 Edge-TTS & RVC Voice Synthesizer": 3.0320006771944463e-06,
+                "Phase 5: Voice & Visuals::5.4-5.5 Visual Harvesting & Uniformity": 1.5350015019066632e-06,
+                "Phase 6: Thumbnails::6.1 Decoupled Canvas Rendering": 0.07689122900046641,
+                "Phase 6: Thumbnails::6.2 Branded Thumbnail Synthesis": 9.81100311037153e-06,
+                "Phase 7: Assembly & Upload::7.1 Async Task Orchestration": 112.89410439300264,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_main)": 22.67959942199377,
+                "Phase 5: Voice & Visuals::5.1-5.3 Voiceover Synthesis (production_short_1)": 9.936706070999207,
+                "Phase 7: Assembly & Upload::7.2 Parallel FFmpeg Encoding": 4.819530181004666,
+                "Phase 7: Assembly & Upload::7.3 Resilient Chunked API Upload": 0.2196328989957692
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "failed",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-26T17:07:24.493780",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.007819095990271308,
+                "Pre-Pipeline::License Compliance": 1.5615005395375192e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.000610360992141068,
+                "Pre-Pipeline::Content Calendar": 0.0007830340036889538,
+                "Pre-Pipeline::Scheduling": 2.9661008738912642e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 12.996579440005007,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.004613613986293785,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 11.833586748995003,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 0.00011007499415427446,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.0045001859980402514,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 25.319856289002928,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 6.204338669005665,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 6.2330263659969205,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 6.1536199519905495,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 2.4786932389979484,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.12800200800120365,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.0030150719976518303,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 154.37567709099676,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 4.972674251999706,
+                "Phase 7: Upload::7.2 API Uploading": 61.989838125999086,
+                "Post-Pipeline::Feedback Collection": 0.019645824999315664,
+                "Post-Pipeline::Analytics Pull": 2.6670997613109648e-05,
+                "Post-Pipeline::Community Engagement": 0.00012438299017958343,
+                "Post-Pipeline::Competitor Intel": 0.005824869993375614,
+                "Post-Pipeline::Retention Optimization": 0.01790090900612995,
+                "Post-Pipeline::Shorts Optimization": 0.000479341993923299,
+                "Post-Pipeline::Content Quality": 0.0013517240004148334,
+                "Post-Pipeline::Reliability Check": 0.0017737349990056828,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 0.00013218600361142308,
+                "Post-Pipeline::H3.4 Blog Companion": 0.004245460004312918,
+                "Post-Pipeline::H3.5 Newsletter Digest": 0.002336617006221786,
+                "Post-Pipeline::H3.2 Community Poster": 0.0003857949923258275,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 1.752699608914554e-05,
+                "Post-Pipeline::Intelligence Analysis": 0.005946872988715768
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-27T10:35:51.698103",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.005975020001642406,
+                "Pre-Pipeline::License Compliance": 1.7376994946971536e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.00044480701035354286,
+                "Pre-Pipeline::Content Calendar": 0.0005962099967291579,
+                "Pre-Pipeline::Scheduling": 3.501499304547906e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 15.552987139002653,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.0017498039960628375,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 8.70320587400056,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 5.1848997827619314e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.002415618990198709,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 16.441485207004007,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 6.580277198998374,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 7.324621446998208,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 6.842358469002647,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 3.5285520409961464,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.06946591701125726,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.0028040579927619547,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 101.98636359100055,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.9204436610016273,
+                "Phase 7: Upload::7.2 API Uploading": 55.905111435989966,
+                "Post-Pipeline::Feedback Collection": 0.008923321001930162,
+                "Post-Pipeline::Analytics Pull": 1.0862000635825098e-05,
+                "Post-Pipeline::Community Engagement": 3.335399378556758e-05,
+                "Post-Pipeline::Competitor Intel": 0.0015675670001655817,
+                "Post-Pipeline::Retention Optimization": 0.004467527003725991,
+                "Post-Pipeline::Shorts Optimization": 0.0001535240007797256,
+                "Post-Pipeline::Content Quality": 0.0003465979971224442,
+                "Post-Pipeline::Reliability Check": 0.00029368199466262013,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 3.0993003747425973e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 0.0005070149927632883,
+                "Post-Pipeline::H3.5 Newsletter Digest": 0.0004113119939574972,
+                "Post-Pipeline::H3.2 Community Poster": 4.900700878351927e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 5.879992386326194e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.0015783300041221082
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-27T11:06:24.366591",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.0028805680049117655,
+                "Pre-Pipeline::License Compliance": 1.927299308590591e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.0004310750082368031,
+                "Pre-Pipeline::Content Calendar": 0.0005939489929005504,
+                "Pre-Pipeline::Scheduling": 2.307200338691473e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 14.499572650995106,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.0022118809865787625,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 14.039945797994733,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 5.268599488772452e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.0014906639989931136,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 16.454359758994542,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 7.211164590000408,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 6.562060752999969,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 9.027500538999448,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 3.2439997990004485,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.13335680900490843,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.00268816199968569,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 103.13557198399212,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 3.29476316999353,
+                "Phase 7: Upload::7.2 API Uploading": 57.1049158530077,
+                "Post-Pipeline::Feedback Collection": 0.01487530700978823,
+                "Post-Pipeline::Analytics Pull": 1.524800609331578e-05,
+                "Post-Pipeline::Community Engagement": 5.481200059875846e-05,
+                "Post-Pipeline::Competitor Intel": 0.002269760996568948,
+                "Post-Pipeline::Retention Optimization": 0.008022515001357533,
+                "Post-Pipeline::Shorts Optimization": 0.00029736199940089136,
+                "Post-Pipeline::Content Quality": 0.0007651929918210953,
+                "Post-Pipeline::Reliability Check": 0.000652047005132772,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 5.8613994042389095e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 0.002117972995620221,
+                "Post-Pipeline::H3.5 Newsletter Digest": 0.0016770079964771867,
+                "Post-Pipeline::H3.2 Community Poster": 0.0001182569976663217,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 1.0738003766164184e-05,
+                "Post-Pipeline::Intelligence Analysis": 0.002894766003009863
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-27T12:25:56.724474",
+            "topic_used": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.0033476890093879774,
+                "Pre-Pipeline::License Compliance": 2.930300252046436e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.001092954000341706,
+                "Pre-Pipeline::Content Calendar": 0.0004821679904125631,
+                "Pre-Pipeline::Scheduling": 3.759900573641062e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 19.494317121992935,
+                "Phase 2: Weighting::2.1 CPM & Viability Sorting": 0.0045797460043104365,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 12.39392388399574,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 4.710999201051891e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.0016392989928135648,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 32.20952771899465,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 5.9804594540037215,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 12.674576332996367,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 3.524662312003784,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 9.239328165989718,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.135056879997137,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.0046024420007597655,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 140.19895894700312,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 3.6069131730037043,
+                "Phase 7: Upload::7.2 API Uploading": 43.929097316999105,
+                "Post-Pipeline::Feedback Collection": 0.015328702007536776,
+                "Post-Pipeline::Analytics Pull": 1.5860001440159976e-05,
+                "Post-Pipeline::Community Engagement": 4.2248007957823575e-05,
+                "Post-Pipeline::Competitor Intel": 0.0020840030047111213,
+                "Post-Pipeline::Retention Optimization": 0.0024500889994669706,
+                "Post-Pipeline::Shorts Optimization": 0.00039925199234858155,
+                "Post-Pipeline::Content Quality": 0.0006064710032660514,
+                "Post-Pipeline::Reliability Check": 0.0005127019976498559,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 5.239799793343991e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 0.001461965002818033,
+                "Post-Pipeline::H3.5 Newsletter Digest": 0.0014222460013115779,
+                "Post-Pipeline::H3.2 Community Poster": 8.058900129981339e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 9.71299596130848e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.00243316798878368
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-28T07:07:11.967815",
+            "topic_used": "Most of the times during 2019-24 regime in Andhra when I heard in villages... \"Janalaki dabbulu ekkuva ayyipoyi panulaki kudaa rakunda pothunnaru okkokkadu roju ki 700 lenidhee paniki ravatledhu\"",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.00927197199962393,
+                "Pre-Pipeline::License Compliance": 3.803799972956767e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.0005149319995325641,
+                "Pre-Pipeline::Content Calendar": 0.0006725089997416944,
+                "Pre-Pipeline::Scheduling": 3.525299962348072e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 39.11136968499977,
+                "Phase 2: Weighting::2.1 Topic Scoring & Selection": 0.016268643000330485,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 9.69699494300039,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 9.215600039169658e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.002515781000511197,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 22.34777403299995,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 6.641505540999788,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 5.2873194130006596,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 6.674074739999924,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 5.60575957600031,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.07015747700006614,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.00312502199994924,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 86.07055867899999,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.9963296660007472,
+                "Phase 7: Upload::7.2 API Uploading": 44.285810708999634,
+                "Post-Pipeline::Feedback Collection": 0.006040266000127303,
+                "Post-Pipeline::Analytics Pull": 1.4262000149756204e-05,
+                "Post-Pipeline::Community Engagement": 6.52149992674822e-05,
+                "Post-Pipeline::Competitor Intel": 0.0020076920000065,
+                "Post-Pipeline::Retention Optimization": 0.003903974999957427,
+                "Post-Pipeline::Shorts Optimization": 0.00016074399991339305,
+                "Post-Pipeline::Content Quality": 0.0004225209995638579,
+                "Post-Pipeline::Reliability Check": 0.0003868529993269476,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 4.5529000090027694e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 0.0006915869998920243,
+                "Post-Pipeline::H3.5 Newsletter Digest": 0.0003792730003624456,
+                "Post-Pipeline::H3.2 Community Poster": 5.344199962564744e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 7.075999747030437e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.0018934170002467
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        }
+    ],
+    "user_reviews": {
+        "scripts": [],
+        "thumbnails": [],
+        "videos": []
+    },
+    "growth_recommendations": [
+        {
+            "priority": "HIGH",
+            "suggestion": "Topic diversity low \u2014 expand discovery sources",
+            "status": "active"
+        },
+        {
+            "priority": "MEDIUM",
+            "suggestion": "Upload success rate 0% \u2014 check OAuth scopes",
+            "status": "active"
+        },
+        {
+            "priority": "TIP",
+            "suggestion": "Cover trending topics from Google Trends India \u2014 cricket, movies, politics, weather. Diverse content grows channels faster than single-topic focus.",
+            "status": "active"
+        },
+        {
+            "priority": "TIP",
+            "suggestion": "Upload between 4PM-8PM IST for maximum Telugu audience engagement",
+            "status": "active"
+        }
+    ],
+    "known_errors_log": [
+        {
+            "timestamp": "2026-05-21T10:52:02.682816",
+            "phase": "Phase 7 - Orchestration",
+            "error": "RVC Inference FAILED. Voiceover generation halted."
+        },
+        {
+            "timestamp": "2026-05-21T10:53:27.669857",
+            "phase": "Phase 7 - Orchestration",
+            "error": "RVC Inference FAILED. Voiceover generation halted."
+        },
+        {
+            "timestamp": "2026-05-22T06:32:49.925198",
+            "phase": "Phase 7 - Orchestration",
+            "error": "RVC Inference FAILED. Voiceover generation halted."
+        }
+    ],
+    "performance_metrics": [
+        {
+            "timestamp": "2026-05-26T11:42:56.609305+05:30",
+            "topic": "H1B Visa Update 2026",
+            "videos": {
+                "y_gYepexqa0": {
+                    "views": 150,
+                    "impressionClickRate": 0.045,
+                    "averageViewPercentage": 0.52,
+                    "likes": 8,
+                    "averageViewDuration": 45
+                },
+                "JwO_VpGAb18": {
+                    "views": 320,
+                    "impressionClickRate": 0.062,
+                    "averageViewPercentage": 0.71,
+                    "likes": 15,
+                    "averageViewDuration": 28
+                },
+                "abc123def": {
+                    "views": 25,
+                    "impressionClickRate": 0.02,
+                    "averageViewPercentage": 0.35,
+                    "likes": 1,
+                    "averageViewDuration": 55
+                }
+            }
+        },
+        {
+            "timestamp": "2026-05-26T16:34:28.956034+05:30",
+            "topic": "US I-130 Expedition",
+            "videos": {}
+        }
+    ],
+    "producer_briefs": [
+        {
+            "timestamp": "2026-05-26T16:34:28.958412+05:30",
+            "topic": "US I-130 Expedition",
+            "brief": "=== PRODUCER BRIEF (RAG Feedback) ===\n\nTotal videos tracked: 3\nTotal views: 495\n\n\ud83c\udfc6 TOP PERFORMING TOPICS (by views):\n  1. \"H1B Visa Update 2026\" \u2014 320 views | CTR: 6.2% | Avg watch: 71% | \ud83d\udc4d 15\n  2. \"H1B Visa Update 2026\" \u2014 150 views | CTR: 4.5% | Avg watch: 52% | \ud83d\udc4d 8\n  3. \"H1B Visa Update 2026\" \u2014 25 views | CTR: 2.0% | Avg watch: 35% | \ud83d\udc4d 1\n\n\ud83c\udfaf CONTENT ANGLE INSIGHTS:\n  \u2192 Visa/immigration topics drive strong engagement\n  \u2192 H-1B visa updates are high-interest\n\n\ud83d\udca1 RECOMMENDATION FOR NEXT TOPIC SEEKER:\n  When choosing between candidate topics, prefer:\n    - Visa/immigration topics drive strong engagement\n    - H-1B visa updates are high-interest\n============================================="
+        }
+    ],
+    "retention_analysis": [
+        {
+            "video_id": "test123",
+            "category": "news_politics",
+            "actual_ctr": 0.06,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-26T12:58:12.204239"
+        },
+        {
+            "video_id": "uA2xTGmiTCg",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-26T17:07:24.457240"
+        },
+        {
+            "video_id": "Rew6KBHAqug",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-26T17:07:24.462821"
+        },
+        {
+            "video_id": "bT9rhRsUwJY",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-26T17:07:24.468593"
+        },
+        {
+            "video_id": "Biz4EAhqkhw",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-27T10:35:51.689457"
+        },
+        {
+            "video_id": "JiUCU1E16YQ",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-27T10:35:51.690879"
+        },
+        {
+            "video_id": "OZmxC3qasWA",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-27T10:35:51.692355"
+        },
+        {
+            "video_id": "1hGQI36tOXo",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-27T11:06:24.348683"
+        },
+        {
+            "video_id": "VEWIDi_ezyc",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-27T11:06:24.350997"
+        },
+        {
+            "video_id": "JcNwVyrLrhk",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-27T11:06:24.353576"
+        },
+        {
+            "video_id": "sbP49nRWhgQ",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-27T12:25:56.714157"
+        },
+        {
+            "video_id": "JDEvBAqd44g",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-28T07:07:11.959099"
+        },
+        {
+            "video_id": "x_hJsch7-Mg",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-28T07:07:11.961225"
+        }
+    ],
+    "competitor_intel": [
+        {
+            "last_scan": "2026-05-26T17:07:24.451337",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        },
+        {
+            "last_scan": "2026-05-27T10:35:51.687869",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        },
+        {
+            "last_scan": "2026-05-27T11:06:24.346381",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        },
+        {
+            "last_scan": "2026-05-27T12:25:56.712080",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        },
+        {
+            "last_scan": "2026-05-28T07:07:11.957069",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        }
+    ]
+}

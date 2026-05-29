@@ -1,0 +1,580 @@
+{
+  "tests": [
+    {
+      "id": "test_20260526_141002_0",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Original Title"
+      },
+      "variant": {
+        "title": "Breaking: Original Title"
+      },
+      "topic": "Test Topic",
+      "video_id": "title_test_123_0",
+      "status": "running",
+      "created_at": "2026-05-26T14:10:02.438751",
+      "results": {
+        "control_views": 500,
+        "variant_views": 500,
+        "control_ctr": 4.5,
+        "variant_ctr": 6.2
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260526_141820_1",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "A"
+      },
+      "variant": {
+        "title": "B"
+      },
+      "topic": "X",
+      "video_id": "Y",
+      "status": "running",
+      "created_at": "2026-05-26T14:18:20.484290",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260526_161617_2",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Trump's Visa Rules: Telugu NRIs Rushing to Marry in US"
+      },
+      "variant": {
+        "title": "Trump's Visa Rules: Telugu NRIs Rushing to Marry in US"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-26T16:16:17.766915",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260526_161617_3",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Trump's Visa Rules: Telugu NRIs Rushing to Marry in US"
+      },
+      "variant": {
+        "title": "Trump's Visa Rules: Telugu NRIs Rushing to Marry in US \u2014 Explained"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-26T16:16:17.767884",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260526_161617_4",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Trump's Visa Rules: Telugu NRIs Rushing to Marry in US"
+      },
+      "variant": {
+        "title": "What Happened with Trump's Visa Rules: Telugu?"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-26T16:16:17.768525",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260526_161617_5",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Trump's Visa Rules: Telugu NRIs Rushing to Marry in US"
+      },
+      "variant": {
+        "title": "Trump's Visa Rules: Telugu NRIs Rushing to Marry in US \u2014 Full Analysis"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-26T16:16:17.769123",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260526_170348_6",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "US Visa Changes: Telugu Families Adjust Plans for Future"
+      },
+      "variant": {
+        "title": "US Visa Changes: Telugu Families Adjust Plans for Future"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-26T17:03:48.769689",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260526_170348_7",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "US Visa Changes: Telugu Families Adjust Plans for Future"
+      },
+      "variant": {
+        "title": "US Visa Changes: Telugu Families Adjust Plans for Future \u2014 What It Means"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-26T17:03:48.770042",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260526_170348_8",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "US Visa Changes: Telugu Families Adjust Plans for Future"
+      },
+      "variant": {
+        "title": "What Happened with US Visa Changes: Telugu?"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-26T17:03:48.770648",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260526_170348_9",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "US Visa Changes: Telugu Families Adjust Plans for Future"
+      },
+      "variant": {
+        "title": "US Visa Changes: Telugu Families Adjust Plans for Future \u2014 Full Analysis"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-26T17:03:48.771321",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_103310_10",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Telugu Professionals Adjust to New US Visa Climate"
+      },
+      "variant": {
+        "title": "Telugu Professionals Adjust to New US Visa Climate"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-27T10:33:10.864319",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_103310_11",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Telugu Professionals Adjust to New US Visa Climate"
+      },
+      "variant": {
+        "title": "Telugu Professionals Adjust to New US Visa Climate \u2014 What It Means"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-27T10:33:10.865243",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_103310_12",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Telugu Professionals Adjust to New US Visa Climate"
+      },
+      "variant": {
+        "title": "What Happened with Telugu Professionals Adjust to?"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-27T10:33:10.865674",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_103310_13",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Telugu Professionals Adjust to New US Visa Climate"
+      },
+      "variant": {
+        "title": "Telugu Professionals Adjust to New US Visa Climate \u2014 Full Analysis"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-27T10:33:10.866148",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_110340_14",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "ViralDNA: How US Visa Laws Are Changing Telugu Marriages"
+      },
+      "variant": {
+        "title": "ViralDNA: How US Visa Laws Are Changing Telugu Marriages"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-27T11:03:40.793488",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_110340_15",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "ViralDNA: How US Visa Laws Are Changing Telugu Marriages"
+      },
+      "variant": {
+        "title": "ViralDNA: How US Visa Laws Are Changing Telugu Marriages \u2014 What It Means"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-27T11:03:40.793797",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_110340_16",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "ViralDNA: How US Visa Laws Are Changing Telugu Marriages"
+      },
+      "variant": {
+        "title": "What Happened with ViralDNA: How US Visa?"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-27T11:03:40.794422",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_110340_17",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "ViralDNA: How US Visa Laws Are Changing Telugu Marriages"
+      },
+      "variant": {
+        "title": "ViralDNA: How US Visa Laws Are Changing Telugu Marriages \u2014 Full Analysis"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-27T11:03:40.795097",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_122251_18",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "US Visa Changes: Telugu NRIs Now Marry Locally Due to New Rules"
+      },
+      "variant": {
+        "title": "US Visa Changes: Telugu NRIs Now Marry Locally Due to New Rules"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-27T12:22:51.989524",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_122251_19",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "US Visa Changes: Telugu NRIs Now Marry Locally Due to New Rules"
+      },
+      "variant": {
+        "title": "US Visa Changes: Telugu NRIs Now Marry Locally Due to New Rules \u2014 What It Means"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-27T12:22:51.990622",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_122251_20",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "US Visa Changes: Telugu NRIs Now Marry Locally Due to New Rules"
+      },
+      "variant": {
+        "title": "What Happened with US Visa Changes: Telugu?"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-27T12:22:51.991422",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260527_122251_21",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "US Visa Changes: Telugu NRIs Now Marry Locally Due to New Rules"
+      },
+      "variant": {
+        "title": "US Visa Changes: Telugu NRIs Now Marry Locally Due to New Rules \u2014 Full Analysis"
+      },
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-27T12:22:51.992150",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260528_070506_22",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Andhra Pradesh: Too Much Money, No Workers? | ViralDNA"
+      },
+      "variant": {
+        "title": "Andhra Pradesh: Too Much Money, No Workers? | ViralDNA"
+      },
+      "topic": "Most of the times during 2019-24 regime in Andhra when I heard in villages... \"Janalaki dabbulu ekkuva ayyipoyi panulaki kudaa rakunda pothunnaru okkokkadu roju ki 700 lenidhee paniki ravatledhu\"",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-28T07:05:06.581712",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260528_070506_23",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Andhra Pradesh: Too Much Money, No Workers? | ViralDNA"
+      },
+      "variant": {
+        "title": "Andhra Pradesh: Too Much Money, No Workers? | ViralDNA \u2014 Explained"
+      },
+      "topic": "Most of the times during 2019-24 regime in Andhra when I heard in villages... \"Janalaki dabbulu ekkuva ayyipoyi panulaki kudaa rakunda pothunnaru okkokkadu roju ki 700 lenidhee paniki ravatledhu\"",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-28T07:05:06.582184",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260528_070506_24",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Andhra Pradesh: Too Much Money, No Workers? | ViralDNA"
+      },
+      "variant": {
+        "title": "Analysis: Andhra Pradesh: Too Much Money, No Workers? | ViralDNA"
+      },
+      "topic": "Most of the times during 2019-24 regime in Andhra when I heard in villages... \"Janalaki dabbulu ekkuva ayyipoyi panulaki kudaa rakunda pothunnaru okkokkadu roju ki 700 lenidhee paniki ravatledhu\"",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-28T07:05:06.582913",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260528_070506_25",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Andhra Pradesh: Too Much Money, No Workers? | ViralDNA"
+      },
+      "variant": {
+        "title": "Andhra Pradesh: Too Much Money, No Workers? | ViralDNA \u2014 Full Analysis"
+      },
+      "topic": "Most of the times during 2019-24 regime in Andhra when I heard in villages... \"Janalaki dabbulu ekkuva ayyipoyi panulaki kudaa rakunda pothunnaru okkokkadu roju ki 700 lenidhee paniki ravatledhu\"",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-28T07:05:06.583551",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    }
+  ],
+  "stats": {
+    "total_created": 0,
+    "total_completed": 0
+  }
+}

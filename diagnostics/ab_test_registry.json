@@ -1,0 +1,1074 @@
+{
+  "version": "1.0",
+  "created_at": "2026-05-25T00:49:41.090607+05:30",
+  "active_tests": [
+    {
+      "test_id": "ab_title_20260525004941",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process - What This Means For Our Families | ViralDNA"
+      },
+      "variant_b": {
+        "title": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process - What This Means For Our Families | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T00:49:41.090656+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525005017",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Britain\u2019s anxious young adults struggle with modern workplace demands, warns UK govt advisor",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "Britain\u2019s anxious young adults struggle with modern workplace demands, warns UK govt advisor - What This Means For Our Families | ViralDNA"
+      },
+      "variant_b": {
+        "title": "Britain\u2019s anxious young adults struggle with modern workplace demands, warns UK govt advisor - What This Means For Our Families | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T00:50:17.558491+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525005045",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India - What This Means For Our Families | ViralDNA"
+      },
+      "variant_b": {
+        "title": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India - What This Means For Our Families | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T00:50:45.737675+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525005122",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Trump immigration policies reshape Indian weddings in United States - Hyderabad Mail",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "URGENT UPDATE: Trump immigration policies reshape Indian weddings in United States - Hyderabad Mail | Telugu News | ViralDNA"
+      },
+      "variant_b": {
+        "title": "URGENT UPDATE: Trump immigration policies reshape Indian weddings in United States - Hyderabad Mail | Telugu News | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T00:51:22.130714+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525005151",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Andhra Government On \"High Alert\" Over Ebola Virus, Initiates Screening At Airports - NDTV",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "Andhra Government On \"High Alert\" Over Ebola Virus, Initiates Screening At Airports - NDTV - What This Means For Our Families | ViralDNA"
+      },
+      "variant_b": {
+        "title": "Andhra Government On \"High Alert\" Over Ebola Virus, Initiates Screening At Airports - NDTV - What This Means For Our Families | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T00:51:51.830332+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525010214",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "US Immigration: What You Need to Know"
+      },
+      "variant_b": {
+        "title": "US Immigration: What You Need to Know"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T01:02:14.673219+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525010214",
+      "type": "title",
+      "hypothesis": "CTR title test variant 1",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_1",
+      "variant_a": {
+        "title": "US Immigration: What You Need to Know"
+      },
+      "variant_b": {
+        "title": "Critical Update: US Immigration: What You Need to Know"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T01:02:14.673435+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525010214",
+      "type": "title",
+      "hypothesis": "CTR title test variant 2",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_2",
+      "variant_a": {
+        "title": "US Immigration: What You Need to Know"
+      },
+      "variant_b": {
+        "title": "Is US Immigration: What You Need to Know Good News for NRIs?"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T01:02:14.674054+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525010214",
+      "type": "title",
+      "hypothesis": "CTR title test variant 3",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_3",
+      "variant_a": {
+        "title": "US Immigration: What You Need to Know"
+      },
+      "variant_b": {
+        "title": "Breaking: US Immigration: What You Need to Know"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T01:02:14.674629+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525021605",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "USCIS Relief for H1-B Visa Holders"
+      },
+      "variant_b": {
+        "title": "USCIS Relief for H1-B Visa Holders"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:16:05.399569+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525021605",
+      "type": "title",
+      "hypothesis": "CTR title test variant 1",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_1",
+      "variant_a": {
+        "title": "USCIS Relief for H1-B Visa Holders"
+      },
+      "variant_b": {
+        "title": "What They Don't Tell You About USCIS Relief for H1-B Visa Holders"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:16:05.399826+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525021605",
+      "type": "title",
+      "hypothesis": "CTR title test variant 2",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_2",
+      "variant_a": {
+        "title": "USCIS Relief for H1-B Visa Holders"
+      },
+      "variant_b": {
+        "title": "Critical Update: USCIS Relief for H1-B Visa Holders"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:16:05.400393+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525021605",
+      "type": "title",
+      "hypothesis": "CTR title test variant 3",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_3",
+      "variant_a": {
+        "title": "USCIS Relief for H1-B Visa Holders"
+      },
+      "variant_b": {
+        "title": "3 Things You Need to Know About USCIS Relief for H1-B Visa Holders"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:16:05.400838+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525021920",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "US Visa Restrictions Force Telugu NRIs to Find Match"
+      },
+      "variant_b": {
+        "title": "US Visa Restrictions Force Telugu NRIs to Find Match"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:19:20.872412+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525021920",
+      "type": "title",
+      "hypothesis": "CTR title test variant 1",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_1",
+      "variant_a": {
+        "title": "US Visa Restrictions Force Telugu NRIs to Find Match"
+      },
+      "variant_b": {
+        "title": "Critical Update: US Visa Restrictions Force Telugu NRIs to Find Match"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:19:20.872694+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525021920",
+      "type": "title",
+      "hypothesis": "CTR title test variant 2",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_2",
+      "variant_a": {
+        "title": "US Visa Restrictions Force Telugu NRIs to Find Match"
+      },
+      "variant_b": {
+        "title": "What They Don't Tell You About US Visa Restrictions Force Telugu NRIs to Find Match"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:19:20.873557+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525021920",
+      "type": "title",
+      "hypothesis": "CTR title test variant 3",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_3",
+      "variant_a": {
+        "title": "US Visa Restrictions Force Telugu NRIs to Find Match"
+      },
+      "variant_b": {
+        "title": "Breaking: US Visa Restrictions Force Telugu NRIs to Find Match"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:19:20.874338+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525022056",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Trump immigration policies reshape Indian weddings in United States - Hyderabad Mail",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "URGENT UPDATE: Trump immigration policies reshape Indian weddings in United States - Hyderabad Mail | Telugu News | ViralDNA"
+      },
+      "variant_b": {
+        "title": "URGENT UPDATE: Trump immigration policies reshape Indian weddings in United States - Hyderabad Mail | Telugu News | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:20:56.629323+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525022305",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Andhra Pradesh government activates Ebola surveillance, starts airport checks - India.Com",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "URGENT UPDATE: Andhra Pradesh government activates Ebola surveillance, starts airport checks - India.Com | Telugu News | ViralDNA"
+      },
+      "variant_b": {
+        "title": "URGENT UPDATE: Andhra Pradesh government activates Ebola surveillance, starts airport checks - India.Com | Telugu News | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:23:05.425608+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525022554",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Ebola alert declared in Andhra Pradesh - Telangana Today",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "Ebola Scare in Andhra Pradesh: How to Stay Safe?"
+      },
+      "variant_b": {
+        "title": "Ebola Scare in Andhra Pradesh: How to Stay Safe?"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:25:54.495046+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525022554",
+      "type": "title",
+      "hypothesis": "CTR title test variant 1",
+      "topic": "Ebola alert declared in Andhra Pradesh - Telangana Today",
+      "video_id": "title_test_unknown_1",
+      "variant_a": {
+        "title": "Ebola Scare in Andhra Pradesh: How to Stay Safe?"
+      },
+      "variant_b": {
+        "title": "Critical Update: Ebola Scare in Andhra Pradesh: How to Stay Safe"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:25:54.495367+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525022554",
+      "type": "title",
+      "hypothesis": "CTR title test variant 2",
+      "topic": "Ebola alert declared in Andhra Pradesh - Telangana Today",
+      "video_id": "title_test_unknown_2",
+      "variant_a": {
+        "title": "Ebola Scare in Andhra Pradesh: How to Stay Safe?"
+      },
+      "variant_b": {
+        "title": "Is Ebola Scare in Andhra Pradesh: How to Stay Safe Good News for NRIs?"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:25:54.496143+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525022554",
+      "type": "title",
+      "hypothesis": "CTR title test variant 3",
+      "topic": "Ebola alert declared in Andhra Pradesh - Telangana Today",
+      "video_id": "title_test_unknown_3",
+      "variant_a": {
+        "title": "Ebola Scare in Andhra Pradesh: How to Stay Safe?"
+      },
+      "variant_b": {
+        "title": "3 Things You Need to Know About Ebola Scare in Andhra Pradesh: How to Stay Safe"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T02:25:54.496956+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525030053",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "H1-B Reliefs: USCIS Lays Ground Rules for Select Visa Holders"
+      },
+      "variant_b": {
+        "title": "H1-B Reliefs: USCIS Lays Ground Rules for Select Visa Holders"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:00:53.196377+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525030053",
+      "type": "title",
+      "hypothesis": "CTR title test variant 1",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_1",
+      "variant_a": {
+        "title": "H1-B Reliefs: USCIS Lays Ground Rules for Select Visa Holders"
+      },
+      "variant_b": {
+        "title": "Critical Update: H1-B Reliefs: USCIS Lays Ground Rules for Select Visa Holders"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:00:53.196754+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525030053",
+      "type": "title",
+      "hypothesis": "CTR title test variant 2",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_2",
+      "variant_a": {
+        "title": "H1-B Reliefs: USCIS Lays Ground Rules for Select Visa Holders"
+      },
+      "variant_b": {
+        "title": "What They Don't Tell You About H1-B Reliefs: USCIS Lays Ground Rules for Select Visa Holders"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:00:53.197365+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525030053",
+      "type": "title",
+      "hypothesis": "CTR title test variant 3",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_3",
+      "variant_a": {
+        "title": "H1-B Reliefs: USCIS Lays Ground Rules for Select Visa Holders"
+      },
+      "variant_b": {
+        "title": "Breaking: H1-B Reliefs: USCIS Lays Ground Rules for Select Visa Holders"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:00:53.198164+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525030402",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "US Visa Restrictions Hit Telugu Families Hard"
+      },
+      "variant_b": {
+        "title": "US Visa Restrictions Hit Telugu Families Hard"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:04:02.423773+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525030402",
+      "type": "title",
+      "hypothesis": "CTR title test variant 1",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_1",
+      "variant_a": {
+        "title": "US Visa Restrictions Hit Telugu Families Hard"
+      },
+      "variant_b": {
+        "title": "What They Don't Tell You About US Visa Restrictions Hit Telugu Families Hard"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:04:02.424203+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525030402",
+      "type": "title",
+      "hypothesis": "CTR title test variant 2",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_2",
+      "variant_a": {
+        "title": "US Visa Restrictions Hit Telugu Families Hard"
+      },
+      "variant_b": {
+        "title": "Critical Update: US Visa Restrictions Hit Telugu Families Hard"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:04:02.424897+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525030402",
+      "type": "title",
+      "hypothesis": "CTR title test variant 3",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_3",
+      "variant_a": {
+        "title": "US Visa Restrictions Hit Telugu Families Hard"
+      },
+      "variant_b": {
+        "title": "Breaking: US Visa Restrictions Hit Telugu Families Hard"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:04:02.425452+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525031603",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process - What This Means For Our Families | ViralDNA"
+      },
+      "variant_b": {
+        "title": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process - What This Means For Our Families | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:16:03.515953+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525032241",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "Trump's Visa Restrictions Hit Telugu NRIs Hard"
+      },
+      "variant_b": {
+        "title": "Trump's Visa Restrictions Hit Telugu NRIs Hard"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:22:41.393313+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525032241",
+      "type": "title",
+      "hypothesis": "CTR title test variant 1",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_1",
+      "variant_a": {
+        "title": "Trump's Visa Restrictions Hit Telugu NRIs Hard"
+      },
+      "variant_b": {
+        "title": "Critical Update: Trump's Visa Restrictions Hit Telugu NRIs Hard"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:22:41.393810+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525032241",
+      "type": "title",
+      "hypothesis": "CTR title test variant 2",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_2",
+      "variant_a": {
+        "title": "Trump's Visa Restrictions Hit Telugu NRIs Hard"
+      },
+      "variant_b": {
+        "title": "What They Don't Tell You About Trump's Visa Restrictions Hit Telugu NRIs Hard"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:22:41.394422+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525032241",
+      "type": "title",
+      "hypothesis": "CTR title test variant 3",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_3",
+      "variant_a": {
+        "title": "Trump's Visa Restrictions Hit Telugu NRIs Hard"
+      },
+      "variant_b": {
+        "title": "Breaking: Trump's Visa Restrictions Hit Telugu NRIs Hard"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:22:41.395024+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525033224",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process - What This Means For Our Families | ViralDNA"
+      },
+      "variant_b": {
+        "title": "H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process - What This Means For Our Families | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:32:24.149679+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525033525",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India - What This Means For Our Families | ViralDNA"
+      },
+      "variant_b": {
+        "title": "Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India - What This Means For Our Families | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:35:25.132645+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525033817",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Andhra Pradesh government activates Ebola surveillance, starts airport checks - India.Com",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "URGENT UPDATE: Andhra Pradesh government activates Ebola surveillance, starts airport checks - India.Com | Telugu News | ViralDNA"
+      },
+      "variant_b": {
+        "title": "URGENT UPDATE: Andhra Pradesh government activates Ebola surveillance, starts airport checks - India.Com | Telugu News | ViralDNA"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:38:17.183884+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525034109",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "Ebola alert declared in Andhra Pradesh - Telangana Today",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "BREAKING: Ebola alert declared in Andhra Pradesh - Telangana Today | ViralDNA News | Telugu News"
+      },
+      "variant_b": {
+        "title": "BREAKING: Ebola alert declared in Andhra Pradesh - Telangana Today | ViralDNA News | Telugu News"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T03:41:09.185662+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525090328",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "International BSN Student looking for h1b sponsor in USA.",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "Ramesh's Path to America: H1B Visa for BSN Students"
+      },
+      "variant_b": {
+        "title": "Ramesh's Path to America: H1B Visa for BSN Students"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T09:03:28.566750+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525090328",
+      "type": "title",
+      "hypothesis": "CTR title test variant 1",
+      "topic": "International BSN Student looking for h1b sponsor in USA.",
+      "video_id": "title_test_unknown_1",
+      "variant_a": {
+        "title": "Ramesh's Path to America: H1B Visa for BSN Students"
+      },
+      "variant_b": {
+        "title": "What They Don't Tell You About Ramesh's Path to America: H1B Visa for BSN Students"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T09:03:28.569288+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525090328",
+      "type": "title",
+      "hypothesis": "CTR title test variant 2",
+      "topic": "International BSN Student looking for h1b sponsor in USA.",
+      "video_id": "title_test_unknown_2",
+      "variant_a": {
+        "title": "Ramesh's Path to America: H1B Visa for BSN Students"
+      },
+      "variant_b": {
+        "title": "Critical Update: Ramesh's Path to America: H1B Visa for BSN Students"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T09:03:28.571482+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525090328",
+      "type": "title",
+      "hypothesis": "CTR title test variant 3",
+      "topic": "International BSN Student looking for h1b sponsor in USA.",
+      "video_id": "title_test_unknown_3",
+      "variant_a": {
+        "title": "Ramesh's Path to America: H1B Visa for BSN Students"
+      },
+      "variant_b": {
+        "title": "Breaking: Ramesh's Path to America: H1B Visa for BSN Students"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T09:03:28.574587+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525163231",
+      "type": "title",
+      "hypothesis": "CTR title test variant 0",
+      "topic": "I have an O1 visa. Do I still need an ESTA for a holiday in the USA?",
+      "video_id": "title_test_unknown_0",
+      "variant_a": {
+        "title": "Do I need an ESTA with an O1 visa? The Truth Revealed!"
+      },
+      "variant_b": {
+        "title": "Do I need an ESTA with an O1 visa? The Truth Revealed!"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T16:32:31.572918+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525163231",
+      "type": "title",
+      "hypothesis": "CTR title test variant 1",
+      "topic": "I have an O1 visa. Do I still need an ESTA for a holiday in the USA?",
+      "video_id": "title_test_unknown_1",
+      "variant_a": {
+        "title": "Do I need an ESTA with an O1 visa? The Truth Revealed!"
+      },
+      "variant_b": {
+        "title": "Critical Update: Do I need an ESTA with an O1 visa? The Truth Revealed!"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T16:32:31.574293+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525163231",
+      "type": "title",
+      "hypothesis": "CTR title test variant 2",
+      "topic": "I have an O1 visa. Do I still need an ESTA for a holiday in the USA?",
+      "video_id": "title_test_unknown_2",
+      "variant_a": {
+        "title": "Do I need an ESTA with an O1 visa? The Truth Revealed!"
+      },
+      "variant_b": {
+        "title": "Breaking: Do I need an ESTA with an O1 visa? The Truth Revealed!"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T16:32:31.575375+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    },
+    {
+      "test_id": "ab_title_20260525163231",
+      "type": "title",
+      "hypothesis": "CTR title test variant 3",
+      "topic": "I have an O1 visa. Do I still need an ESTA for a holiday in the USA?",
+      "video_id": "title_test_unknown_3",
+      "variant_a": {
+        "title": "Do I need an ESTA with an O1 visa? The Truth Revealed!"
+      },
+      "variant_b": {
+        "title": "Is Do I need an ESTA with an O1 visa? The Truth Revealed! Good News for NRIs?"
+      },
+      "status": "draft",
+      "created_at": "2026-05-25T16:32:31.576314+05:30",
+      "started_at": null,
+      "completed_at": null,
+      "winner": null,
+      "metrics_a": null,
+      "metrics_b": null,
+      "significance": null,
+      "conclusion": null
+    }
+  ],
+  "completed_tests": [],
+  "knowledge_base": {
+    "winning_title_patterns": [],
+    "winning_thumbnail_patterns": [],
+    "optimal_upload_times": [],
+    "best_content_formats": []
+  },
+  "stats": {
+    "total_tests": 48,
+    "completed_tests": 0,
+    "win_rate": 0
+  }
+}

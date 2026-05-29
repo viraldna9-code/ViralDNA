@@ -1,0 +1,50 @@
+{
+  "partners": [
+    {
+      "name": "Telugu Tech Hub",
+      "platform": "youtube",
+      "subscribers": "50K-200K",
+      "category": "technology",
+      "collab_type": "cross-promo",
+      "status": "identified",
+      "notes": "Tech-focused Telugu channel. Good for tech news collabs."
+    },
+    {
+      "name": "NRI Life Stories",
+      "platform": "youtube",
+      "subscribers": "10K-50K",
+      "category": "lifestyle",
+      "collab_type": "interview",
+      "status": "identified",
+      "notes": "Diaspora lifestyle content. Perfect for NRI-focused stories."
+    },
+    {
+      "name": "Telugu Cinema Today",
+      "platform": "youtube",
+      "subscribers": "100K+",
+      "category": "entertainment",
+      "collab_type": "reaction",
+      "status": "identified",
+      "notes": "Entertainment news. Good for film industry news collabs."
+    },
+    {
+      "name": "Andhra Politics Watch",
+      "platform": "youtube",
+      "subscribers": "20K-80K",
+      "category": "politics",
+      "collab_type": "debate",
+      "status": "identified",
+      "notes": "Political analysis. Good for election coverage collabs."
+    },
+    {
+      "name": "Telugu Food Trails",
+      "platform": "instagram",
+      "subscribers": "15K-40K",
+      "category": "lifestyle",
+      "collab_type": "cross-promo",
+      "status": "identified",
+      "notes": "Food/travel content. Good for cultural stories."
+    }
+  ],
+  "outreach_sent": []
+}

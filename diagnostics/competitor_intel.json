@@ -1,0 +1,73 @@
+{
+  "version": "1.0",
+  "created_at": "2026-05-24T23:41:07.778900+05:30",
+  "competitors": {
+    "telugu_news_us": {
+      "name": "Telugu News US",
+      "channel_id": "",
+      "focus": "General Telugu news for US audience",
+      "content_types": [
+        "news_breaking",
+        "community_events",
+        "interviews"
+      ],
+      "estimated_subs": "unknown",
+      "threat_level": "HIGH",
+      "overlap": "Direct competitor for NRI news audience"
+    },
+    "nri_connect": {
+      "name": "NRI Connect",
+      "channel_id": "",
+      "focus": "Immigration and visa guidance",
+      "content_types": [
+        "visa_guides",
+        "interviews",
+        "documentaries"
+      ],
+      "estimated_subs": "unknown",
+      "threat_level": "MEDIUM",
+      "overlap": "Targets same NRI visa audience"
+    },
+    "telugu_culture_us": {
+      "name": "Telugu Culture US",
+      "channel_id": "",
+      "focus": "Telugu cultural events and entertainment in US",
+      "content_types": [
+        "event_coverage",
+        "festival",
+        "cooking"
+      ],
+      "estimated_subs": "unknown",
+      "threat_level": "LOW",
+      "overlap": "Cultural overlap, not direct news competitor"
+    },
+    "immigration_telugu": {
+      "name": "Immigration Telugu",
+      "channel_id": "",
+      "focus": "Step-by-step immigration processes",
+      "content_types": [
+        "tutorials",
+        "news",
+        "q_and_a"
+      ],
+      "estimated_subs": "unknown",
+      "threat_level": "HIGH",
+      "overlap": "Direct competitor for visa/immigration content"
+    }
+  },
+  "content_gaps_identified": [
+    "Daily H1B visa bulletin updates",
+    "Neighborhood-specific NRI community guides",
+    "Telugu language preservation for US-born kids",
+    "NRI tax filing guides (specific to visa type)",
+    "Career switching advice for H1B holders",
+    "Telugu business owners in US success stories",
+    "Student visa (F1) to H1B transition guides",
+    "Green card backlog analysis and timeline predictions",
+    "Telugu entertainment industry news (Tollywood + US)",
+    "US election impact on immigration policy"
+  ],
+  "trending_topics": [],
+  "opportunities": [],
+  "tracked_videos": []
+}

@@ -1,14 +1,17 @@
 # Credentials and secrets
 credentials/
-*.json
-!README.md
-!.gitignore
-
-# Secrets / env
 .env
 *.env
 
-# Generated videos (too large for git)
+# Large model files (never push to git)
+assets/rmvpe/
+*.pt
+*.pth
+*.bin
+*.gguf
+*.safetensors
+
+# Generated videos
 videos/
 *.mp4
 *.mp3
@@ -16,26 +19,18 @@ videos/
 *.mkv
 *.webm
 
-# Audio assets (large files)
+# Audio assets (large files — keep scripts only)
 audio/*.mp3
 audio/*.wav
 !audio/*.py
 !audio/*.sh
 
-# Generated images (can be rebuilt)
+# Generated images
 thumbnails/
 assets/frames/
-assets/logos/*.png
-assets/logos/*.jpg
-!assets/logos/.gitkeep
-
-# Render intermediates
 render_*/
-temp/
-tmp/
-*.ass
 
-# Monitor state (saved as artifact, not in git)
+# Monitor state
 monitor_state.json
 logs/
 monitor_log.txt
