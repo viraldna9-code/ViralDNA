@@ -35,8 +35,38 @@ VIRAL_KEYWORDS = {
     "dead": 5, "death": 4, "murder": 5, "scam": 4, "fraud": 4,
     "arrest": 4, "rape": 5, "suicide": 4, "accident": 3,
     "bomb": 5, "terror": 5, "war": 4, "protest": 3, "riot": 4,
-    "corruption": 3, "scandal": 4, "viral": 3, "shocking": 4,
+    "corruption": 3, "scandal": 4, "viral": 3,
 }
+
+# Celebrity/political names that drive engagement (Telugu audience)
+BIG_NAMES = [
+    "pawan kalyan", "kalyan", "ntr", "jr ntr", "balakrishna",
+    "mahesh babu", "prabhas", "allu arjun", "ram charan",
+    "chiranjeevi", "nagarjuna", "venkatesh", "ravi teja",
+    "jagan", "chandrababu", "nara", "kcr", "revanth",
+    "cm revanth", "bmpi", "tdp", "ysrcp", "tollywood",
+    "devara", "salaar", "pushpa", "rrr", "bahubali",
+    "anirudh", "koratala", "ss rajamouli", "trivikram",
+    "diven", "vijay sethupathi", "suriya", "ajith",
+    "modi", "rahum", "gandhi", "sonia",
+]
+
+# India national news that affects Telugu people
+INDIA_RELEVANT = [
+    "petrol", "diesel", "fuel", "price", "inflation", "tax", "gst", "income tax",
+    "exam", "result", "ssc", "upsc", "neet", "jee", "gate", "cat",
+    "job", "recruitment", "vacancy", "railway", "bank", "government job",
+    "visa", "passport", "immigration", "h1b", "us visa", "green card",
+    "gold", "silver", "sensex", "nifty", "stock", "market",
+    "budget", "rbi", "interest rate", "loan", "emi",
+    "weather", "cyclone", "flood", "rain", "drought", "heat wave",
+    "cricket", "ipl", "world cup", "match", "cric",
+    "hospital", "health", "covid", "vaccine", "medicine",
+    "farmers", "crop", "mandi", "fertilizer", "pension",
+    "bank holiday", "strike", "bandh", "bundh",
+    "bjp", "congress", "aap", "election", "vote", "poll",
+    "supreme court", "high court", "judge", "verdict",
+]
 
 # AP/Telangana relevance
 AP_TE_TERMS = [
@@ -64,39 +94,63 @@ CHANNEL_GROWTH_TOPICS = [
 
 
 def score_editorial(title, source_topics):
-    """Score a topic for channel growth potential (0-30)."""
+    """Score a topic for channel growth potential (0-30).
+    
+    New scoring: ANY India news is relevant to Telugu people.
+    Celebrity/political names get highest scores.
+    """
     t = title.lower()
     score = 0
     breakdown = []
 
-    # 1. AP/Telangana direct relevance (+10)
-    if any(term in t for term in AP_TE_TERMS):
+    # 1. Big names bonus — celebrity/political (+10)
+    name_matches = [n for n in BIG_NAMES if n in t]
+    if name_matches:
         score += 10
-        breakdown.append("DIRECT AP/TELANGANA +10")
+        breakdown.append("BIG_NAME +10 (" + name_matches[0] + ")")
 
-    # 2. Channel growth topic (+6)
-    if any(term in t for term in CHANNEL_GROWTH_TOPICS):
+    # 2. AP/Telangana direct relevance (+6) — bonus on top of name
+    if any(term in t for term in AP_TE_TERMS):
         score += 6
-        breakdown.append("ChannelGrowth +6")
+        breakdown.append("AP/TS +6")
 
-    # 3. Viral keyword bonus (max +6)
+    # 3. India national relevance — affects Telugu people (+4)
+    india_matches = [n for n in INDIA_RELEVANT if n in t]
+    if india_matches:
+        score += 4
+        breakdown.append("IndiaRel +4 (" + india_matches[0] + ")")
+
+    # 4. Channel growth topics (+3) — festivals, immigration, etc.
+    if any(term in t for term in CHANNEL_GROWTH_TOPICS):
+        score += 3
+        breakdown.append("ChannelGrowth +3")
+
+    # 5. Viral keyword bonus (max +5)
     kw_score = 0
     for kw, pts in VIRAL_KEYWORDS.items():
         if kw in t:
             kw_score += pts
     if kw_score > 0:
-        kw_score = min(kw_score, 6)
+        kw_score = min(kw_score, 5)
         score += kw_score
-        breakdown.append(f"ViralKW +{kw_score}")
+        breakdown.append("ViralKW +" + str(kw_score))
 
-    # 4. Cross-source bonus (max +4)
-    src_count = sum(1 for topics in source_topics.values() if title in topics)
+    # 6. Cross-source bonus (max +4)
+    src_count = sum(1 for topics in source_topics.values() if any(
+        title.lower() == tl.lower() or title.lower() in tl.lower() or tl.lower() in title.lower()
+        for tl in topics
+    ))
     if src_count >= 3:
         score += 4
         breakdown.append("CrossSrc(3+) +4")
     elif src_count >= 2:
         score += 2
         breakdown.append("CrossSrc(2) +2")
+
+    # 7. Title length sweet spot (+2) — 40-80 chars = good headline
+    if 40 <= len(title) <= 80:
+        score += 2
+        breakdown.append("TitleLen +2")
 
     return min(score, 30), breakdown
 
@@ -105,10 +159,14 @@ def poll_rss():
     """Poll RSS feeds for trending topics."""
     feeds = [
         ("The Hindu", "https://www.thehindu.com/news/national/?service=rss"),
+        ("The Hindu AP/TS", "https://www.thehindu.com/news/cities/Hyderabad/?service=rss"),
         ("TOI", "https://timesofindia.indiatimes.com/rssfeedstopstories.cms"),
-        ("Google News", "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en"),
+        ("Google News IN", "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en"),
+        ("Google News Telugu", "https://news.google.com/rss/search?q=telugu+news&hl=te&gl=IN&ceid=IN:te"),
         ("NDTV", "https://feeds.feedburner.com/ndtvnews-top-stories"),
         ("Indian Express", "https://indianexpress.com/feed/"),
+        ("Sakshi", "https://www.sakshi.com/rss/feed"),
+        ("Eenadu", "https://www.eenadu.net/rss/feed"),
     ]
     topics = []
     for name, url in feeds:
@@ -258,30 +316,27 @@ def main():
             print(f"\n  Cooldown active: {elapsed:.1f}h since last alert (need 3h)")
 
     # ── Find best topic ──
-    produce_topics = [t for t in scored if t["score"] >= 18]
-    consider_topics = [t for t in scored if 14 <= t["score"] < 18]
+    produce_topics = [t for t in scored if t["score"] >= 10]
+    consider_topics = [t for t in scored if 7 <= t["score"] < 10]
 
-    print(f"\nPRODUCE topics (>=18): {len(produce_topics)}")
-    print(f"CONSIDER topics (14-17): {len(consider_topics)}")
+    print("\nPRODUCE topics (>=10): " + str(len(produce_topics)))
+    print("CONSIDER topics (7-9): " + str(len(consider_topics)))
 
     # Show top 5
     print("\nScore | Topic")
     print("-" * 60)
     for t in scored[:5]:
-        marker = "🟢" if t["score"] >= 18 else ("🟡" if t["score"] >= 14 else "🔴")
-        print(f"  {marker} [{t['score']:2d}] {t['title'][:60]}")
+        marker = "PRODUCE" if t["score"] >= 10 else ("CONSIDER" if t["score"] >= 7 else "low")
+        print("  [" + marker + "] [" + str(t['score']).zfill(2) + "] " + t['title'][:60])
 
-    # ── Alert logic ──
+    # Alert logic
     alert_topic = None
     if produce_topics and cooldown_passed:
         alert_topic = produce_topics[0]
-        print(f"\n🟢 PRODUCE: {alert_topic['title'][:70]}")
+        print("\nPRODUCE: " + alert_topic['title'][:70])
     elif consider_topics and cooldown_passed:
-        # Only alert on CONSIDER if it's AP/Telangana specific
-        ap_topics = [t for t in consider_topics if any(term in t["title"].lower() for term in AP_TE_TERMS)]
-        if ap_topics:
-            alert_topic = ap_topics[0]
-            print(f"\n🟡 CONSIDER: {alert_topic['title'][:70]}")
+        alert_topic = consider_topics[0]
+        print("\nCONSIDER: " + alert_topic['title'][:70])
 
     if alert_topic:
         score = alert_topic["score"]
@@ -289,7 +344,7 @@ def main():
         source = alert_topic["source"]
         breakdown = " | ".join(alert_topic.get("breakdown", []))
 
-        rec = "🟢 PRODUCE — Open laptop and tell Hermes: build" if score >= 18 else "🟡 CONSIDER — AP/Telangana relevant"
+        rec = "PRODUCE — Open laptop and tell Hermes: build" if score >= 10 else "CONSIDER — worth covering"
 
         alert_text = (
             f"🎬 <b>ViralDNA — Topic Alert</b>\n"

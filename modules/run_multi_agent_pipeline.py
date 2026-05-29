@@ -2175,12 +2175,21 @@ class MultiAgentOrchestrator:
 
         # ── MAIN PIPELINE: Discovery (Phase 1) ──
         print("━"*40 + " MAIN PIPELINE " + "━"*40)
-        self._run_agent_with_learning(self.task_agents[0])  # Discovery
-        self._run_integration_gate(0)                        # Discovery→Weighting
 
-        # ── MAIN PIPELINE: Weighting (Phase 2) ──
-        self._run_agent_with_learning(self.task_agents[1])  # Weighting
-        self._run_integration_gate(1)                        # Weighting→Scripting
+        injected_topic = self.state.get("injected_topic")
+        if injected_topic:
+            # Skip discovery/weighting — use pre-selected topic from monitor
+            print(f"  📋 Using injected topic (skipping discovery/weighting): '{injected_topic.get('title', 'Unknown')}'")
+            self.state["sorted_topics"] = [injected_topic]
+            self.state["selected_topic"] = injected_topic
+        else:
+            # Normal flow: discover and weight topics
+            self._run_agent_with_learning(self.task_agents[0])  # Discovery
+            self._run_integration_gate(0)                        # Discovery→Weighting
+
+            # ── MAIN PIPELINE: Weighting (Phase 2) ──
+            self._run_agent_with_learning(self.task_agents[1])  # Weighting
+            self._run_integration_gate(1)                        # Weighting→Scripting
 
         # ── MAIN PIPELINE: Topic retry loop (Phases 3+) ──
         sorted_topics = self.state.get("sorted_topics", [])
