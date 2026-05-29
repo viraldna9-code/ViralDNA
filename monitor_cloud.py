@@ -299,11 +299,37 @@ def main():
 
     scored.sort(key=lambda x: x["score"], reverse=True)
 
-    # ── Assign VDNA topic IDs ──
-    # ID format: VDNA001, VDNA002 ... (sequential by score rank)
+    # ── Assign persistent VDNA topic IDs ──
+    # Load existing topics to preserve IDs
+    existing_topics = load_topics_history()
+    existing_map = {}
+    for t in existing_topics.get("topics", []):
+        if "id" in t:
+            # Map by normalized title for matching
+            key = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t.get("title","").lower().strip(), flags=re.IGNORECASE).strip()
+            existing_map[key] = t["id"]
+
+    # Find next available ID number
+    max_id_num = 0
+    for t in existing_topics.get("topics", []):
+        tid = t.get("id","")
+        if tid.startswith("VDNA"):
+            try:
+                num = int(tid[4:])
+                if num > max_id_num:
+                    max_id_num = num
+            except ValueError:
+                pass
+
+    # Assign IDs: reuse existing for same topic, new ID for new topics
     date_prefix = now.strftime("%Y%m%d")
-    for i, t in enumerate(scored, 1):
-        t["id"] = f"VDNA{i:03d}"
+    for t in scored:
+        key = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+        if key in existing_map:
+            t["id"] = existing_map[key]
+        else:
+            max_id_num += 1
+            t["id"] = f"VDNA{max_id_num:03d}"
         t["date"] = date_prefix
 
     # ── Load history, check cooldown ──
@@ -376,16 +402,35 @@ def main():
 
         if sent:
             history["last_alert"] = now.isoformat()
-            # Keep last 50 topics
-            history["topics"] = scored[:50]
-            save_topics_history(history)
-    else:
-        print("\nNo alert sent (cooldown or no good topics)")
 
-    # Always save topics for reference
-    history["topics"] = scored[:50]
+    # ── Merge topics into history (persistent) ──
+    # Build map of existing topics by normalized title
+    existing_map = {}
+    for t in existing_topics.get("topics", []):
+        if "id" in t and t.get("title"):
+            k = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+            existing_map[k] = t
+
+    # Merge: update existing scores, add new topics
+    for t in scored:
+        k = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+        if k in existing_map:
+            existing_map[k]["score"] = t["score"]
+            existing_map[k]["date"] = t.get("date", "")
+            existing_map[k]["breakdown"] = t.get("breakdown", [])
+            if "id" in t:
+                existing_map[k]["id"] = t["id"]
+        else:
+            existing_map[k] = t
+
+    # Sort by score, keep top 50
+    all_topics = sorted(existing_map.values(), key=lambda x: x.get("score", 0), reverse=True)[:50]
+    history["topics"] = all_topics
     history["last_run"] = now.isoformat()
     save_topics_history(history)
+
+    if not alert_topic:
+        print("\nNo alert sent (cooldown or no good topics)")
 
     print(f"\nDone. Next run in 30 min.")
 
