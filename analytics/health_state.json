@@ -1,0 +1,16 @@
+{
+  "checks": [
+    {
+      "timestamp": "2026-05-29T13:22:09.353817+05:30",
+      "total_views": 1465,
+      "subscribers": 1,
+      "video_count": 3,
+      "shorts_count": 2,
+      "issues_count": 8,
+      "critical_count": 2
+    }
+  ],
+  "issues": [],
+  "last_check": "2026-05-29T13:22:09.353817+05:30",
+  "video_count_at_last": 3
+}
