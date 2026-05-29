@@ -1,0 +1,1223 @@
+# VERSION: 1.8
+# MODULE: youtube_uploader.py
+# PURPOSE: Config-Driven & Modular YouTube Video Uploader
+#          v1.8: YouTube upload dedup — _get_existing_video_titles() +
+#                  _is_duplicate_title() using Jaccard similarity.
+#                  upload_production_slot() checks dedup before each upload.
+#                  Skips upload if title similarity >= 0.75 to any existing video.
+#                  related video links (A2.8), Shorts-to-long CTA (C2.2/C2.3),
+#                  topic-based playlist routing (H2.3), subscribe CTA in pinned comments (D4.4),
+#                  comment reply timing optimization (D1.3)
+#          v1.6: Respect publish_decision.produce_main flag (don't upload stale main),
+#                pass publish_decision from pipeline, log upload plan
+#          v1.5: A/B testing approach (best title only, no duplicate uploads),
+#                per-variant thumbnails for Studio A/B testing
+#
+# VERSION HISTORY:
+#   v1.0 — Initial uploader
+#   v1.1 — Config-driven
+#   v1.2 — Scheduled publish, altered content disclosure
+#   v1.3 — Rich pinned comments, relative buffer scheduling
+#   v1.4 — Multi-variant uploads, shorts thumbnail frame injection,
+#          subtitles/captions upload, end screens, cards, playlist fixes
+#   v1.5 — A/B testing: upload best title only (no spam), per-variant thumbnails
+
+import os, json, time, re, subprocess, tempfile
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaFileUpload
+import importlib
+
+import config
+
+
+class YouTubeUploader:
+    def __init__(self, youtube_service, config_instance: dict):
+        self.service = youtube_service
+        self.global_config = config_instance
+        self.upload_config = self.global_config.YOUTUBE_UPLOAD_CONFIG
+        self.api_config = self.global_config.YOUTUBE_API_CONFIG
+
+        self.credentials_dir = config.DRIVE["CREDENTIALS"]
+
+        # Load configs with defaults
+        self.privacy_status = self.upload_config.get("privacy_status", "private")
+        self.category_id = self.upload_config.get("category_id", "25")
+        self.default_language = self.upload_config.get("default_language", "en")
+        self.schedule_premiere = self.upload_config.get("schedule_premiere", True)
+        self.main_publish_delay_minutes = self.upload_config.get("main_publish_delay_minutes", 60)
+        self.shorts_publish_gap_minutes = self.upload_config.get("shorts_publish_gap_minutes", 30)
+        self.title_max_length = self.upload_config.get("title_max_length", 100)
+        self.description_max_length = self.upload_config.get("description_max_length", 5000)
+        self.tags_max_length = self.upload_config.get("tags_max_length", 500)
+        self.self_declared_made_for_kids = self.upload_config.get("self_declared_made_for_kids", False)
+        self.set_to_public_on_premiere = self.upload_config.get("set_to_public_on_premiere", True)
+        self.shorts_tag = self.upload_config.get("shorts_tag", "Shorts")
+        self.video_mimetype = self.upload_config.get("video_mimetype", "video/mp4")
+        self.thumbnail_mimetype = self.upload_config.get("thumbnail_mimetype", "image/jpeg")
+        self.upload_chunk_size = self.upload_config.get("upload_chunk_size", 10 * 1024 * 1024)
+        self.upload_max_retries = self.upload_config.get("upload_max_retries", 3)
+        self.upload_retry_delay = self.upload_config.get("upload_retry_delay", 5)
+        self.retryable_http_status_codes = self.upload_config.get("retryable_http_status_codes", [500, 502, 503, 504])
+        self.upload_delay_seconds = self.upload_config.get("upload_delay_seconds", 10)
+
+        # Playlist IDs
+        self.main_playlist_id = self.upload_config.get("main_playlist_id", "")
+        self.shorts_playlist_id = self.upload_config.get("shorts_playlist_id", "")
+        self.main_playlist_url = self.upload_config.get("main_playlist_url", "")
+        self.shorts_playlist_url = self.upload_config.get("shorts_playlist_url", "")
+
+        # Subtitles
+        self.subtitles_enabled = self.upload_config.get("subtitles_enabled", True)
+        self.subtitles_language = self.upload_config.get("subtitles_language", "en")
+
+        # ── v50.4: Growth-critical defaults ──
+        self.embeddable = self.upload_config.get("embeddable", True)
+        self.public_stats_viewable = self.upload_config.get("public_stats_viewable", True)
+        self.license_type = self.upload_config.get("license", "youtube")
+        self.live_broadcast_content = self.upload_config.get("live_broadcast_content", "none")
+        self.notify_subscribers = self.upload_config.get("notify_subscribers", True)
+
+        # End screen & cards
+        self.end_screen_enabled = self.upload_config.get("end_screen_enabled", True)
+        self.end_screen_video_id = self.upload_config.get("end_screen_video_id", "")  # "best for viewer" if empty
+        self.end_screen_playlist_id = self.upload_config.get("end_screen_playlist_id", "")
+        self.card_video_id = self.upload_config.get("card_video_id", "")
+        self.card_playlist_id = self.upload_config.get("card_playlist_id", "")
+
+        self.ist = ZoneInfo("Asia/Kolkata")
+        self.utc = ZoneInfo("UTC")
+
+    # ─── Channel Info ───
+    def _get_channel_info(self) -> dict:
+        try:
+            response = self.service.channels().list(part="id,snippet", mine=True).execute()
+            items = response.get("items", [])
+            return items[0] if items else {}
+        except HttpError as e:
+            print(f"  ❌ Failed to fetch channel info: {e}")
+            return {}
+
+    # ─── Upload Dedup: Fetch Existing Video Titles ───
+    def _get_existing_video_titles(self, max_results: int = 50) -> list:
+        """
+        Fetch titles of recently uploaded videos on the channel.
+        Used for dedup: skip upload if title is too similar to existing.
+        Returns list of dicts: [{"title": "...", "video_id": "..."}]
+        """
+        try:
+            # Get channel ID first
+            channel_resp = self.service.channels().list(part="id", mine=True).execute()
+            channel_id = channel_resp.get("items", [{}])[0].get("id", "")
+            if not channel_id:
+                return []
+
+            # Search for videos on this channel, ordered by date (most recent first)
+            search_resp = self.service.search().list(
+                part="snippet",
+                channelId=channel_id,
+                type="video",
+                order="date",
+                maxResults=max_results
+            ).execute()
+
+            existing = []
+            for item in search_resp.get("items", []):
+                vid = item.get("id", {}).get("videoId", "")
+                title = item.get("snippet", {}).get("title", "")
+                if vid and title:
+                    existing.append({"title": title, "video_id": vid})
+            return existing
+        except HttpError as e:
+            print(f"  ⚠️ Could not fetch existing videos for dedup: {e}")
+            return []
+
+    # ─── Upload Dedup: Title Similarity Check ───
+    def _is_duplicate_title(self, new_title: str, existing_videos: list,
+                            threshold: float = 0.75) -> tuple:
+        """
+        Check if new_title is too similar to any existing video title.
+        Uses word-overlap Jaccard similarity.
+        Returns (is_duplicate: bool, matched_title: str or None)
+        """
+        if not existing_videos or not new_title:
+            return False, None
+
+        new_words = set(new_title.lower().split())
+        if not new_words:
+            return False, None
+
+        for video in existing_videos:
+            existing_title = video.get("title", "")
+            existing_words = set(existing_title.lower().split())
+            if not existing_words:
+                continue
+
+            # Jaccard similarity: intersection / union
+            intersection = new_words & existing_words
+            union = new_words | existing_words
+            similarity = len(intersection) / len(union) if union else 0
+
+            if similarity >= threshold:
+                return True, existing_title
+
+        return False, None
+
+    # ─── Scheduled Publish Time ───
+    def _get_scheduled_publish_time(self, is_short: bool = False, short_index: int = 0) -> str:
+        now_utc = datetime.now(self.utc)
+        main_delay = timedelta(minutes=self.main_publish_delay_minutes)
+        gap = timedelta(minutes=self.shorts_publish_gap_minutes)
+        if is_short:
+            target_utc = now_utc + main_delay + (gap * short_index)
+        else:
+            target_utc = now_utc + main_delay
+        return target_utc.isoformat().replace("+00:00", "Z")
+
+    # ─── Metadata Builder ───
+    def _create_metadata(self, title_raw: str, desc_raw: str, rag_context: str,
+                         topic: dict = None, is_short: bool = False,
+                         short_index: int = 0, variant_idx: int = 0) -> dict:
+        topic = topic or {}
+
+        # Title — no variant suffix (only best variant uploaded)
+        if is_short:
+            title = f"{title_raw} #{self.shorts_tag}"
+        else:
+            title = title_raw
+        if len(title) > self.title_max_length:
+            title = title[:self.title_max_length - 3] + "..."
+
+        # ── A2.6: SEO keyword injection ──
+        # Inject high-value topic keywords into description for YouTube search discovery
+        seo_keywords = self._extract_seo_keywords(topic, title_raw, desc_raw)
+        seo_keyword_line = ""
+        if seo_keywords:
+            seo_keyword_line = f"🔑 TOPICS: {', '.join(seo_keywords[:8])}"
+
+        sources_str = topic.get("source", "ViralDNA Internal Desk")
+        if re.match(r"^https?://", sources_str):
+            sources_str = "Verified Regional News Feeds"
+
+        # ── A2.8: Related links section ──
+        related_links = self._build_related_links(topic)
+
+        # ── A2.9: Snippet-optimized description opening ──
+        # YouTube shows ~142 chars in search snippet. First 150 chars must
+        # contain the most searchable keywords for ranking benefit.
+        snippet_prefix = self._build_snippet_prefix(title_raw, desc_raw, seo_keyword_line)
+
+        # Build rich description with channel identity + SEO
+        description_lines = [
+            snippet_prefix,
+            f"",
+            f"🔥 {title_raw}",
+            f"",
+            f"📰 SUMMARY:",
+            f"{desc_raw}",
+            f"",
+            f"💡 BACKGROUND & CONTEXT:",
+            f"{rag_context[:400]}",
+            f"",
+            f"📌 SOURCE: {sources_str}",
+        ]
+
+        # A2.6: Insert SEO keyword line after source
+        if seo_keyword_line:
+            description_lines.append(f"")
+            description_lines.append(seo_keyword_line)
+
+        description_lines.extend([
+            f"",
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"📺 The ViralDNA — Your trusted source for news from Vijayawada, Vizag,",
+            f"Hyderabad, Amaravati and beyond. National India updates and global stories",
+            f"explained in Tenglish — the way we actually talk.",
+            f"",
+            f"📍 Vijayawada | Vizag | Hyderabad | Amaravati | Guntur",
+            f"🇮🇳 National India — politics, cricket, economy, culture",
+            f"🌍 International stories that affect you",
+            f"🤖 AI and Tech — what it means for your job and family",
+            f"💡 Inspiring stories of Telugu creators and Indian achievers",
+            f"",
+            f"🕗 New videos every day at 8:30 AM and 5:30 PM IST",
+            f"",
+            f"👍 Like this video if it helped you stay informed.",
+            f"🔔 Subscribe & hit the bell — never miss an update!",
+            f"💬 Drop your thoughts in the comments — we read every one.",
+            f"📤 Share with your family and friends back home.",
+        ])
+
+        # A2.8: Related links
+        if related_links:
+            description_lines.append(f"")
+            description_lines.append(f"📎 RELATED:")
+            for link_text, link_url in related_links[:4]:
+                description_lines.append(f"  • {link_text}: {link_url}")
+
+        # E2.5: Affiliate links (topic-matched)
+        affiliate_links = self._build_affiliate_links(topic, title_raw)
+        if affiliate_links:
+            description_lines.append(f"")
+            description_lines.append(f"🔗 USEFUL LINKS:")
+            for link_text, link_url in affiliate_links[:3]:
+                description_lines.append(f"  • {link_text}: {link_url}")
+
+        # E2.6: Crowdfunding support
+        crowdfunding_line = self._build_crowdfunding_line(topic)
+        if crowdfunding_line:
+            description_lines.append(f"")
+            description_lines.append(crowdfunding_line)
+
+        # E2.3: Merchandise shelf
+        merch_line = self._build_merch_line(topic)
+        if merch_line:
+            description_lines.append(f"")
+            description_lines.append(merch_line)
+
+        description_lines.extend([
+            f"",
+            f"📧 Contact: viraldna9@gmail.com",
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"",
+        ])
+
+        # ── A2.7: Hashtag block ──
+        hashtag_block = self._build_hashtag_block(topic, title_raw)
+        description_lines.append(hashtag_block)
+
+        description_lines.extend([
+            f"",
+            f"🤖 ALTERED CONTENT DISCLOSURE:",
+            f"This video was produced using AI-assisted tools: AI script generation,",
+            f"AI voice synthesis (edge-tts), algorithmic video assembly. Visuals may",
+            f"include AI-generated imagery. Labeled per YouTube synthetic media policies.",
+            f"©️ Produced by The ViralDNA Platform.",
+        ])
+        description = "\n".join(description_lines)
+
+        if len(description) > self.description_max_length:
+            description = description[:self.description_max_length - 50] + "\n\n...[truncated]"
+
+        # Sanitize
+        title = re.sub(r'<[^>]+>', '', title).replace("<", "").replace(">", "").strip()
+        description = re.sub(r'<[^>]+>', '', description).replace("<", "").replace(">", "").strip()
+
+        # Tags — channel keyword defaults for SEO (matches YouTube Studio keywords)
+        default_tags = [
+            "Telugu news today", "Andhra Pradesh news", "Telangana news",
+            "AP news today", "Hyderabad news", "Vijayawada news", "Vizag news",
+            "Amaravati news", "Guntur news", "TheViralDNA", "The Viral DNA",
+            "Telugu breaking news", "Tenglish news", "India news today",
+            "NRI Telugu news", "Telugu current affairs", "AP Telangana updates",
+            "viral news India", "trending India 2026", "Telugu states news",
+        ]
+        topic_tags = [t.strip() for t in topic.get("tags", "").split(",") if t.strip()]
+        tags = topic_tags + [t for t in default_tags if t not in topic_tags]
+        if is_short and self.shorts_tag not in tags:
+            tags.append(self.shorts_tag)
+        tags_str = ",".join(tags)
+        if len(tags_str) > self.tags_max_length:
+            trimmed = []
+            current_len = 0
+            for tag in tags:
+                if current_len + len(tag) + 1 <= self.tags_max_length:
+                    trimmed.append(tag)
+                    current_len += len(tag) + 1
+                else:
+                    break
+            tags = trimmed
+
+        body = {
+            "snippet": {
+                "title": title,
+                "description": description,
+                "tags": tags,
+                "categoryId": self.category_id,
+                "defaultLanguage": self.default_language,
+                "defaultAudioLanguage": "en-IN",
+                "liveBroadcastContent": self.live_broadcast_content,
+            },
+            "status": {
+                "privacyStatus": self.privacy_status,
+                "selfDeclaredMadeForKids": self.self_declared_made_for_kids,
+                "embeddable": self.embeddable,
+                "publicStatsViewable": self.public_stats_viewable,
+                "license": self.license_type,
+            }
+        }
+
+        if self.schedule_premiere:
+            scheduled_time = self._get_scheduled_publish_time(is_short, short_index=short_index)
+            body["status"]["publishAt"] = scheduled_time
+            body["status"]["privacyStatus"] = "private"
+
+        return body
+
+    # ─── SRT Subtitle Generator ───
+    def _generate_srt(self, script_text: str, output_path: str, duration_s: float = None) -> bool:
+        """Generate a basic SRT subtitle file from script text."""
+        if not script_text:
+            return False
+        try:
+            words = script_text.split()
+            if not words:
+                return False
+            # Estimate duration: ~140 WPM broadcast standard
+            if not duration_s:
+                duration_s = len(words) / 140 * 60
+            # Split into subtitle chunks (~2 lines, ~40 chars each)
+            chunks = []
+            current_chunk = []
+            current_len = 0
+            for word in words:
+                if current_len + len(word) + 1 > 60 and current_chunk:
+                    chunks.append(" ".join(current_chunk))
+                    current_chunk = [word]
+                    current_len = len(word)
+                else:
+                    current_chunk.append(word)
+                    current_len += len(word) + 1
+            if current_chunk:
+                chunks.append(" ".join(current_chunk))
+
+            if not chunks:
+                return False
+
+            # Time per chunk
+            total_duration = max(duration_s, len(chunks) * 2.0)
+            time_per_chunk = total_duration / len(chunks)
+
+            srt_lines = []
+            for i, chunk in enumerate(chunks):
+                start_s = i * time_per_chunk
+                end_s = min((i + 1) * time_per_chunk, total_duration)
+                start_ts = f"{int(start_s // 3600):02d}:{int((start_s % 3600) // 60):02d}:{int(start_s % 60):02d},{int((start_s % 1) * 1000):03d}"
+                end_ts = f"{int(end_s // 3600):02d}:{int((end_s % 3600) // 60):02d}:{int(end_s % 60):02d},{int((end_s % 1) * 1000):03d}"
+                srt_lines.append(f"{i + 1}")
+                srt_lines.append(f"{start_ts} --> {end_ts}")
+                srt_lines.append(chunk)
+                srt_lines.append("")
+
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write("\n".join(srt_lines))
+            return True
+        except Exception as e:
+            print(f"    ⚠️ SRT generation failed: {e}")
+            return False
+
+    def _upload_captions(self, video_id: str, srt_path: str) -> bool:
+        """Upload SRT captions to a video."""
+        if not os.path.exists(srt_path):
+            return False
+        try:
+            self.service.captions().insert(
+                part="snippet",
+                body={
+                    "snippet": {
+                        "videoId": video_id,
+                        "language": self.subtitles_language,
+                        "name": "English (auto-generated)",
+                        "isDraft": False
+                    }
+                },
+                media_body=MediaFileUpload(srt_path, mimetype="application/x-subrip")
+            ).execute()
+            print(f"    🟢 Captions uploaded for {video_id}")
+            return True
+        except HttpError as e:
+            print(f"    ⚠️ Caption upload failed: {e}")
+            return False
+
+    # ─── End Screen & Cards (B3.2: Real API Usage) ───
+    def _update_end_screen_and_cards(self, video_id: str, topic: dict = None,
+                                      playlist_id: str = None,
+                                      similar_video_ids: list = None) -> bool:
+        """
+        B3.2: Set end screen elements and playlist routing.
+        YouTube Data API v3 doesn't support direct end screen editing,
+        but we can: (1) add video to playlist, (2) set video's recording date
+        for SEO, (3) log end screen config for Studio upload, (4) use
+        the 'endScreen' property in videos.update if available.
+        """
+        success = False
+        try:
+            # 1. Add video to playlist for end-screen discoverability
+            if playlist_id and playlist_id != "PLACEHOLDER_PLAYLIST":
+                try:
+                    self.service.playlistItems().insert(
+                        part="snippet",
+                        body={
+                            "snippet": {
+                                "playlistId": playlist_id,
+                                "resourceId": {
+                                    "kind": "youtube#video",
+                                    "videoId": video_id
+                                }
+                            }
+                        }
+                    ).execute()
+                    print(f"    🟢 Added to playlist: {playlist_id}")
+                    success = True
+                except HttpError as e:
+                    print(f"    ⚠️ Playlist add failed: {e}")
+
+            # 2. Fetch video metadata to find similar videos for end screen
+            end_screen_targets = []
+            if similar_video_ids:
+                for sv_id in similar_video_ids[:4]:
+                    try:
+                        resp = self.service.videos().list(
+                            part="snippet", id=sv_id
+                        ).execute()
+                        if resp.get("items"):
+                            title = resp["items"][0]["snippet"]["title"]
+                            end_screen_targets.append({
+                                "type": "video",
+                                "videoId": sv_id,
+                                "title": title,
+                                "end_ms": 20000,
+                            })
+                    except Exception:
+                        pass
+
+            # 3. Log end screen config for YouTube Studio manual setup
+            # (API v3 limitation — end screens require Studio or Content Owner API)
+            if end_screen_targets:
+                end_screen_log = os.path.join(
+                    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                    "diagnostics", "end_screen_config.json"
+                )
+                config_entry = {
+                    "video_id": video_id,
+                    "topic": topic.get("title", "") if topic else "",
+                    "recommended_end_screen": end_screen_targets,
+                    "recommended_type": "video",
+                    "note": "Set via YouTube Studio: Edit video → End Screen → Add element → Video",
+                    "generated_at": datetime.now().isoformat(),
+                }
+                # Append to existing log
+                existing = []
+                if os.path.exists(end_screen_log):
+                    try:
+                        with open(end_screen_log, "r") as f:
+                            existing = json.load(f)
+                    except Exception:
+                        existing = []
+                existing.append(config_entry)
+                with open(end_screen_log, "w") as f:
+                    json.dump(existing[-50:], f, indent=2)  # keep last 50
+                print(f"    🟢 End screen config logged: {len(end_screen_targets)} targets")
+
+            # 4. Find related videos from channel for end screen recommendations
+            if not similar_video_ids:
+                try:
+                    search_resp = self.service.search().list(
+                        part="snippet",
+                        channelId=self.upload_config.get("channel_id", ""),
+                        type="video",
+                        order="viewCount",
+                        maxResults=5
+                    ).execute()
+                    for item in search_resp.get("items", []):
+                        vid = item.get("id", {}).get("videoId", "")
+                        if vid and vid != video_id:
+                            title = item.get("snippet", {}).get("title", "")
+                            end_screen_targets.append({
+                                "type": "video",
+                                "videoId": vid,
+                                "title": title,
+                                "end_ms": 20000,
+                            })
+                except Exception:
+                    pass
+
+            return success or len(end_screen_targets) > 0
+        except Exception as e:
+            print(f"    ⚠️ End screen setup error: {e}")
+            return False
+
+    # ─── Resumable Upload ───
+    def _execute_resumable_upload(self, media_body: MediaFileUpload, body: dict,
+                                   notify_subscribers: bool = True) -> str:
+        insert_request = self.service.videos().insert(
+            part="snippet,status",
+            body=body,
+            media_body=media_body,
+            notifySubscribers=notify_subscribers,
+        )
+        response = None
+        error = None
+        retry_count = 0
+        print(f"    Resumable Upload started. Chunk Size: {self.upload_chunk_size / 1024 / 1024:.1f}MB...")
+        while response is None:
+            try:
+                status, response = insert_request.next_chunk()
+                if response is not None:
+                    if "id" in response:
+                        print(f"    🟢 Video uploaded! YouTube ID: {response['id']}")
+                        return response["id"]
+                    else:
+                        raise HttpError(None, b"Upload succeeded but no video ID returned.")
+                if status:
+                    print(f"      Upload progress: {int(status.progress() * 100)}%...")
+            except HttpError as e:
+                if e.resp.status in self.retryable_http_status_codes:
+                    error = e
+                else:
+                    raise e
+            except Exception as e:
+                error = e
+            if error:
+                retry_count += 1
+                print(f"    ⚠️ Upload interrupted: {error}. Retry {retry_count}/{self.upload_max_retries} in {self.upload_retry_delay}s...")
+                if retry_count > self.upload_max_retries:
+                    raise Exception(f"Upload failed after {self.upload_max_retries} attempts. Last error: {error}")
+                time.sleep(self.upload_retry_delay)
+                error = None
+
+    # ─── Thumbnail Upload ───
+    def _upload_thumbnail(self, video_id: str, thumbnail_path: str) -> bool:
+        if not os.path.exists(thumbnail_path):
+            print(f"    ⚠️ Thumbnail not found: {thumbnail_path}. Skipping.")
+            return False
+        try:
+            self.service.thumbnails().set(
+                videoId=video_id,
+                media_body=MediaFileUpload(thumbnail_path, mimetype=self.thumbnail_mimetype)
+            ).execute()
+            print(f"    🟢 Thumbnail linked to {video_id}")
+            return True
+        except HttpError as e:
+            print(f"    ❌ Thumbnail upload failed: {e}")
+            return False
+
+    # ─── Shorts Thumbnail Frame Injection ───
+    def _inject_thumbnail_frame(self, video_path: str, thumbnail_path: str, output_dir: str) -> str:
+        """
+        For YouTube Shorts: inject the desired thumbnail as the first frame of the video.
+        YouTube Shorts doesn't support custom thumbnails via API — it auto-picks a frame.
+        By making the first frame the thumbnail, we control what YouTube shows.
+        Returns path to the new video file with injected frame.
+        """
+        if not os.path.exists(thumbnail_path) or not os.path.exists(video_path):
+            return video_path
+
+        output_path = os.path.join(output_dir, f"short_with_thumb_{os.path.basename(video_path)}")
+        if os.path.exists(output_path):
+            return output_path
+
+        try:
+            # Use FFmpeg: overlay thumbnail as first 1 second, then switch to video
+            # Actually simpler: prepend the image as a 1-second clip, then concat with original
+            cmd = [
+                "ffmpeg", "-y",
+                "-loop", "1", "-i", thumbnail_path,  # thumbnail as 1-sec loop
+                "-i", video_path,                     # original video
+                "-filter_complex",
+                "[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,trim=duration=1,setpts=PTS-STARTPTS[thumb];"
+                "[1:v]setpts=PTS-STARTPTS[vid];"
+                "[thumb][vid]concat=n=2:v=1:a=0[outv];"
+                "[1:a]asetpts=PTS-STARTPTS[outa]",
+                "-map", "[outv]", "-map", "[outa]",
+                "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+                "-c:a", "aac", "-b:a", "128k",
+                "-movflags", "+faststart",
+                "-shortest",
+                output_path
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            if result.returncode == 0 and os.path.exists(output_path):
+                print(f"    🟢 Thumbnail frame injected for short: {os.path.basename(output_path)}")
+                return output_path
+            else:
+                print(f"    ⚠️ Thumbnail frame injection failed, using original video")
+                return video_path
+        except Exception as e:
+            print(f"    ⚠️ Thumbnail frame injection error: {e}")
+            return video_path
+
+    # ─── Pinned Comment ───
+    def _add_pinned_comment(self, video_id: str, comment_text: str) -> bool:
+        try:
+            self.service.commentThreads().insert(
+                part="snippet",
+                body={
+                    "snippet": {
+                        "videoId": video_id,
+                        "topLevelComment": {
+                            "snippet": {"textOriginal": comment_text}
+                        }
+                    }
+                }
+            ).execute()
+            print(f"    🟢 Pinned comment added to {video_id}")
+            return True
+        except HttpError as e:
+            print(f"    ❌ Comment failed: {e}")
+            return False
+
+    # ─── Playlist ───
+    def _add_to_playlist(self, video_id: str, playlist_id: str) -> bool:
+        if not playlist_id:
+            return False
+        try:
+            self.service.playlistItems().insert(
+                part="snippet",
+                body={
+                    "snippet": {
+                        "playlistId": playlist_id,
+                        "resourceId": {"kind": "youtube#video", "videoId": video_id}
+                    }
+                }
+            ).execute()
+            print(f"    🟢 Added {video_id} to playlist {playlist_id}")
+            return True
+        except HttpError as e:
+            print(f"    ⚠️ Playlist add failed: {e}")
+            return False
+
+    # ─── Helper Methods for SEO & CTA ──
+
+    # A2.6: SEO keyword extraction
+    HIGH_VALUE_KEYWORDS = [
+        "telugu news", "andhra pradesh", "telangana", "hyderabad", "vizag",
+        "visakhapatnam", "vijayawada", "amaravati", "guntur", "nri",
+        "h1b visa", "green card", "visa update", "immigration", "india news",
+        "breaking news", "cricket", "tollywood", "cinema", "economy",
+        "budget", "policy", "election", "technology", "ai", "health",
+        "us news", "uk news", "canada", "australia", "germany",
+    ]
+
+    def _extract_seo_keywords(self, topic: dict, title_raw: str,
+                               desc_raw: str) -> list:
+        """Extract SEO keywords from topic metadata for description injection."""
+        text = f"{title_raw} {desc_raw}".lower()
+        found = []
+        for kw in self.HIGH_VALUE_KEYWORDS:
+            if kw.lower() in text and kw not in found:
+                found.append(kw)
+        # Also add topic tags if available
+        topic_tags = topic.get("tags", "")
+        if topic_tags:
+            for tag in topic_tags.split(","):
+                tag = tag.strip()
+                if tag and tag not in found:
+                    found.append(tag)
+        return found[:12]
+
+    # A2.7: Hashtag block builder
+    def _fetch_trending_hashtags(self, topic_title: str) -> list:
+        """
+        A5.4: Fetch real trending hashtags from YouTube search suggestions.
+        Uses YouTube's free autosuggest API (no API key required).
+        Falls back to empty list on failure.
+        """
+        import urllib.request, urllib.parse, json as _json
+        trending = []
+        try:
+            # Extract top 3 keywords from title for search queries
+            words = [w for w in topic_title.lower().split() if len(w) > 3][:3]
+            queries = words[:2] if words else ["telugu news"]
+
+            seen = set()
+            for query in queries:
+                url = (
+                    "https://suggestqueries.google.com/complete/search"
+                    f"?client=youtube&ds=yt&q={urllib.parse.quote(query)}"
+                )
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=5) as resp:
+                    data = _json.loads(resp.read().decode("utf-8"))
+                    suggestions = data[1] if len(data) > 1 else []
+                    for s in suggestions:
+                        s_lower = s.lower().strip()
+                        # Convert suggestions to hashtag format
+                        if s_lower not in seen and len(s_lower) > 2:
+                            hashtag = "#" + re.sub(r'[^a-zA-Z0-9]', '', s.title())
+                            if len(hashtag) > 2:
+                                trending.append(hashtag)
+                                seen.add(s_lower)
+                        if len(trending) >= 5:
+                            break
+                if len(trending) >= 3:
+                    break
+        except Exception:
+            pass  # Network failure — fallback to keyword-based below
+        return trending
+
+    def _build_hashtag_block(self, topic: dict, title_raw: str) -> str:
+        """
+        A5.4: Build a hashtag block with real trending hashtag discovery.
+        1. Fetches trending hashtags from YouTube autosuggest
+        2. Adds keyword-matched topic hashtags
+        3. Adds base channel hashtags
+        Deduplicates and limits to 15 total.
+        """
+        base_hashtags = [
+            "#ViralDNA", "#TeluguNews", "#AndhraPradesh", "#Telangana",
+            "#IndiaNews", "#NRI", "#TeluguDiaspora",
+        ]
+
+        # A1.7: Bilingual hashtag injection
+        telugu_hashtags = {
+            "andhra": "#AndhraNews", "telangana": "#TelanganaNews",
+            "telugu": "#Telugu", "vijayawada": "#Vijayawada",
+            "vizag": "#Vizag", "hyderabad": "#Hyderabad",
+            "amaravati": "#Amaravati", "guntur": "#Guntur",
+            "tirupati": "#Tirupati", "nellore": "#Nellore",
+            "kakinada": "#Kakinada", "rajamundry": "#Rajamundry",
+        }
+
+        text = f"{title_raw} {topic.get('description', '')}".lower()
+        topic_tags = []
+
+        # Keyword-matched topic hashtags
+        tag_map = {
+            "telugu": "#Telugu", "andhra": "#AndhraNews", "telangana": "#TelanganaNews",
+            "vizag": "#Vizag", "visakhapatnam": "#Visakhapatnam", "hyderabad": "#Hyderabad",
+            "vijayawada": "#Vijayawada", "amaravati": "#Amaravati",
+            "h1b": "#H1B", "visa": "#Visa", "immigration": "#Immigration",
+            "cricket": "#Cricket", "movie": "#Tollywood", "cinema": "#Tollywood",
+            "budget": "#Budget", "economy": "#Economy", "election": "#Election",
+            "usa": "#USA", "uk": "#UK", "canada": "#Canada", "australia": "#Australia",
+            "breaking": "#BreakingNews", "urgent": "#Urgent", "health": "#Health",
+            "tech": "#Tech", "ai": "#AI", "job": "#Jobs", "career": "#Career",
+        }
+        for keyword, hashtag in tag_map.items():
+            if keyword in text and hashtag not in base_hashtags:
+                topic_tags.append(hashtag)
+
+        # Location-based Telugu hashtags
+        for keyword, hashtag in telugu_hashtags.items():
+            if keyword in text and hashtag not in base_hashtags and hashtag not in topic_tags:
+                topic_tags.append(hashtag)
+
+        # A5.4: Real trending hashtags from YouTube autosuggest
+        trending_tags = self._fetch_trending_hashtags(title_raw)
+        for tag in trending_tags:
+            if tag not in topic_tags and tag not in base_hashtags:
+                topic_tags.append(tag)
+
+        all_tags = base_hashtags + topic_tags
+        return " ".join(all_tags[:15])
+
+    # A2.8: Related links builder
+    def _build_related_links(self, topic: dict) -> list:
+        """Build related video/channel links section for description."""
+        links = []
+        title_lower = (topic.get("title", "") + " " + topic.get("description", "")).lower()
+
+        # Topic-based related playlist links
+        if any(kw in title_lower for kw in ["visa", "h1b", "immigration", "green card"]):
+            links.append(("Visa & Immigration Playlist", self.main_playlist_url or "https://youtube.com/@ViralDNA"))
+        if any(kw in title_lower for kw in ["telangana", "hyderabad"]):
+            links.append(("Telangana News Playlist", self.main_playlist_url or "https://youtube.com/@ViralDNA"))
+        if any(kw in title_lower for kw in ["andhra", "vizag", "vijayawada", "amaravati"]):
+            links.append(("Andhra Pradesh News Playlist", self.main_playlist_url or "https://youtube.com/@ViralDNA"))
+        if any(kw in title_lower for kw in ["cricket", "ipl", "match", "score"]):
+            links.append(("Cricket & Sports Playlist", self.main_playlist_url or "https://youtube.com/@ViralDNA"))
+
+        # Always add channel subscribe link
+        links.append(("Subscribe to ViralDNA", "https://youtube.com/@ViralDNA?sub_confirmation=1"))
+
+        return links
+
+    # H2.3: Topic-based playlist routing
+    # Topic-specific playlist IDs (configurable via config.py)
+    TOPIC_PLAYLIST_MAP = {
+        "visa_immigration": "",    # Set via config: topic_playlist_visa
+        "telangana_politics": "",  # Set via config: topic_playlist_telangana
+        "andhra_politics": "",     # Set via config: topic_playlist_andhra
+        "cricket": "",             # Set via config: topic_playlist_cricket
+        "tollywood": "",           # Set via config: topic_playlist_tollywood
+        "jobs_career": "",         # Set via config: topic_playlist_jobs
+        "health": "",              # Set via config: topic_playlist_health
+        "technology": "",          # Set via config: topic_playlist_tech
+    }
+
+    def _resolve_topic_playlist(self, topic: dict, publish_decision=None) -> str:
+        """Resolve the best playlist ID based on topic content pillars and series."""
+        # Use publish_decision content_pillars if available
+        if publish_decision and hasattr(publish_decision, 'content_pillars'):
+            pillars = publish_decision.content_pillars
+        else:
+            pillars = topic.get("content_pillars", {})
+            if isinstance(pillars, dict):
+                pillars = list(pillars.keys())
+
+        if not pillars:
+            return self.main_playlist_id
+
+        # Map pillars to topic playlists
+        pillar_to_playlist = {
+            "immigration": "visa_immigration",
+            "jobs_career": "jobs_career",
+            "finance_investment": "andhra_politics",  # fallback to main politics playlist
+            "health_wellness": "health",
+            "tech_digital": "technology",
+            "real_estate": "andhra_politics",
+            "culture_cinema": "tollywood",
+        }
+
+        for pillar in pillars:
+            if pillar in pillar_to_playlist:
+                topic_key = pillar_to_playlist[pillar]
+                playlist_id = self.TOPIC_PLAYLIST_MAP.get(topic_key, "")
+                if playlist_id:
+                    return playlist_id
+
+        # Use content_series playlist if topic belongs to a series
+        if publish_decision and hasattr(publish_decision, 'content_series'):
+            series = publish_decision.content_series
+            if series:
+                series_key = series.replace("-", "_")
+                if series_key in self.TOPIC_PLAYLIST_MAP:
+                    sid = self.TOPIC_PLAYLIST_MAP.get(series_key, "")
+                    if sid:
+                        return sid
+
+        return self.main_playlist_id
+
+    # ─── A2.9: Snippet Prefix Builder ───
+    def _build_snippet_prefix(self, title_raw: str, desc_raw: str,
+                               seo_keyword_line: str = "") -> str:
+        """
+        Build the first ~150 chars of description for YouTube search snippet.
+        This is the text that appears in YouTube/Google search results.
+        Strategy: lead with the most keyword-dense summary, not the emoji header.
+        Max 142 chars visible in search snippet (we target 140 to be safe).
+        """
+        # Extract top SEO keywords for the opening line
+        seo_kws = self._extract_seo_keywords({"title": title_raw, "description": desc_raw}, title_raw, desc_raw)
+        kw_str = ""
+        if seo_kws:
+            kw_str = " ".join(seo_kws[:4]).strip()
+
+        # Priority 1: keyword-rich lead (topic + top entities)
+        # Format: "KEYWORD UPDATE: [First 80 chars of summary]"
+        clean_desc = desc_raw.strip()
+        # Strip common leading phrases that waste snippet space
+        for prefix in ["According to reports, ", "Reports say ", "It is reported that "]:
+            if clean_desc.lower().startswith(prefix.lower()):
+                clean_desc = clean_desc[len(prefix):]
+                break
+
+        # Build snippet line
+        snippet = clean_desc[:120].strip()
+        if kw_str and kw_str.lower() not in snippet.lower():
+            snippet = f"{kw_str} | {snippet}"[:140]
+        snippet = snippet[:140]
+
+        return snippet
+
+    # ─── E2.5: Affiliate Links ───
+    # Only populated when real affiliate URLs are configured.
+    # No placeholder/fake links — empty by default.
+    AFFILIATE_LINK_TEMPLATES = {}
+
+    def _build_affiliate_links(self, topic: dict, title_raw: str) -> list:
+        """E2.5: Build affiliate link section if topic matches high-value categories."""
+        text = f"{title_raw} {topic.get('description', '')} {topic.get('title', '')}".lower()
+        links = []
+        for keyword, (label, url) in self.AFFILIATE_LINK_TEMPLATES.items():
+            if keyword in text:
+                links.append((label, url))
+        return links[:3]  # Max 3 affiliate links to avoid spam perception
+
+    # ─── E2.6: Crowdfunding / Support Links ───
+    # Only shown when real support URLs are configured. No placeholders.
+    CROWDFUNDING_LINE = ""
+
+    def _build_crowdfunding_line(self, topic: dict) -> str:
+        """E2.6: Return crowdfunding CTA line for description."""
+        return self.CROWDFUNDING_LINE
+
+    # ─── E2.3: Merchandise Shelf Placeholder ───
+    # Only shown when real merch URL is configured. No placeholders.
+    MERCH_LINE = ""
+
+    def _build_merch_line(self, topic: dict) -> str:
+        """E2.3: Return merchandise link line for description."""
+        return self.MERCH_LINE
+
+    # ─── Pinned Comment Builders ───
+    def _build_main_pinned_comment(self, topic: dict, playlist_url: str) -> str:
+        title = topic.get("title", "this story").strip()
+        if len(title) > 60:
+            title = title[:57] + "..."
+        return (
+            f"📌 What do you think about {title}?\n\n"
+            f"💬 Drop your thoughts — we read every comment!\n"
+            f"👍 Like this video for more Telugu diaspora news.\n"
+            f"🔔 Subscribe & hit the bell!\n\n"
+            f"📺 Full playlist: {playlist_url}\n"
+            f"🌐 ViralDNA — Stay connected to your roots"
+        )
+
+    def _build_short_pinned_comment(self, topic: dict, short_idx: int,
+                                     playlist_url: str,
+                                     main_video_url: str = None) -> str:
+        title = topic.get("title", "this story").strip()
+        if len(title) > 50:
+            title = title[:47] + "..."
+        ctas = [
+            f"🔥 What's your take on {title}? Comment below!",
+            f"💬 Does this affect you or your family? Share your story!",
+            f"🤔 Did you know about this? Like & follow for more!",
+        ]
+        cta = ctas[(short_idx - 1) % len(ctas)]
+
+        # C2.2/C2.3: Shorts-to-long CTA
+        long_cta = ""
+        if main_video_url:
+            long_cta = f"\n\n🎥 Watch the FULL report: {main_video_url}"
+
+        return (
+            f"{cta}\n\n"
+            f"👍 Like • 🔔 Subscribe\n"
+            f"\n#ViralDNA #TeluguNews #Shorts"
+            f"{long_cta}"
+        )
+
+    # ─── Single Video Upload (one variant) ───
+    def upload_single_video(self, title_raw: str, desc_raw: str, rag_context: str,
+                            video_path: str, thumbnail_path: str = None,
+                            is_short: bool = False, pinned_comment: str = None,
+                            short_index: int = 0, variant_idx: int = 0,
+                            topic: dict = None, script_text: str = "",
+                            duration_s: float = 0) -> dict:
+        """Upload a single video variant. Returns status dict."""
+        if not os.path.exists(video_path):
+            return {"status": "failed", "error": f"Video not found: {video_path}"}
+
+        try:
+            print(f"▶ Uploading: {os.path.basename(video_path)} (variant {variant_idx + 1}, short: {is_short})...")
+
+            body = self._create_metadata(title_raw, desc_raw, rag_context,
+                                         topic=topic, is_short=is_short,
+                                         short_index=short_index, variant_idx=variant_idx)
+
+            media = MediaFileUpload(video_path, mimetype=self.video_mimetype,
+                                    chunksize=self.upload_chunk_size, resumable=True)
+            video_id = self._execute_resumable_upload(media, body,
+                                                       notify_subscribers=self.notify_subscribers)
+            video_url = f"https://youtube.com/watch?v={video_id}"
+
+            # Thumbnail (main videos only — shorts use frame injection)
+            if thumbnail_path and not is_short:
+                self._upload_thumbnail(video_id, thumbnail_path)
+
+            # Pinned comment
+            if pinned_comment:
+                self._add_pinned_comment(video_id, pinned_comment)
+
+            # Subtitles/captions
+            if self.subtitles_enabled and script_text:
+                srt_path = os.path.join(tempfile.gettempdir(), f"captions_{video_id}.srt")
+                if self._generate_srt(script_text, srt_path, duration_s):
+                    self._upload_captions(video_id, srt_path)
+                    try:
+                        os.remove(srt_path)
+                    except OSError:
+                        pass
+
+            # End screen / cards
+            self._update_end_screen_and_cards(video_id, topic)
+
+            return {
+                "status": "success",
+                "youtube_id": video_id,
+                "youtube_url": video_url,
+                "title_used": body["snippet"]["title"],
+                "variant": variant_idx + 1,
+                "uploaded_at": datetime.now(self.ist).isoformat()
+            }
+        except Exception as e:
+            print(f"  ❌ Upload error: {e}")
+            return {"status": "failed", "error": str(e), "variant": variant_idx + 1}
+
+    # ─── Full Production Slot Upload (A/B testing approach) ───
+    def upload_production_slot(self, topic: dict, videos_dir: str, thumbnails_dir: str,
+                                script_payload=None, publish_decision=None) -> dict:
+        """
+        Uploads ONE video per slot (best title variant only).
+        Per-variant thumbnails are generated for YouTube Studio A/B testing.
+        Uploading duplicate videos with different titles = spam risk.
+        Total: 1 main + N shorts (based on publish_decision)
+        """
+        upload_results = {
+            "main": None,          # single main video result
+            "shorts": {},          # short_1: result, short_2: result, ...
+            "overall_status": "pending"
+        }
+
+        # Determine how many shorts to produce
+        num_shorts = 3
+        if publish_decision:
+            num_shorts = publish_decision.num_shorts
+            if not publish_decision.produce_main:
+                num_shorts = max(num_shorts, 1)  # at least 1 short if no main
+            print(f"  📋 Upload plan: produce_main={publish_decision.produce_main}, num_shorts={num_shorts}")
+        else:
+            print(f"  📋 No publish_decision provided, using defaults: num_shorts={num_shorts}")
+
+        # ── 0. Upload Dedup: Fetch existing video titles once ──
+        print("  🔍 Checking existing uploads for dedup...")
+        existing_videos = self._get_existing_video_titles(max_results=50)
+        print(f"  📊 Found {len(existing_videos)} existing videos on channel for dedup check")
+
+        # ── 1. Main Video — Best Title Only (variant 0) ──
+        main_video_path = os.path.join(videos_dir, "production_main.mp4")
+        main_script_text = script_payload.main_clean if script_payload else ""
+        main_duration = script_payload.main_duration if script_payload else 0
+        main_title_variants = script_payload.main_title_variants if script_payload else []
+        main_thumb_base = os.path.join(thumbnails_dir, "production_branded.jpg")
+
+        produce_main = True
+        if publish_decision:
+            produce_main = publish_decision.produce_main
+
+        if produce_main and os.path.exists(main_video_path) and main_title_variants:
+            # Pick best title (variant 0 = highest-scoring from Gemini)
+            best_variant = main_title_variants[0]
+            title_raw = best_variant.get("title", "BREAKING NEWS")
+
+            # ── Dedup check for main video ──
+            is_dup, matched = self._is_duplicate_title(title_raw, existing_videos)
+            if is_dup:
+                print(f"  ⏭️ SKIPPING main video — duplicate title detected!")
+                print(f"     New:      \"{title_raw[:80]}\"")
+                print(f"     Existing: \"{matched[:80]}\"")
+                upload_results["main"] = {"status": "skipped_duplicate", "title": title_raw, "matched_existing": matched}
+            else:
+                desc_raw = best_variant.get("description", "A detailed news report from ViralDNA.")
+                rag = script_payload.main_clean[:500] if script_payload else ""
+                pinned = self._build_main_pinned_comment(topic, self.main_playlist_url)
+
+                # Use v1 thumbnail (best variant) as primary
+                thumb = os.path.join(thumbnails_dir, "production_branded_v1.jpg")
+                if not os.path.exists(thumb):
+                    thumb = main_thumb_base
+
+                print(f"  📤 Main video: uploading best title: \"{title_raw[:60]}...\"")
+                res = self.upload_single_video(
+                    title_raw=title_raw, desc_raw=desc_raw, rag_context=rag,
+                    video_path=main_video_path, thumbnail_path=thumb,
+                    is_short=False, pinned_comment=pinned,
+                    variant_idx=0, topic=topic,
+                    script_text=main_script_text, duration_s=main_duration
+                )
+                upload_results["main"] = res
+
+                # Rate-limit delay between uploads (avoid 429 per-minute quota)
+                if num_shorts > 0:
+                    import time
+                    print(f"  ⏳ Rate-limit pause: 10s before uploading shorts...")
+                    time.sleep(10)
+
+                # Add to topic-specific playlist (H2.3)
+                vid = res.get("youtube_id")
+                if vid:
+                    topic_playlist = self._resolve_topic_playlist(topic, publish_decision)
+                    playlist_to_use = topic_playlist if topic_playlist else self.main_playlist_id
+                    if playlist_to_use:
+                        self._add_to_playlist(vid, playlist_to_use)
+
+                # Add newly uploaded video to existing_videos list so shorts dedup works
+                if res.get("status") == "success":
+                    existing_videos.append({"title": title_raw, "video_id": vid})
+
+            # Log other variants for reference (manual A/B testing in Studio)
+            if len(main_title_variants) > 1:
+                print(f"  📋 Alternative titles for Studio A/B testing:")
+                for v_idx, variant in enumerate(main_title_variants[1:], 1):
+                    alt_thumb = os.path.join(thumbnails_dir, f"production_branded_v{v_idx + 1}.jpg")
+                    print(f"     Variant {v_idx + 1}: \"{variant.get('title', '')[:60]}...\"")
+                    if os.path.exists(alt_thumb):
+                        print(f"     Thumbnail: {alt_thumb}")
+        else:
+            if not produce_main:
+                print("  ⏭️ Skipping main video upload (publish decision: shorts only)")
+            else:
+                print("  ⚠️ Main video or title variants missing, skipping main upload")
+
+        # Store main video URL for Shorts-to-long CTA (C2.2/C2.3)
+        main_video_url = None
+        if upload_results.get("main") and upload_results["main"].get("status") == "success":
+            main_video_url = upload_results["main"].get("youtube_url")
+
+        # ── 2. Shorts — Best Title Only ──
+        for s_idx in range(1, num_shorts + 1):
+            short_key = f"short_{s_idx}"
+            short_video_path = os.path.join(videos_dir, f"production_short_{s_idx}.mp4")
+            short_title_variants = getattr(script_payload, f"{short_key}_title_variants", []) if script_payload else []
+            short_script_text = getattr(script_payload, f"{short_key}_raw", "") if script_payload else ""
+            short_duration = getattr(script_payload, f"{short_key}_duration", 0) if script_payload else 0
+            short_thumb = os.path.join(thumbnails_dir, f"short_{s_idx}_thumb.jpg")
+
+            if os.path.exists(short_video_path) and short_title_variants:
+                # Pick best title (variant 0)
+                best_variant = short_title_variants[0]
+                title_raw = best_variant.get("title", f"Short {s_idx}")
+
+                # ── Dedup check for short ──
+                is_dup, matched = self._is_duplicate_title(title_raw, existing_videos)
+                if is_dup:
+                    print(f"  ⏭️ SKIPPING {short_key} — duplicate title detected!")
+                    print(f"     New:      \"{title_raw[:80]}\"")
+                    print(f"     Existing: \"{matched[:80]}\"")
+                    upload_results["shorts"][short_key] = {"status": "skipped_duplicate", "title": title_raw, "matched_existing": matched}
+                else:
+                    desc_raw = best_variant.get("description", "Quick news update from ViralDNA.")
+                    # C2.2/C2.3: Inject Shorts-to-long CTA into description
+                    cta_url = main_video_url if main_video_url else "https://youtube.com/@ViralDNA"
+                    cta_line = f"🎥 Watch the full story: {cta_url}"
+                    if cta_url not in desc_raw:
+                        desc_raw = f"{desc_raw}\n\n{cta_line}"
+                    rag = short_script_text[:300] if short_script_text else ""
+                    pinned = self._build_short_pinned_comment(
+                        topic, s_idx, self.shorts_playlist_url,
+                        main_video_url=main_video_url if main_video_url else None
+                    )
+
+                    # Inject thumbnail frame for shorts (YouTube Shorts can't use custom thumbnails via API)
+                    short_video_with_thumb = self._inject_thumbnail_frame(short_video_path, short_thumb, videos_dir)
+
+                    print(f"  📤 {short_key}: uploading best title: \"{title_raw[:60]}...\"")
+                    res = self.upload_single_video(
+                        title_raw=title_raw, desc_raw=desc_raw, rag_context=rag,
+                        video_path=short_video_with_thumb, thumbnail_path=None,
+                        is_short=True, pinned_comment=pinned,
+                        short_index=s_idx, variant_idx=0, topic=topic,
+                        script_text=short_script_text, duration_s=short_duration
+                    )
+                    upload_results["shorts"][short_key] = res
+
+                    # Add to shorts playlist
+                    vid = res.get("youtube_id")
+                    if vid and self.shorts_playlist_id:
+                        self._add_to_playlist(vid, self.shorts_playlist_id)
+
+                    # Add newly uploaded short to existing_videos so next short dedup works
+                    if res.get("status") == "success":
+                        existing_videos.append({"title": title_raw, "video_id": vid})
+
+                    time.sleep(self.upload_delay_seconds)
+            else:
+                print(f"  ⚠️ {short_key} video or variants missing, skipping")
+
+        # Overall status
+        all_uploads = []
+        if upload_results["main"]:
+            all_uploads.append(upload_results["main"])
+        all_uploads.extend(upload_results["shorts"].values())
+        upload_results["overall_status"] = "success" if any(
+            u.get("status") == "success" for u in all_uploads
+        ) else "failed"
+        print(f"  ✅ Production slot complete. Status: {upload_results['overall_status']}")
+        return upload_results

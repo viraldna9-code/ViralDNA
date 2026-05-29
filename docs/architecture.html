@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ViralDNA Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;color:#c8d6e5;font-family:'Inter',sans-serif;font-size:14px;line-height:1.7}
+.wrap{max-width:1200px;margin:0 auto;padding:30px 20px}
+h1{font-family:'JetBrains Mono',monospace;text-align:center;font-size:24px;color:#f0c040;letter-spacing:2px;margin-bottom:6px}
+.sub{text-align:center;font-size:12px;color:#555;margin-bottom:30px}
+
+/* FLOW DIAGRAM */
+.flow{background:#0d1117;border:1px solid #1a2332;border-radius:12px;padding:24px;margin-bottom:24px;overflow-x:auto}
+.flow-row{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.box{padding:10px 18px;border-radius:8px;font-size:12px;font-weight:600;text-align:center;min-width:120px}
+.arrow{color:#334155;font-size:18px;padding:0 4px}
+.b-cyan{background:#0a2a3a;border:1px solid #22d3ee;color:#22d3ee}
+.b-green{background:#0a2a1a;border:1px solid #34d399;color:#34d399}
+.b-violet{background:#1a0a3a;border:1px solid #a78bfa;color:#a78bfa}
+.b-amber{background:#2a1a0a;border:1px solid #fbbf24;color:#fbbf24}
+.b-orange{background:#2a150a;border:1px solid #fb923c;color:#fb923c}
+.b-rose{background:#2a0a1a;border:1px solid #fb7185;color:#fb7185}
+.b-slate{background:#111827;border:1px solid #64748b;color:#94a3b8}
+.b-dark{background:#0f172a;border:1px solid #1e293b;color:#64748b;font-size:10px}
+.small{font-size:10px;color:#64748b;font-weight:400;margin-top:2px}
+
+/* SECTION */
+.section{margin-bottom:30px}
+.section h2{font-family:'JetBrains Mono',monospace;font-size:16px;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #1a2332}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.card{background:#0d1117;border:1px solid #1a2332;border-radius:10px;padding:18px}
+.card h3{font-size:13px;font-weight:700;margin-bottom:10px}
+.card ul{list-style:none}
+.card ul li{font-size:12px;padding:4px 0;color:#8892b0;line-height:1.6}
+.card ul li::before{content:"→ ";color:#334155}
+.ok{color:#34d399}.warn{color:#fbbf24}.fail{color:#fb7185}.dim{color:#64748b}
+
+/* COMPARISON TABLE */
+table{width:100%;border-collapse:collapse;margin-bottom:24px;font-size:12px}
+th{background:#0d1117;border:1px solid #1a2332;padding:10px;text-align:left;font-size:11px;color:#64748b}
+td{border:1px solid #1a1a2e;padding:10px;color:#8892b0}
+tr:nth-child(even){background:#0a0f1a}
+
+/* CALENDAR */
+.calendar{background:#0d1117;border:1px solid #1a2332;border-radius:10px;padding:20px;margin-bottom:24px}
+.cal-row{display:flex;gap:8px;margin-bottom:6px;align-items:center}
+.cal-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:#fbbf24;min-width:80px;text-align:right}
+.cal-bar{height:28px;border-radius:4px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600}
+
+.footer{text-align:center;padding:20px;color:#333;font-size:11px;border-top:1px solid #111;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>⚡ VIRALDNA — COMPLETE SYSTEM ARCHITECTURE</h1>
+<p class="sub">Telugu Diaspora Newsroom — AI Autonomous Pipeline — v52.0 — May 2026</p>
+
+<!-- ============ SECTION 1: BIG PICTURE FLOW ============ -->
+<div class="section">
+<h2>1. HOW EVERYTHING CONNECTS — THE BIG PICTURE</h2>
+<div class="flow">
+
+  <!-- ROW 1 -->
+  <div class="flow-row">
+    <div class="box b-cyan">👤 JAY<br><span class="small">You give instructions</span></div>
+    <div class="arrow">→</div>
+    <div class="box b-green">🤖 HERMES<br><span class="small">Reads memory, plans work</span></div>
+    <div class="arrow">→</div>
+    <div class="box b-violet">🧠 MEMORY<br><span class="small">Facts, decisions, history</span></div>
+  </div>
+
+  <!-- ROW 2 -->
+  <div class="flow-row" style="margin-left:60px">
+    <div class="box b-green" style="min-width:200px">📋 WRITES PLAN<br><span class="small">.hermes/plans/task.md</span></div>
+    <div class="arrow">→</div>
+    <div class="box b-green" style="min-width:200px">👥 SPAWNS AGENTS<br><span class="small">delegate_task() → parallel</span></div>
+  </div>
+
+  <!-- ROW 3 -->
+  <div class="flow-row" style="margin-left:120px">
+    <div class="box b-green" style="min-width:100px">Agent A<br><span class="small">Implements</span></div>
+    <div class="box b-green" style="min-width:100px">Agent B<br><span class="small">Reviews spec</span></div>
+    <div class="box b-green" style="min-width:100px">Agent C<br><span class="small">QA checks</span></div>
+    <div class="arrow">→</div>
+    <div class="box b-orange">🐍 PYTHON CODE<br><span class="small">73 modules execute</span></div>
+  </div>
+
+  <!-- ROW 4 -->
+  <div class="flow-row" style="margin-left:180px">
+    <div class="box b-rose">🌐 APIs<br><span class="small">YouTube, Gemini, RSS</span></div>
+    <div class="arrow">→</div>
+    <div class="box b-slate">📦 OUTPUT<br><span class="small">MP4 + Thumbnails</span></div>
+    <div class="arrow">→</div>
+    <div class="box b-amber">⏰ CRON<br><span class="small">Auto-runs on schedule</span></div>
+  </div>
+
+  <!-- ROW 5 -->
+  <div class="flow-row">
+    <div class="box b-cyan">📊 REPORT<br><span class="small">Hermes sends summary to Jay</span></div>
+    <div class="arrow">←</div>
+    <div class="box b-amber">⏰ CRON<br><span class="small">Delivers result</span></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ============ SECTION 2: WHAT EACH PIECE DOES ============ -->
+<div class="section">
+<h2>2. WHAT EACH PIECE DOES — AND YOUR ROLE</h2>
+<div class="grid">
+
+  <div class="card">
+    <h3 style="color:#22d3ee">👤 JAY (YOU) — THE DIRECTOR</h3>
+    <ul>
+      <li>Tell Hermes WHAT to do and WHY</li>
+      <li>Set priorities ("production first")</li>
+      <li>Read reports Hermes sends you</li>
+      <li>Approve or reject agent work</li>
+      <li>Ask questions when confused</li>
+      <li class="warn">You do NOT do the work yourself</li>
+      <li class="warn">You do NOT remember everything — that's memory's job</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3 style="color:#34d399">🤖 HERMES — THE ORCHESTRATOR</h3>
+    <ul>
+      <li>Reads MEMORY.md at start of every session</li>
+      <li>Writes a PLAN before doing complex work</li>
+      <li>Spawns SUB-AGENTS via delegate_task()</li>
+      <li>Sub-agents work in PARALLEL, isolated</li>
+      <li>Uses TOOLS: terminal, browser, file, cron</li>
+      <li>Saves decisions to MEMORY permanently</li>
+      <li class="ok">This is what makes Hermes different from ChatGPT</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3 style="color:#a78bfa">🧠 MEMORY — THE PERSISTENT BRAIN</h3>
+    <ul>
+      <li>MEMORY.md — environment facts, decisions, conventions</li>
+      <li>USER.md — who you are, preferences, pet peeves</li>
+      <li>Injected into EVERY session automatically</li>
+      <li>Survives across sessions, compactions, restarts</li>
+      <li class="warn">Currently only 2% used — we need 50+ entries</li>
+      <li>Location: ~/.hermes/memory/</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3 style="color:#fbbf24">⏰ CRON JOBS — THE AUTOPILOT</h3>
+    <ul>
+      <li>Runs on schedule WITHOUT you asking</li>
+      <li>Fresh session every time — no context loss</li>
+      <li>Delivers report back to this chat</li>
+      <li>Examples: "Every 6am run pipeline"</li>
+      <li>Examples: "Every midnight analyze performance"</li>
+      <li class="fail">NOT SET UP YET — this is the #1 missing piece</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3 style="color:#fb923c">🐍 PYTHON CODE — 73 WORKER MODULES</h3>
+    <ul>
+      <li><b>Discovery:</b> trend_discovery.py, spike_detector.py</li>
+      <li><b>Scripting:</b> script_generator.py, gemini_engine.py</li>
+      <li><b>Voice:</b> voiceover.py, rvc_infer.py</li>
+      <li><b>Visuals:</b> visual_fetcher.py, thumbnail_creator.py</li>
+      <li><b>Assembly:</b> video_assembler.py, post_filter.py</li>
+      <li><b>Upload:</b> youtube_uploader.py, upload_reliability.py</li>
+      <li><b>Orchestrator:</b> run_multi_agent_pipeline.py (v52.0)</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3 style="color:#fb7185">🌐 EXTERNAL APIs</h3>
+    <ul>
+      <li><b>YouTube Data API v3:</b> upload, update, analytics</li>
+      <li><b>Gemini API:</b> script generation (Flash, pay-as-you-go)</li>
+      <li><b>Edge-TTS:</b> bilingual voiceover (free)</li>
+      <li><b>RSS Feeds:</b> news discovery (8 sources)</li>
+      <li><b>Google Trends:</b> topic scoring (pytrends, free)</li>
+      <li><b>Reddit API:</b> trend validation (free)</li>
+    </ul>
+  </div>
+
+</div>
+</div>
+
+<!-- ============ SECTION 3: WHAT WE DID vs WHAT WE SHOULD DO ============ -->
+<div class="section">
+<h2>3. ❌ WHAT WE WERE DOING vs ✅ WHAT WE SHOULD DO</h2>
+<table>
+<tr>
+  <th>WHAT WE DID WRONG</th>
+  <th>WHAT WE SHOULD DO INSTEAD</th>
+  <th>WHY IT MATTERS</th>
+</tr>
+<tr>
+  <td class="fail">One long chat, 48+ compactions</td>
+  <td class="ok">Short sessions, each with a written plan</td>
+  <td>No context loss, no drift</td>
+</tr>
+<tr>
+  <td class="fail">You remembered everything manually</td>
+  <td class="ok">Hermes saves to MEMORY.md automatically</td>
+  <td>Facts survive across sessions</td>
+</tr>
+<tr>
+  <td class="fail">You said "run pipeline" every time</td>
+  <td class="ok">Cron job runs it automatically on schedule</td>
+  <td>True autopilot — you sleep, it works</td>
+</tr>
+<tr>
+  <td class="fail">I did everything myself in one thread</td>
+  <td class="ok">I spawn sub-agents that work in parallel</td>
+  <td>3x faster, no single point of failure</td>
+</tr>
+<tr>
+  <td class="fail">No CHANGELOG, no docs, versions scattered</td>
+  <td class="ok">CHANGELOG.md, ARCHITECTURE.md, PRODUCTION.md</td>
+  <td>You know what changed and why</td>
+</tr>
+<tr>
+  <td class="fail">Checklists in head, not in code</td>
+  <td class="ok">Checklists as Hermes skills + cron monitors</td>
+  <td>System enforces, not human memory</td>
+</tr>
+<tr>
+  <td class="fail">Every session started from zero</td>
+  <td class="ok">Every session reads memory + last plan first</td>
+  <td>Continuity — Hermes knows where we left off</td>
+</tr>
+<tr>
+  <td class="fail">No separation of concerns</td>
+  <td class="ok">Jay directs → Hermes plans → Agents execute</td>
+  <td>You focus on strategy, not implementation</td>
+</tr>
+</table>
+</div>
+
+<!-- ============ SECTION 4: CRON JOBS TO SET UP ============ -->
+<div class="section">
+<h2>4. CRON JOBS — YOUR NEW AUTOPILOT (NOT SET UP YET)</h2>
+<div class="calendar">
+  <div class="cal-row">
+    <div class="cal-time">06:00 IST</div>
+    <div class="cal-bar" style="background:#1a3a1a;border-left:3px solid #34d399;width:300px">▶ RUN FULL PIPELINE — Discovery → Script → Voice → Video → Upload</div>
+  </div>
+  <div class="cal-row">
+    <div class="cal-time">06:30 IST</div>
+    <div class="cal-bar" style="background:#1a2a3a;border-left:3px solid #22d3ee;width:250px">📊 VERIFY UPLOADS — Check all 3 videos live on YouTube</div>
+  </div>
+  <div class="cal-row">
+    <div class="cal-time">12:00 IST</div>
+    <div class="cal-bar" style="background:#2a1a3a;border-left:3px solid #a78bfa;width:280px">📈 ANALYZE PERFORMANCE — Pull YouTube Analytics, update growth ledger</div>
+  </div>
+  <div class="cal-row">
+    <div class="cal-time">18:00 IST</div>
+    <div class="cal-bar" style="background:#1a3a1a;border-left:3px solid #34d399;width:300px">▶ RUN FULL PIPELINE — Second daily run (different topics)</div>
+  </div>
+  <div class="cal-row">
+    <div class="cal-time">00:00 IST</div>
+    <div class="cal-bar" style="background:#2a2a0a;border-left:3px solid #fbbf24;width:320px">📋 DAILY REPORT — Summarize: videos uploaded, views, issues, next actions</div>
+  </div>
+  <div class="cal-row">
+    <div class="cal-time">SUN 10:00</div>
+    <div class="cal-bar" style="background:#2a1a1a;border-left:3px solid #fb7185;width:350px">📧 WEEKLY NEWSLETTER + BLOG — Generate HTML newsletter + blog post</div>
+  </div>
+</div>
+<p style="font-size:11px;color:#555;margin-top:10px">Each cron runs in a FRESH Hermes session. No context from previous runs. It reads MEMORY first, does its job, delivers report to you.</p>
+</div>
+
+<!-- ============ SECTION 5: FILE STRUCTURE ============ -->
+<div class="section">
+<h2>5. WHERE EVERYTHING LIVES — FILE STRUCTURE</h2>
+<div class="grid">
+  <div class="card">
+    <h3 style="color:#fbbf24">📁 /home/jay/ViralDNA/ (YOUR CODE)</h3>
+    <ul>
+      <li><b>modules/</b> — 73 Python modules (the pipeline)</li>
+      <li><b>videos/</b> — Output MP4 files</li>
+      <li><b>thumbnails/</b> — Generated JPG thumbnails</li>
+      <li><b>audio/</b> — TTS voiceover WAV/MP3</li>
+      <li><b>credentials/</b> — API keys, OAuth tokens</li>
+      <li><b>diagnostics/</b> — Checklists, logs, audits</li>
+      <li><b>output/runtime/</b> — topic_history.json, logs</li>
+      <li><b>docs/</b> — ← NEW: architecture, changelog, production guide</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="color:#a78bfa">📁 ~/.hermes/ (HERMES BRAIN)</h3>
+    <ul>
+      <li><b>memory/MEMORY.md</b> — Environment facts, decisions</li>
+      <li><b>memory/USER.md</b> — Who Jay is, preferences</li>
+      <li><b>skills/</b> — 102 Hermes skills (tools I can use)</li>
+      <li><b>cron/</b> — Scheduled job definitions</li>
+      <li><b>sessions/</b> — Past conversation transcripts</li>
+      <li><b>config.yaml</b> — Hermes configuration</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="color:#34d399">📁 .hermes/plans/ (WRITTEN PLANS)</h3>
+    <ul>
+      <li>YYYY-MM-DD-task-name.md format</li>
+      <li>Written BEFORE complex work starts</li>
+      <li>Sub-agents READ the plan, execute exactly</li>
+      <li>Prevents drift, prevents "what were we doing?"</li>
+      <li class="fail">DOES NOT EXIST YET — needs to be created</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<!-- ============ SECTION 6: WHAT "AGENTIC" ACTUALLY MEANS ============ -->
+<div class="section">
+<h2>6. WHAT "AGENTIC AI" MEANS — IN PRACTICE</h2>
+<div class="grid">
+  <div class="card">
+    <h3 style="color:#34d399">BEFORE (What We Did)</h3>
+    <ul>
+      <li>Jay: "Fix the upload bug"</li>
+      <li>Hermes: *reads code, finds bug, fixes it*</li>
+      <li>Hermes: *tests the fix*</li>
+      <li>Hermes: "Fixed!"</li>
+      <li class="dim">— All in one thread, one context</li>
+      <li class="dim">— Jay has to verify everything</li>
+      <li class="dim">— If context compacts, work is lost</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="color:#22d3ee">AFTER (Agentic Way)</h3>
+    <ul>
+      <li>Jay: "Fix the upload bug"</li>
+      <li>Hermes: *writes plan to .hermes/plans/*</li>
+      <li>Hermes: *spawns Agent A — implementer*</li>
+      <li>Hermes: *spawns Agent B — spec reviewer*</li>
+      <li>Agent A: *fixes code, commits*</li>
+      <li>Agent B: *reviews, says "approved"*</li>
+      <li>Hermes: *reports to Jay: "Done, here's what changed"*</li>
+      <li class="ok">— Parallel, isolated, no context loss</li>
+      <li class="ok">— Jay just reads the report</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<!-- ============ SECTION 7: WHAT IS STILL MISSING ============ -->
+<div class="section">
+<h2>7. WHAT IS STILL MISSING — THE REAL GAPS</h2>
+<table>
+<tr>
+  <th>ITEM</th>
+  <th>STATUS</th>
+  <th>WHAT TO DO</th>
+  <th>PRIORITY</th>
+</tr>
+<tr>
+  <td>Cron jobs (autopilot)</td>
+  <td class="fail">NOT SET UP</td>
+  <td>Create 4-5 cron jobs for pipeline, analytics, reports</td>
+  <td class="fail">CRITICAL</td>
+</tr>
+<tr>
+  <td>Memory (MEMORY.md)</td>
+  <td class="warn">2% used</td>
+  <td>Write 50+ entries: decisions, facts, conventions</td>
+  <td class="fail">CRITICAL</td>
+</tr>
+<tr>
+  <td>Written plans</td>
+  <td class="fail">NOT CREATED</td>
+  <td>Create .hermes/plans/ directory + first plan</td>
+  <td class="fail">CRITICAL</td>
+</tr>
+<tr>
+  <td>CHANGELOG.md</td>
+   <td class="fail">NOT CREATED</td>
+  <td>Document every version change</td>
+  <td class="warn">HIGH</td>
+</tr>
+<tr>
+  <td>PRODUCTION.md</td>
+  <td class="fail">NOT CREATED</td>
+  <td>How to run, monitor, debug the pipeline</td>
+  <td class="warn">HIGH</td>
+</tr>
+<tr>
+  <td>YouTube upload dedup</td>
+  <td class="fail">NOT BUILT</td>
+  <td>Query existing videos before uploading</td>
+  <td class="warn">HIGH</td>
+</tr>
+<tr>
+  <td>H1.4 Channel trailer</td>
+  <td class="warn">Video exists, not set</td>
+  <td>Set as channel trailer via YouTube Data API</td>
+  <td class="warn">HIGH</td>
+</tr>
+<tr>
+  <td>H1.8 Featured video</td>
+  <td class="fail">NOT SET</td>
+  <td>Set featured video via API or Studio</td>
+  <td class="warn">MEDIUM</td>
+</tr>
+<tr>
+  <td>Hometab sections</td>
+  <td class="fail">NOT CONFIGURED</td>
+  <td>Configure channel layout via API</td>
+  <td class="warn">MEDIUM</td>
+</tr>
+<tr>
+  <td>A4.4 Face detection</td>
+  <td class="warn">Can use SAM skill</td>
+  <td>Use segment-anything-model skill for free</td>
+  <td class="dim">LOW</td>
+</tr>
+<tr>
+  <td>Sub-agent workflow</td>
+  <td class="fail">NEVER USED</td>
+  <td>Next complex task → delegate_task()</td>
+  <td class="warn">HIGH</td>
+</tr>
+</table>
+</div>
+
+<!-- ============ SECTION 8: YOUR NEW DAILY ROUTINE ============ -->
+<div class="section">
+<h2>8. YOUR NEW DAILY ROUTINE (AFTER WE FIX THIS)</h2>
+<div class="grid">
+  <div class="card">
+    <h3 style="color:#34d399">MORNING (5 minutes)</h3>
+    <ul>
+      <li>Open Hermes chat</li>
+      <li>Read overnight cron report</li>
+      <li>See: 2 videos uploaded, 3 shorts, analytics</li>
+      <li>Give 1-2 instructions if needed</li>
+      <li class="ok">That's it. Hermes does the rest.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="color:#fbbf24">EVENING (5 minutes)</h3>
+    <ul>
+      <li>Read daily summary report</li>
+      <li>See: views, subscriber growth, issues</li>
+      <li>Set tomorrow's priorities</li>
+      <li>Ask questions about anything confusing</li>
+      <li class="ok">Hermes saves everything to memory</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3 style="color:#22d3ee">WEEKLY (15 minutes)</h3>
+    <ul>
+      <li>Read weekly analytics report</li>
+      <li>Review what topics performed best</li>
+      <li>Adjust content strategy</li>
+      <li>Approve new features Hermes suggests</li>
+      <li class="ok">You're the CEO, Hermes is the COO</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<!-- ============ SECTION 9: IMMEDIATE NEXT STEPS ============ -->
+<div class="section">
+<h2>9. IMMEDIATE NEXT STEPS — DO THESE NOW</h2>
+<table>
+<tr>
+  <th>#</th>
+  <th>TASK</th>
+  <th>WHO</th>
+  <th>TIME</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td>Create docs/ folder: CHANGELOG.md, PRODUCTION.md, ARCHITECTURE.md</td>
+   <td class="ok">Hermes does this</td>
+  <td>15 min</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td>Write 50+ entries to MEMORY.md (all key decisions from this session)</td>
+  <td class="ok">Hermes does this</td>
+  <td>20 min</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td>Create .hermes/plans/ directory + first production plan</td>
+  <td class="ok">Hermes does this</td>
+  <td>10 min</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td>Set up 3 cron jobs: pipeline (6am), analytics (midnight), report (midnight)</td>
+  <td class="ok">Hermes does this</td>
+  <td>15 min</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td>Set channel trailer via YouTube Data API (H1.4)</td>
+  <td class="ok">Hermes does this</td>
+  <td>5 min</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td>Set featured video + hometab via API (H1.8)</td>
+  <td class="ok">Hermes does this</td>
+  <td>10 min</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td>Add YouTube upload dedup to youtube_uploader.py</td>
+  <td class="ok">Hermes does this</td>
+  <td>15 min</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td>Upload failed shorts (quota 429 — wait for reset)</td>
+  <td class="ok">Hermes does this</td>
+  <td>5 min</td>
+</tr>
+</table>
+</div>
+
+<div class="footer">
+  ViralDNA System Architecture — May 27, 2026 — Built by Hermes for Jay<br>
+  This document should be updated every time the system changes.
+</div>
+
+</div>
+</body>
+</html>

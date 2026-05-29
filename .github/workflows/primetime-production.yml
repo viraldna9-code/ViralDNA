@@ -1,0 +1,70 @@
+name: ViralDNA Primetime Production (Full Pipeline)
+# Runs daily at 11:00 UTC = 16:30 IST (primetime window)
+# Full 8-phase production pipeline with 12h lookback.
+
+on:
+  schedule:
+    - cron: "0 11 * * *"  # 11:00 UTC = 16:30 IST
+  workflow_dispatch:       # Allow manual trigger
+
+jobs:
+  primetime-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # Full pipeline needs more time
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('modules/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: pip install --quiet -r modules/requirements.txt
+
+      - name: Write credentials from secrets
+        env:
+          YOUTUBE_CLIENT_SECRETS: ${{ secrets.YOUTUBE_CLIENT_SECRETS }}
+          YOUTUBE_TOKEN: ${{ secrets.YOUTUBE_TOKEN }}
+        run: |
+          mkdir -p /home/runner/ViralDNA/credentials
+          echo "$YOUTUBE_CLIENT_SECRETS" > /home/runner/ViralDNA/credentials/client_secrets.json
+          echo "$YOUTUBE_TOKEN" > /home/runner/ViralDNA/credentials/youtube_token.json
+
+      - name: Initialize ViralDNA directories
+        run: |
+          mkdir -p /home/runner/ViralDNA/{cache,audio,videos,thumbnails,output/runtime}
+
+      - name: Run primetime production pipeline
+        env:
+          DRIVE_BASE: /home/runner/ViralDNA
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          VIRALDNA_WATERMARK: /home/runner/ViralDNA/assets/watermark.png
+          EDGE_TTS_BIN: edge-tts
+        run: |
+          python3 modules/run_multi_agent_pipeline.py --mode primetime
+
+      - name: Upload video artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: primetime-videos-${{ github.run_id }}
+          path: /home/runner/ViralDNA/videos/
+          retention-days: 7

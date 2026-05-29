@@ -1,0 +1,226 @@
+  📋 LicenseTracker (v1.0): Image License & Copyright Tracker Active.
+  📅 ContentCalendar (v1.0): Proactive Content Planning Active.
+  🔍 CompetitorIntel (v1.0): Competitor Intelligence Active.
+  ✅ ScriptGenerator (v63.0): Hybrid Synthesis Engine Initialized.
+  💰 AdFriendlyChecker (v1.0): Ad-Friendly Content Verification Active.
+⚡ [AUDIO ENGINE] Retention-Optimized Bilingual Engine (v64.0) Initialized.
+   📢  Vocal Profiles: English -> en-IN-PrabhatNeural | Telugu -> te-IN-MohanNeural
+  ✅ VisualFetcher (v40.2): Script-Sync Fetcher + Validation Active.
+  ✅ ThumbnailCreator (v21.0): Rich Visual Thumbnail Engine Active.
+  🎯 CTROptimizer (v1.0): Title & Thumbnail CTR Engine Active.
+   🖥️  HW Acceleration: None (using libx264 software encoding)
+  💬 CommunityEngagement (v1.0): Community & Comment Strategy Active.
+  🧪 ABTestTracker (v1.0): A/B Test Lifecycle Manager Active.
+  🔍 CompetitorIntel (v1.0): Competitor Intelligence Active.
+📊 [RETENTION] RetentionAnalyzer v1.0 initialized.
+📱 [SHORTS] ShortsOptimizer v1.0 initialized.
+🔧 [RELIABILITY] UploadReliabilityManager v1.0 initialized.
+🔍 [QUALITY] ContentQualityEngine v1.0 initialized.
+🔧 [RELIABILITY] UploadReliabilityManager v1.0 initialized.
+
+=====================================================================================
+🕵️‍♂️ VIRALDNA MULTI-AGENT BROADCAST ENGINE SYSTEM ACTIVATION
+System Boot: 2026-05-24 17:33:10
+Agents: 5 pre + 12 task + 11 integration + 15 post = 43 total | v79.0
+=====================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ PRE-PIPELINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⚠️ [Cleanup Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Cleanup Agent] Wiping temp files and stale outputs from previous runs...
+⌛ [START] Pre-Pipeline - Cleanup...
+🤖 [Cleanup Agent] Cleanup complete: 13 items removed, 0 errors.
+🟢 [DONE] Pre-Pipeline - Cleanup (0.02s | Status: COMPLETED)
+🤖 Agent Handoff: [Cleanup Agent] complete (Elapsed: 0.02s)
+
+  ⚠️ [License Compliance] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [License Compliance] Checking image licenses and copyright compliance...
+⌛ [START] Pre-Pipeline - License Compliance...
+🤖 [License Compliance] 📋 Licenses tracked: 0 assets, 0 commercial-safe, 8 approved sources
+🟢 [DONE] Pre-Pipeline - License Compliance (0.00s | Status: COMPLETED)
+🤖 Agent Handoff: [License Compliance] complete (Elapsed: 0.00s)
+
+  ⚠️ [Upload Time Optimizer] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Upload Time Optimizer] Analyzing optimal upload times for audience timezones...
+⌛ [START] Pre-Pipeline - Upload Time Optimization...
+🟢 [DONE] Pre-Pipeline - Upload Time Optimization (0.00s | Status: FAILED)
+🤖 [Upload Time Optimizer] Upload time optimization error (non-fatal): 'UploadTimeOptimizer' object has no attribute 'get_optimal_upload_time'
+🤖 Agent Handoff: [Upload Time Optimizer] complete (Elapsed: 0.00s)
+
+  ⚠️ [Content Calendar] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Content Calendar] Checking content calendar and competitor intelligence...
+⌛ [START] Pre-Pipeline - Content Calendar...
+🟢 [DONE] Pre-Pipeline - Content Calendar (0.00s | Status: FAILED)
+🤖 [Content Calendar] Content calendar error (non-fatal): 'ContentCalendar' object has no attribute 'get_weekly_schedule'
+🤖 Agent Handoff: [Content Calendar] complete (Elapsed: 0.00s)
+
+  ⚠️ [Primetime Scheduler] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Primetime Scheduler] Evaluating optimal run mode and schedule...
+⌛ [START] Pre-Pipeline - Scheduling...
+🤖 [Primetime Scheduler] Run mode: normal | Lookback: 6h | Time: 23:03 IST
+🟢 [DONE] Pre-Pipeline - Scheduling (0.00s | Status: COMPLETED)
+🤖 Agent Handoff: [Primetime Scheduler] complete (Elapsed: 0.00s)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ MAIN PIPELINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⚠️ [Discovery Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Discovery Agent] Activating multi-source discovery (lookback=6h)...
+⌛ [START] Phase 1: Discovery - 1.1 Multi-Source Discovery...
+▶ Phase 1.1: Polling Multi-Source Discovery (lookback=6h)...
+  [Source] Polling 8 RSS feeds...
+    ⚠️ RSS failed: https://www.thehindu.com/news/national/andhra-pradesh/feeder/default.rss | ❌ NewsPayload Validation Failed: Description is empty.
+  [Source] RSS returned 15 topics
+  [Source] Polling diaspora RSS feeds...
+  [Source] Diaspora RSS returned 2 topics
+  [Source] Fetching Google Trends India...
+    ⚠️ Google Trends failed: No module named 'pytrends'
+  [Source] Google Trends returned 0 relevant topics
+  [Source] Fetching Reddit trends (5 subreddits)...
+  [Source] Reddit returned 9 relevant topics
+  [Source] Scraping YouTube Trending (India)...
+  [Source] YouTube returned 0 relevant topics
+  [Source] Scraping Inshorts...
+  [Source] Inshorts returned 0 relevant topics
+  [Dedup] Before: 26 total | After: 26 unique
+  [Spike] Running multi-signal spike scoring...
+  [Spike] Top: 'Donald Trump's new visa restrictions force Telugu ...' score=19 stage=peak
+  [Gap] Content health: 40/100 | Produce content for: finance_investment, health_wellness, culture_cinema
+▶ Phase 1.1 COMPLETE: 8 candidates discovered from expanded sources.
+🟢 [DONE] Phase 1: Discovery - 1.1 Multi-Source Discovery (14.37s | Status: COMPLETED)
+🤖 [Discovery Agent] Discovery complete. 8 candidates collected.
+🤖 Agent Handoff: [Discovery Agent] complete (Elapsed: 14.37s)
+
+🤖 [Discovery→Weighting Integration] Validating handoff — keys: ['raw_news']
+🤖 [Discovery→Weighting Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Discovery→Weighting Integration] validated (Elapsed: 0.00s)
+
+  ⚠️ [Weighting Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Weighting Agent] Evaluating news candidates against CPM and yield weights...
+⌛ [START] Phase 2: Weighting - 2.1 CPM & Viability Sorting...
+▶ Phase 1.2: Applying High-CPM Niche-Weighting Matrix...
+    Weighted Topic: Britain’s anxious young adults struggle ... | CPM Weight: 181 | Geo: 1.2x | Pillars: ['jobs_career', 'health_wellness']
+    Weighted Topic: Donald Trump's new visa restrictions for... | CPM Weight: 120 | Geo: 1.5x | Pillars: ['immigration']
+    Weighted Topic: Trump immigration policies reshape India... | CPM Weight: 82 | Geo: 1.5x | Pillars: ['immigration']
+🟢 [DONE] Phase 2: Weighting - 2.1 CPM & Viability Sorting (0.01s | Status: COMPLETED)
+🤖 [Weighting Agent] Selected: 'Britain’s anxious young adults struggle with modern workplace demands, warns UK govt advisor' (weight: 181)
+🤖 Agent Handoff: [Weighting Agent] complete (Elapsed: 0.01s)
+
+🤖 [Weighting→Scripting Integration] Validating handoff — keys: ['sorted_topics', 'selected_topic']
+🤖 [Weighting→Scripting Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Weighting→Scripting Integration] validated (Elapsed: 0.00s)
+
+
+📋 Topic Attempt 1/5: 'Britain’s anxious young adults struggle with modern workplace demands, warns UK govt advisor'
+  ⚠️ [Scripting Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Scripting Agent] Generating structured multi-duration scripts via Gemini Schema-Lock...
+⌛ [START] Phase 3: Scripting - 3.1 Gemini Script Writing...
+    Sentiment Analysis: positive (score: 1.00, click emotion: aspiration)
+    Script Generator: Attempting dynamic synthesis via Gemini API...
+    GeminiEngine: Routing structured to google/gemini-2.5-flash via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-flash failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 4000 tokens, but can only afford 3105. To increase, visit https://openrouter.ai/settings/credits and u
+    GeminiEngine: Routing structured to google/gemini-2.5-pro via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-pro failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 4000 tokens, but can only afford 776. To increase, visit https://openrouter.ai/settings/credits and up
+    GeminiEngine: Routing structured to meta-llama/llama-3-8b-instruct via OpenRouter...
+    ✅ GeminiEngine Success: meta-llama/llama-3-8b-instruct responded via OpenRouter.
+    [main] Best title (CTR 45/100): Britain Urgent Call for Workplace Reform...
+    [short_1] Best title (CTR 45/100): Will Britain's Young Professionals Keep Pace?...
+    [short_2] Best title (CTR 40/100): Workplace Hurdles Ahead for Young Adults...
+    [short_3] Best title (CTR 48/100): Your Statements: ViralDNA Analysis Today...
+    ✅ Dynamic Script Synthesis Successful! (Main: 119 words)
+    📊 Script Audit: Main duration is 52.7s | Word Count: 123
+    📊 Script Audit: Short 1 duration is 7.3s | Word Count: 17
+🟢 [DONE] Phase 3: Scripting - 3.1 Gemini Script Writing (13.31s | Status: COMPLETED)
+🤖 [Scripting Agent] Scripts validated under timing and word count rules.
+🤖 Agent Handoff: [Scripting Agent] complete (Elapsed: 13.31s)
+
+🤖 [Scripting→Compliance Integration] Validating handoff — keys: ['script_payload']
+🤖 [Scripting→Compliance Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Scripting→Compliance Integration] validated (Elapsed: 0.00s)
+
+  ⚠️ [Compliance Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Compliance Agent] Running zero-tolerance compliance checklist...
+⌛ [START] Phase 4: Safety - 4.1 Legal & Regex Audit...
+🟢 [DONE] Phase 4: Safety - 4.1 Legal & Regex Audit (0.00s | Status: FAILED)
+
+⚠️ FAILURE in [Compliance Agent]: Compliance Agent failed: name 'attribution' is not defined
+  → Skipping to next topic...
+
+📋 Topic Attempt 2/5: 'Donald Trump's new visa restrictions force Telugu NRIs to find match in US - The Times of India'
+  ⚠️ [Scripting Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Scripting Agent] Generating structured multi-duration scripts via Gemini Schema-Lock...
+⌛ [START] Phase 3: Scripting - 3.1 Gemini Script Writing...
+    Sentiment Analysis: neutral (score: 0.00, click emotion: curiosity)
+    Script Generator: Attempting dynamic synthesis via Gemini API...
+    GeminiEngine: Routing structured to google/gemini-2.5-flash via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-flash failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 4000 tokens, but can only afford 3105. To increase, visit https://openrouter.ai/settings/credits and u
+    GeminiEngine: Routing structured to google/gemini-2.5-pro via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-pro failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 4000 tokens, but can only afford 776. To increase, visit https://openrouter.ai/settings/credits and up
+    GeminiEngine: Routing structured to meta-llama/llama-3-8b-instruct via OpenRouter...
+    ✅ GeminiEngine Success: meta-llama/llama-3-8b-instruct responded via OpenRouter.
+    [main] Best title (CTR 53/100): Breaking News: New Visa Restrictions Hit Telugu NRIs Hard...
+    [short_1] Best title (CTR 30/100): The Hunt for Love is On!...
+    [short_2] Best title (CTR 53/100): Breaking News: The Impact of Visa Restrictions Explained...
+    [short_3] Best title (CTR 30/100): Stay Informed, Stay Ahead!...
+    ✅ Dynamic Script Synthesis Successful! (Main: 151 words)
+    📊 Script Audit: Main duration is 65.6s | Word Count: 153
+    📊 Script Audit: Short 1 duration is 10.3s | Word Count: 24
+🟢 [DONE] Phase 3: Scripting - 3.1 Gemini Script Writing (11.37s | Status: COMPLETED)
+🤖 [Scripting Agent] Scripts validated under timing and word count rules.
+🤖 Agent Handoff: [Scripting Agent] complete (Elapsed: 11.37s)
+
+🤖 [Scripting→Compliance Integration] Validating handoff — keys: ['script_payload']
+🤖 [Scripting→Compliance Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Scripting→Compliance Integration] validated (Elapsed: 0.00s)
+
+  ⚠️ [Compliance Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Compliance Agent] Running zero-tolerance compliance checklist...
+⌛ [START] Phase 4: Safety - 4.1 Legal & Regex Audit...
+🟢 [DONE] Phase 4: Safety - 4.1 Legal & Regex Audit (0.00s | Status: FAILED)
+
+⚠️ FAILURE in [Compliance Agent]: Compliance Agent failed: name 'attribution' is not defined
+  → Skipping to next topic...
+
+📋 Topic Attempt 3/5: 'Trump immigration policies reshape Indian weddings in United States - Hyderabad Mail'
+  ⚠️ [Scripting Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Scripting Agent] Generating structured multi-duration scripts via Gemini Schema-Lock...
+⌛ [START] Phase 3: Scripting - 3.1 Gemini Script Writing...
+    Sentiment Analysis: negative (score: -1.00, click emotion: urgency_fear)
+    Script Generator: Attempting dynamic synthesis via Gemini API...
+    GeminiEngine: Routing structured to google/gemini-2.5-flash via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-flash failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 4000 tokens, but can only afford 3105. To increase, visit https://openrouter.ai/settings/credits and u
+    GeminiEngine: Routing structured to google/gemini-2.5-pro via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-pro failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 4000 tokens, but can only afford 776. To increase, visit https://openrouter.ai/settings/credits and up
+    GeminiEngine: Routing structured to meta-llama/llama-3-8b-instruct via OpenRouter...
+    ✅ GeminiEngine Success: meta-llama/llama-3-8b-instruct responded via OpenRouter.
+    [main] Best title (CTR 40/100): Trump Immigration Policies Reshape Indian Weddings...
+    [short_1] Best title (CTR 48/100): American Nightmare : Indian Couples Face Green Card Struggle...
+    [short_2] Best title (CTR 43/100): Indian Weddings : What's Changed?...
+    [short_3] Best title (CTR 30/100): Overcome US Immigration Policy...
+    ✅ Dynamic Script Synthesis Successful! (Main: 146 words)
+    📊 Script Audit: Main duration is 64.7s | Word Count: 151
+    📊 Script Audit: Short 1 duration is 9.4s | Word Count: 22
+🟢 [DONE] Phase 3: Scripting - 3.1 Gemini Script Writing (9.32s | Status: COMPLETED)
+🤖 [Scripting Agent] Scripts validated under timing and word count rules.
+🤖 Agent Handoff: [Scripting Agent] complete (Elapsed: 9.32s)
+
+🤖 [Scripting→Compliance Integration] Validating handoff — keys: ['script_payload']
+🤖 [Scripting→Compliance Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Scripting→Compliance Integration] validated (Elapsed: 0.00s)
+
+  ⚠️ [Compliance Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Compliance Agent] Running zero-tolerance compliance checklist...
+⌛ [START] Phase 4: Safety - 4.1 Legal & Regex Audit...
+🟢 [DONE] Phase 4: Safety - 4.1 Legal & Regex Audit (0.00s | Status: FAILED)
+
+⚠️ FAILURE in [Compliance Agent]: Compliance Agent failed: name 'attribution' is not defined
+  → Skipping to next topic...
+
+📋 Topic Attempt 4/5: 'Anyone Here Done an Amazon Canada → USA Internal Transfer? (L3-L4 Area manager role)Need Real Advice'
+  ⚠️ [Scripting Agent] Learning step error (non-fatal): 'NoneType' object has no attribute 'get'
+🤖 [Scripting Agent] Generating structured multi-duration scripts via Gemini Schema-Lock...
+⌛ [START] Phase 3: Scripting - 3.1 Gemini Script Writing...
+    Sentiment Analysis: neutral (score: 0.00, click emotion: curiosity)
+    Script Generator: Attempting dynamic synthesis via Gemini API...
+    GeminiEngine: Routing structured to google/gemini-2.5-flash via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-flash failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 4000 tokens, but can only afford 3099. To increase, visit https://openrouter.ai/settings/credits and u
+    GeminiEngine: Routing structured to google/gemini-2.5-pro via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-pro failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 4000 tokens, but can only afford 774. To increase, visit https://openrouter.ai/settings/credits and up
+    GeminiEngine: Routing structured to meta-llama/llama-3-8b-instruct via OpenRouter...

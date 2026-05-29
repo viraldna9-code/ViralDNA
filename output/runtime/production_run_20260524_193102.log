@@ -1,0 +1,300 @@
+  📋 LicenseTracker (v1.0): Image License & Copyright Tracker Active.
+  📅 ContentCalendar (v1.0): Proactive Content Planning Active.
+  🔍 CompetitorIntel (v1.0): Competitor Intelligence Active.
+  ✅ ScriptGenerator (v63.0): Hybrid Synthesis Engine Initialized.
+  💰 AdFriendlyChecker (v1.0): Ad-Friendly Content Verification Active.
+⚡ [AUDIO ENGINE] Retention-Optimized Bilingual Engine (v64.0) Initialized.
+   📢  Vocal Profiles: English -> en-IN-PrabhatNeural | Telugu -> te-IN-MohanNeural
+  ✅ VisualFetcher (v40.2): Script-Sync Fetcher + Validation Active.
+  ✅ ThumbnailCreator (v21.0): Rich Visual Thumbnail Engine Active.
+  🎯 CTROptimizer (v1.0): Title & Thumbnail CTR Engine Active.
+   🖥️  HW Acceleration: None (using libx264 software encoding)
+  💬 CommunityEngagement (v1.0): Community & Comment Strategy Active.
+  🧪 ABTestTracker (v1.0): A/B Test Lifecycle Manager Active.
+  🔍 CompetitorIntel (v1.0): Competitor Intelligence Active.
+📊 [RETENTION] RetentionAnalyzer v1.0 initialized.
+📱 [SHORTS] ShortsOptimizer v1.0 initialized.
+🔧 [RELIABILITY] UploadReliabilityManager v1.0 initialized.
+🔍 [QUALITY] ContentQualityEngine v1.0 initialized.
+🔧 [RELIABILITY] UploadReliabilityManager v1.0 initialized.
+
+=====================================================================================
+🕵️‍♂️ VIRALDNA MULTI-AGENT BROADCAST ENGINE SYSTEM ACTIVATION
+System Boot: 2026-05-24 19:31:03
+Agents: 5 pre + 12 task + 11 integration + 15 post = 43 total | v79.0
+=====================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ PRE-PIPELINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🤖 [Cleanup Agent] Wiping temp files and stale outputs from previous runs...
+⌛ [START] Pre-Pipeline - Cleanup...
+🤖 [Cleanup Agent] Cleanup complete: 5 items removed, 0 errors.
+🟢 [DONE] Pre-Pipeline - Cleanup (0.00s | Status: COMPLETED)
+🤖 Agent Handoff: [Cleanup Agent] complete (Elapsed: 0.00s)
+
+🤖 [License Compliance] Checking image licenses and copyright compliance...
+⌛ [START] Pre-Pipeline - License Compliance...
+🤖 [License Compliance] 📋 Licenses tracked: 0 assets, 0 commercial-safe, 8 approved sources
+🟢 [DONE] Pre-Pipeline - License Compliance (0.00s | Status: COMPLETED)
+🤖 Agent Handoff: [License Compliance] complete (Elapsed: 0.00s)
+
+🤖 [Upload Time Optimizer] Analyzing optimal upload times for audience timezones...
+⌛ [START] Pre-Pipeline - Upload Time Optimization...
+🟢 [DONE] Pre-Pipeline - Upload Time Optimization (0.00s | Status: FAILED)
+🤖 [Upload Time Optimizer] Upload time optimization error (non-fatal): 'UploadTimeOptimizer' object has no attribute 'get_optimal_upload_time'
+🤖 Agent Handoff: [Upload Time Optimizer] complete (Elapsed: 0.00s)
+
+🤖 [Content Calendar] Checking content calendar and competitor intelligence...
+⌛ [START] Pre-Pipeline - Content Calendar...
+🤖 [Content Calendar] 📅 Calendar: ? shorts/week planned
+🤖 [Content Calendar] 🔍 Competitor gaps: 10 content gaps identified
+🤖 [Content Calendar]   → Gap: Daily H1B visa bulletin updates
+🤖 [Content Calendar]   → Gap: Neighborhood-specific NRI community guides
+🤖 [Content Calendar]   → Gap: Telugu language preservation for US-born kids
+🟢 [DONE] Pre-Pipeline - Content Calendar (0.00s | Status: COMPLETED)
+🤖 Agent Handoff: [Content Calendar] complete (Elapsed: 0.00s)
+
+🤖 [Primetime Scheduler] Evaluating optimal run mode and schedule...
+⌛ [START] Pre-Pipeline - Scheduling...
+🤖 [Primetime Scheduler] Quiet hours detected (1:00 IST) — reduced pipeline
+🤖 [Primetime Scheduler] Run mode: quiet | Lookback: 6h | Time: 01:01 IST
+🟢 [DONE] Pre-Pipeline - Scheduling (0.00s | Status: COMPLETED)
+🤖 Agent Handoff: [Primetime Scheduler] complete (Elapsed: 0.00s)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ MAIN PIPELINE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🤖 [Discovery Agent] Activating multi-source discovery (lookback=6h)...
+⌛ [START] Phase 1: Discovery - 1.1 Multi-Source Discovery...
+▶ Phase 1.1: Polling Multi-Source Discovery (lookback=6h)...
+  [Source] Polling 8 RSS feeds...
+    ⚠️ RSS failed: https://www.thehindu.com/news/national/andhra-pradesh/feeder/default.rss | ❌ NewsPayload Validation Failed: Description is empty.
+  [Source] RSS returned 15 topics
+  [Source] Polling diaspora RSS feeds...
+  [Source] Diaspora RSS returned 2 topics
+  [Source] Fetching Google Trends India...
+    ⚠️ Google Trends failed: No module named 'pytrends'
+  [Source] Google Trends returned 0 relevant topics
+  [Source] Fetching Reddit trends (5 subreddits)...
+  [Source] Reddit returned 7 relevant topics
+  [Source] Scraping YouTube Trending (India)...
+  [Source] YouTube returned 0 relevant topics
+  [Source] Scraping Inshorts...
+  [Source] Inshorts returned 0 relevant topics
+  [Dedup] Before: 24 total | After: 24 unique
+  [Spike] Running multi-signal spike scoring...
+  [Spike] Top: 'Ebola alert declared in Andhra Pradesh - Telangana...' score=24 stage=rising
+  [Gap] Content health: 64/100 | Produce content for: health_wellness, culture_cinema, real_estate
+▶ Phase 1.1 COMPLETE: 8 candidates discovered from expanded sources.
+🟢 [DONE] Phase 1: Discovery - 1.1 Multi-Source Discovery (16.15s | Status: COMPLETED)
+🤖 [Discovery Agent] Discovery complete. 8 candidates collected.
+🤖 Agent Handoff: [Discovery Agent] complete (Elapsed: 16.15s)
+
+🤖 [Discovery→Weighting Integration] Validating handoff — keys: ['raw_news']
+🤖 [Discovery→Weighting Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Discovery→Weighting Integration] validated (Elapsed: 0.00s)
+
+🤖 [Weighting Agent] Evaluating news candidates against CPM and yield weights...
+⌛ [START] Phase 2: Weighting - 2.1 CPM & Viability Sorting...
+▶ Phase 1.2: Applying High-CPM Niche-Weighting Matrix...
+    Weighted Topic: H1-B relief? USCIS says some visa holder... | CPM Weight: 201 | Geo: 1.5x | Pillars: ['immigration']
+    Weighted Topic: Britain’s anxious young adults struggle ... | CPM Weight: 181 | Geo: 1.2x | Pillars: ['jobs_career', 'health_wellness']
+    Weighted Topic: Donald Trump's new visa restrictions for... | CPM Weight: 126 | Geo: 1.5x | Pillars: ['immigration']
+🟢 [DONE] Phase 2: Weighting - 2.1 CPM & Viability Sorting (0.01s | Status: COMPLETED)
+🤖 [Weighting Agent] Selected: 'H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process' (weight: 201)
+🤖 Agent Handoff: [Weighting Agent] complete (Elapsed: 0.01s)
+
+🤖 [Weighting→Scripting Integration] Validating handoff — keys: ['sorted_topics', 'selected_topic']
+🤖 [Weighting→Scripting Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Weighting→Scripting Integration] validated (Elapsed: 0.00s)
+
+
+📋 Topic Attempt 1/5: 'H1-B relief? USCIS says some visa holders may not need to leave US for Green Card process'
+🤖 [Scripting Agent] Generating structured multi-duration scripts via Gemini Schema-Lock...
+⌛ [START] Phase 3: Scripting - 3.1 Gemini Script Writing...
+    Sentiment Analysis: neutral (score: 0.00, click emotion: curiosity)
+    Script Generator: Attempting dynamic synthesis via Gemini API...
+    GeminiEngine: Routing structured to direct gemini-2.0-flash...
+    ⚠️ Direct model gemini-2.0-flash error: You exceeded your current quota, please check your plan and billing details. For more information on
+    GeminiEngine: Routing structured to direct gemini-2.5-flash...
+    ⚠️ Direct model gemini-2.5-flash error: You exceeded your current quota, please check your plan and billing details. For more information on
+    GeminiEngine: Routing structured to direct gemini-2.5-pro...
+    ⚠️ Direct model gemini-2.5-pro error: You exceeded your current quota, please check your plan and billing details. For more information on
+    GeminiEngine: Fallback routing structured to google/gemini-2.5-flash via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-flash failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 40
+    GeminiEngine: Fallback routing structured to google/gemini-2.5-pro via OpenRouter...
+    ⚠️ OpenRouter model google/gemini-2.5-pro failed: {"error":{"message":"This request requires more credits, or fewer max_tokens. You requested up to 40
+    GeminiEngine: Fallback routing structured to meta-llama/llama-3-8b-instruct via OpenRouter...
+    ✅ GeminiEngine Success: meta-llama/llama-3-8b-instruct responded via OpenRouter.
+    [main] Best title (CTR 71/100): Immigration Update: H1-B Visa Holders Get Relief...
+    [short_1] Best title (CTR 71/100): Immigration Update: H1-B Visa Holders Exempt from US Exit...
+    [short_2] Best title (CTR 66/100): H1-B Visa News: Implications for Green Card Holders...
+    [short_3] Best title (CTR 71/100): H1-B Visa News: Your Next Steps Revealed...
+    ✅ Dynamic Script Synthesis Successful! (Main: 167 words)
+    📊 Script Audit: Main duration is 73.3s | Word Count: 171
+    📊 Script Audit: Short 1 duration is 14.1s | Word Count: 33
+🟢 [DONE] Phase 3: Scripting - 3.1 Gemini Script Writing (13.11s | Status: COMPLETED)
+🤖 [Scripting Agent] Scripts validated under timing and word count rules.
+🤖 Agent Handoff: [Scripting Agent] complete (Elapsed: 13.11s)
+
+🤖 [Scripting→Compliance Integration] Validating handoff — keys: ['script_payload']
+🤖 [Scripting→Compliance Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Scripting→Compliance Integration] validated (Elapsed: 0.00s)
+
+🤖 [Compliance Agent] Running zero-tolerance compliance checklist...
+⌛ [START] Phase 4: Safety - 4.1 Legal & Regex Audit...
+🟢 [DONE] Phase 4: Safety - 4.1 Legal & Regex Audit (0.00s | Status: COMPLETED)
+🤖 [Compliance Agent] Compliance PASSED. Script cleared for synthesis.
+🤖 Agent Handoff: [Compliance Agent] complete (Elapsed: 0.00s)
+
+🤖 [Compliance→AdFriendly Integration] Validating handoff — keys: ['compliance_result', 'selected_topic']
+🤖 [Compliance→AdFriendly Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Compliance→AdFriendly Integration] validated (Elapsed: 0.00s)
+
+🤖 [Ad-Friendly Checker] Running advertiser-friendly content analysis...
+⌛ [START] Phase 4: Safety - 4.2 Ad-Friendly Check...
+🤖 [Ad-Friendly Checker] ✅ Ad-Friendly Score: 100/100 (Risk: LOW) — Full ads expected
+🟢 [DONE] Phase 4: Safety - 4.2 Ad-Friendly Check (0.00s | Status: COMPLETED)
+🤖 Agent Handoff: [Ad-Friendly Checker] complete (Elapsed: 0.00s)
+
+🤖 [Compliance→Voice Integration] Validating handoff — keys: ['compliance_result']
+🤖 [Compliance→Voice Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Compliance→Voice Integration] validated (Elapsed: 0.00s)
+
+🤖 [Voice Synthesis Agent] Starting broadcast-grade bilingual voice synthesis...
+⌛ [START] Phase 5: Voiceover - 5.1 Synthesis (main)...
+🤖 [Voice Synthesis Agent] Synthesizing slot 'main' via Edge-TTS bilingual voices...
+▶ [AUDIO ENGINE] Beginning generation for slot: main...
+   📺 Format Detected: Long-Form Main Video (Trustworthy, Authoritative News preset)
+   🔍 Forensic Segment Audit: Found 12 bilingual segments.
+      🇺🇸 English: 171 words | 🇮🇳 Telugu: 0 words (Telugu ratio: 0.0%)
+   🎙️  Synthesizing voice segments with retention-optimized pacing...
+   🧩  Assembling retention-optimized stitching schedule...
+   🔗  Concatenating audio segments offline...
+   🎛️  DSP Mastering: Applying Highpass, Compressor, and Brickwall Limiter...
+   ✅ [FORENSIC AUDIT] Audio mastering completed successfully!
+      📁 Final Audio File: /home/jay/ViralDNA/audio/main_final.mp3
+      ⚖️  File Size: 2149965 bytes (2099.6 KB)
+      🧠 Retention pacing: 12 segments, 2 pattern interrupts
+🟢 [DONE] Phase 5: Voiceover - 5.1 Synthesis (main) (18.16s | Status: COMPLETED)
+⌛ [START] Phase 5: Voiceover - 5.1 Synthesis (short_1)...
+🤖 [Voice Synthesis Agent] Synthesizing slot 'short_1' via Edge-TTS bilingual voices...
+▶ [AUDIO ENGINE] Beginning generation for slot: short_1...
+   📱 Format Detected: Shorts/Reels (Fast-Paced, High-Retention Hype preset)
+   🔍 Forensic Segment Audit: Found 3 bilingual segments.
+      🇺🇸 English: 33 words | 🇮🇳 Telugu: 0 words (Telugu ratio: 0.0%)
+   🎙️  Synthesizing voice segments with retention-optimized pacing...
+   🧩  Assembling retention-optimized stitching schedule...
+   🔗  Concatenating audio segments offline...
+   🎛️  DSP Mastering: Applying Highpass, Compressor, and Brickwall Limiter...
+   ✅ [FORENSIC AUDIT] Audio mastering completed successfully!
+      📁 Final Audio File: /home/jay/ViralDNA/audio/short_1_final.mp3
+      ⚖️  File Size: 313965 bytes (306.6 KB)
+      🧠 Retention pacing: 3 segments, 0 pattern interrupts
+🟢 [DONE] Phase 5: Voiceover - 5.1 Synthesis (short_1) (10.75s | Status: COMPLETED)
+⌛ [START] Phase 5: Voiceover - 5.1 Synthesis (short_2)...
+🤖 [Voice Synthesis Agent] Synthesizing slot 'short_2' via Edge-TTS bilingual voices...
+▶ [AUDIO ENGINE] Beginning generation for slot: short_2...
+   📱 Format Detected: Shorts/Reels (Fast-Paced, High-Retention Hype preset)
+   🔍 Forensic Segment Audit: Found 3 bilingual segments.
+      🇺🇸 English: 37 words | 🇮🇳 Telugu: 0 words (Telugu ratio: 0.0%)
+   🎙️  Synthesizing voice segments with retention-optimized pacing...
+   🧩  Assembling retention-optimized stitching schedule...
+   🔗  Concatenating audio segments offline...
+   🎛️  DSP Mastering: Applying Highpass, Compressor, and Brickwall Limiter...
+   ✅ [FORENSIC AUDIT] Audio mastering completed successfully!
+      📁 Final Audio File: /home/jay/ViralDNA/audio/short_2_final.mp3
+      ⚖️  File Size: 332205 bytes (324.4 KB)
+      🧠 Retention pacing: 3 segments, 1 pattern interrupts
+🟢 [DONE] Phase 5: Voiceover - 5.1 Synthesis (short_2) (3.95s | Status: COMPLETED)
+⌛ [START] Phase 5: Voiceover - 5.1 Synthesis (short_3)...
+🤖 [Voice Synthesis Agent] Synthesizing slot 'short_3' via Edge-TTS bilingual voices...
+▶ [AUDIO ENGINE] Beginning generation for slot: short_3...
+   📱 Format Detected: Shorts/Reels (Fast-Paced, High-Retention Hype preset)
+   🔍 Forensic Segment Audit: Found 3 bilingual segments.
+      🇺🇸 English: 41 words | 🇮🇳 Telugu: 0 words (Telugu ratio: 0.0%)
+   🎙️  Synthesizing voice segments with retention-optimized pacing...
+   🧩  Assembling retention-optimized stitching schedule...
+   🔗  Concatenating audio segments offline...
+   🎛️  DSP Mastering: Applying Highpass, Compressor, and Brickwall Limiter...
+   ✅ [FORENSIC AUDIT] Audio mastering completed successfully!
+      📁 Final Audio File: /home/jay/ViralDNA/audio/short_3_final.mp3
+      ⚖️  File Size: 389325 bytes (380.2 KB)
+      🧠 Retention pacing: 3 segments, 0 pattern interrupts
+🟢 [DONE] Phase 5: Voiceover - 5.1 Synthesis (short_3) (4.13s | Status: COMPLETED)
+🤖 Agent Handoff: [Voice Synthesis Agent] complete (Elapsed: 36.99s)
+
+🤖 [Voice→Visual Integration] Validating handoff — keys: ['voiceover_assets']
+🤖 [Voice→Visual Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Voice→Visual Integration] validated (Elapsed: 0.00s)
+
+🤖 [Visual Harvester] Harvesting high-resolution background visuals...
+⌛ [START] Phase 5: Visuals - 5.2 Fetch Background Visuals...
+    ⚠️ Suspicious Content-Type 'text/html; charset="utf-8"' for: https://lookaside.fbsbx.com/lookaside/crawler/media/?media_i
+    ⚠️ Image rejected (too small: 388 bytes): https://lookaside.fbsbx.com/lookaside/crawler/media/?media_i
+    ⚠️ Suspicious Content-Type 'text/html; charset="utf-8"' for: https://lookaside.instagram.com/seo/google_widget/crawler/?m
+    ⚠️ Image rejected (HTML page, not image): https://lookaside.instagram.com/seo/google_widget/crawler/?m
+    ⚠️ Image rejected (too small: 300x128): https://www.immi-usa.com/wp-content/smush-webp/2023/08/h1b-t
+🟢 [DONE] Phase 5: Visuals - 5.2 Fetch Background Visuals (4.75s | Status: COMPLETED)
+🤖 [Visual Harvester] Visual harvesting complete.
+🤖 Agent Handoff: [Visual Harvester] complete (Elapsed: 4.75s)
+
+🤖 [Visual→Thumbnail Integration] Validating handoff — keys: ['visuals']
+🤖 [Visual→Thumbnail Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Visual→Thumbnail Integration] validated (Elapsed: 0.00s)
+
+🤖 [Thumbnail Synthesizer] Rendering clean canvas and branded thumbnail card...
+⌛ [START] Phase 6: Thumbnails - 6.1 Canvas Synthesis...
+🟢 [DONE] Phase 6: Thumbnails - 6.1 Canvas Synthesis (0.07s | Status: COMPLETED)
+🤖 [Thumbnail Synthesizer] Canvas: /home/jay/ViralDNA/thumbnails/production_clean.jpg
+🤖 [Thumbnail Synthesizer] Thumbnail: /home/jay/ViralDNA/thumbnails/production_branded.jpg
+🤖 Agent Handoff: [Thumbnail Synthesizer] complete (Elapsed: 0.07s)
+
+🤖 [Thumbnail→Assembly Integration] Validating handoff — keys: ['background_canvas', 'branded_thumbnail']
+🤖 [Thumbnail→Assembly Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [Thumbnail→Assembly Integration] validated (Elapsed: 0.00s)
+
+🤖 [CTR Optimizer] Optimizing title and metadata for CTR...
+⌛ [START] Phase 6: Thumbnails - 6.2 CTR Optimization...
+  🧪 ABTestTracker (v1.0): A/B Test Lifecycle Manager Active.
+  🧪 Test created: ab_title_20260525010214 [title]
+     Hypothesis: CTR title test variant 0
+  🧪 Test created: ab_title_20260525010214 [title]
+     Hypothesis: CTR title test variant 1
+  🧪 Test created: ab_title_20260525010214 [title]
+     Hypothesis: CTR title test variant 2
+  🧪 Test created: ab_title_20260525010214 [title]
+     Hypothesis: CTR title test variant 3
+🤖 [CTR Optimizer] 🏆 Best title: 'US Immigration: What You Need to Know' (score: 34.5)
+🤖 [CTR Optimizer] 📊 A/B variants generated: 4
+🟢 [DONE] Phase 6: Thumbnails - 6.2 CTR Optimization (0.00s | Status: COMPLETED)
+🤖 Agent Handoff: [CTR Optimizer] complete (Elapsed: 0.00s)
+
+🤖 [CTR→Assembly Integration] Validating handoff — keys: ['optimized_title', 'branded_thumbnail']
+🤖 [CTR→Assembly Integration] ✅ Handoff validation PASSED.
+🔗 Integration Gate: [CTR→Assembly Integration] validated (Elapsed: 0.00s)
+
+🤖 [Sequential Assembler] Starting sequential FFmpeg assembly (one video at a time)...
+⌛ [START] Phase 7: Assembly - 7.1 Sequential Compilation...
+🤖 [Sequential Assembler] 📋 Publish Decision: 1 Main Video + 3 Short(s) — Category: general | Background → reduce shorts | Low source diversity | Evergreen content → main + shorts | Series: visa_weekly | Monday boost: +1 short | Day: Monday
+🤖 [Sequential Assembler] Assembling production_main.mp4 (sequential)...
+    Assembler: Probed physical audio duration -> 107.47s (Overriding target 73.29s)
+    Assembler: Successfully wrote timed ASS subtitles to /home/jay/ViralDNA/audio/production_main.mp4.ass
+    Assembler: Preparing generative slideshow (5 scenes) via multi-source image chain...
+    GeminiEngine: Routing raw ask to direct gemini-2.0-flash...
+    ⚠️ Direct model gemini-2.0-flash error: You exceeded your current quota, please check your plan and billing details. For more information on
+    GeminiEngine: Routing raw ask to direct gemini-2.5-flash...
+    ⚠️ Direct model gemini-2.5-flash error: You exceeded your current quota, please check your plan and billing details. For more information on
+    GeminiEngine: Routing raw ask to direct gemini-2.5-pro...
+    ⚠️ Direct model gemini-2.5-pro error: You exceeded your current quota, please check your plan and billing details. For more information on
+    GeminiEngine: Fallback routing raw ask to google/gemini-2.5-flash via OpenRouter...
+    ✅ GeminiEngine Success: google/gemini-2.5-flash responded via OpenRouter.
+    Assembler: Successfully generated 5 custom prompts via GeminiEngine.
+    Assembler: [Serper] Fetching scene 0...
+      ✅ [Serper] Scene 0 saved (48,908 bytes)
+    Assembler: [Serper] Fetching scene 1...
+      ✅ [Serper] Scene 1 saved (188,000 bytes)
+    Assembler: [Serper] Fetching scene 2...
+      ✅ [Serper] Scene 2 saved (156,112 bytes)
+    Assembler: [Serper] Fetching scene 3...
+      ✅ [Serper] Scene 3 saved (129,974 bytes)
+    Assembler: [Serper] Fetching scene 4...
+      ✅ [Serper] Scene 4 saved (37,371 bytes)
+    Assembler: Syncing frames. Target: 107.47s | Encoder: libx264...

@@ -1,0 +1,7 @@
+file '/home/jay/ViralDNA/output/runtime/trailer/trailer_scenes/scene_00_hook.mp4'
+file '/home/jay/ViralDNA/output/runtime/trailer/trailer_scenes/scene_01_diaspora_reach.mp4'
+file '/home/jay/ViralDNA/output/runtime/trailer/trailer_scenes/scene_02_content_showcase.mp4'
+file '/home/jay/ViralDNA/output/runtime/trailer/trailer_scenes/scene_03_ai_disclosure.mp4'
+file '/home/jay/ViralDNA/output/runtime/trailer/trailer_scenes/scene_04_real_news.mp4'
+file '/home/jay/ViralDNA/output/runtime/trailer/trailer_scenes/scene_05_brand_reveal.mp4'
+file '/home/jay/ViralDNA/output/runtime/trailer/trailer_scenes/scene_06_cta.mp4'

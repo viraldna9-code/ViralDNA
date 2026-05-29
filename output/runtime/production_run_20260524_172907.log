@@ -1,0 +1,27 @@
+  📋 LicenseTracker (v1.0): Image License & Copyright Tracker Active.
+  📅 ContentCalendar (v1.0): Proactive Content Planning Active.
+  🔍 CompetitorIntel (v1.0): Competitor Intelligence Active.
+  ✅ ScriptGenerator (v63.0): Hybrid Synthesis Engine Initialized.
+  💰 AdFriendlyChecker (v1.0): Ad-Friendly Content Verification Active.
+⚡ [AUDIO ENGINE] Retention-Optimized Bilingual Engine (v64.0) Initialized.
+   📢  Vocal Profiles: English -> en-IN-PrabhatNeural | Telugu -> te-IN-MohanNeural
+  ✅ VisualFetcher (v40.2): Script-Sync Fetcher + Validation Active.
+  ✅ ThumbnailCreator (v21.0): Rich Visual Thumbnail Engine Active.
+  🎯 CTROptimizer (v1.0): Title & Thumbnail CTR Engine Active.
+   🖥️  HW Acceleration: None (using libx264 software encoding)
+  💬 CommunityEngagement (v1.0): Community & Comment Strategy Active.
+  🧪 ABTestTracker (v1.0): A/B Test Lifecycle Manager Active.
+  🔍 CompetitorIntel (v1.0): Competitor Intelligence Active.
+📊 [RETENTION] RetentionAnalyzer v1.0 initialized.
+📱 [SHORTS] ShortsOptimizer v1.0 initialized.
+🔧 [RELIABILITY] UploadReliabilityManager v1.0 initialized.
+🔍 [QUALITY] ContentQualityEngine v1.0 initialized.
+🔧 [RELIABILITY] UploadReliabilityManager v1.0 initialized.
+Traceback (most recent call last):
+  File "/home/jay/modules/run_multi_agent_pipeline.py", line 2129, in <module>
+    orchestrator = MultiAgentOrchestrator()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jay/modules/run_multi_agent_pipeline.py", line 1949, in __init__
+    self.ledger = GrowthObserver().load_ledger()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'GrowthObserver' object has no attribute 'load_ledger'

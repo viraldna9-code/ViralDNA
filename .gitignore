@@ -1,0 +1,57 @@
+# Credentials and secrets
+credentials/
+*.json
+!README.md
+!.gitignore
+
+# Secrets / env
+.env
+*.env
+
+# Generated videos (too large for git)
+videos/
+*.mp4
+*.mp3
+*.wav
+*.mkv
+*.webm
+
+# Audio assets (large files)
+audio/*.mp3
+audio/*.wav
+!audio/*.py
+!audio/*.sh
+
+# Generated images (can be rebuilt)
+thumbnails/
+assets/frames/
+assets/logos/*.png
+assets/logos/*.jpg
+!assets/logos/.gitkeep
+
+# Render intermediates
+render_*/
+temp/
+tmp/
+*.ass
+
+# Monitor state (saved as artifact, not in git)
+monitor_state.json
+logs/
+monitor_log.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp

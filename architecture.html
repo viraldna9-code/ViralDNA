@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { background: #020617; color: #f8fafc; font-family: 'JetBrains Mono', monospace; margin: 40px; }
+        .diagram-container { border: 1px solid #1e293b; border-radius: 12px; padding: 20px; background: #0f172a; }
+        h1 { color: #22d3ee; }
+    </style>
+</head>
+<body>
+    <h1>ViralDNA Production Pipeline Architecture</h1>
+    <div class="diagram-container">
+        <svg width="1000" height="600" viewBox="0 0 1000 600">
+            <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+                </pattern>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#94a3b8" />
+                </marker>
+            </defs>
+            <rect width="1000" height="600" fill="url(#grid)" />
+            
+            <!-- Nodes -->
+            <rect x="50" y="50" width="150" height="500" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" rx="6" />
+            <text x="125" y="40" text-anchor="middle" fill="#94a3b8">Discovery Layer</text>
+            
+            <rect x="250" y="50" width="150" height="500" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" rx="6" />
+            <text x="325" y="40" text-anchor="middle" fill="#34d399">Scripting &amp; AI</text>
+            
+            <rect x="450" y="50" width="150" height="500" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" rx="6" />
+            <text x="525" y="40" text-anchor="middle" fill="#22d3ee">Assets &amp; Voice</text>
+            
+            <rect x="650" y="50" width="150" height="500" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" rx="6" />
+            <text x="725" y="40" text-anchor="middle" fill="#a78bfa">Assembly</text>
+
+            <rect x="850" y="50" width="120" height="500" fill="rgba(136, 19, 55, 0.4)" stroke="#fb7185" rx="6" />
+            <text x="910" y="40" text-anchor="middle" fill="#fb7185">Publishing</text>
+
+            <!-- Connections -->
+            <line x1="200" y1="250" x2="250" y2="250" stroke="#94a3b8" marker-end="url(#arrow)" />
+            <line x1="400" y1="250" x2="450" y2="250" stroke="#94a3b8" marker-end="url(#arrow)" />
+            <line x1="600" y1="250" x2="650" y2="250" stroke="#94a3b8" marker-end="url(#arrow)" />
+            <line x1="800" y1="250" x2="850" y2="250" stroke="#94a3b8" marker-end="url(#arrow)" />
+        </svg>
+    </div>
+</body>
+</html>
