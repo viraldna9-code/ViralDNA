@@ -93,10 +93,14 @@ def add_publish_entry(entry):
 def git_pull():
     os.chdir(PROJECT_ROOT)
     try:
+        # Stash any local changes first
+        subprocess.run(["git", "stash", "--quiet"], timeout=10, capture_output=True)
         result = subprocess.run(
             ["git", "pull", "--quiet", "--rebase"],
             timeout=30, capture_output=True, text=True
         )
+        # Restore stashed changes
+        subprocess.run(["git", "stash", "pop", "--quiet"], timeout=10, capture_output=True)
         if result.returncode == 0:
             print("  Git pull: OK")
             return True
