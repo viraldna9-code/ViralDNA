@@ -10,12 +10,11 @@ Style: Default,Bebas Neue,55,&H00FFFFFF,&H0000D7FF,&H00000000,&H80000000,-1,0,0,
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,0:00:01.93,Default,,0,0,0,,{\fad(200,200)}Did Andhra Pradesh s policies
-Dialogue: 0,0:00:01.93,0:00:04.36,Default,,0,0,0,,{\fad(200,200)}unintentionally make people too rich
-Dialogue: 0,0:00:04.36,0:00:06.79,Default,,0,0,0,,{\fad(200,200)}to work? Villagers report a
-Dialogue: 0,0:00:06.79,0:00:09.22,Default,,0,0,0,,{\fad(200,200)}startling trend no one works
-Dialogue: 0,0:00:09.22,0:00:11.65,Default,,0,0,0,,{\fad(200,200)}for less than 700 rupees
-Dialogue: 0,0:00:11.65,0:00:14.08,Default,,0,0,0,,{\fad(200,200)}a day. This has big
-Dialogue: 0,0:00:14.08,0:00:16.51,Default,,0,0,0,,{\fad(200,200)}implications for the economy and
-Dialogue: 0,0:00:16.51,0:00:18.94,Default,,0,0,0,,{\fad(200,200)}everyday life. What s truly
-Dialogue: 0,0:00:18.94,0:00:20.88,Default,,0,0,0,,{\fad(200,200)}happening on the ground?
+Dialogue: 0,0:00:00.00,0:00:01.88,Default,,0,0,0,,{\fad(200,200)}Did you know Telangana just
+Dialogue: 0,0:00:01.88,0:00:04.26,Default,,0,0,0,,{\fad(200,200)}dropped a massive crore rupee
+Dialogue: 0,0:00:04.26,0:00:06.65,Default,,0,0,0,,{\fad(200,200)}plan? It s a game
+Dialogue: 0,0:00:06.65,0:00:09.03,Default,,0,0,0,,{\fad(200,200)}changer for rural women entrepreneurs,
+Dialogue: 0,0:00:09.03,0:00:11.42,Default,,0,0,0,,{\fad(200,200)}offering incubation support to help
+Dialogue: 0,0:00:11.42,0:00:13.80,Default,,0,0,0,,{\fad(200,200)}them build their own businesses.
+Dialogue: 0,0:00:13.80,0:00:16.19,Default,,0,0,0,,{\fad(200,200)}This could transform lives and
+Dialogue: 0,0:00:16.19,0:00:18.10,Default,,0,0,0,,{\fad(200,200)}communities across the state!

@@ -571,6 +571,710 @@
         "variant_ctr": 0.0
       },
       "winner": null
+    },
+    {
+      "id": "test_20260529_113415_26",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Andhra Photographer Achieves Global Master Distinction!"
+      },
+      "variant": {
+        "title": "Andhra Photographer Achieves Global Master Distinction!"
+      },
+      "topic": "Andhra Pradesh photographer gets Master distinction from Australian Photographic Society",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-29T11:34:15.530890",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_113415_27",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Andhra Photographer Achieves Global Master Distinction!"
+      },
+      "variant": {
+        "title": "Andhra Photographer Achieves Global Master Distinction! \u2014 Explained"
+      },
+      "topic": "Andhra Pradesh photographer gets Master distinction from Australian Photographic Society",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-29T11:34:15.531340",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_113415_28",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Andhra Photographer Achieves Global Master Distinction!"
+      },
+      "variant": {
+        "title": "What Happened with Andhra Photographer Achieves Global?"
+      },
+      "topic": "Andhra Pradesh photographer gets Master distinction from Australian Photographic Society",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-29T11:34:15.532077",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_113415_29",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Andhra Photographer Achieves Global Master Distinction!"
+      },
+      "variant": {
+        "title": "Andhra Photographer Achieves Global Master Distinction! \u2014 Full Analysis"
+      },
+      "topic": "Andhra Pradesh photographer gets Master distinction from Australian Photographic Society",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-29T11:34:15.532815",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120321_30",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Gujarat News: BJP's Major Campaign for PM Modi's Milestone"
+      },
+      "variant": {
+        "title": "Gujarat News: BJP's Major Campaign for PM Modi's Milestone"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-29T12:03:21.774515",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120321_31",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Gujarat News: BJP's Major Campaign for PM Modi's Milestone"
+      },
+      "variant": {
+        "title": "Gujarat News: BJP's Major Campaign for PM Modi's Milestone \u2014 What It Means"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-29T12:03:21.775032",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120321_32",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Gujarat News: BJP's Major Campaign for PM Modi's Milestone"
+      },
+      "variant": {
+        "title": "What Happened with Gujarat News: BJP's Major?"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-29T12:03:21.778009",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120321_33",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Gujarat News: BJP's Major Campaign for PM Modi's Milestone"
+      },
+      "variant": {
+        "title": "Gujarat News: BJP's Major Campaign for PM Modi's Milestone \u2014 Full Analysis"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-29T12:03:21.779005",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120642_34",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Gujarat News: BJP Celebrates PM Modi's Milestone"
+      },
+      "variant": {
+        "title": "Gujarat News: BJP Celebrates PM Modi's Milestone"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-29T12:06:42.266017",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120642_35",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Gujarat News: BJP Celebrates PM Modi's Milestone"
+      },
+      "variant": {
+        "title": "Gujarat News: BJP Celebrates PM Modi's Milestone \u2014 What It Means"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-29T12:06:42.266627",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120642_36",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Gujarat News: BJP Celebrates PM Modi's Milestone"
+      },
+      "variant": {
+        "title": "What Happened with Gujarat News: BJP Celebrates?"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-29T12:06:42.267383",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120642_37",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Gujarat News: BJP Celebrates PM Modi's Milestone"
+      },
+      "variant": {
+        "title": "Gujarat News: BJP Celebrates PM Modi's Milestone \u2014 Full Analysis"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-29T12:06:42.268107",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120815_38",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "PM Modi's 12-Year Mark: BJP's Gujarat Campaign"
+      },
+      "variant": {
+        "title": "PM Modi's 12-Year Mark: BJP's Gujarat Campaign"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-29T12:08:15.428199",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120815_39",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "PM Modi's 12-Year Mark: BJP's Gujarat Campaign"
+      },
+      "variant": {
+        "title": "PM Modi's 12-Year Mark: BJP's Gujarat Campaign \u2014 Explained"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-29T12:08:15.428797",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120815_40",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "PM Modi's 12-Year Mark: BJP's Gujarat Campaign"
+      },
+      "variant": {
+        "title": "What Happened with PM Modi's 12-Year Mark:?"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-29T12:08:15.429695",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_120815_41",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "PM Modi's 12-Year Mark: BJP's Gujarat Campaign"
+      },
+      "variant": {
+        "title": "PM Modi's 12-Year Mark: BJP's Gujarat Campaign \u2014 Complete Breakdown"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-29T12:08:15.432260",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_121003_42",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Modi's 12 Years: BJP's Gujarat Plan"
+      },
+      "variant": {
+        "title": "Modi's 12 Years: BJP's Gujarat Plan"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-29T12:10:03.489297",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_121003_43",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Modi's 12 Years: BJP's Gujarat Plan"
+      },
+      "variant": {
+        "title": "Modi's 12 Years: BJP's Gujarat Plan \u2014 Explained"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-29T12:10:03.489905",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_121003_44",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Modi's 12 Years: BJP's Gujarat Plan"
+      },
+      "variant": {
+        "title": "What Happened with Modi's 12 Years: BJP's?"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-29T12:10:03.491045",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_121003_45",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Modi's 12 Years: BJP's Gujarat Plan"
+      },
+      "variant": {
+        "title": "Modi's 12 Years: BJP's Gujarat Plan \u2014 Complete Breakdown"
+      },
+      "topic": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-29T12:10:03.493029",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_130330_46",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Telangana's Rs 21.40 Crore Boost for Rural Women Entrepreneurs | ViralDNA News"
+      },
+      "variant": {
+        "title": "Telangana's Rs 21.40 Crore Boost for Rural Women Entrepreneurs | ViralDNA News"
+      },
+      "topic": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-29T13:03:30.103388",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_130330_47",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Telangana's Rs 21.40 Crore Boost for Rural Women Entrepreneurs | ViralDNA News"
+      },
+      "variant": {
+        "title": "Telangana's Rs 21.40 Crore Boost for Rural Women Entrepreneurs | ViralDNA News \u2014 What It Means"
+      },
+      "topic": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-29T13:03:30.104089",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_130330_48",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Telangana's Rs 21.40 Crore Boost for Rural Women Entrepreneurs | ViralDNA News"
+      },
+      "variant": {
+        "title": "What Happened with Telangana's Rs 21.40 Crore?"
+      },
+      "topic": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-29T13:03:30.105262",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_130330_49",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Telangana's Rs 21.40 Crore Boost for Rural Women Entrepreneurs | ViralDNA News"
+      },
+      "variant": {
+        "title": "Telangana's Rs 21.40 Crore Boost for Rural Women Entrepreneurs | ViralDNA News \u2014 Complete Breakdown"
+      },
+      "topic": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-29T13:03:30.106480",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_130930_50",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Big Decision Day? Karnataka Politics Heats Up!"
+      },
+      "variant": {
+        "title": "Big Decision Day? Karnataka Politics Heats Up!"
+      },
+      "topic": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-29T13:09:30.056661",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_130930_51",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Big Decision Day? Karnataka Politics Heats Up!"
+      },
+      "variant": {
+        "title": "Big Decision Day? Karnataka Politics Heats Up! \u2014 Explained"
+      },
+      "topic": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-29T13:09:30.057396",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_130930_52",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Big Decision Day? Karnataka Politics Heats Up!"
+      },
+      "variant": {
+        "title": "Analysis: Big Decision Day? Karnataka Politics Heats Up!"
+      },
+      "topic": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-29T13:09:30.058390",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_130930_53",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Big Decision Day? Karnataka Politics Heats Up!"
+      },
+      "variant": {
+        "title": "Big Decision Day? Karnataka Politics Heats Up! \u2014 Full Analysis"
+      },
+      "topic": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-29T13:09:30.059339",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_131305_54",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "New \u20b921.40 Cr Telangana Plan: Empowering Rural Women!"
+      },
+      "variant": {
+        "title": "New \u20b921.40 Cr Telangana Plan: Empowering Rural Women!"
+      },
+      "topic": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-29T13:13:05.753848",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_131305_55",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "New \u20b921.40 Cr Telangana Plan: Empowering Rural Women!"
+      },
+      "variant": {
+        "title": "New \u20b921.40 Cr Telangana Plan: Empowering Rural Women! \u2014 What It Means"
+      },
+      "topic": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-29T13:13:05.754576",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_131305_56",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "New \u20b921.40 Cr Telangana Plan: Empowering Rural Women!"
+      },
+      "variant": {
+        "title": "What Happened with New \u20b921.40 Cr Telangana?"
+      },
+      "topic": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-29T13:13:05.755788",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_131305_57",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "New \u20b921.40 Cr Telangana Plan: Empowering Rural Women!"
+      },
+      "variant": {
+        "title": "New \u20b921.40 Cr Telangana Plan: Empowering Rural Women! \u2014 Complete Breakdown"
+      },
+      "topic": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-29T13:13:05.756777",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
     }
   ],
   "stats": {

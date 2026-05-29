@@ -2,61 +2,64 @@
 """
 ViralDNA Daily Auto-Publish
 ============================
-Called by Hermes cron every hour. Checks if daily quota is met.
-If not, pulls latest topics from GitHub and runs the production pipeline.
+Runs once (called by cron). Picks best UNPUBLISHED topics:
+  1. Morning main (score >= 10 ideally, or best available)
+  2. Evening main  (different topic)
+  3. Shorts (2 shorts, different topics if possible)
 
-This runs on the laptop (not GitHub) because it needs:
-- RVC voice model / edge-tts
-- ffmpeg with all filters
-- YouTube upload credentials
-- All asset files
+Per-day quota: 1 main + 2 shorts. Each video uses a DIFFERENT topic.
+Only publishes if current time is in a valid window or --force.
 
-Usage:
-  python3 daily_publish.py          # normal hourly check
-  python3 daily_publish.py --force  # force publish regardless of quota
+Upload windows (IST):
+  Morning main:   7AM - 11AM
+  Midday short:   11AM - 3PM  (short #1)
+  Evening main:   4PM - 8PM
+  Evening short:  8PM - 11PM (short #2)
 """
 
 import json
 import os
-import sys
 import subprocess
-import urllib.request
-from datetime import datetime, timedelta, timezone
+import sys
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 IST = ZoneInfo("Asia/Kolkata")
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-LOGS_DIR = os.path.join(PROJECT_ROOT, "logs")
-TOPICS_FILE = os.path.join(LOGS_DIR, "topics_history.json")
-PUBLISH_LOG = os.path.join(LOGS_DIR, "daily_publish_log.json")
-DAILY_TARGET_MAIN = 1
-DAILY_TARGET_SHORTS = 2
+TOPICS_FILE = os.path.join(PROJECT_ROOT, "logs", "topics_history.json")
+PUBLISH_LOG = os.path.join(PROJECT_ROOT, "logs", "daily_publish_log.json")
+TOPIC_USAGE_FILE = os.path.join(PROJECT_ROOT, "logs", "topic_usage_today.json")
+
+TELEGRAM_BOT_TOKEN = ""
+TELEGRAM_CHAT_ID = "8659664950"
+
+# Load Telegram creds from ~/.env
+env_path = os.path.expanduser("~/.env")
+if os.path.exists(env_path):
+    with open(env_path) as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith("TELEGRAM_BOT_TOKEN="):
+                TELEGRAM_BOT_TOKEN = line.split("=", 1)[1].strip().strip("'\"")
+            elif line.startswith("TELEGRAM_CHAT_ID="):
+                TELEGRAM_CHAT_ID = line.split("=", 1)[1].strip().strip("'\"")
 
 
-def load_env():
-    env = {}
-    env_path = os.path.join(os.path.expanduser("~"), ".env")
-    if os.path.exists(env_path):
-        with open(env_path) as f:
-            for line in f:
-                line = line.strip()
-                if "=" in line and not line.startswith("#"):
-                    k, v = line.split("=", 1)
-                    env[k.strip()] = v.strip()
-    return env
-
-
-def send_telegram(text):
-    env = load_env()
-    token = env.get("TELEGRAM_BOT_TOKEN", "")
-    chat_id = env.get("TELEGRAM_CHAT_ID", "")
-    if not token or not chat_id:
-        print("  Telegram: no credentials")
+def send_telegram(msg):
+    if not TELEGRAM_BOT_TOKEN:
+        print("  No Telegram token, skipping")
         return False
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    data = json.dumps({"chat_id": chat_id, "text": text, "parse_mode": "HTML"}).encode()
-    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
     try:
+        import urllib.request, urllib.parse
+        data = urllib.parse.urlencode({
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": msg,
+            "parse_mode": "HTML"
+        }).encode()
+        req = urllib.request.Request(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+            data=data
+        )
         resp = urllib.request.urlopen(req, timeout=10)
         result = json.loads(resp.read())
         if result.get("ok"):
@@ -67,39 +70,86 @@ def send_telegram(text):
     return False
 
 
-def get_today_publishes():
-    if not os.path.exists(PUBLISH_LOG):
-        return {"mains": 0, "shorts": 0, "videos": []}
-    with open(PUBLISH_LOG) as f:
-        log = json.load(f)
+def jaccard(a, b):
+    sa = set(a.lower().split())
+    sb = set(b.lower().split())
+    if not sa or not sb:
+        return 0
+    return len(sa & sb) / len(sa | sb)
+
+
+def load_today_usage():
+    """Load which topic titles have been used today."""
     today = datetime.now(IST).strftime("%Y-%m-%d")
-    today_entries = [e for e in log if e.get("date") == today]
-    mains = [e for e in today_entries if e.get("type") == "main"]
-    shorts = [e for e in today_entries if e.get("type") == "short"]
-    return {"mains": len(mains), "shorts": len(shorts), "videos": today_entries}
+    if not os.path.exists(TOPIC_USAGE_FILE):
+        return {"date": today, "used_titles": []}
+    with open(TOPIC_USAGE_FILE) as f:
+        data = json.load(f)
+    if data.get("date") != today:
+        return {"date": today, "used_titles": []}
+    return data
 
 
-def add_publish_entry(entry):
-    log = []
-    if os.path.exists(PUBLISH_LOG):
-        with open(PUBLISH_LOG) as f:
-            log = json.load(f)
-    log.append(entry)
-    os.makedirs(os.path.dirname(PUBLISH_LOG), exist_ok=True)
-    with open(PUBLISH_LOG, "w") as f:
-        json.dump(log, f, indent=2)
+def save_today_usage(usage):
+    os.makedirs(os.path.dirname(TOPIC_USAGE_FILE), exist_ok=True)
+    with open(TOPIC_USAGE_FILE, "w") as f:
+        json.dump(usage, f, indent=2)
+
+
+def mark_topic_used(title):
+    usage = load_today_usage()
+    usage["used_titles"].append(title)
+    save_today_usage(usage)
+
+
+def pick_topic(exclude_titles=None, min_score=7):
+    """
+    Pick the best topic from topics_history.json that:
+    - Has not been used today (not in exclude_titles)
+    - Has score >= min_score
+    Returns (topic_dict, remaining_topics_count) or (None, 0)
+    """
+    if not os.path.exists(TOPICS_FILE):
+        print("  No topics file found")
+        return None, 0
+    with open(TOPICS_FILE) as f:
+        data = json.load(f)
+    topics = data.get("topics", [])
+    if not topics:
+        print("  No topics in file")
+        return None, 0
+
+    exclude = exclude_titles or []
+    # Filter: not similar to any used title, score >= min_score
+    available = []
+    for t in topics:
+        title = t.get("title", "")
+        score = t.get("score", 0)
+        if score < min_score:
+            continue
+        if any(jaccard(title, used) >= 0.4 for used in exclude):
+            continue
+        available.append(t)
+
+    if not available:
+        print(f"  No available topics (min_score={min_score}, excluded={len(exclude)})")
+        return None, 0
+
+    # Sort by score descending
+    available.sort(key=lambda t: t.get("score", 0), reverse=True)
+    best = available[0]
+    print(f"  Picked topic: [{best.get('score', 0)}] {best.get('title', '')[:65]}")
+    return best, len(available)
 
 
 def git_pull():
     os.chdir(PROJECT_ROOT)
     try:
-        # Stash any local changes first
         subprocess.run(["git", "stash", "--quiet"], timeout=10, capture_output=True)
         result = subprocess.run(
             ["git", "pull", "--quiet", "--rebase"],
             timeout=30, capture_output=True, text=True
         )
-        # Restore stashed changes
         subprocess.run(["git", "stash", "pop", "--quiet"], timeout=10, capture_output=True)
         if result.returncode == 0:
             print("  Git pull: OK")
@@ -113,29 +163,24 @@ def git_pull():
 
 
 def run_pipeline(mode="normal", topic=None):
-    """Run the multi-agent pipeline. If topic is provided, inject it via --topic-file."""
+    """Run the multi-agent pipeline. If topic is provided, inject it."""
     os.chdir(PROJECT_ROOT)
     cmd = [sys.executable, "run_pipeline_entrypoint.py", "--mode", mode]
+    topic_file = None
     if topic:
-        # Write topic to temp file for injection
         topic_file = os.path.join(PROJECT_ROOT, "logs", "injected_topic.json")
         with open(topic_file, "w") as f:
             json.dump(topic, f)
         cmd += ["--topic-file", topic_file]
-        print(f"  Running pipeline: --mode {mode} --topic-file {topic_file}")
+        print(f"  Pipeline: --mode {mode} + injected topic")
     else:
-        print(f"  Running pipeline: --mode {mode}")
+        print(f"  Pipeline: --mode {mode} (auto-discovery)")
     try:
-        result = subprocess.run(
-            cmd,
-            timeout=3600,  # 1 hour max
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(cmd, timeout=3600, capture_output=True, text=True)
         print(f"  Pipeline exit code: {result.returncode}")
         if result.stdout:
             lines = result.stdout.strip().split("\n")
-            for line in lines[-20:]:
+            for line in lines[-15:]:
                 print(f"    {line}")
         if result.returncode != 0 and result.stderr:
             print(f"  Pipeline stderr: {result.stderr[:300]}")
@@ -146,40 +191,6 @@ def run_pipeline(mode="normal", topic=None):
     except Exception as e:
         print(f"  Pipeline error: {e}")
         return False
-
-
-def pick_best_topic():
-    """Pick the highest-scoring topic from topics_history.json that hasn't been published today."""
-    topics_file = os.path.join(PROJECT_ROOT, "logs", "topics_history.json")
-    if not os.path.exists(topics_file):
-        print("  No topics file found")
-        return None
-    with open(topics_file) as f:
-        data = json.load(f)
-    topics = data.get("topics", [])
-    if not topics:
-        print("  No topics in file")
-        return None
-    # Filter out already-published topics
-    today = datetime.now(IST).strftime("%Y-%m-%d")
-    pub = get_today_publishes()
-    published_titles = [v.get("title", "") for v in pub.get("videos", [])]
-    print(f"  Published today: {published_titles}")
-
-    def jaccard(a, b):
-        sa = set(a.lower().split())
-        sb = set(b.lower().split())
-        if not sa or not sb: return 0
-        return len(sa & sb) / len(sa | sb)
-
-    available = [t for t in topics if not any(jaccard(t.get("title", ""), p) >= 0.5 for p in published_titles)]
-    if not available:
-        print("  All topics already published today")
-        return None
-    # Sort by score descending
-    best = max(available, key=lambda t: t.get("score", 0))
-    print(f"  Best topic: [{best.get('score', 0)}] {best.get('title', '')[:70]}")
-    return best
 
 
 def main():
@@ -195,128 +206,112 @@ def main():
     # Pull latest topics from GitHub
     git_pull()
 
-    # Check today's publish status
-    pub = get_today_publishes()
-    mains_done = pub["mains"]
-    shorts_done = pub["shorts"]
-    print(f"\n  Today: {mains_done}/{DAILY_TARGET_MAIN} mains, {shorts_done}/{DAILY_TARGET_SHORTS} shorts")
-
-    if not force and mains_done >= DAILY_TARGET_MAIN and shorts_done >= DAILY_TARGET_SHORTS:
-        print("  Daily quota met. Nothing to do.")
-        print(f"{'='*60}\n")
-        return
+    # Load today's usage
+    usage = load_today_usage()
+    used_titles = usage["used_titles"]
+    print(f"\n  Topics used today: {len(used_titles)}")
+    for t in used_titles:
+        print(f"    - {t[:60]}")
 
     # Determine what slot we're in
-    # 7-11 AM: Morning main window
-    # 11 AM-3 PM: First short window
-    # 4-8 PM: Evening main window
-    # 8-11 PM: Second short window
-    # 11 PM-7 AM: Late catch-up (anything not done)
+    # 7-11 AM: Morning main
+    # 11 AM-3 PM: First short
+    # 4-8 PM: Evening main
+    # 8-11 PM: Second short
+    # 11 PM-7 AM: Nothing (sleep)
 
     published = False
 
-    # Pick best available topic for this run
-    best_topic = pick_best_topic()
-    if best_topic:
-        print(f"  Selected topic: [{best_topic.get('score',0)}] {best_topic.get('title','')[:60]}")
-    else:
-        print("  No suitable topic found — pipeline will do its own discovery")
-        best_topic = None
-
-    if force or (hour_ist >= 7 and hour_ist < 11 and mains_done < DAILY_TARGET_MAIN):
-        print("\n[SLOT] Morning main video")
-        success = run_pipeline(mode="normal", topic=best_topic)
-        if success:
-            add_publish_entry({
-                "date": today_str, "type": "main", "slot": "morning",
-                "title": "pipeline_output", "status": "completed",
-                "timestamp": now_ist.isoformat()
-            })
-            send_telegram(
-                f"ViralDNA Morning Main Published\n\n"
-                f"Time: {now_ist.strftime('%H:%M IST')}\n"
-                f"Check YouTube Studio for details."
-            )
-            published = True
+    if force or (hour_ist >= 7 and hour_ist < 11):
+        # MORNING MAIN
+        print(f"\n[SLOT] Morning main (hour={hour_ist})")
+        topic, remaining = pick_topic(exclude_titles=used_titles, min_score=7)
+        if topic:
+            success = run_pipeline(mode="normal", topic=topic)
+            if success:
+                mark_topic_used(topic.get("title", ""))
+                send_telegram(
+                    f"📺 ViralDNA Morning Main Published\n\n"
+                    f"Topic: {topic.get('title', '')[:80]}\n"
+                    f"Score: {topic.get('score', 0)}/30\n"
+                    f"Time: {now_ist.strftime('%H:%M IST')}\n\n"
+                    f"Check YouTube Studio."
+                )
+                published = True
+            else:
+                send_telegram("❌ Morning main pipeline FAILED. Will retry next run.")
         else:
-            send_telegram("Morning main pipeline FAILED. Will retry next hour.")
+            print("  No topic available for morning main")
 
-    elif force or (hour_ist >= 11 and hour_ist < 15 and shorts_done < 1):
-        print("\n[SLOT] First short")
-        success = run_pipeline(mode="primetime", topic=best_topic)
-        if success:
-            add_publish_entry({
-                "date": today_str, "type": "short", "slot": "midday",
-                "title": "pipeline_output", "status": "completed",
-                "timestamp": now_ist.isoformat()
-            })
-            send_telegram(f"ViralDNA Midday Short Published — {now_ist.strftime('%H:%M IST')}")
-            published = True
+    elif force or (hour_ist >= 11 and hour_ist < 15):
+        # MIDDAY SHORT #1
+        print(f"\n[SLOT] Midday short (hour={hour_ist})")
+        topic, remaining = pick_topic(exclude_titles=used_titles, min_score=5)
+        if topic:
+            success = run_pipeline(mode="primetime", topic=topic)
+            if success:
+                mark_topic_used(topic.get("title", ""))
+                send_telegram(
+                    f"📱 ViralDNA Short Published\n\n"
+                    f"Topic: {topic.get('title', '')[:80]}\n"
+                    f"Score: {topic.get('score', 0)}/30\n"
+                    f"Time: {now_ist.strftime('%H:%M IST')}"
+                )
+                published = True
+            else:
+                send_telegram("❌ Midday short pipeline FAILED.")
         else:
-            send_telegram("Midday short FAILED. Will retry.")
+            print("  No topic available for midday short")
 
-    elif force or (hour_ist >= 16 and hour_ist < 20 and mains_done < DAILY_TARGET_MAIN):
-        print("\n[SLOT] Evening main video")
-        success = run_pipeline(mode="normal", topic=best_topic)
-        if success:
-            add_publish_entry({
-                "date": today_str, "type": "main", "slot": "evening",
-                "title": "pipeline_output", "status": "completed",
-                "timestamp": now_ist.isoformat()
-            })
-            send_telegram(
-                f"ViralDNA Evening Main Published\n\n"
-                f"Time: {now_ist.strftime('%H:%M IST')}\n"
-                f"Check YouTube Studio."
-            )
-            published = True
+    elif force or (hour_ist >= 16 and hour_ist < 20):
+        # EVENING MAIN
+        print(f"\n[SLOT] Evening main (hour={hour_ist})")
+        topic, remaining = pick_topic(exclude_titles=used_titles, min_score=7)
+        if topic:
+            success = run_pipeline(mode="normal", topic=topic)
+            if success:
+                mark_topic_used(topic.get("title", ""))
+                send_telegram(
+                    f"📺 ViralDNA Evening Main Published\n\n"
+                    f"Topic: {topic.get('title', '')[:80]}\n"
+                    f"Score: {topic.get('score', 0)}/30\n"
+                    f"Time: {now_ist.strftime('%H:%M IST')}\n\n"
+                    f"Check YouTube Studio."
+                )
+                published = True
+            else:
+                send_telegram("❌ Evening main pipeline FAILED. Will retry next run.")
         else:
-            send_telegram("Evening main FAILED. Will retry.")
+            print("  No topic available for evening main")
 
-    elif force or (hour_ist >= 20 and hour_ist < 23 and shorts_done < DAILY_TARGET_SHORTS):
-        print("\n[SLOT] Evening short")
-        success = run_pipeline(mode="primetime")
-        if success:
-            add_publish_entry({
-                "date": today_str, "type": "short", "slot": "evening",
-                "title": "pipeline_output", "status": "completed",
-                "timestamp": now_ist.isoformat()
-            })
-            send_telegram(f"ViralDNA Evening Short Published — {now_ist.strftime('%H:%M IST')}")
-            published = True
+    elif force or (hour_ist >= 20 and hour_ist < 23):
+        # EVENING SHORT #2
+        print(f"\n[SLOT] Evening short (hour={hour_ist})")
+        topic, remaining = pick_topic(exclude_titles=used_titles, min_score=5)
+        if topic:
+            success = run_pipeline(mode="primetime", topic=topic)
+            if success:
+                mark_topic_used(topic.get("title", ""))
+                send_telegram(
+                    f"📱 ViralDNA Short Published\n\n"
+                    f"Topic: {topic.get('title', '')[:80]}\n"
+                    f"Score: {topic.get('score', 0)}/30\n"
+                    f"Time: {now_ist.strftime('%H:%M IST')}"
+                )
+                published = True
+            else:
+                send_telegram("❌ Evening short pipeline FAILED.")
         else:
-            send_telegram("Evening short FAILED. Will retry.")
+            print("  No topic available for evening short")
 
     elif hour_ist >= 23 or hour_ist < 7:
-        # Late night catch-up: anything still not done
-        if mains_done < DAILY_TARGET_MAIN:
-            print("\n[SLOT] Late catch-up: main")
-            success = run_pipeline(mode="normal")
-            if success:
-                add_publish_entry({
-                    "date": today_str, "type": "main", "slot": "late_catchup",
-                    "title": "pipeline_output", "status": "completed",
-                    "timestamp": now_ist.isoformat()
-                })
-                send_telegram(f"Late catch-up main uploaded — {now_ist.strftime('%H:%M IST')}")
-                published = True
-        if shorts_done < DAILY_TARGET_SHORTS:
-            print("\n[SLOT] Late catch-up: short")
-            success = run_pipeline(mode="primetime")
-            if success:
-                add_publish_entry({
-                    "date": today_str, "type": "short", "slot": "late_catchup",
-                    "title": "pipeline_output", "status": "completed",
-                    "timestamp": now_ist.isoformat()
-                })
-                published = True
+        print(f"\n[SLEEP] {hour_ist}:00 IST — outside publish window (7AM-11PM)")
 
     if not published and not force:
-        print(f"\n  Not in an active publish window at {hour_ist}:00 IST")
-        print(f"  Windows: 7-11AM (main), 11AM-3PM (short), 4-8PM (main), 8-11PM (short)")
+        print(f"\n  No action taken at {hour_ist}:00 IST")
 
-    pub = get_today_publishes()
-    print(f"\n  End of run: {pub['mains']}/{DAILY_TARGET_MAIN} mains, {pub['shorts']}/{DAILY_TARGET_SHORTS} shorts")
+    usage = load_today_usage()
+    print(f"\n  Topics used today: {len(usage['used_titles'])}/{4} (target: 1 main + 2 shorts)")
     print(f"{'='*60}\n")
 
 

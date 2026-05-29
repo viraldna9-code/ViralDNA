@@ -656,13 +656,23 @@ class VoiceSynthesisAgent(BaseAgent):
         script_payload = state.get("script_payload")
         if not script_payload:
             raise ValueError("Script payload missing.")
+        
+        # Determine how many shorts to produce
+        from publish_decision_engine import decide_publish_plan
+        selected_topic = state.get("selected_topic", {})
+        decision = decide_publish_plan(selected_topic)
+        num_shorts = decision.num_shorts  # Now 2 max after our fix
+        
         voiceover_assets = {}
         slots_to_generate = ["main"]
-        for i in range(1, 4):
+        for i in range(1, num_shorts + 1):
             key = f"short_{i}"
             segment = script_payload.get_segment(key)
-            if segment["word_count"] > 10:
+            if segment and segment.get("word_count", 0) > 10:
                 slots_to_generate.append(key)
+        
+        self.log(f"Producing {len(slots_to_generate)} voiceovers: {' + '.join(slots_to_generate)}")
+        
         for slot in slots_to_generate:
             segment_data = script_payload.get_segment(slot)
             sub_phase = f"5.1 Synthesis ({slot})"

@@ -7,7 +7,7 @@
 #   - Shorts only: Quick-hit trending/entertainment/sports topics
 #   - Main + 1 Short: Breaking news with one strong angle
 #   - Main + 2 Shorts: Moderate depth news
-#   - Main + 3 Shorts (default): Standard comprehensive coverage
+#   - Main + 2 Shorts (default): Standard comprehensive coverage
 #
 # The decision is based on:
 #   1. Content category (politics, economics, entertainment, sports, health, etc.)
@@ -48,7 +48,7 @@ class spikeLevel(Enum):
 class PublishDecision:
     """What to produce and upload for this topic."""
     produce_main: bool = True
-    num_shorts: int = 3
+    num_shorts: int = 2
     reason: str = ""
 
     def summary(self) -> str:
@@ -84,16 +84,16 @@ QUICK_CONTENT_KEYWORDS = [
 
 # Category → default decision mapping
 CATEGORY_DEFAULTS = {
-    ContentCategory.POLITICS: {"produce_main": True, "num_shorts": 3},
-    ContentCategory.ECONOMICS: {"produce_main": True, "num_shorts": 3},
+    ContentCategory.POLITICS: {"produce_main": True, "num_shorts": 2},
+    ContentCategory.ECONOMICS: {"produce_main": True, "num_shorts": 2},
     ContentCategory.POLICY: {"produce_main": True, "num_shorts": 2},
-    ContentCategory.ENTERTAINMENT: {"produce_main": False, "num_shorts": 3},
+    ContentCategory.ENTERTAINMENT: {"produce_main": False, "num_shorts": 2},
     ContentCategory.SPORTS: {"produce_main": False, "num_shorts": 2},
     ContentCategory.HEALTH: {"produce_main": True, "num_shorts": 2},
     ContentCategory.TECHNOLOGY: {"produce_main": True, "num_shorts": 2},
     ContentCategory.CRIME: {"produce_main": True, "num_shorts": 1},
-    ContentCategory.DISASTER: {"produce_main": True, "num_shorts": 3},
-    ContentCategory.GENERAL: {"produce_main": True, "num_shorts": 3},
+    ContentCategory.DISASTER: {"produce_main": True, "num_shorts": 2},
+    ContentCategory.GENERAL: {"produce_main": True, "num_shorts": 2},
 }
 
 

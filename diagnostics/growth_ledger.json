@@ -1149,6 +1149,188 @@
                 "main_id": "none",
                 "shorts_count": 0
             }
+        },
+        {
+            "timestamp": "2026-05-29T11:36:34.083371",
+            "topic_used": "Andhra Pradesh photographer gets Master distinction from Australian Photographic Society",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.006508512997243088,
+                "Pre-Pipeline::License Compliance": 3.0928997148294e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.0005420840025180951,
+                "Pre-Pipeline::Content Calendar": 0.0005541709979297593,
+                "Pre-Pipeline::Scheduling": 2.7784000849351287e-05,
+                "Phase 1: Discovery::1.1 Multi-Source Discovery": 18.200863894002396,
+                "Phase 2: Weighting::2.1 Topic Scoring & Selection": 0.01117251299729105,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 9.896249330995488,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 7.44620047044009e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.00204570699861506,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 16.324124361999566,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 7.5291591140048695,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 3.265066113002831,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 4.141305432000081,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 5.966131150002184,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.057294409001769964,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.0032411610009148717,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 95.06471935500304,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.1400313610065496,
+                "Phase 7: Upload::7.2 API Uploading": 41.31903314500232,
+                "Post-Pipeline::Feedback Collection": 0.011079788004281,
+                "Post-Pipeline::Analytics Pull": 1.2484000762924552e-05,
+                "Post-Pipeline::Community Engagement": 3.657000343082473e-05,
+                "Post-Pipeline::Competitor Intel": 0.0016368120050174184,
+                "Post-Pipeline::Retention Optimization": 0.006513048996566795,
+                "Post-Pipeline::Shorts Optimization": 0.0001775010023266077,
+                "Post-Pipeline::Content Quality": 0.000438042996393051,
+                "Post-Pipeline::Reliability Check": 0.0003887710045091808,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 3.761499829124659e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 0.001637369001400657,
+                "Post-Pipeline::H3.5 Newsletter Digest": 0.0010754389950307086,
+                "Post-Pipeline::H3.2 Community Poster": 6.654900062130764e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 1.0041003406513482e-05,
+                "Post-Pipeline::Intelligence Analysis": 0.0018260559954796918
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-29T12:13:29.255306",
+            "topic_used": "BJP To Launch Massive Gujarat Campaign To Mark PM Modi's 12-Year Term",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.00047916000039549544,
+                "Pre-Pipeline::License Compliance": 1.8035992980003357e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.0004883759975200519,
+                "Pre-Pipeline::Content Calendar": 0.0002435610003885813,
+                "Pre-Pipeline::Scheduling": 2.079499972751364e-05,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 12.340408511001442,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 4.1348997910972685e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.0015131619948078878,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 17.761747652999475,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 5.565961287997197,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 5.785096694999083,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 4.62765821100038,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 6.949619330000132,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.04749925799842458,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.005392284001572989,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 144.60968744200363,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.3496572799995192,
+                "Phase 7: Upload::7.2 API Uploading": 58.78500881399668,
+                "Post-Pipeline::Feedback Collection": 0.004981952995876782,
+                "Post-Pipeline::Analytics Pull": 9.264993423130363e-06,
+                "Post-Pipeline::Community Engagement": 2.9141003324184567e-05,
+                "Post-Pipeline::Competitor Intel": 0.0017296180012635887,
+                "Post-Pipeline::Retention Optimization": 0.005916123001952656,
+                "Post-Pipeline::Shorts Optimization": 0.0001428380055585876,
+                "Post-Pipeline::Content Quality": 0.0004963489991496317,
+                "Post-Pipeline::Reliability Check": 0.0004020369960926473,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 3.559899778338149e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 0.0003344850047142245,
+                "Post-Pipeline::H3.5 Newsletter Digest": 4.573500336846337e-05,
+                "Post-Pipeline::H3.2 Community Poster": 4.2362000385764986e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 4.506000550463796e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.0018075470070471056
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "success",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-29T13:05:00.679785",
+            "topic_used": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.0014254589987103827,
+                "Pre-Pipeline::License Compliance": 3.801500133704394e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.0005317730028764345,
+                "Pre-Pipeline::Content Calendar": 0.0004739150026580319,
+                "Pre-Pipeline::Scheduling": 4.584000271279365e-05,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 10.704327055995236,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 6.355799996526912e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.0016841460019350052,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 19.29877778000082,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 4.706244982997305,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 5.582048092997866,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 4.283644170995103,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 4.55089675400086,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.08688705800159369,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.004770879000716377,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 87.76299968699459,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.7973427479955717,
+                "Phase 7: Upload::7.2 API Uploading": 0.004004269998404197,
+                "Post-Pipeline::Feedback Collection": 1.5994002751540393e-05,
+                "Post-Pipeline::Analytics Pull": 4.034998710267246e-06,
+                "Post-Pipeline::Community Engagement": 3.1162999221123755e-05,
+                "Post-Pipeline::Competitor Intel": 0.002315552999789361,
+                "Post-Pipeline::Retention Optimization": 4.153600457357243e-05,
+                "Post-Pipeline::Shorts Optimization": 0.00014371600263984874,
+                "Post-Pipeline::Content Quality": 0.0005139630011399277,
+                "Post-Pipeline::Reliability Check": 0.00039675199514022097,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 3.7834004615433514e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 0.0008034939965000376,
+                "Post-Pipeline::H3.5 Newsletter Digest": 0.00045271700219018385,
+                "Post-Pipeline::H3.2 Community Poster": 4.5797001803293824e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 6.672999006696045e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.00199598100152798
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "skipped",
+                "main_id": "none",
+                "shorts_count": 0
+            }
+        },
+        {
+            "timestamp": "2026-05-29T13:14:30.559454",
+            "topic_used": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.0004228180041536689,
+                "Pre-Pipeline::License Compliance": 2.009799936786294e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.0005275669973343611,
+                "Pre-Pipeline::Content Calendar": 0.00022223699488677084,
+                "Pre-Pipeline::Scheduling": 1.776799763320014e-05,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 9.28910668399476,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 7.965700206113979e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.0031506119994446635,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 18.9097613529957,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 4.439016721997177,
+                "Phase 5: Voiceover::5.1 Synthesis (short_2)": 3.6403568370005814,
+                "Phase 5: Voiceover::5.1 Synthesis (short_3)": 4.7156477969983825,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 2.9724331089964835,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.07544865200179629,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.004673607996664941,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 81.79511994800123,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.9984903520016815,
+                "Phase 7: Upload::7.2 API Uploading": 0.000991518005321268,
+                "Post-Pipeline::Feedback Collection": 9.401002898812294e-06,
+                "Post-Pipeline::Analytics Pull": 2.572996891103685e-06,
+                "Post-Pipeline::Community Engagement": 1.2370001059025526e-05,
+                "Post-Pipeline::Competitor Intel": 0.001958228000148665,
+                "Post-Pipeline::Retention Optimization": 1.2851000064983964e-05,
+                "Post-Pipeline::Shorts Optimization": 0.00012530299864010885,
+                "Post-Pipeline::Content Quality": 0.0005166979972273111,
+                "Post-Pipeline::Reliability Check": 0.00041556000360287726,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 3.310700412839651e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 0.00032707300124457106,
+                "Post-Pipeline::H3.5 Newsletter Digest": 0.00013782300084130839,
+                "Post-Pipeline::H3.2 Community Poster": 4.3296000512782484e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 4.515997716225684e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.002492328996595461
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "skipped",
+                "main_id": "none",
+                "shorts_count": 0
+            }
         }
     ],
     "user_reviews": {
@@ -1379,6 +1561,61 @@
             "rating": "average",
             "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
             "benchmarked_at": "2026-05-28T07:07:11.961225"
+        },
+        {
+            "video_id": "x7gEj4CcYtQ",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-29T11:36:34.070489"
+        },
+        {
+            "video_id": "OB9MR-QlJT4",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-29T11:36:34.074173"
+        },
+        {
+            "video_id": "iRUa9DHzAiQ",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-29T12:13:29.245536"
+        },
+        {
+            "video_id": "H4GEBrMXQGY",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-29T12:13:29.247587"
+        },
+        {
+            "video_id": "H8B8QjfKWds",
+            "category": "news_politics",
+            "actual_ctr": 0.05,
+            "benchmark_avg": 0.05,
+            "benchmark_good": 0.07,
+            "benchmark_excellent": 0.1,
+            "rating": "average",
+            "recommendation": "Below potential. Try stronger hook words in title and more contrast in thumbnail.",
+            "benchmarked_at": "2026-05-29T12:13:29.249405"
         }
     ],
     "competitor_intel": [
@@ -1640,6 +1877,262 @@
         },
         {
             "last_scan": "2026-05-28T07:07:11.957069",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        },
+        {
+            "last_scan": "2026-05-29T11:36:34.068835",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        },
+        {
+            "last_scan": "2026-05-29T12:13:29.243783",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        },
+        {
+            "last_scan": "2026-05-29T13:05:00.672277",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        },
+        {
+            "last_scan": "2026-05-29T13:14:30.552729",
             "channels_tracked": 6,
             "high_threats": 3,
             "content_gaps": [
