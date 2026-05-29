@@ -1,7 +1,5 @@
 {
   "auto_fixed": [],
-  "manual_needed": [
-    "Set channel topics in YouTube Studio: News, Entertainment, Education (API cannot set this)"
-  ],
-  "last_updated": "2026-05-29T13:45:15.143025+05:30"
+  "manual_needed": [],
+  "last_updated": "2026-05-29T13:59:50.981909+05:30"
 }

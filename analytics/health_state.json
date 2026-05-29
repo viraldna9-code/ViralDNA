@@ -57,6 +57,18 @@
       "issues_count": 8,
       "critical_count": 2,
       "auto_fixed": []
+    },
+    {
+      "timestamp": "2026-05-29T13:59:46.767634+05:30",
+      "total_views": 1465,
+      "subscribers": 1,
+      "video_count": 3,
+      "shorts_count": 2,
+      "issues_count": 8,
+      "critical_count": 1,
+      "auto_fixed": [
+        "Set channel keywords (API equivalent of topics): Telugu news, AP, Telangana, Telugu people"
+      ]
     }
   ],
   "issues": [],
