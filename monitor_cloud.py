@@ -4,8 +4,8 @@ ViralDNA Spike Monitor — GitHub Actions Edition
 ================================================
 Runs every 30 min on GitHub Actions (cloud).
 Polls RSS + Google Trends + Reddit, scores topics editorially.
-Sends Telegram alert if a topic scores >= 14/30.
-Saves best topics to topics.json (persisted in repo via git push).
+|Sends Telegram alert if a topic scores >= 20/30 (truly viral).
+|Saves best topics to topics.json (persisted in repo via git push).
 
 Credentials: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID from GitHub Secrets.
 """
@@ -39,16 +39,17 @@ VIRAL_KEYWORDS = {
 }
 
 # Celebrity/political names that drive engagement (Telugu audience)
+# Matched as whole words only using word boundary regex
 BIG_NAMES = [
-    "pawan kalyan", "kalyan", "ntr", "jr ntr", "balakrishna",
+    "pawan kalyan", "jr ntr", "balakrishna",
     "mahesh babu", "prabhas", "allu arjun", "ram charan",
     "chiranjeevi", "nagarjuna", "venkatesh", "ravi teja",
-    "jagan", "chandrababu", "nara", "kcr", "revanth",
-    "cm revanth", "bmpi", "tdp", "ysrcp", "tollywood",
-    "devara", "salaar", "pushpa", "rrr", "bahubali",
+    "jagan", "chandrababu", "kcr", "revanth",
+    "cm revanth", "devara", "salaar", "pushpa", "rrr", "bahubali",
     "anirudh", "koratala", "ss rajamouli", "trivikram",
-    "diven", "vijay sethupathi", "suriya", "ajith",
-    "modi", "rahum", "gandhi", "sonia",
+    "vijay sethupathi", "suriya", "ajith",
+    "modi", "rahul gandhi", "sonia gandhi", "amit shah", "yogi",
+    "arvind kejriwal", "mamata banerjee",
 ]
 
 # India national news that affects Telugu people
@@ -104,7 +105,14 @@ def score_editorial(title, source_topics):
     breakdown = []
 
     # 1. Big names bonus — celebrity/political (+10)
-    name_matches = [n for n in BIG_NAMES if n in t]
+    # Use word boundary matching to avoid substring false positives
+    # e.g. "ntr" should NOT match "entrepreneurs", "gandhi" should NOT match "foreground"
+    name_matches = []
+    for n in BIG_NAMES:
+        # \b = word boundary; re.escape for names with spaces like "jr ntr"
+        pattern = r'\b' + re.escape(n) + r'\b'
+        if re.search(pattern, t):
+            name_matches.append(n)
     if name_matches:
         score += 10
         breakdown.append("BIG_NAME +10 (" + name_matches[0] + ")")
@@ -349,17 +357,17 @@ def main():
             print(f"\n  Cooldown active: {elapsed:.1f}h since last alert (need 3h)")
 
     # ── Find best topic ──
-    produce_topics = [t for t in scored if t["score"] >= 10]
-    consider_topics = [t for t in scored if 7 <= t["score"] < 10]
+    # Threshold >= 20: need multiple strong signals (e.g. big name + AP/TS + viral keyword)
+    # Typical scores: routine news = 0-9, interesting = 10-19, truly viral = 20-30
+    produce_topics = [t for t in scored if t["score"] >= 20]
+    consider_topics = [t for t in scored if 15 <= t["score"] < 20]
 
-    print("\nPRODUCE topics (>=10): " + str(len(produce_topics)))
-    print("CONSIDER topics (7-9): " + str(len(consider_topics)))
-
-    # Show top 5
+    print("\nPRODUCER topics (>=20): " + str(len(produce_topics)))
+    print("CONSIDER topics (15-19): " + str(len(consider_topics)))
     print("\nScore | Topic")
     print("-" * 60)
     for t in scored[:5]:
-        marker = "PRODUCE" if t["score"] >= 10 else ("CONSIDER" if t["score"] >= 7 else "low")
+        marker = "PRODUCE" if t["score"] >= 20 else ("CONSIDER" if t["score"] >= 15 else "low")
         print("  [" + marker + "] [" + str(t['score']).zfill(2) + "] " + t['title'][:60])
 
     # Alert logic
@@ -378,7 +386,7 @@ def main():
         topic_id = alert_topic.get("id", "VDNA???")
         breakdown = " | ".join(alert_topic.get("breakdown", []))
 
-        rec = "PRODUCE" if score >= 10 else "CONSIDER"
+        rec = "PRODUCE" if score >= 20 else "CONSIDER"
 
         alert_text = (
             f"🎬 <b>ViralDNA — Topic Alert</b>\n"
