@@ -42,7 +42,7 @@ def load_credentials():
         creds = json.load(f)
     token = creds.get("token", "")
     expiry_str = creds.get("expiry", "")
-    if expiry_str:
+    if expiry_str and expiry_str != "refreshed":
         try:
             expiry = datetime.fromisoformat(expiry_str.replace("Z", "+00:00"))
             if datetime.now(timezone.utc) >= expiry - timedelta(minutes=5):
@@ -93,13 +93,14 @@ def parse_duration(iso_dur):
 
 
 def get_channel_data(token):
-    url = f"https://www.googleapis.com/youtube/v3/channels?part=statistics,brandingSettings,status,topicDetails,contentDetails&id={CHANNEL_ID}"
+    url = f"https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet,brandingSettings,status,topicDetails,contentDetails&id={CHANNEL_ID}"
     data = yt_get(token, url)
     if not data.get("items"):
         return {}
     item = data["items"][0]
     return {
         "stats": item.get("statistics", {}),
+        "snippet": item.get("snippet", {}),
         "branding": item.get("brandingSettings", {}).get("channel", {}),
         "status": item.get("status", {}),
         "topics": item.get("topicDetails", {}),
@@ -268,6 +269,40 @@ def auto_fix(token, channel_data, videos, playlists):
             # Fallback: guide user if API fails
             manual_needed.append("Open YouTube Studio → Customization → Basic Info → Add Topics: Entertainment, News, Education")
 
+    # 3. Channel description — CRITICAL for discovery and branding
+    snippet = channel_data.get("snippet", {})
+    current_desc = snippet.get("description", "").strip()
+    if len(current_desc) < 50:
+        CHANNEL_DESCRIPTION = (
+            "The ViralDNA — Real News. Real Voices. Built with AI.\n\n"
+            "Your trusted source for breaking news from Andhra Pradesh, Telangana, "
+            "and across India — covering politics, Tollywood, Telugu culture, and stories "
+            "that matter to Telugu people everywhere.\n\n"
+            "📰 Daily news coverage in English\n"
+            "🎯 Covering: AP News | Telangana News | Telugu States | India News | Entertainment\n"
+            "🔔 Subscribe for daily updates\n\n"
+            "#TeluguNews #AndhraPradesh #Telangana #IndiaNews #Tollywood"
+        )
+        body = json.dumps({
+            "id": CHANNEL_ID,
+            "snippet": {
+                "description": CHANNEL_DESCRIPTION,
+                "defaultLanguage": "en"
+            }
+        }).encode()
+        req = urllib.request.Request(
+            "https://www.googleapis.com/youtube/v3/channels?part=snippet",
+            data=body,
+            headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"},
+            method="PUT"
+        )
+        try:
+            urllib.request.urlopen(req, timeout=10)
+            desc_msg = "Set channel description" if current_desc else "Set channel description (was empty)"
+            auto_fixed.append(desc_msg)
+        except Exception as e:
+            manual_needed.append(f"Set channel description — API error: {e}")
+
     # 3. Check for non-news-category videos and fix them
     for v in videos:
         if v["privacy"] == "public" and v.get("category_id") != "25":
@@ -322,11 +357,23 @@ def detect_issues(channel_data, videos, playlists, health_state):
         issues.append(("HIGH", "seo",
             "No channel topics OR keywords — reduces discoverability",
             "Hermes will auto-set keywords. For topics: YouTube Studio → Customization → Basic Info → Topics"))
-    elif not has_topics and has_keywords:
+    if not has_topics and has_keywords:
         # Keywords set (auto-fixed) but topicDetails still empty — YouTube auto-assigns over time
         issues.append(("LOW", "seo",
             "Channel topics not set (YouTube auto-assigns based on content)",
             "Optional: YouTube Studio -> Customization -> Basic Info -> Topics"))
+
+    # 1d. Channel description check
+    snippet = channel_data.get("snippet", {})
+    channel_desc = snippet.get("description", "").strip()
+    if not channel_desc:
+        issues.append(("HIGH", "seo",
+            "Channel description is EMPTY — hurts search/discovery and looks unprofessional",
+            "Auto-fix will set it on next health run"))
+    elif len(channel_desc) < 100:
+        issues.append(("MEDIUM", "seo",
+            f"Channel description is very short ({len(channel_desc)} chars)",
+            "Auto-fix will update it on next health run"))
 
     empty_playlists = [p for p in playlists if p["item_count"] == 0]
     if empty_playlists:
