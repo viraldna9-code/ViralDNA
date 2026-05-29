@@ -8,9 +8,58 @@
       "shorts_count": 2,
       "issues_count": 8,
       "critical_count": 2
+    },
+    {
+      "timestamp": "2026-05-29T13:32:51.458902+05:30",
+      "total_views": 1465,
+      "subscribers": 1,
+      "video_count": 3,
+      "shorts_count": 2,
+      "issues_count": 8,
+      "critical_count": 2
+    },
+    {
+      "timestamp": "2026-05-29T13:40:25.339969+05:30",
+      "total_views": 1465,
+      "subscribers": 1,
+      "video_count": 3,
+      "shorts_count": 2,
+      "issues_count": 8,
+      "critical_count": 2,
+      "auto_fixed": []
+    },
+    {
+      "timestamp": "2026-05-29T13:41:09.546870+05:30",
+      "total_views": 1465,
+      "subscribers": 1,
+      "video_count": 0,
+      "shorts_count": 0,
+      "issues_count": 5,
+      "critical_count": 2,
+      "auto_fixed": []
+    },
+    {
+      "timestamp": "2026-05-29T13:43:31.883341+05:30",
+      "total_views": 1465,
+      "subscribers": 1,
+      "video_count": 3,
+      "shorts_count": 2,
+      "issues_count": 8,
+      "critical_count": 2,
+      "auto_fixed": []
+    },
+    {
+      "timestamp": "2026-05-29T13:45:13.882033+05:30",
+      "total_views": 1465,
+      "subscribers": 1,
+      "video_count": 3,
+      "shorts_count": 2,
+      "issues_count": 8,
+      "critical_count": 2,
+      "auto_fixed": []
     }
   ],
   "issues": [],
-  "last_check": "2026-05-29T13:22:09.353817+05:30",
+  "last_check": "2026-05-29T13:32:51.458902+05:30",
   "video_count_at_last": 3
 }

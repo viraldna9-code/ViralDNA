@@ -9,6 +9,7 @@ channel configuration issues.
 
 Only alerts when something ACTIONABLE changes.
 Maintains an analytics/feedback.md living document.
+Auto-fixes what it can, reports what needs manual action.
 
 Runs every 2 during active hours (6AM-11PM IST).
 """
@@ -18,6 +19,7 @@ import os
 import re
 import sys
 import urllib.request
+import urllib.error
 from datetime import datetime, timezone, timedelta
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -25,21 +27,17 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 CREDENTIALS_FILE = os.path.join(PROJECT_ROOT, "credentials", "youtube_token.json")
 HEALTH_FILE = os.path.join(PROJECT_ROOT, "analytics", "health_state.json")
 FEEDBACK_FILE = os.path.join(PROJECT_ROOT, "analytics", "feedback.md")
+ACTION_LOG = os.path.join(PROJECT_ROOT, "analytics", "actions_taken.json")
 CHANNEL_ID = "UCkW7fqkJiaej2PeNcP4PejQ"
 ALERT_COOLDOWN_FILE = os.path.join(PROJECT_ROOT, "analytics", "last_alert.txt")
 
-# Monetization thresholds
 MONETIZATION_SUBS = 1000
 MONETIZATION_WATCH_HOURS = 4000
-MONETIZATION_SHORTS_VIEWS_90D = 10_000_000
-
-# Active hours (IST)
-ACTIVE_START = 6   # 6 AM
-ACTIVE_END = 23    # 11 PM
+ACTIVE_START = 6
+ACTIVE_END = 23
 
 
 def load_credentials():
-    """Load and refresh YouTube OAuth token."""
     with open(CREDENTIALS_FILE) as f:
         creds = json.load(f)
     token = creds.get("token", "")
@@ -74,6 +72,17 @@ def yt_get(token, url):
     return json.loads(urllib.request.urlopen(req, timeout=15).read())
 
 
+def yt_delete(token, url):
+    req = urllib.request.Request(url, headers={
+        "Authorization": "Bearer " + token
+    }, method="DELETE")
+    try:
+        resp = urllib.request.urlopen(req, timeout=10)
+        return True, resp.status
+    except urllib.error.HTTPError as e:
+        return False, e.code
+
+
 def parse_duration(iso_dur):
     if not iso_dur:
         return 0
@@ -84,14 +93,11 @@ def parse_duration(iso_dur):
 
 
 def get_channel_data(token):
-    """Get comprehensive channel data."""
-    # Channel stats + branding + status
     url = f"https://www.googleapis.com/youtube/v3/channels?part=statistics,brandingSettings,status,topicDetails,contentDetails&id={CHANNEL_ID}"
     data = yt_get(token, url)
     if not data.get("items"):
         return {}
     item = data["items"][0]
-
     return {
         "stats": item.get("statistics", {}),
         "branding": item.get("brandingSettings", {}).get("channel", {}),
@@ -102,23 +108,27 @@ def get_channel_data(token):
 
 
 def get_all_videos(token):
-    """Get all videos with full stats."""
-    # First, search for all video IDs
+    """Get all videos with full stats. Retries on empty results."""
     all_ids = []
-    page_token = ""
-    while True:
-        url = f"https://www.googleapis.com/youtube/v3/search?part=id&channelId={CHANNEL_ID}&maxResults=50&order=date&type=video"
-        if page_token:
-            url += f"&pageToken={page_token}"
-        data = yt_get(token, url)
-        for item in data.get("items", []):
-            if item["id"].get("kind") == "youtube#video":
-                all_ids.append(item["id"]["videoId"])
-        page_token = data.get("nextPageToken", "")
-        if not page_token or not data.get("items"):
+    import time
+    for attempt in range(3):
+        page_token = ""
+        while True:
+            url = f"https://www.googleapis.com/youtube/v3/search?part=id&channelId={CHANNEL_ID}&maxResults=50&order=date&type=video"
+            if page_token:
+                url += f"&pageToken={page_token}"
+            data = yt_get(token, url)
+            for item in data.get("items", []):
+                if item["id"].get("kind") == "youtube#video":
+                    all_ids.append(item["id"]["videoId"])
+            page_token = data.get("nextPageToken", "")
+            if not page_token or not data.get("items"):
+                break
+        if all_ids:
             break
+        time.sleep(2)
+        print(f"  Retry {attempt+1}: video search returned 0")
 
-    # Then get full details in batches
     videos = []
     for i in range(0, len(all_ids), 50):
         batch = all_ids[i:i + 50]
@@ -143,14 +153,11 @@ def get_all_videos(token):
                 "tags": sn.get("tags", []),
                 "description": sn.get("description", ""),
                 "category_id": sn.get("categoryId", ""),
-                "default_language": sn.get("defaultLanguage", ""),
-                "made_for_kids": st.get("madeForKids", False),
             })
     return videos
 
 
 def get_playlists(token):
-    """Get all channel playlists."""
     playlists = []
     page_token = ""
     while True:
@@ -163,7 +170,6 @@ def get_playlists(token):
                 "id": p["id"],
                 "title": p["snippet"]["title"],
                 "item_count": p["contentDetails"].get("itemCount", 0),
-                "privacy": p["status"].get("privacyStatus", "") if "status" in p else "",
             })
         page_token = data.get("nextPageToken", "")
         if not page_token:
@@ -175,7 +181,7 @@ def load_health_state():
     if os.path.exists(HEALTH_FILE):
         with open(HEALTH_FILE) as f:
             return json.load(f)
-    return {"checks": [], "issues": [], "last_check": None, "video_count_at_last": 0}
+    return {"checks": [], "issues": [], "last_check": None}
 
 
 def save_health_state(state):
@@ -184,158 +190,187 @@ def save_health_state(state):
         json.dump(state, f, indent=2)
 
 
+def load_action_log():
+    if os.path.exists(ACTION_LOG):
+        with open(ACTION_LOG) as f:
+            return json.load(f)
+    return {"auto_fixed": [], "manual_needed": [], "last_updated": None}
+
+
+def save_action_log(log):
+    os.makedirs(os.path.join(PROJECT_ROOT, "analytics"), exist_ok=True)
+    log["last_updated"] = datetime.now(IST).isoformat()
+    with open(ACTION_LOG, "w") as f:
+        json.dump(log, f, indent=2)
+
+
 def can_send_alert():
-    """Check cooldown: max 1 alert per 4 hours unless critical."""
     if not os.path.exists(ALERT_COOLDOWN_FILE):
         return True
     try:
         last = open(ALERT_COOLDOWN_FILE).read().strip()
         last_dt = datetime.fromisoformat(last)
-        return (datetime.now(timezone.utc) - last_dt).total_seconds() > 14400  # 4h
+        return (datetime.now(timezone.utc) - last_dt).total_seconds() > 14400
     except Exception:
         return True
 
 
-def mark_alert_sent(critical=False):
+def mark_alert_sent():
     os.makedirs(os.path.join(PROJECT_ROOT, "analytics"), exist_ok=True)
     with open(ALERT_COOLDOWN_FILE, "w") as f:
         f.write(datetime.now(timezone.utc).isoformat())
 
 
+def auto_fix(token, channel_data, videos, playlists):
+    """
+    Automatically fix what we can via API.
+    Returns list of fix descriptions and list of manual-action items.
+    """
+    auto_fixed = []
+    manual_needed = []
+
+    # 1. Delete empty playlists
+    empty_playlists = [p for p in playlists if p["item_count"] == 0]
+    for p in empty_playlists:
+        ok, code = yt_delete(token, f"https://www.googleapis.com/youtube/v3/playlists?id={p['id']}")
+        if ok:
+            auto_fixed.append(f"Deleted empty playlist: {p['title']}")
+        else:
+            manual_needed.append(f"Delete empty playlist: {p['title']} (API error {code})")
+
+    # 2. Channel topics — CANNOT be set via API (read-only)
+    topics = channel_data.get("topics", {})
+    if not topics.get("topicIds") and not topics.get("topicCategories"):
+        manual_needed.append("Set channel topics in YouTube Studio: News, Entertainment, Education (API cannot set this)")
+
+    # 3. Check for non-news-category videos and fix them
+    for v in videos:
+        if v["privacy"] == "public" and v.get("category_id") != "25":
+            # Update to News & Politics (25)
+            body = json.dumps({
+                "id": v["id"],
+                "snippet": {
+                    "categoryId": "25",
+                    "title": v["title"],
+                }
+            }).encode()
+            req = urllib.request.Request(
+                "https://www.googleapis.com/youtube/v3/videos?part=snippet",
+                data=body,
+                headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"},
+                method="PUT"
+            )
+            try:
+                urllib.request.urlopen(req, timeout=10)
+                auto_fixed.append(f"Set category to News (25): {v['title'][:40]}")
+            except Exception as e:
+                manual_needed.append(f"Set category to News (25): {v['title'][:40]} (error: {e})")
+
+    return auto_fixed, manual_needed
+
+
 def detect_issues(channel_data, videos, playlists, health_state):
-    """
-    Core analysis engine. Detect actionable issues and opportunities.
-    Returns list of (severity, category, message, action) tuples.
-    Severity: CRITICAL, HIGH, MEDIUM, LOW, INFO
-    """
     issues = []
     stats = channel_data.get("stats", {})
-    branding = channel_data.get("branding", {})
     channel_status = channel_data.get("status", {})
 
     total_views = int(stats.get("viewCount", 0))
     subscribers = int(stats.get("subscriberCount", 0))
-    api_video_count = int(stats.get("videoCount", 0))
-    now = datetime.now(IST)
     total_videos = len(videos)
     shorts = [v for v in videos if v["is_short"]]
     mains = [v for v in videos if not v["is_short"]]
     public_videos = [v for v in videos if v["privacy"] == "public"]
+    now = datetime.now(IST)
 
-    # ── 1. CHANNEL CONFIGURATION ──────────────────────────────
-
-    # Monetization not enabled
+    # 1. CHANNEL CONFIG
     if not channel_status.get("isChannelMonetizationEnabled", False):
         issues.append(("INFO", "monetization",
             f"Monetization NOT enabled ({subscribers}/{MONETIZATION_SUBS} subs)",
-            f"Need {MONETIZATION_SUBS - subscribers} more subscribers to apply"))
+            f"Need {MONETIZATION_SUBS - subscribers} more subscribers"))
 
-    # No channel topics set
     topics = channel_data.get("topics", {})
     if not topics.get("topicIds") and not topics.get("topicCategories"):
         issues.append(("HIGH", "seo",
             "No channel topics set — reduces discoverability",
             "Set channel topics in YouTube Studio: Entertainment, News, Education"))
 
-    # Empty playlists
     empty_playlists = [p for p in playlists if p["item_count"] == 0]
     if empty_playlists:
         issues.append(("MEDIUM", "organization",
             f"{len(empty_playlists)} empty playlist(s): {', '.join(p['title'] for p in empty_playlists[:3])}",
-            "Add videos to empty playlists or delete them — empty playlists hurt channel SEO"))
+            "Delete empty playlists — they hurt channel SEO"))
 
-    # ── 2. CONTENT VOLUME & CONSISTENCY ────────────────────────
-
-    # Very few videos
+    # 2. CONTENT VOLUME
     if total_videos < 5:
         issues.append(("HIGH", "content",
             f"Only {total_videos} videos published. YouTube rewards consistency.",
-            "Target: 1 main + 2 shorts daily. Need more content fast."))
+            "Target: 1 main + 2 shorts daily"))
 
-    # No shorts
     if len(shorts) == 0 and total_videos > 0:
         issues.append(("HIGH", "content",
             "NO shorts published. Shorts are the fastest growth lever.",
-            "Publish at least 2 shorts per day. They get 10-100x more views than long videos for small channels."))
-
-    # Low short count
+            "Publish at least 2 shorts per day"))
     elif len(shorts) < 4 and total_videos >= 3:
         issues.append(("MEDIUM", "content",
-            f"Only {len(shorts)} short(s). Recommend 2 shorts/day minimum.",
-            "Increase short output. Shorts drive subscriber growth for news channels."))
+            f"Only {len(shorts)} short(s). Recommend 2/day minimum.",
+            "Increase short output"))
 
-    # Content gap: no video in last 24 hours
-    recent_videos = [v for v in videos if v["published"] >= (now - timedelta(days=1)).strftime("%Y-%m-%d")]
-    if not recent_videos and total_videos > 0:
+    recent = [v for v in videos if v["published"] >= (now - timedelta(days=1)).strftime("%Y-%m-%d")]
+    if not recent and total_videos > 0:
         issues.append(("HIGH", "consistency",
-            "NO new video in the last 24 hours. YouTube penalizes inactive channels.",
-            "Publish at least 1 video today. Consistency is the #1 growth signal."))
+            "NO new video in last 24 hours",
+            "Publish at least 1 video today"))
 
-    # ── 3. VIDEO PERFORMANCE ANALYSIS ─────────────────────────
-
-    # Best performing video type
+    # 3. VIDEO PERFORMANCE
     if shorts and mains:
-        avg_short_views = sum(v["views"] for v in shorts) / len(shorts)
-        avg_main_views = sum(v["views"] for v in mains) / len(mains)
-        if avg_short_views > avg_main_views * 2:
+        avg_s = sum(v["views"] for v in shorts) / len(shorts)
+        avg_m = sum(v["views"] for v in mains) / len(mains)
+        if avg_s > avg_m * 2:
             issues.append(("INFO", "performance",
-                f"Shorts outperforming mains ({avg_short_views:.0f} vs {avg_main_views:.0f} avg views)",
-                "Double down on shorts. They're your growth engine right now."))
-        elif avg_main_views > avg_short_views * 2:
+                f"Shorts outperforming mains ({avg_s:.0f} vs {avg_m:.0f} avg views)",
+                "Double down on shorts"))
+        elif avg_m > avg_s * 2:
             issues.append(("INFO", "performance",
-                f"Mains outperforming shorts ({avg_main_views:.0f} vs {avg_short_views:.0f} avg views)",
-                "Main videos performing well. Keep the 1+2 balance."))
+                f"Mains outperforming shorts ({avg_m:.0f} vs {avg_s:.0f} avg views)",
+                "Keep the 1+2 balance"))
 
-    # Zero-view videos
     zero_views = [v for v in public_videos if v["views"] == 0]
     if zero_views:
         issues.append(("HIGH", "seo",
             f"{len(zero_views)} public video(s) with ZERO views",
-            "Check titles, thumbnails, and descriptions. These need SEO fixes."))
+            "Check titles, thumbnails, descriptions"))
 
-    # Low engagement rate
     for v in public_videos[:10]:
-        if v["views"] >= 10:
+        if v["views"] >= 50:
             like_rate = v["likes"] / v["views"] * 100
-            if like_rate < 1 and v["views"] > 50:
+            if like_rate < 1:
                 issues.append(("MEDIUM", "engagement",
                     f"Low like rate ({like_rate:.1f}%) on '{v['title'][:40]}'",
-                    "Improve thumbnails and titles. First 48 hours are critical."))
+                    "Improve thumbnails and titles"))
 
-    # ── 4. SEO / METADATA ISSUES ──────────────────────────────
-
-    # Videos without tags
-    no_tags = [v for v in videos if not v["tags"] and v["privacy"] == "public"]
+    # 4. SEO
+    no_tags = [v for v in public_videos if not v["tags"]]
     if no_tags:
         issues.append(("MEDIUM", "seo",
             f"{len(no_tags)} public video(s) have NO tags",
-            f"Add 10-15 relevant tags per video (telugu news, andhra pradesh, telangana, etc.)"))
+            "Add 10-15 relevant tags per video"))
 
-    # Short descriptions
     short_desc = [v for v in public_videos if len(v["description"]) < 100]
     if short_desc:
         issues.append(("LOW", "seo",
-            f"{len(short_desc)} video(s) with very short descriptions (<100 chars)",
-            "Descriptions should be 200+ characters with keywords for SEO"))
+            f"{len(short_desc)} video(s) with short descriptions (<100 chars)",
+            "Descriptions should be 200+ chars with keywords"))
 
-    # Non-news category
-    non_news = [v for v in public_videos if v.get("category_id") != "25"]
-    if non_news:
-        issues.append(("MEDIUM", "seo",
-            f"{len(non_news)} video(s) not in News & Politics category (cat 25)",
-            "Set all videos to category 25 (News & Politics)"))
-
-    # ── 5. GROWTH RATE ────────────────────────────────────────
-
-    prev = health_state.get("checks", [])
-    if prev:
-        last_check = prev[-1]
-        last_views = last_check.get("total_views", total_views)
-        last_subs = last_check.get("subscribers", subscribers)
-        hours_since = 2  # approximate
-        if prev and "timestamp" in last_check:
+    # 5. GROWTH RATE
+    checks = health_state.get("checks", [])
+    if checks:
+        last = checks[-1]
+        last_views = last.get("total_views", total_views)
+        last_subs = last.get("subscribers", subscribers)
+        hours_since = 2
+        if "timestamp" in last:
             try:
-                last_t = datetime.fromisoformat(last_check["timestamp"])
+                last_t = datetime.fromisoformat(last["timestamp"])
                 hours_since = max(0.5, (now - last_t).total_seconds() / 3600)
             except Exception:
                 pass
@@ -345,37 +380,31 @@ def detect_issues(channel_data, videos, playlists, health_state):
 
         if view_growth == 0 and total_views > 0:
             issues.append(("MEDIUM", "growth",
-                f"ZERO view growth in last {hours_since:.0f} hours",
-                "Check if latest video is getting impressions. May need SEO improvements."))
+                f"ZERO view growth in last {hours_since:.0f}h",
+                "Check if latest video is getting impressions"))
         elif view_growth > 0:
-            daily_rate = view_growth / hours_since * 24
-            if daily_rate < 10:
-                issues.append(("LOW", "growth",
-                    f"Slow growth: ~{daily_rate:.0f} views/day estimated",
-                    "Experiment with trending topics and better thumbnails"))
-            else:
-                issues.append(("INFO", "growth",
-                    f"Growing: ~{daily_rate:.0f} views/day estimated — GOOD",
-                    "Current trajectory is positive. Consistency matters most now."))
+            daily = view_growth / hours_since * 24
+            issues.append(("INFO", "growth",
+                f"Growing: ~{daily:.0f} views/day — GOOD",
+                "Current trajectory is positive. Consistency matters."))
 
         if sub_growth > 0:
             issues.append(("INFO", "growth",
                 f"+{sub_growth} new subscriber(s) since last check!",
-                "Sub growth detected. Keep the content cadence."))
+                "Sub growth detected. Keep cadence."))
 
-    # ── 6. MONETIZATION TRACKING ──────────────────────────────
+    # 6. MONETIZATION
     sub_pct = min(100, subscribers / MONETIZATION_SUBS * 100)
     if subscribers < MONETIZATION_SUBS:
         remaining = MONETIZATION_SUBS - subscribers
         issues.append(("INFO", "monetization",
             f"Monetization: {subscribers}/{MONETIZATION_SUBS} subs ({sub_pct:.1f}%). Need {remaining} more.",
-            f"At current rate: keep publishing. Sub milestone is the main blocker."))
+            "Sub milestone is the main blocker"))
 
     return issues
 
 
-def update_feedback_file(issues, channel_data, videos):
-    """Update analytics/feedback.md with living analysis."""
+def update_feedback_file(issues, channel_data, videos, auto_fixed, manual_needed):
     stats = channel_data.get("stats", {})
     subscribers = int(stats.get("subscriberCount", 0))
     total_views = int(stats.get("viewCount", 0))
@@ -383,136 +412,180 @@ def update_feedback_file(issues, channel_data, videos):
     shorts = [v for v in videos if v["is_short"]]
     now = datetime.now(IST)
 
-    # Separate issues by severity
     critical = [i for i in issues if i[0] == "CRITICAL"]
     high = [i for i in issues if i[0] == "HIGH"]
     medium = [i for i in issues if i[0] == "MEDIUM"]
     low = [i for i in issues if i[0] == "LOW"]
     info = [i for i in issues if i[0] == "INFO"]
 
-    feedback = f"""# ViralDNA Channel Health Report
-### Last updated: {now.strftime('%A, %B %d %Y — %H:%M IST')}
+    f = f"# ViralDNA Channel Health Report\n"
+    f += f"### Last updated: {now.strftime('%A, %B %d %Y — %H:%M IST')}\n\n"
+    f += f"## Channel: The Viral DNA\n"
+    f += f"- **Views:** {total_views:,} | **Subscribers:** {subscribers} | **Videos:** {total_videos} ({len(shorts)} shorts)\n"
+    f += f"- **Monetization:** {subscribers}/{MONETIZATION_SUBS} subs ({min(100, subscribers/MONETIZATION_SUBS*100):.1f}%)\n\n"
 
-## Channel: The Viral DNA
-- **Views:** {total_views:,} | **Subscribers:** {subscribers} | **Videos:** {total_videos} ({len(shorts)} shorts)
-- **Monetization:** {subscribers}/{MONETIZATION_SUBS} subs ({min(100, subscribers/MONETIZATION_SUBS*100):.1f}%)
+    if auto_fixed:
+        f += "## AUTO-FIXED THIS CHECK\n"
+        for item in auto_fixed:
+            f += f"- [FIXED] {item}\n"
+        f += "\n"
 
-"""
+    # Show manual needed from action log (cumulative)
+    action_log = load_action_log()
+    all_manual = action_log.get("manual_needed", [])
+    # Filter out items that might have been auto-fixed just now
+    # Keep items that are still relevant
+    still_manual = []
+    for item in all_manual:
+        # Check if any auto-fixed item addresses this
+        addressed = False
+        for fix in auto_fixed:
+            if item.lower()[:30] in fix.lower() or fix.lower()[:30] in item.lower():
+                addressed = True
+                break
+        if not addressed:
+            still_manual.append(item)
+
+    if still_manual:
+        f += "## MANUAL ACTION NEEDED\n"
+        for i, item in enumerate(still_manual, 1):
+            f += f"{i}. {item}\n"
+        f += "\n"
 
     if critical:
-        feedback += "## 🔴 CRITICAL (Act Immediately)\n"
+        f += "## 🔴 CRITICAL (Act Immediately)\n"
         for sev, cat, msg, action in critical:
-            feedback += f"- **[{cat.upper()}]** {msg}\n  → {action}\n"
+            f += f"- **[{cat.upper()}]** {msg}\n  -> {action}\n"
 
     if high:
-        feedback += "\n## 🟠 HIGH PRIORITY (Fix Today)\n"
+        f += "\n## 🟠 HIGH PRIORITY (Fix Today)\n"
         for sev, cat, msg, action in high:
-            feedback += f"- **[{cat.upper()}]** {msg}\n  → {action}\n"
+            f += f"- **[{cat.upper()}]** {msg}\n  -> {action}\n"
 
     if medium:
-        feedback += "\n## 🟡 MEDIUM (This Week)\n"
+        f += "\n## 🟡 MEDIUM (This Week)\n"
         for sev, cat, msg, action in medium:
-            feedback += f"- **[{cat.upper()}]** {msg}\n  → {action}\n"
+            f += f"- **[{cat.upper()}]** {msg}\n  -> {action}\n"
 
     if low:
-        feedback += "\n## 🔵 LOW (Nice to Have)\n"
+        f += "\n## 🔵 LOW (Nice to Have)\n"
         for sev, cat, msg, action in low:
-            feedback += f"- **[{cat.upper()}]** {msg}\n  → {action}\n"
+            f += f"- **[{cat.upper()}]** {msg}\n  -> {action}\n"
 
     if info:
-        feedback += "\n## ℹ️ INFO\n"
+        f += "\n## ℹ️ INFO\n"
         for sev, cat, msg, action in info:
-            feedback += f"- **[{cat.upper()}]** {msg}\n"
+            f += f"- **[{cat.upper()}]** {msg}\n"
 
-    feedback += f"\n---\n*Next check: ~2 hours* | *Feedback auto-updates* | *Hermes acts on HIGH+*\n"
+    f += f"\n---\n*Next check: ~2h | Hermes auto-fixes what it can | Reply 'fixed [#]' after manual actions*\n"
 
     os.makedirs(os.path.join(PROJECT_ROOT, "analytics"), exist_ok=True)
-    with open(FEEDBACK_FILE, "w") as f:
-        f.write(feedback)
+    with open(FEEDBACK_FILE, "w") as fh:
+        fh.write(f)
 
-    return feedback
+    return f
 
 
-def format_alert(issues):
-    """Format a Telegram alert with actionable items only."""
+def format_telegram_alert(issues, auto_fixed, manual_needed, channel_data):
+    stats = channel_data.get("stats", {})
+    subscribers = int(stats.get("subscriberCount", 0))
+    total_views = int(stats.get("viewCount", 0))
+    now = datetime.now(IST)
+
+    alert = f"The ViralDNA — Channel Health\n"
+    alert += f"{now.strftime('%d %b, %H:%M IST')}\n"
+    alert += f"Views: {total_views:,} | Subs: {subscribers}\n\n"
+
+    if auto_fixed:
+        alert += "AUTO-FIXED:\n"
+        for item in auto_fixed:
+            alert += f"  FIXED: {item}\n"
+        alert += "\n"
+
+    # Collect unaddressed manual items
+    action_log = load_action_log()
+    all_manual = action_log.get("manual_needed", [])
+    if all_manual:
+        alert += "MANUAL ACTION NEEDED:\n"
+        for i, item in enumerate(all_manual, 1):
+            alert += f"  {i}. {item}\n"
+        alert += "\n"
+
     critical = [i for i in issues if i[0] in ("CRITICAL", "HIGH")]
     medium = [i for i in issues if i[0] == "MEDIUM"]
 
-    if not critical and not medium:
-        return None
-
-    now = datetime.now(IST)
-    alert = f"⚠️ The ViralDNA — Need to Act\n"
-    alert += f"🕐 {now.strftime('%d %b, %H:%M IST')}\n\n"
-
     if critical:
-        alert += "🔴 URGENT:\n"
+        alert += "URGENT:\n"
         for sev, cat, msg, action in critical[:3]:
-            alert += f"  • {msg}\n"
-            alert += f"    → {action}\n"
+            alert += f"  [{cat.upper()}] {msg}\n"
+            alert += f"    DO: {action}\n"
 
     if medium:
-        alert += "\n🟡 ATTENTION:\n"
-        for sev, cat, msg, action in medium[:3]:
-            alert += f"  • {msg}\n"
-            alert += f"    → {action}\n"
+        alert += "\nTHIS WEEK:\n"
+        for sev, cat, msg, action in medium[:2]:
+            alert += f"  [{cat.upper()}] {msg}\n"
 
-    alert += f"\n📄 Full report: analytics/feedback.md"
+    good_info = [i for i in issues if i[0] == "INFO" and "outperforming" in i[2].lower() or "growing" in i[2].lower()]
+    if good_info:
+        alert += "\nGOOD:\n"
+        for sev, cat, msg, action in good_info[:2]:
+            alert += f"  {msg}\n"
+
+    if not critical and not medium and not all_manual:
+        alert += "  All clear. Channel healthy.\n"
+
+    alert += "\nCheck feedback.md for full report."
+    alert += "\nReply 'fixed [#]' after doing manual tasks."
+
     return alert
 
 
 def send_telegram(message):
-    """Send alert via Telegram API."""
-    # Load creds from ~/.env
     env = {}
     try:
-        with open(os.path.expanduser("~/.env")) as f:
-            for line in f:
+        with open(os.path.expanduser("~/.env")) as fh:
+            for line in fh:
                 line = line.strip()
                 if "=" in line and not line.startswith("#"):
                     k, v = line.split("=", 1)
                     env[k.strip()] = v.strip().strip('"').strip("'")
     except Exception:
         pass
-
     token = env.get("TELEGRAM_BOT_TOKEN", "")
     chat_id = env.get("TELEGRAM_CHAT_ID", "")
     if not token or not chat_id:
-        print("  Telegram creds missing, skipping send")
         return False
-
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     data = json.dumps({
         "chat_id": chat_id, "text": message,
         "parse_mode": "HTML", "disable_web_page_preview": True
     }).encode()
-    urllib.request.urlopen(
-        urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}),
-        timeout=15
-    )
-    return True
+    try:
+        urllib.request.urlopen(
+            urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}),
+            timeout=15)
+        return True
+    except Exception:
+        return False
 
 
 def main():
     now = datetime.now(IST)
     hour = now.hour
 
-    # Only run during active hours (6AM-11PM IST)
     if hour < ACTIVE_START or hour >= ACTIVE_END:
-        print(f"[{now.strftime('%H:%M IST')}] Outside active hours ({ACTIVE_START}-{ACTIVE_END}), skipping.")
-        return # Still a success, just not time yet
+        print(f"[{now.strftime('%H:%M IST')}] Outside active hours, skipping.")
+        return
 
     print(f"[{now.strftime('%H:%M IST')}] ViralDNA Channel Health Check...")
     os.makedirs(os.path.join(PROJECT_ROOT, "analytics"), exist_ok=True)
 
-    # Load token
     try:
         token = load_credentials()
     except Exception as e:
         print(f"  Token error: {e}")
         return
 
-    # Gather data
     try:
         channel_data = get_channel_data(token)
         videos = get_all_videos(token)
@@ -524,18 +597,37 @@ def main():
     stats = channel_data.get("stats", {})
     print(f"  Channel: {stats.get('viewCount', 0)} views, {stats.get('subscriberCount', 0)} subs, {len(videos)} videos")
 
-    # Load previous state
+    # AUTO-FIX what we can
+    auto_fixed, manual_needed = auto_fix(token, channel_data, videos, playlists)
+    for fix in auto_fixed:
+        print(f"  AUTO-FIXED: {fix}")
+    for m in manual_needed:
+        print(f"  MANUAL: {m}")
+
+    # Re-fetch playlists after fixes (they may have been deleted)
+    if auto_fixed:
+        try:
+            playlists = get_playlists(token)
+        except Exception:
+            pass
+
     health_state = load_health_state()
-
-    # Run analysis
     issues = detect_issues(channel_data, videos, playlists, health_state)
-    print(f"  Issues found: {len(issues)} ({sum(1 for i in issues if i[0] in ('CRITICAL','HIGH'))} urgent)")
+    print(f"  Issues: {len(issues)} ({sum(1 for i in issues if i[0] in ('CRITICAL','HIGH'))} urgent)")
 
-    # Update feedback file (always)
-    update_feedback_file(issues, channel_data, videos)
+    # Merge new manual needs with existing action log
+    action_log = load_action_log()
+    existing = set(action_log.get("manual_needed", []))
+    for m in manual_needed:
+        if m not in existing:
+            action_log.setdefault("manual_needed", []).append(m)
+    # Remove resolved items (if issue no longer detected)
+    # Keep items that haven't been explicitly marked fixed
+    save_action_log(action_log)
+
+    update_feedback_file(issues, channel_data, videos, auto_fixed, manual_needed)
     print(f"  Updated {FEEDBACK_FILE}")
 
-    # Save state for next comparison
     health_state["checks"].append({
         "timestamp": now.isoformat(),
         "total_views": int(stats.get("viewCount", 0)),
@@ -544,26 +636,21 @@ def main():
         "shorts_count": sum(1 for v in videos if v["is_short"]),
         "issues_count": len(issues),
         "critical_count": sum(1 for i in issues if i[0] in ("CRITICAL", "HIGH")),
+        "auto_fixed": auto_fixed,
     })
-    # Keep last 100 checks
     health_state["checks"] = health_state["checks"][-100:]
-    health_state["last_check"] = now.isoformat()
-    health_state["video_count_at_last"] = len(videos)
     save_health_state(health_state)
 
-    # Send Telegram alert if issues found (with cooldown)
-    alert_msg = format_alert(issues)
-    if alert_msg and can_send_alert():
-        sent = send_telegram(alert_msg)
+    alert = format_telegram_alert(issues, auto_fixed, manual_needed, channel_data)
+    if alert and (can_send_alert() or auto_fixed):
+        sent = send_telegram(alert)
         if sent:
             mark_alert_sent()
-            print(f"  Telegram alert sent!")
+            print(f"  Telegram sent!")
         else:
-            print(f"  Telegram alert failed to send")
-    elif alert_msg:
-        print(f"  Alert suppressed (4h cooldown active)")
+            print(f"  Telegram FAILED")
     else:
-        print(f"  No urgent issues — channel healthy")
+        print(f"  No alert needed (cooldown or nothing new)")
 
     print("  Done.")
 
