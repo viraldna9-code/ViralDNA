@@ -55,6 +55,8 @@ def main():
     parser.add_argument("--topic-file", type=str, default=None,
                         help="Path to a JSON file with pre-selected topic (from monitor_cloud.py topics_history.json). "
                              "Skips discovery/weighting, goes straight to production.")
+    parser.add_argument("--shorts-only", action="store_true",
+                        help="Only produce shorts, skip main video")
     args = parser.parse_args()
 
     print(f"="*60)
@@ -93,6 +95,10 @@ def main():
                 print(f"  Injected topic: {topic.get('title', 'Unknown')}")
         else:
             print(f"  ⚠️ Topic file not found: {args.topic_file}")
+
+    if args.shorts_only:
+        orchestrator.state["shorts_only"] = True
+        print("  Shorts-only mode: main video will be skipped")
 
     if args.mode == "spike_check":
         orchestrator.execute_spike_check()

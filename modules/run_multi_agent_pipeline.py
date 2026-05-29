@@ -835,6 +835,12 @@ class SequentialAssemblyAgent(BaseAgent):
         state["publish_decision"] = decision
         self.log(f"📋 Publish Decision: {decision.summary()} — {decision.reason}")
 
+        # Override: shorts-only mode (for daily shorts slots)
+        if state.get("shorts_only"):
+            decision.produce_main = False
+            decision.num_shorts = min(decision.num_shorts, 2)
+            self.log("  ⚡ Shorts-only mode: main video skipped, max 2 shorts")
+
         script_payload = state.get("script_payload")
         voiceover_assets = state.get("voiceover_assets")
         background_canvas = state.get("background_canvas")

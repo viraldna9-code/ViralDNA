@@ -162,10 +162,12 @@ def git_pull():
         return False
 
 
-def run_pipeline(mode="normal", topic=None):
+def run_pipeline(mode="normal", topic=None, shorts_only=False):
     """Run the multi-agent pipeline. If topic is provided, inject it."""
     os.chdir(PROJECT_ROOT)
     cmd = [sys.executable, "run_pipeline_entrypoint.py", "--mode", mode]
+    if shorts_only:
+        cmd.append("--shorts-only")
     topic_file = None
     if topic:
         topic_file = os.path.join(PROJECT_ROOT, "logs", "injected_topic.json")
@@ -248,7 +250,7 @@ def main():
         print(f"\n[SLOT] Midday short (hour={hour_ist})")
         topic, remaining = pick_topic(exclude_titles=used_titles, min_score=5)
         if topic:
-            success = run_pipeline(mode="primetime", topic=topic)
+            success = run_pipeline(mode="primetime", topic=topic, shorts_only=True)
             if success:
                 mark_topic_used(topic.get("title", ""))
                 send_telegram(
@@ -289,7 +291,7 @@ def main():
         print(f"\n[SLOT] Evening short (hour={hour_ist})")
         topic, remaining = pick_topic(exclude_titles=used_titles, min_score=5)
         if topic:
-            success = run_pipeline(mode="primetime", topic=topic)
+            success = run_pipeline(mode="primetime", topic=topic, shorts_only=True)
             if success:
                 mark_topic_used(topic.get("title", ""))
                 send_telegram(
