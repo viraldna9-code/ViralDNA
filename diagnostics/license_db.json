@@ -233,11 +233,38 @@
       "attribution_required": true,
       "notes": "Topic: Telangana launches \u20b921.40 crore incubation initiative for rural women entreprene | URL: https://th-i.thgim.com/public/incoming/3pkwwg/article69302658.ece/alternates/FREE_1200/_DSC4136.JPG | Domain: th-i.thgim.com",
       "tracked_at": "2026-05-29T13:13:05.675161"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_0.jpg",
+      "source": "static",
+      "license": "Unknown  from static.toiimg.com",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun K | URL: https://static.toiimg.com/thumb/resizemode-72,width-1280,height-720,msid-126667800/126667800.jpg | Domain: static.toiimg.com",
+      "tracked_at": "2026-05-29T14:16:16.532125"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_1.jpg",
+      "source": "resize",
+      "license": "Unknown  from resize.indiatvnews.com",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun K | URL: https://resize.indiatvnews.com/en/centered/newbucket/1200_675/2026/01/befunky-collage-86-1768615125.webp | Domain: resize.indiatvnews.com",
+      "tracked_at": "2026-05-29T14:16:19.676374"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_2.jpg",
+      "source": "hindustantimes",
+      "license": "Unknown  from www.hindustantimes.com",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun K | URL: https://www.hindustantimes.com/ht-img/img/2026/01/18/1600x900/logo/Rahul_Gandhi_and_DK_Shivakumar_were_face-to-face_1768759025437_1768759025540.jpg | Domain: www.hindustantimes.com",
+      "tracked_at": "2026-05-29T14:16:20.182807"
     }
   ],
   "violations": [],
   "stats": {
-    "total_tracked": 26,
+    "total_tracked": 29,
     "violation_count": 0,
     "commercial_safe": 1
   }

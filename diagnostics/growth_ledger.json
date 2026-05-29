@@ -1331,6 +1331,49 @@
                 "main_id": "none",
                 "shorts_count": 0
             }
+        },
+        {
+            "timestamp": "2026-05-29T14:17:42.162647",
+            "topic_used": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+            "cvi_score": 0,
+            "durations": {
+                "Pre-Pipeline::Cleanup": 0.001329478996922262,
+                "Pre-Pipeline::License Compliance": 2.242399932583794e-05,
+                "Pre-Pipeline::Upload Time Optimization": 0.0010581640017335303,
+                "Pre-Pipeline::Content Calendar": 0.0005502619969774969,
+                "Pre-Pipeline::Scheduling": 1.876700116554275e-05,
+                "Phase 3: Scripting::3.1 Gemini Script Writing": 8.036663871993369,
+                "Phase 4: Safety::4.1 Legal & Regex Audit": 8.172000525519252e-05,
+                "Phase 4: Safety::4.2 Ad-Friendly Check": 0.004051304000313394,
+                "Phase 5: Voiceover::5.1 Synthesis (main)": 17.315172725000593,
+                "Phase 5: Voiceover::5.1 Synthesis (short_1)": 6.392858074003016,
+                "Phase 5: Visuals::5.2 Fetch Background Visuals": 6.454490227995848,
+                "Phase 6: Thumbnails::6.1 Canvas Synthesis": 0.09974773199792253,
+                "Phase 6: Thumbnails::6.2 CTR Optimization": 0.004965122003341094,
+                "Phase 7: Assembly::7.1 Sequential Compilation": 79.57616537599824,
+                "Phase 7: Forensic Audit::7.15 Pre-Ship Audit": 2.2845018910011277,
+                "Phase 7: Upload::7.2 API Uploading": 0.0037367569966590963,
+                "Post-Pipeline::Feedback Collection": 9.838004189077765e-06,
+                "Post-Pipeline::Analytics Pull": 3.412002115510404e-06,
+                "Post-Pipeline::Community Engagement": 1.4846002159174532e-05,
+                "Post-Pipeline::Competitor Intel": 0.0021773129992652684,
+                "Post-Pipeline::Retention Optimization": 1.3427001249510795e-05,
+                "Post-Pipeline::Shorts Optimization": 0.00011761199857573956,
+                "Post-Pipeline::Content Quality": 0.0006562470007338561,
+                "Post-Pipeline::Reliability Check": 0.0004288589989300817,
+                "Post-Pipeline::D2.6 Collaboration Tracker": 5.250600224826485e-05,
+                "Post-Pipeline::H3.4 Blog Companion": 0.001007159000437241,
+                "Post-Pipeline::H3.5 Newsletter Digest": 0.0007871580019127578,
+                "Post-Pipeline::H3.2 Community Poster": 6.945899804122746e-05,
+                "Post-Pipeline::D3.6 Upload Timing Optimizer": 4.822999471798539e-06,
+                "Post-Pipeline::Intelligence Analysis": 0.0022443440029746853
+            },
+            "thumbnail_generated": true,
+            "upload_results": {
+                "status": "skipped",
+                "main_id": "none",
+                "shorts_count": 0
+            }
         }
     ],
     "user_reviews": {
@@ -2133,6 +2176,70 @@
         },
         {
             "last_scan": "2026-05-29T13:14:30.552729",
+            "channels_tracked": 6,
+            "high_threats": 3,
+            "content_gaps": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "NRI remittance policy changes",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu cinema box office records",
+                    "urgency": "medium",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "AP industrial corridor updates",
+                    "urgency": "medium",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "US H-1B visa policy impact on Telugu families",
+                    "urgency": "high",
+                    "competitor_coverage": "low"
+                },
+                {
+                    "topic": "Telugu diaspora community events",
+                    "urgency": "low",
+                    "competitor_coverage": "minimal"
+                }
+            ],
+            "top_priorities": [
+                {
+                    "topic": "Andhra Pradesh local body elections",
+                    "urgency": "high",
+                    "competitor_coverage": "extensive"
+                },
+                {
+                    "topic": "Telangana IT sector layoffs",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                },
+                {
+                    "topic": "Telangana irrigation project disputes",
+                    "urgency": "high",
+                    "competitor_coverage": "moderate"
+                }
+            ]
+        },
+        {
+            "last_scan": "2026-05-29T14:17:42.154461",
             "channels_tracked": 6,
             "high_threats": 3,
             "content_gaps": [

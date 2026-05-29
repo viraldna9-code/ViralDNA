@@ -1275,6 +1275,94 @@
         "variant_ctr": 0.0
       },
       "winner": null
+    },
+    {
+      "id": "test_20260529_141620_58",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "ViralDNA News: Karnataka Leadership Crunch Nears Resolution?"
+      },
+      "variant": {
+        "title": "ViralDNA News: Karnataka Leadership Crunch Nears Resolution?"
+      },
+      "topic": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-05-29T14:16:20.285431",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_141620_59",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "ViralDNA News: Karnataka Leadership Crunch Nears Resolution?"
+      },
+      "variant": {
+        "title": "ViralDNA News: Karnataka Leadership Crunch Nears Resolution? \u2014 What It Means"
+      },
+      "topic": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-05-29T14:16:20.286874",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_141620_60",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "ViralDNA News: Karnataka Leadership Crunch Nears Resolution?"
+      },
+      "variant": {
+        "title": "Analysis: ViralDNA News: Karnataka Leadership Crunch Nears Resolution?"
+      },
+      "topic": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-05-29T14:16:20.287933",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260529_141620_61",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "ViralDNA News: Karnataka Leadership Crunch Nears Resolution?"
+      },
+      "variant": {
+        "title": "ViralDNA News: Karnataka Leadership Crunch Nears Resolution? \u2014 Full Analysis"
+      },
+      "topic": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-05-29T14:16:20.288839",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
     }
   ],
   "stats": {

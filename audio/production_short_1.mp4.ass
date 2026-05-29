@@ -10,11 +10,13 @@ Style: Default,Bebas Neue,55,&H00FFFFFF,&H0000D7FF,&H00000000,&H80000000,-1,0,0,
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,0:00:01.88,Default,,0,0,0,,{\fad(200,200)}Did you know Telangana just
-Dialogue: 0,0:00:01.88,0:00:04.26,Default,,0,0,0,,{\fad(200,200)}dropped a massive crore rupee
-Dialogue: 0,0:00:04.26,0:00:06.65,Default,,0,0,0,,{\fad(200,200)}plan? It s a game
-Dialogue: 0,0:00:06.65,0:00:09.03,Default,,0,0,0,,{\fad(200,200)}changer for rural women entrepreneurs,
-Dialogue: 0,0:00:09.03,0:00:11.42,Default,,0,0,0,,{\fad(200,200)}offering incubation support to help
-Dialogue: 0,0:00:11.42,0:00:13.80,Default,,0,0,0,,{\fad(200,200)}them build their own businesses.
-Dialogue: 0,0:00:13.80,0:00:16.19,Default,,0,0,0,,{\fad(200,200)}This could transform lives and
-Dialogue: 0,0:00:16.19,0:00:18.10,Default,,0,0,0,,{\fad(200,200)}communities across the state!
+Dialogue: 0,0:00:00.00,0:00:02.01,Default,,0,0,0,,{\fad(200,200)}What s really happening in
+Dialogue: 0,0:00:02.01,0:00:04.53,Default,,0,0,0,,{\fad(200,200)}Karnataka? Shivakumar, a key figure,
+Dialogue: 0,0:00:04.53,0:00:07.05,Default,,0,0,0,,{\fad(200,200)}just met Rahul Gandhi and
+Dialogue: 0,0:00:07.05,0:00:09.56,Default,,0,0,0,,{\fad(200,200)}Mallikarjun Kharge in Delhi. This
+Dialogue: 0,0:00:09.56,0:00:12.08,Default,,0,0,0,,{\fad(200,200)}high stakes meeting is about
+Dialogue: 0,0:00:12.08,0:00:14.60,Default,,0,0,0,,{\fad(200,200)}deciding the next Chief Minister
+Dialogue: 0,0:00:14.60,0:00:17.12,Default,,0,0,0,,{\fad(200,200)}after the Congress victory. Will
+Dialogue: 0,0:00:17.12,0:00:19.63,Default,,0,0,0,,{\fad(200,200)}a decision be made soon?
+Dialogue: 0,0:00:19.63,0:00:22.15,Default,,0,0,0,,{\fad(200,200)}Get the rapid updates right
+Dialogue: 0,0:00:22.15,0:00:22.65,Default,,0,0,0,,{\fad(200,200)}here!

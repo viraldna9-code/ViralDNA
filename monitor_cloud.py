@@ -299,6 +299,13 @@ def main():
 
     scored.sort(key=lambda x: x["score"], reverse=True)
 
+    # ── Assign VDNA topic IDs ──
+    # ID format: VDNA001, VDNA002 ... (sequential by score rank)
+    date_prefix = now.strftime("%Y%m%d")
+    for i, t in enumerate(scored, 1):
+        t["id"] = f"VDNA{i:03d}"
+        t["date"] = date_prefix
+
     # ── Load history, check cooldown ──
     history = load_topics_history()
     last_alert_time = None
@@ -342,23 +349,25 @@ def main():
         score = alert_topic["score"]
         title = alert_topic["title"]
         source = alert_topic["source"]
+        topic_id = alert_topic.get("id", "VDNA???")
         breakdown = " | ".join(alert_topic.get("breakdown", []))
 
-        rec = "PRODUCE — Open laptop and tell Hermes: build" if score >= 10 else "CONSIDER — worth covering"
+        rec = "PRODUCE" if score >= 10 else "CONSIDER"
 
         alert_text = (
             f"🎬 <b>ViralDNA — Topic Alert</b>\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             f"📅 {now_str}\n"
-            f"📊 Editorial Score: <b>{score}/30</b>\n"
-            f"{rec}\n"
+            f"🆔 Topic ID: <b>{topic_id}</b>\n"
+            f"📊 Score: <b>{score}/30</b> ({rec})\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
             f"📰 <b>{title[:100]}</b>\n"
-            f"📡 Source: {source}\n"
+            f"📡 {source}\n"
             f"🔍 {breakdown}\n\n"
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💻 Open laptop → Tell Hermes: <b>build</b>\n"
-            f"❌ Not interested? Ignore this alert.\n"
+            f"💻 Open laptop → Hermes chat → type:\n"
+            f"   <b>{topic_id} Post</b>\n"
+            f"❌ Not interested? Ignore.\n"
             f"⏰ Next check in 30 min."
         )
 
