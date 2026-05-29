@@ -234,22 +234,21 @@ class YouTubeUploader:
         description_lines.extend([
             f"",
             f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"📺 The ViralDNA — Your trusted source for news from Vijayawada, Vizag,",
-            f"Hyderabad, Amaravati and beyond. National India updates and global stories",
-            f"explained in Tenglish — the way we actually talk.",
+            f"📺 The Viral DNA — Real News. Real Voices. Built with AI.",
             f"",
-            f"📍 Vijayawada | Vizag | Hyderabad | Amaravati | Guntur",
-            f"🇮🇳 National India — politics, cricket, economy, culture",
-            f"🌍 International stories that affect you",
-            f"🤖 AI and Tech — what it means for your job and family",
-            f"💡 Inspiring stories of Telugu creators and Indian achievers",
+            f"We cover news that matters to Telugu people everywhere:",
+            f"📍 Andhra Pradesh | Telangana | Telugu States",
+            f"🇮🇳 National India — politics, economy, policy",
+            f"🌍 Telugu people worldwide",
             f"",
-            f"🕗 New videos every day at 8:30 AM and 5:30 PM IST",
+            f"New videos daily at 9:00 AM and 7:00 PM IST",
+            f"Shorts at 12:00 PM and 9:00 PM IST",
             f"",
-            f"👍 Like this video if it helped you stay informed.",
-            f"🔔 Subscribe & hit the bell — never miss an update!",
-            f"💬 Drop your thoughts in the comments — we read every one.",
-            f"📤 Share with your family and friends back home.",
+            f"🔔 Subscribe: https://www.youtube.com/@TheViralDNA",
+            f"👍 Like | 💬 Comment | 📤 Share with family",
+            f"📧 Contact: viraldna9@gmail.com",
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"",
         ])
 
         # A2.8: Related links
@@ -1057,7 +1056,7 @@ class YouTubeUploader:
         }
 
         # Determine how many shorts to produce
-        num_shorts = 3
+        num_shorts = 2
         if publish_decision:
             num_shorts = publish_decision.num_shorts
             if not publish_decision.produce_main:
