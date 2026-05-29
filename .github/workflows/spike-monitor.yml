@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -22,5 +24,12 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
         run: python3 monitor_cloud.py
+
+      - name: Commit topics file back to repo
+        run: |
+          git config user.name "ViralDNA Bot"
+          git config user.email "bot@viraldna.local"
+          git add logs/ 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Update topics [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+          git push || true
