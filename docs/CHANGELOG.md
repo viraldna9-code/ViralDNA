@@ -4,6 +4,47 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v74.0] — 2026-06-02 — Channel-Growth Scoring Rewrite
+
+### Problem
+The old scoring system rewarded famous names (+10) and multi-day cross-source stories, causing 2-day-old BJP meeting stories to outscore today's biggest Telugu news (Formation Day). Stale news with "modi" in the title beat fresh local stories.
+
+### Solution — Complete scoring rewrite
+| Signal | Old | New | Rationale |
+|--------|-----|-----|-----------|
+| Freshness | 0 | +7 breaking, +5 today, +3 y'day, -3 stale 3d+ | **#1 growth signal** — today's news always wins |
+| Calendar events | 0 | +10 Formation Day, +8 festivals, +5 exams | Know when search volume spikes for Telugu audience |
+| BIG_NAMES | +10 | +6 | Still valuable but shouldn't dominate local stories |
+| Reddit velocity | 0 | +4 HOT (5+ posts), +2 WARM (3+) | Real-time audience interest signal |
+| Cross-source | +2/+4 | +2/+4 | Unchanged — confirms real news |
+| AP/TS | +6 | +6 | Unchanged — our home turf |
+| India relevant | +4 | +4 | Unchanged |
+| Channel growth | +3 | +3 | Unchanged |
+| Viral keywords | max +5 | max +5 | Unchanged |
+| Title quality | +2 | +2 | Unchanged |
+
+### Key changes
+- `score_editorial()` now takes `topic_date` and `reddit_velocity` params
+- Returns `(capped_score, raw_score, breakdown)` tuple
+- Calendar event keywords are specific (no false positives from generic words)
+- All 50 existing topics rescored with new system
+
+### Before → After
+| Topic | Old Score | New Score |
+|-------|-----------|-----------|
+| VDNA097 BJP Modi meeting (May 31) | 22 | 15 |
+| Formation Day story (June 2) | ~8 | 21 |
+| Heatwave Telangana (June 2) | ~6 | 9 |
+| Pawan Kalyan controversy (June 2) | ~15 | 15 |
+
+### Files changed
+- `monitor_cloud.py` — scoring rewrite + calendar events + velocity signal
+- `logs/topics_history.json` — all 50 topics rescored
+
+---
+
+## [v73.2] — 2026-06-02 — GitHub Actions Fix
+
 ## [70.0] — 2026-06-01 — TREND DISCOVERY REWRITE: pytrends dead, RSS-based Google Trends
 
 ### What was broken
