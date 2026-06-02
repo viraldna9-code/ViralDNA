@@ -7,7 +7,7 @@ on:
 jobs:
   spike-monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repo
@@ -20,6 +20,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install dependencies
+        run: |
+          pip install requests python-dotenv feedparser praw 2>&1 | tail -5
+
       - name: Run spike monitor
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -27,6 +31,7 @@ jobs:
         run: python3 monitor_cloud.py
 
       - name: Commit topics file back to repo
+        if: always()
         run: |
           git config user.name "ViralDNA Bot"
           git config user.email "bot@viraldna.local"

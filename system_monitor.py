@@ -53,8 +53,20 @@ else:
     unpub = [t for t in topics if not t.get("published")]
     high_score = [t for t in unpub if t.get("score", 0) >= 20]
 
-    age_min = (now.timestamp() - tf.stat().st_mtime) / 60
-    age_h = age_min / 60
+    last_run_str = d.get("last_run", "")
+    if last_run_str:
+        try:
+            from datetime import datetime as dt
+            # Parse ISO format last_run
+            lr = dt.fromisoformat(last_run_str)
+            if lr.tzinfo is None:
+                lr = lr.replace(tzinfo=IST)
+            age_min = (now.timestamp() - lr.timestamp()) / 60
+            age_h = age_min / 60
+        except Exception:
+            age_h = 999
+    else:
+        age_h = 999
 
     if age_h > 24:
         add("CRITICAL", f"Monitor STALE — last run {age_h:.0f}h ago ({last_run_str[:16]})")
