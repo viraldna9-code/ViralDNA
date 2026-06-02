@@ -467,7 +467,7 @@ def main():
         print(f"\n  No action taken at {hour_ist}:00 IST")
 
     usage = load_today_usage()
-    print(f"\n  Topics used today: {len(usage['used_titles'])}/{4} (target: 1 main + 2 shorts)")
+    print(f"\n  Topics used today: {len(usage['used_titles'])}/{3} (target: 1 main + 2 shorts)")
     print(f"{'='*60}\n")
 
 

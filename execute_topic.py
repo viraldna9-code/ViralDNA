@@ -2,6 +2,8 @@
 """
 ViralDNA Topic Executor — Execute pipeline for a specific topic from alert.
 Usage: python3 execute_topic.py VDNA042 [--mode normal|primetime]
+
+NOTE: For new code, use trigger_topic.py instead. This file is kept for backward compatibility.
 """
 import sys, os, json, subprocess, argparse
 from pathlib import Path
@@ -26,7 +28,8 @@ def find_topic(data, topic_id):
 def main():
     parser = argparse.ArgumentParser(description="Execute pipeline for a specific topic")
     parser.add_argument("topic_id", help="Topic ID (e.g. VDNA042)")
-    parser.add_argument("--mode", default="normal", choices=["normal", "primetime", "spike"])
+    parser.add_argument("--mode", default="normal",
+                       choices=["normal", "primetime", "spike_check"])
     parser.add_argument("--dry-run", action="store_true", help="Look up topic and show info, don't execute")
     args = parser.parse_args()
 

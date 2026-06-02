@@ -457,6 +457,9 @@ def main():
             existing_map[k]["score"] = t["score"]
             existing_map[k]["date"] = t.get("date", "")
             existing_map[k]["breakdown"] = t.get("breakdown", [])
+            # Always recompute score_breakdown on each scoring run
+            existing_map[k]["score_breakdown"] = t.get("breakdown", [])
+            existing_map[k]["rescored_at"] = t.get("date", "")
             if "id" in t:
                 existing_map[k]["id"] = t["id"]
         else:
