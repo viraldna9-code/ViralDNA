@@ -54,8 +54,8 @@ API_KEYS = {
     "SERPER_API_KEY": os.getenv("SERPER_API_KEY", ""),
 }
 
-GEMINI_CONFIG = {"text_model": "gemini-2.0-flash"}
-SCRIPT_GENERATION_CONFIG = {"model": "gemini-2.0-flash"}
+GEMINI_CONFIG = {"text_model": "gemini-flash-latest"}
+SCRIPT_GENERATION_CONFIG = {"model": "gemini-flash-latest"}
 LEGAL_CONFIG = {"max_fallback_attempts": 3}
 POST_FILTER_CONFIG = {"min_description_length": 50}
 BRANDING_CONFIG = {"palette": {"primary_text": (255,255,255), "secondary_text": (26,26,46), "accent_yellow": (255,215,0), "overlay_black": (0,0,0,153)}}
@@ -168,7 +168,7 @@ QUOTA_CONFIG = {
         "alert_threshold_pct": 80,
     },
     "gemini_api": {
-        "model": "gemini-2.0-flash",
+        "model": "gemini-flash-latest",
         "rpm_limit": int(os.getenv("GEMINI_RPM_LIMIT", "15")),
         "rpd_limit": int(os.getenv("GEMINI_RPD_LIMIT", "1500")),
         "alert_threshold_pct": 80,

@@ -51,7 +51,8 @@ def main():
     # Confirm
     score = topic.get("score", 0)
     title = topic.get("title", "")
-    breakdown = " | ".join(topic.get("score_breakdown") or topic.get("breakdown", []))
+    sb = topic.get("score_breakdown")
+    breakdown = " | ".join(sb if sb is not None else topic.get("breakdown", []))
     source = topic.get("source", "unknown")
 
     print(f"\n{'='*50}")
@@ -72,12 +73,11 @@ def main():
         print("\n[DRY RUN] Topic found and written. Not executing pipeline.")
         sys.exit(0)
 
-    # Run pipeline
-    print(f"\n[Pipeline] Launching run_local.py --mode {args.mode}...")
-    result = subprocess.run(
-        [sys.executable, os.path.join(PROJECT_ROOT, "run_local.py"), "--mode", args.mode],
-        cwd=PROJECT_ROOT
-    )
+    # Run pipeline via entrypoint that supports --topic-file injection
+    entrypoint = os.path.join(PROJECT_ROOT, "run_pipeline_entrypoint.py")
+    cmd = [sys.executable, entrypoint, "--mode", args.mode, "--topic-file", TOPIC_FILE]
+    print(f"\n[Pipeline] Launching: {' '.join(cmd)}")
+    result = subprocess.run(cmd, cwd=PROJECT_ROOT)
     sys.exit(result.returncode)
 
 if __name__ == "__main__":

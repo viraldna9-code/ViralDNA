@@ -152,10 +152,10 @@ def score_editorial(title, source_topics):
         score += 3
         breakdown.append("ChannelGrowth +3")
 
-    # 5. Viral keyword bonus (max +5)
+    # 5. Viral keyword bonus (max +5) — word boundary match
     kw_score = 0
     for kw, pts in VIRAL_KEYWORDS.items():
-        if kw in t:
+        if re.search(r'\b' + re.escape(kw) + r'\b', t):
             kw_score += pts
     if kw_score > 0:
         kw_score = min(kw_score, 5)
