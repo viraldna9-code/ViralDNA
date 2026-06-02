@@ -54,6 +54,53 @@ VIRAL_KEYWORDS = {
     "corruption": 3, "scandal": 4, "viral": 3,
 }
 
+# ── Calendar of known high-traffic events for Telugu audience ──
+# Format: (MM, DD, "event_name", bonus_points)
+# These are dates when search volume SPIKES for Telugu people
+CALENDAR_EVENTS = [
+    # National events
+    (1, 26, "republic day", 8),
+    (8, 15, "independence day", 8),
+    (10, 2, "gandhi jayanti", 5),
+    # Telugu state events
+    (6, 2, "telangana formation day", 10),   # HUGE for our audience
+    (11, 1, "andhra pradesh formation day", 10),  # HUGE for our audience
+    # Major festivals (approximate — covers the week)
+    (1, 14, "sankranti", 8),
+    (3, 22, "ugadi", 8),
+    (10, 2, "dasara", 6),
+    (11, 12, "deepavali", 6),
+    (10, 6, "bathukamma", 7),
+    # Exam/result seasons (broad windows)
+    (3, 1, "exam results season", 5),   # March-April
+    (4, 1, "exam results season", 5),
+    (5, 1, "exam results season", 5),
+    (6, 1, "exam results season", 5),
+    (7, 1, "exam results season", 5),
+    # Budget season
+    (2, 1, "union budget", 6),
+    # Election seasons (update year-to-year)
+    (4, 1, "election season", 7),
+    (5, 1, "election season", 7),
+]
+
+# Keywords that indicate a calendar event is being discussed
+# MUST be specific — generic words like "result" or "election" cause false positives
+CALENDAR_KEYWORDS = {
+    "telangana formation day": ["formation day", "telangana day", "statehood day", "telangana rashtra", "12th anniversary telangana"],
+    "andhra pradesh formation day": ["andhra formation", "andhra day", "andhra pradesh formation"],
+    "sankranti": ["sankranti", "pongal", "makara sankranti"],
+    "ugadi": ["ugadi", "telugu new year", "yugadi"],
+    "dasara": ["dasara", "dussehra", "vijayadashami"],
+    "deepavali": ["deepavali", "diwali"],
+    "bathukamma": ["bathukamma"],
+    "republic day": ["republic day", "republicday", "26 january"],
+    "independence day": ["independence day", "15 august", "august 15"],
+    "union budget": ["union budget", "finance minister budget", "budget 2026", "income tax budget"],
+    "exam results season": ["ssc results", "inter results", "btech results", "exam results declared", "results declared", "toss results"],
+    "election season": ["election results", "voting today", "polling day", "election 2026", "campaign rally"],
+}
+
 # Celebrity/political names that drive engagement (Telugu audience)
 # Matched as whole words only using word boundary regex
 BIG_NAMES = [
@@ -110,59 +157,138 @@ CHANNEL_GROWTH_TOPICS = [
 ]
 
 
-def score_editorial(title, source_topics):
+def score_editorial(title, source_topics, topic_date=None, reddit_velocity=0):
     """Score a topic for channel growth potential (0-30).
-    
-    New scoring: ANY India news is relevant to Telugu people.
-    Celebrity/political names get highest scores.
+
+    Channel-growth-focused scoring:
+    - Freshness matters most: today's breaking news beats 3-day-old news
+    - Local AP/TS stories can score high WITHOUT big names
+    - Calendar events (Formation Day, festivals) get big bonuses
+    - Viral velocity (Reddit, Google Trends) signals real-time demand
+    - Big names still help but don't dominate (+6 not +10)
+    - Cross-source confirms real news importance
+
+    Args:
+        title: Topic title string
+        source_topics: Dict of {source_name: [titles]} for cross-source check
+        topic_date: Date string YYYYMMDD or None (freshness bonus)
+        reddit_velocity: Number of Reddit posts mentioning this topic (0+)
     """
     t = title.lower()
     score = 0
     breakdown = []
+    now = datetime.now(IST)
+    today = now.strftime("%Y-%m-%d")
+    month = now.month
+    day = now.day
 
-    # 1. Big names bonus — celebrity/political (+10)
-    # Use word boundary matching to avoid substring false positives
-    # e.g. "ntr" should NOT match "entrepreneurs", "gandhi" should NOT match "foreground"
+    # ── 1. FRESHNESS / AGE (max +7) — the #1 growth signal ──
+    # Today's news gets full bonus, yesterday gets half, 2+ days ago gets penalty
+    freshness_score = 0
+    if topic_date:
+        try:
+            topic_dt = datetime.strptime(topic_date, "%Y%m%d").replace(tzinfo=IST)
+            age_hours = (now - topic_dt).total_seconds() / 3600
+            if age_hours < 3:
+                freshness_score = 7      # Breaking: <3 hours old
+                breakdown.append("Fresh(BREAKING) +7")
+            elif age_hours < 12:
+                freshness_score = 5      # Today: <12 hours old
+                breakdown.append("Fresh(TODAY) +5")
+            elif age_hours < 24:
+                freshness_score = 3      # Yesterday
+                breakdown.append("Fresh(Y'DAY) +3")
+            elif age_hours < 48:
+                freshness_score = 1      # 2 days ago — barely relevant
+                breakdown.append("Fresh(2d) +1")
+            else:
+                freshness_score = -3     # 3+ days old — stale, penalize
+                breakdown.append(f"Stale({int(age_hours/24)}d) -3")
+        except Exception:
+            pass
+    else:
+        # No date info = assume recent (RSS feeds are usually today)
+        freshness_score = 3
+        breakdown.append("Fresh(assume) +3")
+
+    score += freshness_score
+
+    # ── 2. CALENDAR EVENT BONUS (max +10) — today's special events ──
+    # Check if today matches a known high-traffic calendar date
+    calendar_bonus = 0
+    calendar_name = ""
+    for (evt_month, evt_day, evt_name, evt_bonus) in CALENDAR_EVENTS:
+        if month == evt_month and abs(day - evt_day) <= 2:  # ±2 day window
+            # Check if title mentions THIS specific event's keywords
+            # Use the event name to look up relevant keywords
+            matched = False
+            for ck, keywords in CALENDAR_KEYWORDS.items():
+                # Only check keywords for events that are actually in window
+                if ck in evt_name or evt_name in ck:
+                    for kw in keywords:
+                        if kw.lower() in t:
+                            matched = True
+                            break
+                if matched:
+                    break
+            if matched and evt_bonus > calendar_bonus:
+                calendar_bonus = evt_bonus
+                calendar_name = evt_name
+
+    if calendar_bonus > 0:
+        score += calendar_bonus
+        breakdown.append(f"Calendar({calendar_name}) +{calendar_bonus}")
+
+    # ── 3. BIG NAMES (+6) — celebrity/political, reduced from +10 ──
+    # Still valuable but shouldn't dominate local stories
     name_matches = []
     for n in BIG_NAMES:
-        # \b = word boundary; re.escape for names with spaces like "jr ntr"
         pattern = r'\b' + re.escape(n) + r'\b'
         if re.search(pattern, t):
             name_matches.append(n)
     if name_matches:
-        score += 10
-        breakdown.append("BIG_NAME +10 (" + name_matches[0] + ")")
+        score += 6
+        breakdown.append("BIG_NAME +6 (" + name_matches[0] + ")")
 
-    # 2. AP/Telangana direct relevance (+6) — bonus on top of name
-    # Use word boundary matching to avoid substring false positives
-    # e.g. "ts" should NOT match "gets", "app" should NOT match "appointed"
+    # ── 4. AP/TELANGANA DIRECT RELEVANCE (+6) — our home turf ──
     ap_te_pattern = '|'.join(re.escape(term) for term in sorted(AP_TE_TERMS, key=len, reverse=True))
     if re.search(rf'\b(?:{ap_te_pattern})\b', t):
         score += 6
         breakdown.append("AP/TS +6")
 
-    # 3. India national relevance — affects Telugu people (+4)
+    # ── 5. INDIA NATIONAL RELEVANCE (+4) — affects Telugu people ──
     india_matches = [n for n in INDIA_RELEVANT if re.search(rf'\b{re.escape(n)}\b', t)]
     if india_matches:
         score += 4
         breakdown.append("IndiaRel +4 (" + india_matches[0] + ")")
 
-    # 4. Channel growth topics (+3) — festivals, immigration, etc.
+    # ── 6. CHANNEL GROWTH TOPICS (+3) — always-strong interest areas ──
     if any(re.search(rf'\b{re.escape(term)}\b', t) for term in CHANNEL_GROWTH_TOPICS):
         score += 3
         breakdown.append("ChannelGrowth +3")
 
-    # 5. Viral keyword bonus (max +5) — word boundary match
+    # ── 7. VIRAL KEYWORD BONUS (max +5) — clickbait signals ──
     kw_score = 0
+    matched_kws = []
     for kw, pts in VIRAL_KEYWORDS.items():
         if re.search(r'\b' + re.escape(kw) + r'\b', t):
             kw_score += pts
+            matched_kws.append(kw)
     if kw_score > 0:
         kw_score = min(kw_score, 5)
         score += kw_score
-        breakdown.append("ViralKW +" + str(kw_score))
+        breakdown.append(f"ViralKW +{kw_score} ({matched_kws[0]})")
 
-    # 6. Cross-source bonus (max +4)
+    # ── 8. VELOCITY / VIRAL SIGNAL (max +4) — Reddit/Twitter buzz ──
+    # High Reddit activity = real-time audience interest
+    if reddit_velocity >= 5:
+        score += 4
+        breakdown.append(f"Velocity(HOT) +4 (reddit:{reddit_velocity})")
+    elif reddit_velocity >= 3:
+        score += 2
+        breakdown.append(f"Velocity(WARM) +2 (reddit:{reddit_velocity})")
+
+    # ── 9. CROSS-SOURCE CONFIRMATION (max +4) ──
     src_count = sum(1 for topics in source_topics.values() if any(
         title.lower() == tl.lower() or title.lower() in tl.lower() or tl.lower() in title.lower()
         for tl in topics
@@ -174,12 +300,12 @@ def score_editorial(title, source_topics):
         score += 2
         breakdown.append("CrossSrc(2) +2")
 
-    # 7. Title length sweet spot (+2) — 40-80 chars = good headline
+    # ── 10. TITLE QUALITY (+2) — SEO-friendly headline length ──
     if 40 <= len(title) <= 80:
         score += 2
         breakdown.append("TitleLen +2")
 
-    return min(score, 30), breakdown
+    return min(score, 30), max(score, 0), breakdown
 
 
 def poll_rss():
@@ -320,8 +446,24 @@ def main():
     }
 
     scored = []
+    # Build Reddit velocity map: count how many Reddit posts mention each topic
+    reddit_velocity_map = {}
+    for rt in reddit_topics:
+        rt_title = rt["title"].lower()
+        for t in deduped:
+            tl = t["title"].lower()
+            if tl in rt_title or rt_title in tl or tl == rt_title:
+                key = t["title"]
+                reddit_velocity_map[key] = reddit_velocity_map.get(key, 0) + 1
+
+    date_prefix = now.strftime("%Y%m%d")
     for t in deduped:
-        score, breakdown = score_editorial(t["title"], source_topics)
+        vel = reddit_velocity_map.get(t["title"], 0)
+        score, raw_score, breakdown = score_editorial(
+            t["title"], source_topics,
+            topic_date=date_prefix,
+            reddit_velocity=vel
+        )
         scored.append({**t, "score": score, "breakdown": breakdown})
 
     scored.sort(key=lambda x: x["score"], reverse=True)

@@ -4,7 +4,7 @@
       "title": "BJP Core Group Meet At PM Modi's Residence Today, Rajya Sabha Polls On Agenda",
       "source": "NDTV",
       "url": "https://www.ndtv.com/india-news/bjp-core-group-meet-at-pm-modis-residence-today-rajya-sabha-polls-on-agenda-11571590#publisher=newsstand",
-      "score": 22,
+      "score": 15,
       "breakdown": [
         "BIG_NAME +10 (modi)",
         "AP/TS +6",
@@ -15,7 +15,8 @@
       "id": "VDNA097",
       "date": "20260531",
       "score_breakdown": [
-        "BIG_NAME +10 (modi)",
+        "Stale(2d) -3",
+        "BIG_NAME +6 (modi)",
         "AP/TS +6",
         "IndiaRel +4 (bjp)",
         "TitleLen +2"
@@ -23,82 +24,10 @@
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
     {
-      "title": "‘Faces of 17-year-old terrorists!’: Rahul Gandhi meets Vedant, student at centre of CBSE row, mocks familiar insults | India News - Hindustan Times",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxPNk0zd1lXaTRUaVpudm9UMXNLQ3kwSTdLbFkxUWcyRjB0TU5CaHFMQmtpZGthX2pYODNXcWFRRVdpbWx0dnJXcWRnZ2k3aWZJVXhUeXJiUmpIVUVuTjM0dng3aUcwV2lMc2UzbWZjdGhwLUlmWXV2UEJOLTRycmVXenNmUG9jTk9Ebkt4UWlESUdpX2o1SWtaQm9nQTJ2UVVoeDlzakptWm9QMXVJamFwSWpFVFhsY1Jad3NoTGROUUllZHdGeExBa1JvUmxnb0NKdk9XMHNvUDR6UUktUjRKSEtiREJGakRERDVldmRpZ0NnUnVySFJ2OWF3SQ?oc=5",
-      "score": 15,
-      "breakdown": [
-        "BIG_NAME +10 (rahul gandhi)",
-        "AP/TS +6",
-        "ViralKW +5",
-        "CrossSrc(2) +2"
-      ],
-      "id": "VDNA098",
-      "date": "20260531",
-      "score_breakdown": [
-        "BIG_NAME +10 (rahul gandhi)",
-        "ViralKW +5"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "‘Show the terrorists' faces!’: Rahul Gandhi meets Vedant, student at centre of CBSE row, mocks familiar insults | India News - Hindustan Times",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxPNk0zd1lXaTRUaVpudm9UMXNLQ3kwSTdLbFkxUWcyRjB0TU5CaHFMQmtpZGthX2pYODNXcWFRRVdpbWx0dnJXcWRnZ2k3aWZJVXhUeXJiUmpIVUVuTjM0dng3aUcwV2lMc2UzbWZjdGhwLUlmWXV2UEJOLTRycmVXenNmUG9jTk9Ebkt4UWlESUdpX2o1SWtaQm9nQTJ2UVVoeDlzakptWm9QMXVJamFwSWpFVFhsY1Jad3NoTGROUUllZHdGeExBa1JvUmxnb0NKdk9XMHNvUDR6UUktUjRKSEtiREJGakRERDVldmRpZ0NnUnVySFJ2OWF3SQ?oc=5",
-      "score": 15,
-      "breakdown": [
-        "BIG_NAME +10 (rahul gandhi)",
-        "AP/TS +6",
-        "ViralKW +5"
-      ],
-      "id": "VDNA114",
-      "date": "20260531",
-      "score_breakdown": [
-        "BIG_NAME +10 (rahul gandhi)",
-        "ViralKW +5"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Telangana launches ₹21.40 crore incubation initiative for rural women entrepreneurs",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/national/telangana/telangana-launches-2140-crore-incubation-initiative-for-rural-women-entrepreneurs/article71037101.ece",
-      "score": 6,
-      "breakdown": [
-        "BIG_NAME +10 (ntr)",
-        "AP/TS +6"
-      ],
-      "id": "VDNA001",
-      "published": true,
-      "published_at": "2026-05-30T00:02:25.675069+05:30",
-      "score_breakdown": [
-        "AP/TS +6"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMinAJBVV95cUxNdk5hclVqVHpqVVdQdmk1bEYxRXZpeURNcEhIYWNVR0xtenduZEdreXVEUW5aY2txQnd4NEE0Y2dMYTVYQzQ0bWotWUZ2VHNCSWsyVmZ3ZVJiTVZiNElQR0VFY2pnQ0I3M3RwS0VzUFlTbzc1S1dicDdVREpMSzVScUhkeTFvLUUtRDZlMVhiamswTzdXTWMwOFFjYjNDUDEyMHNMUTJ1eUUxUENJT29xbXQ1b2g0NU9fLVpacGRSc1dDSXpxQ2RvbnZQaG5KazBoSkxFOUtWSGxkSUYzVlF0OHVrZjRaekh4MzN1WU12WnpZU3FJVFk3TFkwUUp2SHdKQk5EemxjaFFKcHRJYzdfUE1WVV9TVUIybzVzdQ?oc=5",
-      "score": 10,
-      "breakdown": [
-        "BIG_NAME +10 (gandhi)",
-        "AP/TS +6"
-      ],
-      "id": "VDNA002",
-      "published": true,
-      "published_at": "2026-05-30T20:47:02.194368+05:30",
-      "youtube_id": "_OwKRcOsfZc",
-      "score_breakdown": [
-        "BIG_NAME +10 (rahul gandhi)"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "CM Revanth: ఉద్యోగులకు ఇచ్చిన మాట నిలబెట్టుకున్న రేవంత్ ప్రభుత్వం - News18 Telugu",
+      "title": "CM Revanth: \u0c09\u0c26\u0c4d\u0c2f\u0c4b\u0c17\u0c41\u0c32\u0c15\u0c41 \u0c07\u0c1a\u0c4d\u0c1a\u0c3f\u0c28 \u0c2e\u0c3e\u0c1f \u0c28\u0c3f\u0c32\u0c2c\u0c46\u0c1f\u0c4d\u0c1f\u0c41\u0c15\u0c41\u0c28\u0c4d\u0c28 \u0c30\u0c47\u0c35\u0c02\u0c24\u0c4d \u0c2a\u0c4d\u0c30\u0c2d\u0c41\u0c24\u0c4d\u0c35\u0c02 - News18 Telugu",
       "source": "Google News Telugu",
       "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOV1EtanZfSlVjNE51VTVFTTZPQmhxS1ppMjJNWnU0RmhZbHVMZGtzYXIxNWtDV0IxdDJKQ0JBZlBiLVdFb0RBeEJGWm5lYlRWVHlVMW5PM1hyOGhlX1JqajF3VDNpSlpVZVRtMHR5cy1SNXNid2ZiX3ZVb3FlRlhQN21JRU40eTdJcU5iRFFRcFp4QkpYeTBoOTdXVm1YVU0zWndrUC0xWWd6dw?oc=5",
-      "score": 16,
+      "score": 15,
       "breakdown": [
         "BIG_NAME +10 (revanth)",
         "AP/TS +6"
@@ -108,8 +37,163 @@
       "published_date": "2026-05-31",
       "published_time": "2026-05-31T11:38:55.325496+05:30",
       "score_breakdown": [
-        "BIG_NAME +10 (revanth)",
+        "Fresh(Y'DAY) +3",
+        "BIG_NAME +6 (revanth)",
         "AP/TS +6"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "BJP demands Uniform Civil Code implemented in Telangana",
+      "source": "The Hindu AP/TS",
+      "url": "https://www.thehindu.com/news/national/telangana/bjp-demands-uniform-civil-code-implemented-in-telangana/article71033280.ece",
+      "score": 15,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (bjp)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA007",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "IndiaRel +4 (bjp)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "How Ex-Congress Leader Emerged As BJP's Top Choice For Its Punjab Unit",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/india-news/how-ex-congress-leader-kewal-singh-dhillon-emerged-bjps-top-choice-for-its-punjab-unit-11564239#publisher=newsstand",
+      "score": 15,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (bjp)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA010",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "IndiaRel +4 (bjp)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Telangana TOSS SSC, Inter results 2026 Out: How to check and download scorecards",
+      "source": "Indian Express",
+      "url": "https://indianexpress.com/article/education/telangana-toss-ssc-intermediate-results-2026-declared-results-scorecard-link-portal-telanganaopenschool-org-tossresultsnov22-marksheet-10715483/",
+      "score": 14,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (result)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA081",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "Calendar(exam results season) +5",
+        "AP/TS +6",
+        "IndiaRel +4 (ssc)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "2 wives, domestic abuse, deadly plot: Chilling details in ex-Congress sarpanch's family murder",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/city/jaipur/ex-sarpanchs-wife-and-daughter-arrested-for-his-murder-minor-son-detained/articleshow/131397338.cms",
+      "score": 12,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (congress)",
+        "ViralKW +5"
+      ],
+      "id": "VDNA088",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "AP/TS +6",
+        "IndiaRel +4 (congress)",
+        "ViralKW +5 (murder)"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Heatwave warning issued for Telangana as temperatures set to soar above 44\u00b0C",
+      "source": "The Hindu AP/TS",
+      "url": "https://www.thehindu.com/news/cities/Hyderabad/heatwave-warning-issued-for-telangana-as-temperatures-set-to-soar-above-44c/article71033373.ece",
+      "score": 11,
+      "breakdown": [
+        "AP/TS +6",
+        "ViralKW +4",
+        "TitleLen +2"
+      ],
+      "id": "VDNA006",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Punjab Municipal Corporation Election Results 2026 Highlights: AAP takes massive lead in Punjab local polls, Congress a distant second - The Indian Express",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMi9AFBVV95cUxQc1dzeUJPRC1tano5TmhoaXdlc1NPZUROOVJ5dkNSNWItM09wTTZ5aEVBLVhCZ3VXMVFRaWJPYVRsSVhocE80U1hibnhMOGpZTFF5ZXdzR1JjUF9yMTVfNEVLMWRpRTJtMTRKem5PZ2ZpVXpyZDRIbDdkelJLRG1MV2xIek03aktZOFlMTmFlYUJORXdwTnBZVUZhS09LUV8tRGROUDJQWWdaSTZUbmN6SU0xeW5YN19RLU1xTERIVFQzcnh4ZjhGcE9XbjEySE4wVUp2VEFHQWl3UHJvcllmYzFPakxNa1Q5NXA5c2ZlLUxPWUhH0gH7AUFVX3lxTFBCU0w4ZkNkU0Z0bjQwd252SllTU3FQT2gxZ2d0U2JYY0JhUHBNbEJtM2F3TFZScmJvZ0xfNGpVeVJrTlRRVXpvTWVVVXJNLWxVNDFOZWxXYlZjZnE4Tzg2X3ZITnlGVG43bS13SVBwRXdodW5yX2hSNDc4NVRZb0xxVThjcW13aWE0LWRuVDBsYnZKZjA4NE9Ra1RXNkxEanFWRkJWcmJXVFJqa2xfbEE2MmtNVUxOd0JnamFhdENVSEROdXEtUUI3cTFLVlNGekhKSHZGbjRLN1VreU9ES0FyYjdBQVdrNlM4R1Y3b3Uwb1JfRnlyR1hlMDNN?oc=5",
+      "score": 10,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (result)",
+        "ViralKW +3"
+      ],
+      "id": "VDNA053",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "AP/TS +6",
+        "IndiaRel +4 (congress)",
+        "ViralKW +3 (massive)"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Telangana launches \u20b921.40 crore incubation initiative for rural women entrepreneurs",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/telangana/telangana-launches-2140-crore-incubation-initiative-for-rural-women-entrepreneurs/article71037101.ece",
+      "score": 9,
+      "breakdown": [
+        "BIG_NAME +10 (ntr)",
+        "AP/TS +6"
+      ],
+      "id": "VDNA001",
+      "published": true,
+      "published_at": "2026-05-30T00:02:25.675069+05:30",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi - NDTV",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMinAJBVV95cUxNdk5hclVqVHpqVVdQdmk1bEYxRXZpeURNcEhIYWNVR0xtenduZEdreXVEUW5aY2txQnd4NEE0Y2dMYTVYQzQ0bWotWUZ2VHNCSWsyVmZ3ZVJiTVZiNElQR0VFY2pnQ0I3M3RwS0VzUFlTbzc1S1dicDdVREpMSzVScUhkeTFvLUUtRDZlMVhiamswTzdXTWMwOFFjYjNDUDEyMHNMUTJ1eUUxUENJT29xbXQ1b2g0NU9fLVpacGRSc1dDSXpxQ2RvbnZQaG5KazBoSkxFOUtWSGxkSUYzVlF0OHVrZjRaekh4MzN1WU12WnpZU3FJVFk3TFkwUUp2SHdKQk5EemxjaFFKcHRJYzdfUE1WVV9TVUIybzVzdQ?oc=5",
+      "score": 9,
+      "breakdown": [
+        "BIG_NAME +10 (gandhi)",
+        "AP/TS +6"
+      ],
+      "id": "VDNA002",
+      "published": true,
+      "published_at": "2026-05-30T20:47:02.194368+05:30",
+      "youtube_id": "_OwKRcOsfZc",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "BIG_NAME +6 (rahul gandhi)"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
@@ -117,7 +201,7 @@
       "title": "Karnataka Politics Live Updates: DK Shivakumar Meets Rahul Gandhi, Mallikarjun Kharge In Delhi",
       "source": "NDTV",
       "url": "https://www.ndtv.com/karnataka-news/karnataka-cm-siddaramaiah-latest-news-karnataka-politics-live-updates-siddaramaiah-hosts-breakfast-meet-amid-buzz-of-leadership-change-in-karnataka-11557756#publisher=newsstand",
-      "score": 10,
+      "score": 9,
       "breakdown": [
         "BIG_NAME +10 (gandhi)",
         "AP/TS +6"
@@ -128,15 +212,16 @@
       "youtube_id": "sa87Qc26tP4",
       "short_youtube_id": "UMXv8KaMaqQ",
       "score_breakdown": [
-        "BIG_NAME +10 (rahul gandhi)"
+        "Fresh(Y'DAY) +3",
+        "BIG_NAME +6 (rahul gandhi)"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
     {
-      "title": "Revanth to adopt YSR’s grassroots engagement model to plug gap between Telangana Govt, people and party",
+      "title": "Revanth to adopt YSR\u2019s grassroots engagement model to plug gap between Telangana Govt, people and party",
       "source": "The Hindu",
       "url": "https://www.thehindu.com/news/national/telangana/revanth-to-adopt-ysrs-grassroots-engagement-model-to-plug-gap-between-telangana-govt-people-and-party/article71040420.ece",
-      "score": 16,
+      "score": 9,
       "breakdown": [
         "BIG_NAME +10 (revanth)",
         "AP/TS +6"
@@ -144,80 +229,85 @@
       "id": "VDNA051",
       "date": "20260530",
       "score_breakdown": [
-        "BIG_NAME +10 (revanth)",
+        "Stale(3d) -3",
+        "BIG_NAME +6 (revanth)",
         "AP/TS +6"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
     {
-      "title": "Education system has fallen into hands of mafia: Arvind Kejriwal",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/education/education-system-has-fallen-into-hands-of-mafia-arvind-kejriwal/article71040952.ece",
-      "score": 12,
-      "breakdown": [
-        "BIG_NAME +10 (arvind kejriwal)",
-        "IndiaRel +4 (cat)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA074",
-      "date": "20260530",
-      "score_breakdown": [
-        "BIG_NAME +10 (arvind kejriwal)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "KTR challenges Revanth to contest elections after fulfilling ‘420 promises’",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/national/telangana/ktr-challenges-revanth-to-contest-elections-after-fulfilling-420-promises/article71044667.ece",
-      "score": 12,
-      "breakdown": [
-        "BIG_NAME +10 (revanth)",
-        "IndiaRel +4 (election)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA115",
-      "date": "20260531",
-      "score_breakdown": [
-        "BIG_NAME +10 (revanth)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Top 10 countries most affected by terrorism 2025-26: Pakistan tops list; see where India stands",
-      "source": "Indian Express",
-      "url": "https://indianexpress.com/article/trending/top-10-listing/top-10-countries-most-affected-by-terrorism-2025-26-10714485/",
-      "score": 5,
-      "breakdown": [
-        "BIG_NAME +10 (ntr)",
-        "ViralKW +5"
-      ],
-      "id": "VDNA005",
-      "published": true,
-      "published_date": "2026-05-30",
-      "score_breakdown": [
-        "ViralKW +5"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "2 wives, domestic abuse, deadly plot: Chilling details in ex-Congress sarpanch's family murder",
+      "title": "IPL 2026: Rishabh Pant steps down as Lucknow Super Giants captain",
       "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/city/jaipur/ex-sarpanchs-wife-and-daughter-arrested-for-his-murder-minor-son-detained/articleshow/131397338.cms",
-      "score": 15,
+      "url": "https://timesofindia.indiatimes.com/sports/cricket/ipl/ipl-2026/ipl-2026-rishabh-pant-steps-down-as-lucknow-super-giants-captain/articleshow/131389885.cms",
+      "score": 9,
       "breakdown": [
         "AP/TS +6",
-        "IndiaRel +4 (congress)",
-        "ViralKW +5"
+        "IndiaRel +4 (ipl)",
+        "TitleLen +2"
       ],
-      "id": "VDNA088",
+      "id": "VDNA008",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "IndiaRel +4 (ipl)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Pooja Singh breaks 14-yr-old NR, wins historic Asian U20 high jump gold \u2014 Watch",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/sports/more-sports/athletics/pooja-singh-breaks-14-year-old-national-record-wins-historic-asian-u20-high-jump-gold-watch/articleshow/131391048.cms",
+      "score": 9,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (gold)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA009",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "IndiaRel +4 (gold)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Kerala CM to open second edition of Global Travel Market on June 3",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/kerala/kerala-cm-to-open-second-edition-of-global-travel-market-on-june-3/article71040748.ece",
+      "score": 9,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (market)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA076",
       "date": "20260530",
       "score_breakdown": [
+        "Stale(3d) -3",
         "AP/TS +6",
-        "IndiaRel +4 (congress)",
-        "ViralKW +5"
+        "IndiaRel +4 (market)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Balka Suman Arrest : \u0c2c\u0c3e\u0c32\u0c4d\u0c15 \u0c38\u0c41\u0c2e\u0c28\u0c4d \u0c05\u0c30\u0c46\u0c38\u0c4d\u0c1f\u0c4d? - News18 Telugu",
+      "source": "Google News Telugu",
+      "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxQVEZOeEVuNll5LVp5ZmlEYzcxNjJqQjg0cm1FdVZNM3RxRlZjMFROOW5XNFJOd3JtblBHU1JxNjRrZTZIdlVUYU1yX0xabWp2MklFLTNKSG5TRHJQaHpMaUJxU2hBVjlsVURQOVAwZ3NGdV9oLTJDMU81cUhTNUpWMVpkeHpuNHM?oc=5",
+      "score": 9,
+      "breakdown": [
+        "AP/TS +6",
+        "ViralKW +4",
+        "TitleLen +2"
+      ],
+      "id": "VDNA079",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "AP/TS +6",
+        "ViralKW +4 (arrest)",
+        "TitleLen +2"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
@@ -225,7 +315,7 @@
       "title": "No lion deaths reported in last three days amid viral outbreak in Gir: Minister",
       "source": "The Hindu",
       "url": "https://www.thehindu.com/news/national/gujarat/no-lion-deaths-reported-in-last-three-days-amid-viral-outbreak-in-gir-minister/article71044498.ece",
-      "score": 13,
+      "score": 8,
       "breakdown": [
         "AP/TS +6",
         "ViralKW +5",
@@ -235,17 +325,18 @@
       "id": "VDNA099",
       "date": "20260531",
       "score_breakdown": [
+        "Stale(2d) -3",
         "AP/TS +6",
-        "ViralKW +5",
+        "ViralKW +3 (viral)",
         "TitleLen +2"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
     {
-      "title": "Prime accused hired bike stunt rider to stage advocate’s murder as hit-and-run in Hyderabad, say police",
+      "title": "Prime accused hired bike stunt rider to stage advocate\u2019s murder as hit-and-run in Hyderabad, say police",
       "source": "The Hindu AP/TS",
       "url": "https://www.thehindu.com/news/national/telangana/prime-accused-hired-bike-stunt-rider-to-stage-advocates-murder-as-hit-and-run-in-hyderabad-say-police/article71044706.ece",
-      "score": 11,
+      "score": 8,
       "breakdown": [
         "AP/TS +6",
         "IndiaRel +4 (cat)",
@@ -254,8 +345,9 @@
       "id": "VDNA116",
       "date": "20260531",
       "score_breakdown": [
+        "Stale(2d) -3",
         "AP/TS +6",
-        "ViralKW +5"
+        "ViralKW +5 (murder)"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
@@ -263,7 +355,7 @@
       "title": "'PM Modi supervised NEET paper leak': Rahul's big charge as Centre gears up for retest",
       "source": "TOI",
       "url": "https://timesofindia.indiatimes.com/india/pm-modi-supervised-neet-paper-leak-rahul-gandhis-big-charge-as-centre-gears-up-for-retest/articleshow/131404572.cms",
-      "score": 14,
+      "score": 7,
       "breakdown": [
         "BIG_NAME +10 (modi)",
         "IndiaRel +4 (neet)"
@@ -271,16 +363,17 @@
       "id": "VDNA052",
       "date": "20260530",
       "score_breakdown": [
-        "BIG_NAME +10 (modi)",
+        "Stale(3d) -3",
+        "BIG_NAME +6 (modi)",
         "IndiaRel +4 (neet)"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
     {
-      "title": "'First NEET, then CBSE, now CUET': Modi govt faces fire over another exam ‘glitch’, NTA issues clarification on delay | India News - Hindustan Times",
+      "title": "'First NEET, then CBSE, now CUET': Modi govt faces fire over another exam \u2018glitch\u2019, NTA issues clarification on delay | India News - Hindustan Times",
       "source": "Google News IN",
       "url": "https://news.google.com/rss/articles/CBMiggJBVV95cUxPakM1eUttaXI3OWtWZ2hVXzBhY25FRjJHYzVtcFpyN19PRlRSYVhzbGhzNEpvLVUwYUZMRmJ5LTYzNW00UXpMbXl6dTh2TE5adHo2c0xROVlfRTh1RUc5bTh6a29ITkdNSVlnYXBBY3B2MWNwRVV6SnNOal8yYndCNFRjbGdjYVVDOTJwQ1VNWFFERXRYNTNVamxuS2UwNnh1cVY3Tmw3T0tSRmp3OUtkQWVlQjR1dGtnQVF2Q205cnRZWUhadi1uWTlacXM2TEdsbUVpTHM1dWhib0tzSWx4eFJ1ZG5yMTFkYXhMVW9SU0ljR204NTRqQU9tckFxQnVoU1E?oc=5",
-      "score": 14,
+      "score": 7,
       "breakdown": [
         "BIG_NAME +10 (modi)",
         "IndiaRel +4 (exam)"
@@ -288,480 +381,9 @@
       "id": "VDNA075",
       "date": "20260530",
       "score_breakdown": [
-        "BIG_NAME +10 (modi)",
+        "Stale(3d) -3",
+        "BIG_NAME +6 (modi)",
         "IndiaRel +4 (exam)"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "20-year-old man arrested in Hyderabad for sexual assault",
-      "source": "The Hindu AP/TS",
-      "url": "https://www.thehindu.com/news/cities/Hyderabad/20-year-old-man-arrested-in-hyderabad-for-sexual-assault/article71041639.ece",
-      "score": 12,
-      "breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "CrossSrc(2) +2",
-        "TitleLen +2"
-      ],
-      "id": "VDNA100",
-      "date": "20260531",
-      "score_breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "UP gets permanent DGP after 4 years, Rajeev Krishna appointed state police chief",
-      "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/city/lucknow/up-gets-permanent-dgp-after-4-years-rajeev-krishna-appointed-state-police-chief/articleshow/131422145.cms",
-      "score": 2,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (jee)",
-        "CrossSrc(2) +2",
-        "TitleLen +2"
-      ],
-      "id": "VDNA101",
-      "date": "20260531",
-      "score_breakdown": [
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "On Camera, Trinamool MP Attacked, Day After Abhishek Banerjee Assaulted",
-      "source": "NDTV",
-      "url": "https://www.ndtv.com/india-news/trinamool-mp-kalyan-banerjee-attacked-in-bengal-chanditala-hooghly-after-abhishek-banerjee-in-sonarpur-11570973#publisher=newsstand",
-      "score": 8,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (jee)",
-        "CrossSrc(2) +2",
-        "TitleLen +2"
-      ],
-      "id": "VDNA102",
-      "date": "20260531",
-      "score_breakdown": [
-        "AP/TS +6",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Maharashtra’s biggest cooperative milk dairy gets ready for polls",
-      "source": "Indian Express",
-      "url": "https://indianexpress.com/article/cities/mumbai/maharashtras-biggest-cooperative-milk-dairy-gets-ready-for-polls-10717133/",
-      "score": 2,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (poll)",
-        "CrossSrc(2) +2",
-        "TitleLen +2"
-      ],
-      "id": "VDNA103",
-      "date": "20260531",
-      "score_breakdown": [
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "'We stand united': Abhishek Banerjee thanks Rahul Gandhi for support after attack, says INDIA bloc will c - The Times of India",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMipAJBVV95cUxQZmtoRDlFaExZa25oYktIQWJfYTRnMmJBb1FueVFnWmFwNXp4OFh3SDhNU1ZuY1R4MHBqVUFvb3RVdHFIWVFDS2g1cUhhcDVJaGcxVHhUVGtkVjBFWnc1ZWN2amJmT0RsalMxUkRqN3FLM05rdXd2bWMwV3ZZSW92LWFyY0IyOXd4N2txVDBxVHhMcUpNaURvR19JWmlQV2V6WE93T3R5MTlSOFA0S1hYOVBLOU1sRVBmdENKRjM4bENfOGI2MGpMeFhiSVI3eGNDS1o3T1BMbERsUnYxaW5yT1V4VnB3VGkwbmw2bTNXNU50ZXk1cVVVbjBjVzk2R3VLdGpJeVMzaGlwcVQ2TngwVlhmOXFBeGNpVjZVcnI0RTJTNjdq?oc=5",
-      "score": 10,
-      "breakdown": [
-        "BIG_NAME +10 (rahul gandhi)",
-        "IndiaRel +4 (jee)"
-      ],
-      "id": "VDNA117",
-      "date": "20260531",
-      "score_breakdown": [
-        "BIG_NAME +10 (rahul gandhi)"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Punjab Municipal Corporation Election Results 2026 Highlights: AAP takes massive lead in Punjab local polls, Congress a distant second - The Indian Express",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMi9AFBVV95cUxQc1dzeUJPRC1tano5TmhoaXdlc1NPZUROOVJ5dkNSNWItM09wTTZ5aEVBLVhCZ3VXMVFRaWJPYVRsSVhocE80U1hibnhMOGpZTFF5ZXdzR1JjUF9yMTVfNEVLMWRpRTJtMTRKem5PZ2ZpVXpyZDRIbDdkelJLRG1MV2xIek03aktZOFlMTmFlYUJORXdwTnBZVUZhS09LUV8tRGROUDJQWWdaSTZUbmN6SU0xeW5YN19RLU1xTERIVFQzcnh4ZjhGcE9XbjEySE4wVUp2VEFHQWl3UHJvcllmYzFPakxNa1Q5NXA5c2ZlLUxPWUhH0gH7AUFVX3lxTFBCU0w4ZkNkU0Z0bjQwd252SllTU3FQT2gxZ2d0U2JYY0JhUHBNbEJtM2F3TFZScmJvZ0xfNGpVeVJrTlRRVXpvTWVVVXJNLWxVNDFOZWxXYlZjZnE4Tzg2X3ZITnlGVG43bS13SVBwRXdodW5yX2hSNDc4NVRZb0xxVThjcW13aWE0LWRuVDBsYnZKZjA4NE9Ra1RXNkxEanFWRkJWcmJXVFJqa2xfbEE2MmtNVUxOd0JnamFhdENVSEROdXEtUUI3cTFLVlNGekhKSHZGbjRLN1VreU9ES0FyYjdBQVdrNlM4R1Y3b3Uwb1JfRnlyR1hlMDNN?oc=5",
-      "score": 13,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (result)",
-        "ViralKW +3"
-      ],
-      "id": "VDNA053",
-      "date": "20260530",
-      "score_breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (congress)",
-        "ViralKW +3"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "College student dies after getting stuck in temple car wheel in Tiruchengode",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/national/tamil-nadu/college-student-dies-after-getting-stuck-in-temple-car-wheel-in-tiruchengode/article71044228.ece",
-      "score": 5,
-      "breakdown": [
-        "AP/TS +6",
-        "ChannelGrowth +3",
-        "CrossSrc(2) +2",
-        "TitleLen +2"
-      ],
-      "id": "VDNA104",
-      "date": "20260531",
-      "score_breakdown": [
-        "ChannelGrowth +3",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "The Night Paris Plunged Into Chaos: Riots, Death, Mayhem Grip City Streets",
-      "source": "NDTV",
-      "url": "https://www.ndtv.com/world-news/champions-league-arsenal-paris-saint-germain-the-night-paris-plunged-into-chaos-riots-death-mayhem-grip-city-streets-11571928#publisher=newsstand",
-      "score": 7,
-      "breakdown": [
-        "AP/TS +6",
-        "ViralKW +5",
-        "TitleLen +2"
-      ],
-      "id": "VDNA118",
-      "date": "20260531",
-      "score_breakdown": [
-        "ViralKW +5",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Heatwave warning issued for Telangana as temperatures set to soar above 44°C",
-      "source": "The Hindu AP/TS",
-      "url": "https://www.thehindu.com/news/cities/Hyderabad/heatwave-warning-issued-for-telangana-as-temperatures-set-to-soar-above-44c/article71033373.ece",
-      "score": 12,
-      "breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "TitleLen +2"
-      ],
-      "id": "VDNA006",
-      "score_breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "BJP demands Uniform Civil Code implemented in Telangana",
-      "source": "The Hindu AP/TS",
-      "url": "https://www.thehindu.com/news/national/telangana/bjp-demands-uniform-civil-code-implemented-in-telangana/article71033280.ece",
-      "score": 12,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (bjp)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA007",
-      "score_breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (bjp)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "IPL 2026: Rishabh Pant steps down as Lucknow Super Giants captain",
-      "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/sports/cricket/ipl/ipl-2026/ipl-2026-rishabh-pant-steps-down-as-lucknow-super-giants-captain/articleshow/131389885.cms",
-      "score": 6,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (ipl)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA008",
-      "score_breakdown": [
-        "IndiaRel +4 (ipl)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Pooja Singh breaks 14-yr-old NR, wins historic Asian U20 high jump gold — Watch",
-      "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/sports/more-sports/athletics/pooja-singh-breaks-14-year-old-national-record-wins-historic-asian-u20-high-jump-gold-watch/articleshow/131391048.cms",
-      "score": 6,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (gold)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA009",
-      "score_breakdown": [
-        "IndiaRel +4 (gold)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "How Ex-Congress Leader Emerged As BJP's Top Choice For Its Punjab Unit",
-      "source": "NDTV",
-      "url": "https://www.ndtv.com/india-news/how-ex-congress-leader-kewal-singh-dhillon-emerged-bjps-top-choice-for-its-punjab-unit-11564239#publisher=newsstand",
-      "score": 12,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (bjp)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA010",
-      "score_breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (bjp)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Satwik-Chirag stub Malaysian upstarts with calm carnage to make Singapore semis",
-      "source": "Indian Express",
-      "url": "https://indianexpress.com/article/sports/badminton/satwiksairaj-rankireddy-chirag-shetty-reach-singapore-open-semifinals-10714557/",
-      "score": 2,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (emi)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA011",
-      "score_breakdown": [
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "'It hurts deeply': Vaibhav Sooryavanshi shares RR's post after IPL 2026 exit",
-      "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/sports/cricket/ipl/ipl-2026/it-hurts-deeply-tearful-vaibhav-sooryavanshi-says-sorry-after-rajasthan-royals-ipl-2026-exit/articleshow/131404847.cms",
-      "score": 6,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (ipl)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA054",
-      "date": "20260530",
-      "score_breakdown": [
-        "IndiaRel +4 (ipl)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "What’s happening on Iran war day 91 as US, Iran near 60-day deal - Al Jazeera",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPcDl3ZDNDMnM4bnZxYjIwd2ZxRldURHlqMXdQOEhCSXk1QnhPc1F1UzVZWmZSb0ZhcXhDRjlTWXFXNWd1SFNGOW9TU1ZxcEtsd1NGazZUd1hwa0t4M1RYNmNjZjNycTl3dElqYkFqaml2eVlUSmEzaHRWT09BNHg0Y2Q5bGF5N3JRdkQxdE94c3NVb0stUEQ3bEozVEdIWUNaODgwT0130gGrAUFVX3lxTE42YzB1Y1Z4OHktUHdjaTVxVnlpUDVKdG1TY2FYOE9zb1Y3UGw1NWlUWWhqeVFiSWg4Wm4wemZJSWJWR1pFdGJMUGpxc2ZIQjdTeE1TNnpaaEU0LUVSZlBVdXdiVDlwR0tncFZhZmo3Z0pfc3FLeFFHaUt1eENFR3RwQld3Q1NweEVXVGdpQndkYmRhMnNvQmJSY1FpZ0JxcnozVXotUVZGdS1vOA?oc=5",
-      "score": 6,
-      "breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "TitleLen +2"
-      ],
-      "id": "VDNA055",
-      "date": "20260530",
-      "score_breakdown": [
-        "ViralKW +4",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Trump's In 'Excellent Health', But Body Mass Index Nears Obese Level",
-      "source": "NDTV",
-      "url": "https://www.ndtv.com/world-news/trumps-in-excellent-health-but-body-mass-index-nears-obese-level-11567251#publisher=newsstand",
-      "score": 6,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (health)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA056",
-      "date": "20260530",
-      "score_breakdown": [
-        "IndiaRel +4 (health)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Kerala CM to open second edition of Global Travel Market on June 3",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/national/kerala/kerala-cm-to-open-second-edition-of-global-travel-market-on-june-3/article71040748.ece",
-      "score": 12,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (market)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA076",
-      "date": "20260530",
-      "score_breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (market)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "70% drop in gold demand: Import duty hike from 6% to 15% rattles buyers",
-      "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/business/india-business/70-drop-in-gold-demand-import-duty-hike-from-6-to-15-rattles-buyers/articleshow/131405953.cms",
-      "score": 6,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (gold)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA077",
-      "date": "20260530",
-      "score_breakdown": [
-        "IndiaRel +4 (gold)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "'Not going to vacate': Rabri's 'evict by force' dare to CM Samrat over bungalow",
-      "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/india/not-going-to-vacate-rabris-evict-by-force-dare-to-cm-samrat-over-bungalow/articleshow/131406177.cms",
-      "score": 8,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (cat)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA078",
-      "date": "20260530",
-      "score_breakdown": [
-        "AP/TS +6",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Balka Suman Arrest : బాల్క సుమన్ అరెస్ట్? - News18 Telugu",
-      "source": "Google News Telugu",
-      "url": "https://news.google.com/rss/articles/CBMihwFBVV95cUxQVEZOeEVuNll5LVp5ZmlEYzcxNjJqQjg0cm1FdVZNM3RxRlZjMFROOW5XNFJOd3JtblBHU1JxNjRrZTZIdlVUYU1yX0xabWp2MklFLTNKSG5TRHJQaHpMaUJxU2hBVjlsVURQOVAwZ3NGdV9oLTJDMU81cUhTNUpWMVpkeHpuNHM?oc=5",
-      "score": 12,
-      "breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "TitleLen +2"
-      ],
-      "id": "VDNA079",
-      "date": "20260530",
-      "score_breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "UP Residents To Pay 10% Fuel Surcharge On June Electricity Bills",
-      "source": "NDTV",
-      "url": "https://www.ndtv.com/india-news/uttar-pradesh-residents-to-pay-10-percent-fuel-surcharge-on-june-electricity-bills-11567984#publisher=newsstand",
-      "score": 6,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (fuel)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA080",
-      "date": "20260530",
-      "score_breakdown": [
-        "IndiaRel +4 (fuel)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Telangana TOSS SSC, Inter results 2026 Out: How to check and download scorecards",
-      "source": "Indian Express",
-      "url": "https://indianexpress.com/article/education/telangana-toss-ssc-intermediate-results-2026-declared-results-scorecard-link-portal-telanganaopenschool-org-tossresultsnov22-marksheet-10715483/",
-      "score": 12,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (result)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA081",
-      "date": "20260530",
-      "score_breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (ssc)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Police arrests former MLA Balka Suman from Telangana Bhavan",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/national/telangana/former-mla-balka-suman-arrested-by-police-from-telangana-bhavan/article71040971.ece",
-      "score": 12,
-      "breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "TitleLen +2"
-      ],
-      "id": "VDNA089",
-      "date": "20260530",
-      "score_breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Train staff caught washing utensils in toilet; IRCTC gets notice - video",
-      "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/india/extremely-unhygienic-fssai-issues-notice-to-irctc-after-video-shows-catering-staff-washing-utensils-in-train-toilet-video/articleshow/131407516.cms",
-      "score": 2,
-      "breakdown": [
-        "AP/TS +6",
-        "IndiaRel +4 (rain)",
-        "TitleLen +2"
-      ],
-      "id": "VDNA090",
-      "date": "20260530",
-      "score_breakdown": [
-        "TitleLen +2"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Mekedatu Dam row: Protesting Tamil Nadu farmers stopped at Karnataka border in Krishnagiri",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/national/tamil-nadu/mekedatu-dam-row-protesting-tamil-nadu-farmers-stopped-at-karnataka-border-in-krishnagiri/article71044091.ece",
-      "score": 10,
-      "breakdown": [
-        "IndiaRel +4 (farmers)",
-        "ChannelGrowth +3",
-        "ViralKW +3",
-        "CrossSrc(2) +2"
-      ],
-      "id": "VDNA105",
-      "date": "20260531",
-      "score_breakdown": [
-        "IndiaRel +4 (farmers)",
-        "ChannelGrowth +3",
-        "ViralKW +3"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
@@ -769,7 +391,7 @@
       "title": "Ministers statements on paddy procurement run contrary to ground reality: BJP State chief N. Ramchander Rao",
       "source": "The Hindu AP/TS",
       "url": "https://www.thehindu.com/news/national/telangana/ministers-statements-on-paddy-procurement-run-contrary-to-ground-reality-bjp-state-chief-n-ramchander-rao/article71042252.ece",
-      "score": 10,
+      "score": 7,
       "breakdown": [
         "AP/TS +6",
         "IndiaRel +4 (bjp)",
@@ -778,6 +400,7 @@
       "id": "VDNA106",
       "date": "20260531",
       "score_breakdown": [
+        "Stale(2d) -3",
         "AP/TS +6",
         "IndiaRel +4 (bjp)"
       ],
@@ -787,7 +410,7 @@
       "title": "'We stand united': Abhishek on Rahul's support after attack, vows to continue the fight against BJP",
       "source": "TOI",
       "url": "https://timesofindia.indiatimes.com/india/we-stand-united-abhishek-banerjee-thanks-rahul-gandhi-for-support-after-attack-says-india-bloc-will-the-continue-fight-against-bjp/articleshow/131421887.cms",
-      "score": 10,
+      "score": 7,
       "breakdown": [
         "AP/TS +6",
         "IndiaRel +4 (bjp)",
@@ -796,33 +419,17 @@
       "id": "VDNA107",
       "date": "20260531",
       "score_breakdown": [
+        "Stale(2d) -3",
         "AP/TS +6",
         "IndiaRel +4 (bjp)"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
     {
-      "title": "Iran war news LIVE: Ghalibaf says no deal with US till Iranian rights are secured | World News - Hindustan Times",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMikAJBVV95cUxQQnpLc2dQWExBUkhCS0xscmkycVJZWW9YQWRjNzlfd1lEU1hGd2t2dmRmX1dzQzJaNkU3R210azd0YmVEUnFpUHlpVzdPZzhybU5SNk5WYjlnYUtFQ0paNWt3cDE1Y3F3ajlfNVhnY0tTc1h0cHlXQmVmUkxqXzZ4SC1WS0xENnR4UW1zeVNGZDJWTmhvaVJRSE1ENzZEYWJ2NWtraHdnQkNYUy1aMXdkdTh1bUU3cDduaExXRTd4cm8yMElIZWdHb1NuNHk5b3BtOGhXSDVKckJlVzZSLVA1OVlNNEwxLVJGQldCa0VEN0lhNnhCbnl3a2NGUXdLMFhrbEhSMXNzZWtBSTBHVXpwadIBlgJBVV95cUxPSUJkeGlkRW55RmZTbHNiTTFHaEZ1cXNEOTZ5U3h4eWpXa1pWTDBNYnI4Q2JzUzlIUnZfRVAxblZhdjNqVU9XMGM0OVBzaW90YXVQZ19JQXYtazB1UFAyR0NadXdlN2Mtck4wX3JXU3JEWUl3YmJXN2oyZVJCQjZ3b3FaTWdyTG10SmVSTnVvUjdNT25SXzNFRk0zUmViSW9tMEsybnc5aHQxcUFJTVVyQjdyVEZ2Um5aZHlDclhYaTFHS0VLSWlyNjJ0SVdQNW4teXBCZWtza0kxX3FSVmxzdUR3UGVza2dnMC1VYVc0RjdFS1d2TWdoYzVnZ1hSV3NUS0xpUWFSVkR3VndCaHpBWEpkd2ZYdw?oc=5",
-      "score": 4,
-      "breakdown": [
-        "AP/TS +6",
-        "ViralKW +4",
-        "CrossSrc(2) +2"
-      ],
-      "id": "VDNA108",
-      "date": "20260531",
-      "score_breakdown": [
-        "ViralKW +4"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "AP Pension: పెన్షనర్లకు శుభవార్త.. ఏపీలో కొత్తగా 5,606 మందికి పెన్షన్ల పంపిణీ! - News18 Telugu",
+      "title": "AP Pension: \u0c2a\u0c46\u0c28\u0c4d\u0c37\u0c28\u0c30\u0c4d\u0c32\u0c15\u0c41 \u0c36\u0c41\u0c2d\u0c35\u0c3e\u0c30\u0c4d\u0c24.. \u0c0f\u0c2a\u0c40\u0c32\u0c4b \u0c15\u0c4a\u0c24\u0c4d\u0c24\u0c17\u0c3e 5,606 \u0c2e\u0c02\u0c26\u0c3f\u0c15\u0c3f \u0c2a\u0c46\u0c28\u0c4d\u0c37\u0c28\u0c4d\u0c32 \u0c2a\u0c02\u0c2a\u0c3f\u0c23\u0c40! - News18 Telugu",
       "source": "Google News Telugu",
       "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxNd254ckVaODZxNzRqcmE1a1RCMm1kMkhSUGluTVQwMkM1VUg1YllFOGZFaUVhVHNYM0JMNC1LRDNQLW9BeVRpaVB4NkZjZXRacnFRNXpSYkpTbTFpenR0aFhNaGtIV19TMXpjZ2FLanZVN2JUdl9fRGRrMXJTQkhqcFFBbk1kR2FocGI1c0FXMFo4MmdfdmV0ME5oSFM1MUJSLWNaZGx5VmVYelBJVlItNW50TWdQYjZKZ0FuV09PR3FMS3NMbkhhanJ1ZG9hUEs1QmZVVHhxWW1FUnU3M0EwVkx5RnVnakpHUFE?oc=5",
-      "score": 10,
+      "score": 7,
       "breakdown": [
         "AP/TS +6",
         "IndiaRel +4 (pension)",
@@ -831,40 +438,9 @@
       "id": "VDNA109",
       "date": "20260531",
       "score_breakdown": [
+        "Stale(2d) -3",
         "AP/TS +6",
         "IndiaRel +4 (pension)"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "Mahesh Babu | బర్త్‌డే స్పెషల్‌గా థియేటర్లలోకి ప్రిన్స్ క్లాసిక్ సినిమాలు - prabhanews.com",
-      "source": "Google News Telugu",
-      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQaGdqX2N6X2NEOGlKbVA0a3VSUGNQMmo1MWFiZ3U3WkMwa1VwMDl1dm1KTk8yaUlGSzRSSV9GeUVzTk9NNzVoTEtjQnRzbjY1RFo5T3FyWkdoeHh5QmxSWXFTdVRoc3YtdEh1eEZKLXBObDBvZXptVjljOVQ5V1VBLWRR?oc=5",
-      "score": 10,
-      "breakdown": [
-        "BIG_NAME +10 (mahesh babu)",
-        "CrossSrc(2) +2"
-      ],
-      "id": "VDNA110",
-      "date": "20260531",
-      "score_breakdown": [
-        "BIG_NAME +10 (mahesh babu)"
-      ],
-      "rescored_at": "2026-06-01T22:00:00+05:30"
-    },
-    {
-      "title": "In Mann Ki Baat, PM Modi praises sprinters Gurindervir, Kujur: ‘You’ll bring glory to the country’",
-      "source": "Indian Express",
-      "url": "https://indianexpress.com/article/india/mann-ki-baat-pm-modi-gurindervir-singh-animesh-kujur-10717093/",
-      "score": 10,
-      "breakdown": [
-        "BIG_NAME +10 (modi)",
-        "CrossSrc(2) +2"
-      ],
-      "id": "VDNA111",
-      "date": "20260531",
-      "score_breakdown": [
-        "BIG_NAME +10 (modi)"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
@@ -872,7 +448,7 @@
       "title": "BJP sweeps 3 of 4 municipal corporations in Himachal, Congress retains only Palampur",
       "source": "Indian Express",
       "url": "https://indianexpress.com/article/cities/chandigarh/bjp-sweeps-3-of-4-municipal-corporations-in-himachal-congress-retains-only-palampur-10717107/",
-      "score": 10,
+      "score": 7,
       "breakdown": [
         "AP/TS +6",
         "IndiaRel +4 (bjp)",
@@ -881,8 +457,381 @@
       "id": "VDNA112",
       "date": "20260531",
       "score_breakdown": [
+        "Stale(2d) -3",
         "AP/TS +6",
         "IndiaRel +4 (bjp)"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "KTR challenges Revanth to contest elections after fulfilling \u2018420 promises\u2019",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/telangana/ktr-challenges-revanth-to-contest-elections-after-fulfilling-420-promises/article71044667.ece",
+      "score": 5,
+      "breakdown": [
+        "BIG_NAME +10 (revanth)",
+        "IndiaRel +4 (election)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA115",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "BIG_NAME +6 (revanth)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Education system has fallen into hands of mafia: Arvind Kejriwal",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/education/education-system-has-fallen-into-hands-of-mafia-arvind-kejriwal/article71040952.ece",
+      "score": 5,
+      "breakdown": [
+        "BIG_NAME +10 (arvind kejriwal)",
+        "IndiaRel +4 (cat)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA074",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "BIG_NAME +6 (arvind kejriwal)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "20-year-old man arrested in Hyderabad for sexual assault",
+      "source": "The Hindu AP/TS",
+      "url": "https://www.thehindu.com/news/cities/Hyderabad/20-year-old-man-arrested-in-hyderabad-for-sexual-assault/article71041639.ece",
+      "score": 5,
+      "breakdown": [
+        "AP/TS +6",
+        "ViralKW +4",
+        "CrossSrc(2) +2",
+        "TitleLen +2"
+      ],
+      "id": "VDNA100",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "On Camera, Trinamool MP Attacked, Day After Abhishek Banerjee Assaulted",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/india-news/trinamool-mp-kalyan-banerjee-attacked-in-bengal-chanditala-hooghly-after-abhishek-banerjee-in-sonarpur-11570973#publisher=newsstand",
+      "score": 5,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (jee)",
+        "CrossSrc(2) +2",
+        "TitleLen +2"
+      ],
+      "id": "VDNA102",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Satwik-Chirag stub Malaysian upstarts with calm carnage to make Singapore semis",
+      "source": "Indian Express",
+      "url": "https://indianexpress.com/article/sports/badminton/satwiksairaj-rankireddy-chirag-shetty-reach-singapore-open-semifinals-10714557/",
+      "score": 5,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (emi)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA011",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "'Not going to vacate': Rabri's 'evict by force' dare to CM Samrat over bungalow",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/india/not-going-to-vacate-rabris-evict-by-force-dare-to-cm-samrat-over-bungalow/articleshow/131406177.cms",
+      "score": 5,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (cat)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA078",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Police arrests former MLA Balka Suman from Telangana Bhavan",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/telangana/former-mla-balka-suman-arrested-by-police-from-telangana-bhavan/article71040971.ece",
+      "score": 5,
+      "breakdown": [
+        "AP/TS +6",
+        "ViralKW +4",
+        "TitleLen +2"
+      ],
+      "id": "VDNA089",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Mekedatu Dam row: Protesting Tamil Nadu farmers stopped at Karnataka border in Krishnagiri",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/tamil-nadu/mekedatu-dam-row-protesting-tamil-nadu-farmers-stopped-at-karnataka-border-in-krishnagiri/article71044091.ece",
+      "score": 4,
+      "breakdown": [
+        "IndiaRel +4 (farmers)",
+        "ChannelGrowth +3",
+        "ViralKW +3",
+        "CrossSrc(2) +2"
+      ],
+      "id": "VDNA105",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "IndiaRel +4 (farmers)",
+        "ChannelGrowth +3"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "In Mann Ki Baat, PM Modi praises sprinters Gurindervir, Kujur: \u2018You\u2019ll bring glory to the country\u2019",
+      "source": "Indian Express",
+      "url": "https://indianexpress.com/article/india/mann-ki-baat-pm-modi-gurindervir-singh-animesh-kujur-10717093/",
+      "score": 3,
+      "breakdown": [
+        "BIG_NAME +10 (modi)",
+        "CrossSrc(2) +2"
+      ],
+      "id": "VDNA111",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "BIG_NAME +6 (modi)"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "\u2018Faces of 17-year-old terrorists!\u2019: Rahul Gandhi meets Vedant, student at centre of CBSE row, mocks familiar insults | India News - Hindustan Times",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxPNk0zd1lXaTRUaVpudm9UMXNLQ3kwSTdLbFkxUWcyRjB0TU5CaHFMQmtpZGthX2pYODNXcWFRRVdpbWx0dnJXcWRnZ2k3aWZJVXhUeXJiUmpIVUVuTjM0dng3aUcwV2lMc2UzbWZjdGhwLUlmWXV2UEJOLTRycmVXenNmUG9jTk9Ebkt4UWlESUdpX2o1SWtaQm9nQTJ2UVVoeDlzakptWm9QMXVJamFwSWpFVFhsY1Jad3NoTGROUUllZHdGeExBa1JvUmxnb0NKdk9XMHNvUDR6UUktUjRKSEtiREJGakRERDVldmRpZ0NnUnVySFJ2OWF3SQ?oc=5",
+      "score": 3,
+      "breakdown": [
+        "BIG_NAME +10 (rahul gandhi)",
+        "AP/TS +6",
+        "ViralKW +5",
+        "CrossSrc(2) +2"
+      ],
+      "id": "VDNA098",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "BIG_NAME +6 (rahul gandhi)"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "\u2018Show the terrorists' faces!\u2019: Rahul Gandhi meets Vedant, student at centre of CBSE row, mocks familiar insults | India News - Hindustan Times",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxPNk0zd1lXaTRUaVpudm9UMXNLQ3kwSTdLbFkxUWcyRjB0TU5CaHFMQmtpZGthX2pYODNXcWFRRVdpbWx0dnJXcWRnZ2k3aWZJVXhUeXJiUmpIVUVuTjM0dng3aUcwV2lMc2UzbWZjdGhwLUlmWXV2UEJOLTRycmVXenNmUG9jTk9Ebkt4UWlESUdpX2o1SWtaQm9nQTJ2UVVoeDlzakptWm9QMXVJamFwSWpFVFhsY1Jad3NoTGROUUllZHdGeExBa1JvUmxnb0NKdk9XMHNvUDR6UUktUjRKSEtiREJGakRERDVldmRpZ0NnUnVySFJ2OWF3SQ?oc=5",
+      "score": 3,
+      "breakdown": [
+        "BIG_NAME +10 (rahul gandhi)",
+        "AP/TS +6",
+        "ViralKW +5"
+      ],
+      "id": "VDNA114",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "BIG_NAME +6 (rahul gandhi)"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Top 10 countries most affected by terrorism 2025-26: Pakistan tops list; see where India stands",
+      "source": "Indian Express",
+      "url": "https://indianexpress.com/article/trending/top-10-listing/top-10-countries-most-affected-by-terrorism-2025-26-10714485/",
+      "score": 3,
+      "breakdown": [
+        "BIG_NAME +10 (ntr)",
+        "ViralKW +5"
+      ],
+      "id": "VDNA005",
+      "published": true,
+      "published_date": "2026-05-30",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "'We stand united': Abhishek Banerjee thanks Rahul Gandhi for support after attack, says INDIA bloc will c - The Times of India",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMipAJBVV95cUxQZmtoRDlFaExZa25oYktIQWJfYTRnMmJBb1FueVFnWmFwNXp4OFh3SDhNU1ZuY1R4MHBqVUFvb3RVdHFIWVFDS2g1cUhhcDVJaGcxVHhUVGtkVjBFWnc1ZWN2amJmT0RsalMxUkRqN3FLM05rdXd2bWMwV3ZZSW92LWFyY0IyOXd4N2txVDBxVHhMcUpNaURvR19JWmlQV2V6WE93T3R5MTlSOFA0S1hYOVBLOU1sRVBmdENKRjM4bENfOGI2MGpMeFhiSVI3eGNDS1o3T1BMbERsUnYxaW5yT1V4VnB3VGkwbmw2bTNXNU50ZXk1cVVVbjBjVzk2R3VLdGpJeVMzaGlwcVQ2TngwVlhmOXFBeGNpVjZVcnI0RTJTNjdq?oc=5",
+      "score": 3,
+      "breakdown": [
+        "BIG_NAME +10 (rahul gandhi)",
+        "IndiaRel +4 (jee)"
+      ],
+      "id": "VDNA117",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "BIG_NAME +6 (rahul gandhi)"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "The Night Paris Plunged Into Chaos: Riots, Death, Mayhem Grip City Streets",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/world-news/champions-league-arsenal-paris-saint-germain-the-night-paris-plunged-into-chaos-riots-death-mayhem-grip-city-streets-11571928#publisher=newsstand",
+      "score": 3,
+      "breakdown": [
+        "AP/TS +6",
+        "ViralKW +5",
+        "TitleLen +2"
+      ],
+      "id": "VDNA118",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "ViralKW +4 (death)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "'It hurts deeply': Vaibhav Sooryavanshi shares RR's post after IPL 2026 exit",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/sports/cricket/ipl/ipl-2026/it-hurts-deeply-tearful-vaibhav-sooryavanshi-says-sorry-after-rajasthan-royals-ipl-2026-exit/articleshow/131404847.cms",
+      "score": 3,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (ipl)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA054",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "IndiaRel +4 (ipl)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "What\u2019s happening on Iran war day 91 as US, Iran near 60-day deal - Al Jazeera",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPcDl3ZDNDMnM4bnZxYjIwd2ZxRldURHlqMXdQOEhCSXk1QnhPc1F1UzVZWmZSb0ZhcXhDRjlTWXFXNWd1SFNGOW9TU1ZxcEtsd1NGazZUd1hwa0t4M1RYNmNjZjNycTl3dElqYkFqaml2eVlUSmEzaHRWT09BNHg0Y2Q5bGF5N3JRdkQxdE94c3NVb0stUEQ3bEozVEdIWUNaODgwT0130gGrAUFVX3lxTE42YzB1Y1Z4OHktUHdjaTVxVnlpUDVKdG1TY2FYOE9zb1Y3UGw1NWlUWWhqeVFiSWg4Wm4wemZJSWJWR1pFdGJMUGpxc2ZIQjdTeE1TNnpaaEU0LUVSZlBVdXdiVDlwR0tncFZhZmo3Z0pfc3FLeFFHaUt1eENFR3RwQld3Q1NweEVXVGdpQndkYmRhMnNvQmJSY1FpZ0JxcnozVXotUVZGdS1vOA?oc=5",
+      "score": 3,
+      "breakdown": [
+        "AP/TS +6",
+        "ViralKW +4",
+        "TitleLen +2"
+      ],
+      "id": "VDNA055",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "ViralKW +4 (war)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Trump's In 'Excellent Health', But Body Mass Index Nears Obese Level",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/world-news/trumps-in-excellent-health-but-body-mass-index-nears-obese-level-11567251#publisher=newsstand",
+      "score": 3,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (health)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA056",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "IndiaRel +4 (health)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "70% drop in gold demand: Import duty hike from 6% to 15% rattles buyers",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/business/india-business/70-drop-in-gold-demand-import-duty-hike-from-6-to-15-rattles-buyers/articleshow/131405953.cms",
+      "score": 3,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (gold)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA077",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "IndiaRel +4 (gold)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "UP Residents To Pay 10% Fuel Surcharge On June Electricity Bills",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/india-news/uttar-pradesh-residents-to-pay-10-percent-fuel-surcharge-on-june-electricity-bills-11567984#publisher=newsstand",
+      "score": 3,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (fuel)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA080",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
+        "IndiaRel +4 (fuel)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Mahesh Babu | \u0c2c\u0c30\u0c4d\u0c24\u0c4d\u200c\u0c21\u0c47 \u0c38\u0c4d\u0c2a\u0c46\u0c37\u0c32\u0c4d\u200c\u0c17\u0c3e \u0c25\u0c3f\u0c2f\u0c47\u0c1f\u0c30\u0c4d\u0c32\u0c32\u0c4b\u0c15\u0c3f \u0c2a\u0c4d\u0c30\u0c3f\u0c28\u0c4d\u0c38\u0c4d \u0c15\u0c4d\u0c32\u0c3e\u0c38\u0c3f\u0c15\u0c4d \u0c38\u0c3f\u0c28\u0c3f\u0c2e\u0c3e\u0c32\u0c41 - prabhanews.com",
+      "source": "Google News Telugu",
+      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQaGdqX2N6X2NEOGlKbVA0a3VSUGNQMmo1MWFiZ3U3WkMwa1VwMDl1dm1KTk8yaUlGSzRSSV9GeUVzTk9NNzVoTEtjQnRzbjY1RFo5T3FyWkdoeHh5QmxSWXFTdVRoc3YtdEh1eEZKLXBObDBvZXptVjljOVQ5V1VBLWRR?oc=5",
+      "score": 3,
+      "breakdown": [
+        "BIG_NAME +10 (mahesh babu)",
+        "CrossSrc(2) +2"
+      ],
+      "id": "VDNA110",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "BIG_NAME +6 (mahesh babu)"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
@@ -890,7 +839,7 @@
       "title": "Ministers push time-bound pre-monsoon works to avert rain-related disasters",
       "source": "The Hindu",
       "url": "https://www.thehindu.com/news/national/kerala/ministers-push-time-bound-pre-monsoon-works-to-avert-rain-related-disasters/article71044535.ece",
-      "score": 6,
+      "score": 3,
       "breakdown": [
         "AP/TS +6",
         "IndiaRel +4 (rain)",
@@ -899,7 +848,102 @@
       "id": "VDNA119",
       "date": "20260531",
       "score_breakdown": [
+        "Stale(2d) -3",
         "IndiaRel +4 (rain)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "College student dies after getting stuck in temple car wheel in Tiruchengode",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/tamil-nadu/college-student-dies-after-getting-stuck-in-temple-car-wheel-in-tiruchengode/article71044228.ece",
+      "score": 2,
+      "breakdown": [
+        "AP/TS +6",
+        "ChannelGrowth +3",
+        "CrossSrc(2) +2",
+        "TitleLen +2"
+      ],
+      "id": "VDNA104",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "ChannelGrowth +3",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Iran war news LIVE: Ghalibaf says no deal with US till Iranian rights are secured | World News - Hindustan Times",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMikAJBVV95cUxQQnpLc2dQWExBUkhCS0xscmkycVJZWW9YQWRjNzlfd1lEU1hGd2t2dmRmX1dzQzJaNkU3R210azd0YmVEUnFpUHlpVzdPZzhybU5SNk5WYjlnYUtFQ0paNWt3cDE1Y3F3ajlfNVhnY0tTc1h0cHlXQmVmUkxqXzZ4SC1WS0xENnR4UW1zeVNGZDJWTmhvaVJRSE1ENzZEYWJ2NWtraHdnQkNYUy1aMXdkdTh1bUU3cDduaExXRTd4cm8yMElIZWdHb1NuNHk5b3BtOGhXSDVKckJlVzZSLVA1OVlNNEwxLVJGQldCa0VEN0lhNnhCbnl3a2NGUXdLMFhrbEhSMXNzZWtBSTBHVXpwadIBlgJBVV95cUxPSUJkeGlkRW55RmZTbHNiTTFHaEZ1cXNEOTZ5U3h4eWpXa1pWTDBNYnI4Q2JzUzlIUnZfRVAxblZhdjNqVU9XMGM0OVBzaW90YXVQZ19JQXYtazB1UFAyR0NadXdlN2Mtck4wX3JXU3JEWUl3YmJXN2oyZVJCQjZ3b3FaTWdyTG10SmVSTnVvUjdNT25SXzNFRk0zUmViSW9tMEsybnc5aHQxcUFJTVVyQjdyVEZ2Um5aZHlDclhYaTFHS0VLSWlyNjJ0SVdQNW4teXBCZWtza0kxX3FSVmxzdUR3UGVza2dnMC1VYVc0RjdFS1d2TWdoYzVnZ1hSV3NUS0xpUWFSVkR3VndCaHpBWEpkd2ZYdw?oc=5",
+      "score": 1,
+      "breakdown": [
+        "AP/TS +6",
+        "ViralKW +4",
+        "CrossSrc(2) +2"
+      ],
+      "id": "VDNA108",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "ViralKW +4 (war)"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "UP gets permanent DGP after 4 years, Rajeev Krishna appointed state police chief",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/city/lucknow/up-gets-permanent-dgp-after-4-years-rajeev-krishna-appointed-state-police-chief/articleshow/131422145.cms",
+      "score": -1,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (jee)",
+        "CrossSrc(2) +2",
+        "TitleLen +2"
+      ],
+      "id": "VDNA101",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Maharashtra\u2019s biggest cooperative milk dairy gets ready for polls",
+      "source": "Indian Express",
+      "url": "https://indianexpress.com/article/cities/mumbai/maharashtras-biggest-cooperative-milk-dairy-gets-ready-for-polls-10717133/",
+      "score": -1,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (poll)",
+        "CrossSrc(2) +2",
+        "TitleLen +2"
+      ],
+      "id": "VDNA103",
+      "date": "20260531",
+      "score_breakdown": [
+        "Stale(2d) -3",
+        "TitleLen +2"
+      ],
+      "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Train staff caught washing utensils in toilet; IRCTC gets notice - video",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/india/extremely-unhygienic-fssai-issues-notice-to-irctc-after-video-shows-catering-staff-washing-utensils-in-train-toilet-video/articleshow/131407516.cms",
+      "score": -1,
+      "breakdown": [
+        "AP/TS +6",
+        "IndiaRel +4 (rain)",
+        "TitleLen +2"
+      ],
+      "id": "VDNA090",
+      "date": "20260530",
+      "score_breakdown": [
+        "Stale(3d) -3",
         "TitleLen +2"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
