@@ -62,12 +62,35 @@ class ForensicAudit:
     # ─── A. TEXT AUDIT ───
 
     def _audit_text(self, state: dict) -> list:
-        """Audit script text for quality, forbidden phrases, PII."""
+        """Audit script text for quality, forbidden phrases, PII, STATE ACCURACY."""
         issues = []
         script_payload = state.get("script_payload")
         if not script_payload:
             issues.append("TEXT: No script_payload in state")
             return issues
+
+        # ── State accuracy: detect expected state from topic source ──
+        topic = state.get("selected_topic", {})
+        topic_title = topic.get("title", "")
+        topic_url = topic.get("url", "")
+        topic_source = topic.get("source", "")
+        # Combine all topic metadata for state detection
+        topic_ctx = f"{topic_title} {topic_url} {topic_source}".lower()
+
+        # Detect expected state(s) from topic metadata
+        expected_states = []
+        state_keywords = {
+            "Telangana": ["telangana", "hyderabad", "revanth", "kcr", "brs", "telangana cm",
+                          "hyderabad news", "telangana government", "telangana cm revanth"],
+            "Andhra Pradesh": ["andhra pradesh", "andhra", "amaraviti", "amaravati", "vijayawada",
+                               "visakhapatnam", "vizag", "tirupati", "jagan", "ysrcp", "tdp",
+                               "nara lokesh", "chandrababu", "andhra cm"],
+        }
+        for st, keywords in state_keywords.items():
+            for kw in keywords:
+                if kw in topic_ctx:
+                    if st not in expected_states:
+                        expected_states.append(st)
 
         segments = ["main", "short_1", "short_2", "short_3"]
         for seg in segments:
@@ -81,6 +104,29 @@ class ForensicAudit:
                 issues.append(f"TEXT: {seg} script too short ({wc} words, min 10)")
 
             text_lower = text.lower()
+
+            # ── State accuracy check ──
+            if expected_states and seg == "main":
+                # Check if script mentions the expected state
+                state_mentioned = any(s.lower() in text_lower for s in expected_states)
+                if not state_mentioned:
+                    # Check if a WRONG state is mentioned
+                    all_known_states = list(state_keywords.keys())
+                    wrong_states_in_script = [s for s in all_known_states
+                                              if s.lower() in text_lower and s not in expected_states]
+                    if wrong_states_in_script:
+                        issues.append(
+                            f"TEXT: STATE MISMATCH in {seg} — source is {expected_states} "
+                            f"but script mentions {wrong_states_in_script}. "
+                            f"Script must use the correct state from the source."
+                        )
+                    # If no state mentioned at all in a political/regional story, warn
+                    elif len(expected_states) == 1:
+                        issues.append(
+                            f"TEXT: STATE MISSING in {seg} — source topic is about "
+                            f"{expected_states[0]} but script never mentions the state name."
+                        )
+
             for phrase in self.FORBIDDEN_PHRASES:
                 if phrase in text_lower:
                     issues.append(f"TEXT: Forbidden phrase '{phrase}' found in {seg}")
@@ -99,7 +145,7 @@ class ForensicAudit:
     # ─── B. IMAGE AUDIT ───
 
     def _audit_images(self, state: dict) -> list:
-        """Verify background canvas and thumbnails exist and are valid."""
+        """Verify background canvas, thumbnails, and scene images exist and are valid."""
         issues = []
 
         canvas = state.get("background_canvas")
@@ -112,14 +158,61 @@ class ForensicAudit:
             if size < 10 * 1024:
                 issues.append(f"IMAGE: Background canvas suspiciously small ({size} bytes)")
 
-        # Check thumbnails
-        for thumb_name in ["production_branded.jpg", "short_1_thumb.jpg",
-                           "short_2_thumb.jpg", "short_3_thumb.jpg"]:
+        # Check thumbnails — ThumbnailCreator produces {prefix}_branded.jpg
+        for thumb_name in ["production_branded.jpg", "short_1_branded.jpg",
+                           "short_2_branded.jpg", "short_3_branded.jpg"]:
             thumb_path = os.path.join(self.thumbnail_dir, thumb_name)
             if not os.path.exists(thumb_path):
-                issues.append(f"IMAGE: Thumbnail missing: {thumb_name}")
+                # Only required thumbnails: main always, shorts only if produced
+                if thumb_name == "production_branded.jpg":
+                    issues.append(f"IMAGE: Thumbnail missing: {thumb_name}")
+                # Short thumbnails are optional — skip if not present
             elif os.path.getsize(thumb_path) < 5 * 1024:
                 issues.append(f"IMAGE: Thumbnail suspiciously small: {thumb_name}")
+
+        # ── Scene image audit — verify slideshow images exist and are sufficient ──
+        topic = state.get("selected_topic", {})
+        topic_title = topic.get("title", "")
+        topic_ctx = topic_title.lower()
+
+        # Check main video scene images
+        for slot in ["main", "short_1", "short_2", "short_3"]:
+            slideshow_dir = os.path.join(self.audio_dir, f"slideshow_{slot}")
+            if not os.path.isdir(slideshow_dir):
+                if slot == "main":
+                    issues.append(f"IMAGE: Slideshow directory missing for {slot}: {slideshow_dir}")
+                continue
+
+            scene_images = sorted([
+                f for f in os.listdir(slideshow_dir)
+                if f.endswith(('.jpg', '.jpeg', '.png', '.webp'))
+            ])
+
+            if slot == "main":
+                if len(scene_images) < 3:
+                    issues.append(
+                        f"IMAGE: Main video has only {len(scene_images)} scene images "
+                        f"(min 3 expected). Video may be mostly static/slideshow."
+                    )
+                # Check for suspiciously small images (likely placeholders/junk)
+                tiny_images = []
+                for img_file in scene_images:
+                    img_path = os.path.join(slideshow_dir, img_file)
+                    if os.path.getsize(img_path) < 15 * 1024:
+                        tiny_images.append(img_file)
+                if tiny_images:
+                    issues.append(
+                        f"IMAGE: {len(tiny_images)} scene images in main are suspiciously small "
+                        f"(<15KB each, likely placeholders): {tiny_images[:3]}"
+                    )
+                # Check that not all images are the same file (duplicate detection)
+                if len(scene_images) >= 2:
+                    sizes = [os.path.getsize(os.path.join(slideshow_dir, f)) for f in scene_images]
+                    if len(set(sizes)) == 1:
+                        issues.append(
+                            f"IMAGE: All {len(scene_images)} scene images in main have identical "
+                            f"file sizes ({sizes[0]} bytes) — likely all the same image duplicated."
+                        )
 
         return issues
 
@@ -272,7 +365,7 @@ class ForensicAudit:
         report["total_issues"] = len(all_issues)
         report["details"] = all_issues
 
-        # Critical = any VIDEO or AUDIO failure (corrupt/missing media)
+        # Critical = VIDEO/AUDIO failures + TEXT state errors + IMAGE quality failures
         critical_categories = ["VIDEO", "AUDIO"]
         critical_issues = []
         for cat in critical_categories:
@@ -284,6 +377,20 @@ class ForensicAudit:
                    "no audio stream" in issue.lower() or "too small" in issue.lower():
                     critical_issues.append(issue)
 
+        # TEXT state accuracy issues are CRITICAL — wrong state = wrong video
+        text_issues = report["categories"]["TEXT"]["issues"]
+        for issue in text_issues:
+            if "STATE MISMATCH" in issue or "STATE MISSING" in issue:
+                critical_issues.append(issue)
+
+        # IMAGE issues that indicate junk/placeholder content are CRITICAL
+        image_issues = report["categories"]["IMAGE"]["issues"]
+        for issue in image_issues:
+            if "suspiciously small" in issue.lower() or \
+               "identical" in issue.lower() or \
+               "only" in issue.lower() and "scene images" in issue.lower():
+                critical_issues.append(issue)
+
         report["critical_issues"] = len(critical_issues)
 
         if critical_issues:
@@ -293,4 +400,21 @@ class ForensicAudit:
                 error_msg += f"  ❌ {issue}\n"
             raise ForensicAuditError(error_msg)
 
+        # Also report non-critical warnings if any exist
+        if report["total_issues"] > 0:
+            warning_msg = f"ForensicAudit PASSED with {report['total_issues']} warning(s):\n"
+            for issue in report["details"]:
+                warning_msg += f"  ⚠️  {issue}\n"
+            self._log_warning(warning_msg)
+
         return report
+
+    def _log_warning(self, msg: str):
+        """Log audit warnings to a file for review."""
+        import datetime
+        log_path = os.path.join(os.path.dirname(self.video_dir), "logs", "audit_warnings.log")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        with open(log_path, "a") as f:
+            f.write(f"\n{'='*60}\n")
+            f.write(f"{datetime.datetime.now().isoformat()}\n")
+            f.write(msg)

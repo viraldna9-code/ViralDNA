@@ -409,8 +409,21 @@ Script:
             # DISABLED for news content — real news photos ALWAYS have channel watermarks
             # (TV9, ETV, NTV, etc. in corners). This is normal and expected for news.
             # A watermark doesn't make an image invalid — it proves it's a real news photo.
-            # if logo_detected:
-            #     return {"passed": False, "reason": "TV logo/watermark detected in corner", "score": 0}
+
+            # 6b. Meme / graphic / AI-generated detection via edge pattern analysis
+            # News photos have natural edge distributions; memes/graphics have sharp
+            # geometric edges and flat color regions that create a distinct signature.
+            # Check: ratio of strong edges (high gradient) to total edges
+            if edge_density > 0.05:
+                sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+                sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+                sobel_mag = np.sqrt(sobelx**2 + sobely**2)
+                strong_edge_ratio = np.count_nonzero(sobel_mag > 100) / (w * h)
+                # Graphics/memes: high strong-edge ratio relative to total edges
+                # Natural photos: strong edges are a small fraction of total edges
+                if edge_density > 0.15 and strong_edge_ratio / edge_density > 0.6:
+                    score -= 25
+                    reasons.append("graphic_like_edges")
 
             # 7. Face detection — DISABLED for news content
             # News photos of politicians, rallies, events WITH faces are legitimate.
@@ -491,7 +504,43 @@ Script:
                     serper_key = config.API_KEYS.get("SERPER_API_KEY", "")
                     if serper_key:
                         headers = {'X-API-KEY': serper_key, 'Content-Type': 'application/json'}
-                        payload = {"q": topic_title if topic_title else prompt, "num": 10}
+
+                        # Build state-specific Serper query to avoid wrong-state images
+                        _serper_state = ""
+                        _serper_ctx = (topic_title + " " + prompt).lower()
+                        if "telangana" in _serper_ctx or "hyderabad" in _serper_ctx or "revanth" in _serper_ctx:
+                            _serper_state = "Telangana"
+                        elif "andhra pradesh" in _serper_ctx or "andhra" in _serper_ctx or "amaravati" in _serper_ctx or "vijayawada" in _serper_ctx or "visakhapatnam" in _serper_ctx or "vizag" in _serper_ctx:
+                            _serper_state = "Andhra Pradesh"
+                        elif "tamil nadu" in _serper_ctx or "chennai" in _serper_ctx:
+                            _serper_state = "Tamil Nadu"
+                        elif "karnataka" in _serper_ctx or "bengaluru" in _serper_ctx or "bangalore" in _serper_ctx:
+                            _serper_state = "Karnataka"
+                        elif "kerala" in _serper_ctx or "kochi" in _serper_ctx or "thiruvananthapuram" in _serper_ctx:
+                            _serper_state = "Kerala"
+
+                        # Use scene-specific prompt (from Gemini) as primary query, but
+                        # replace generic "Andhra farmers" with state-correct term
+                        _serper_query = prompt if prompt else topic_title
+                        if _serper_state:
+                            # Remove wrong-state terms that Gemini may have injected
+                            _swap = [("Andhra Pradesh farmers", "Telangana farmers"),
+                                     ("Andhra farmers", "Telangana farmers"),
+                                     ("Andhra Pradesh agriculture", "Telangana agriculture")]
+                            for _wrong, _right in _swap:
+                                if _serper_state == "Telangana" and _wrong.lower() in _serper_query.lower():
+                                    _serper_query = _serper_query.replace(_wrong, _right)
+                                    _serper_query = _serper_query.replace(_wrong.lower(), _right)
+                            # Prepend state only if not already present in query
+                            if _serper_state.lower() not in _serper_query.lower():
+                                _serper_query = f"{_serper_state} {_serper_query}"
+                            # Dedup: remove redundant state mentions (e.g. "Andhra Pradesh Andhra")
+                            _dedup_pairs = [("Andhra Pradesh Andhra ", "Andhra Pradesh "),
+                                           ("Telangana Telangana ", "Telangana ")]
+                            for _dup, _single in _dedup_pairs:
+                                _serper_query = _serper_query.replace(_dup, _single)
+
+                        payload = {"q": _serper_query, "num": 10}
                         req_data = json.dumps(payload).encode('utf-8')
                         req = urllib.request.Request("https://google.serper.dev/images", data=req_data, headers=headers)
                         with urllib.request.urlopen(req, timeout=10) as resp:
@@ -501,6 +550,60 @@ Script:
                                 try:
                                     url = img_info.get("imageUrl", "")
                                     if not url: continue
+
+                                    # Fix #3: Image relevance check using Serper metadata
+                                    # Check if the image title/source is actually about the topic
+                                    img_title = (img_info.get("title", "") or "").lower()
+                                    img_source = (img_info.get("source", "") or "").lower()
+                                    img_domain = ""
+                                    try:
+                                        from urllib.parse import urlparse
+                                        img_domain = urlparse(url).netloc.lower()
+                                    except:
+                                        pass
+
+                                    # Build topic keyword set from prompt + topic_title
+                                    _topic_words = set()
+                                    for _src in [prompt, topic_title]:
+                                        if _src:
+                                            _topic_words.update(w.lower() for w in _src.split() if len(w) >= 4)
+                                    # Add state name as a required keyword if detected
+                                    if _serper_state:
+                                        _topic_words.add(_serper_state.lower())
+                                        # Also add related terms
+                                        if _serper_state == "Telangana":
+                                            _topic_words.update(["telangana", "hyderabad", "farmers", "procurement", "paddy", "ration", "cm", "revanth", "congress", "bjp", "tdp"])
+                                        elif _serper_state == "Andhra Pradesh":
+                                            _topic_words.update(["andhra", "amaravati", "vijayawada", "farmers", "procurement", "paddy", "cm", "jagan", "ysrcp", "tdp"])
+
+                                    # Check relevance: image title or source should share keywords with topic
+                                    _img_text = img_title + " " + img_source + " " + img_domain
+                                    _img_words = set(w.strip(".,;:!?()[]'\"") for w in _img_text.split() if len(w) >= 4)
+                                    if _topic_words and _img_words:
+                                        _overlap = _topic_words & _img_words
+                                        # Require at least 1 keyword overlap for relevance
+                                        if len(_overlap) == 0:
+                                            # Exception: if image is from a known news domain, be more lenient
+                                            _news_domains = ["thehindu", "deccanherald", "deccanchronicle", "newindianexpress",
+                                                           "timesofindia", "hindustantimes", "indianexpress", "ndtv",
+                                                           "news18", "reuters", "apnews", "bbc", "aljazeera",
+                                                           "wikimedia", "commons.wikimedia"]
+                                            _is_news_domain = any(nd in img_domain for nd in _news_domains)
+                                            if not _is_news_domain:
+                                                print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED off-topic (title: {img_title[:60]}...)")
+                                                continue
+                                            # For news domains, still check state match
+                                            if _serper_state:
+                                                _state_in_img = _serper_state.lower() in _img_text
+                                                _wrong_state = False
+                                                if _serper_state == "Telangana" and ("andhra pradesh" in _img_text or ("andhra" in _img_text and "pradesh" in _img_text)):
+                                                    _wrong_state = True
+                                                elif _serper_state == "Andhra Pradesh" and "telangana" in _img_text:
+                                                    _wrong_state = True
+                                                if _wrong_state:
+                                                    print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED wrong state (title: {img_title[:60]}...)")
+                                                    continue
+
                                     req2 = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
                                     with urllib.request.urlopen(req2, timeout=10) as dl:
                                         raw = dl.read()

@@ -379,6 +379,18 @@ class VisualThumbnailIntegration(BaseIntegrationAgent):
     def __init__(self, orchestrator):
         super().__init__("Visual→Thumbnail Integration", orchestrator, ["visuals"])
 
+    def execute(self, state: dict) -> dict:
+        """Allow None/empty visuals — downstream agents have their own fallbacks."""
+        self.log("Validating handoff — keys: ['visuals'] (soft)")
+        val = state.get("visuals")
+        if val is None:
+            self.log("⚠️ No API visuals available — thumbnail will use local image pack fallback.")
+        elif isinstance(val, list) and len(val) == 0:
+            self.log("⚠️ Empty visuals list — thumbnail will use local image pack fallback.")
+        else:
+            self.log(f"✅ {len(val)} visuals passed to thumbnail stage.")
+        return state
+
 class ThumbnailAssemblyIntegration(BaseIntegrationAgent):
     def __init__(self, orchestrator):
         super().__init__("Thumbnail→Assembly Integration", orchestrator, ["background_canvas", "branded_thumbnail"])
@@ -710,7 +722,11 @@ class VisualHarvestingAgent(BaseAgent):
             if not selected_topic:
                 raise ValueError("Selected topic missing.")
             visuals = self.vf.fetch_visuals(selected_topic)
-            state["visuals"] = visuals
+            if visuals is None:
+                self.log("⚠️ No visuals available (all sources failed). Continuing with text-only thumbnail.")
+                state["visuals"] = None
+            else:
+                state["visuals"] = visuals
             self.orchestrator.timer.stop("Phase 5: Visuals", "5.2 Fetch Background Visuals")
             self.log("Visual harvesting complete.")
         except Exception as e:
@@ -769,6 +785,41 @@ class ThumbnailSynthesisAgent(BaseAgent):
             self.orchestrator.timer.stop("Phase 6: Thumbnails", "6.1 Canvas Synthesis")
             self.log(f"Canvas: {thumb_data['clean_path']}")
             self.log(f"Thumbnail: {thumb_data['path']}")
+
+            # ── Per-short thumbnail generation ──
+            # Each short needs its own unique thumbnail
+            num_shorts = 0
+            if script_payload:
+                pd = script_payload.__dict__ if hasattr(script_payload, '__dict__') else {}
+                num_shorts = pd.get('num_shorts', 2)
+            short_thumb_paths = {}
+            # Get all short title variants from state (set by CTROptimizerAgent)
+            all_short_titles = state.get("shorts_title_variants", [])
+            for s_idx in range(1, num_shorts + 1):
+                short_key = f"short_{s_idx}"
+                # Pick a title variant for this short (cycle through available)
+                if all_short_titles:
+                    variant_idx = (s_idx - 1) % len(all_short_titles)
+                    short_title = all_short_titles[variant_idx]
+                    if isinstance(short_title, dict):
+                        short_title = short_title.get("title", str(short_title))
+                    short_title_variants = [{"title": short_title}]
+                else:
+                    short_title_variants = []
+                if short_title_variants:
+                    try:
+                        short_thumb_data = self.tc.create_thumbnail(
+                            selected_topic, config.DRIVE["THUMBNAILS"], f"short_{s_idx}",
+                            runtime_dir=config.DRIVE["RUNTIME"], title_variants=short_title_variants
+                        )
+                        short_thumb_paths[short_key] = short_thumb_data["path"]
+                        self.log(f"Short {s_idx} thumbnail: {short_thumb_data['path']}")
+                    except Exception as ste:
+                        self.log(f"WARNING: Short {s_idx} thumbnail failed: {ste} — will use video first frame")
+                else:
+                    self.log(f"Short {s_idx}: no title variants, skipping thumbnail generation")
+            state["short_thumb_paths"] = short_thumb_paths
+
         except Exception as e:
             self.orchestrator.timer.fail("Phase 6: Thumbnails", "6.1 Canvas Synthesis")
             raise RuntimeError(f"Thumbnail Synthesis failed: {e}")
@@ -889,6 +940,34 @@ class SequentialAssemblyAgent(BaseAgent):
                         raise ValueError(f"Short {i} failed forensic audit.")
 
             state["compiled_videos"] = compiled_videos
+
+            # ── v52.1: VISUAL FORENSIC GATE ──
+            # Rejects videos with no visual diversity (solid color, single frame)
+            # BEFORE they reach YouTube upload. This prevents false-information uploads.
+            import importlib.util
+            vfg_spec = importlib.util.spec_from_file_location(
+                "visual_forensic_gate",
+                os.path.join(os.path.dirname(__file__), "visual_forensic_gate.py"))
+            vfg_mod = importlib.util.module_from_spec(vfg_spec)
+            vfg_spec.loader.exec_module(vfg_mod)
+            gate = vfg_mod.VisualForensicGate()
+            try:
+                thumb_dir = config.DRIVE.get("THUMBNAILS", "")
+                branded_thumb = os.path.join(thumb_dir, "production_branded.jpg")
+                if not os.path.exists(branded_thumb):
+                    branded_thumb = None
+            except Exception:
+                branded_thumb = None
+
+            gate_passed, gate_report = gate.validate(compiled_videos, branded_thumb)
+            if not gate_passed:
+                self.log("❌ VISUAL FORENSIC GATE: FAILED — video rejected. No upload attempted.")
+                self.log(f"   Gate report: {json.dumps(gate_report.get('checks', {}))}")
+                state["upload_results"] = {"overall_status": "blocked_by_visual_gate", "gate_report": gate_report}
+                return state
+            else:
+                self.log("✓ Visual Forensic Gate: PASSED — video has diverse visuals.")
+
             self.orchestrator.timer.stop("Phase 7: Assembly", "7.1 Sequential Compilation")
         except Exception as e:
             self.orchestrator.timer.fail("Phase 7: Assembly", "7.1 Sequential Compilation")
@@ -967,6 +1046,22 @@ class ResilientUploaderAgent(BaseAgent):
             self.log("⚠️ Topic or compiled videos missing. Skipping upload.")
             self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "SKIPPED")
             return state
+
+        # ── KILL SWITCH: if uploads disabled, copy to Google Drive for manual review ──
+        upload_enabled = os.environ.get("VIRALDNA_UPLOAD_ENABLED", "false").lower() == "true"
+        if not upload_enabled:
+            self.log("🔒 UPLOAD DISABLED (VIRALDNA_UPLOAD_ENABLED != true). Copying to Google Drive for manual review.")
+            self._copy_to_gdrive(selected_topic, state)
+            state["upload_results"] = {"overall_status": "saved_to_drive", "youtube_uploaded": False}
+            self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "SAVED_TO_DRIVE")
+            # Still mark topic as "built" so it's not re-picked
+            try:
+                self._mark_topic_published(selected_topic)
+                self.log(f"Topic marked done: {selected_topic.get('title', '')[:60]}")
+            except Exception as e:
+                self.log(f"WARNING: Failed to mark topic done: {e}")
+            return state
+
         try:
             youtube_service = self._get_youtube_service()
             if youtube_service:
@@ -982,6 +1077,17 @@ class ResilientUploaderAgent(BaseAgent):
                 state["upload_results"] = upload_results
                 self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading")
                 self.log("Videos uploaded successfully.")
+
+                # ── Mark topic as published in topics_history.json ──
+                any_success = upload_results.get("overall_status") == "success"
+                if any_success and selected_topic:
+                    try:
+                        self._mark_topic_published(selected_topic)
+                        self.log(
+                            f"Topic marked published: {selected_topic.get('title', '')[:60]}"
+                        )
+                    except Exception as e:
+                        self.log(f"WARNING: Failed to mark topic published: {e}")
             else:
                 self.log("⚠️ YouTube service offline. Bypassing uploads.")
                 state["upload_results"] = {"overall_status": "skipped"}
@@ -990,6 +1096,189 @@ class ResilientUploaderAgent(BaseAgent):
             self.orchestrator.timer.fail("Phase 7: Upload", "7.2 API Uploading")
             raise RuntimeError(f"Uploader Agent failed: {e}")
         return state
+
+    @staticmethod
+    def _mark_topic_published(topic: dict):
+        """Mark a topic as published in topics_history.json.
+
+        Sets published=True and published_at timestamp.
+        This prevents pick_topic() from re-selecting the same topic.
+        """
+        import json as _json
+        from datetime import datetime as _dt
+        from zoneinfo import ZoneInfo as _ZI
+
+        topics_file = os.path.join(config.DRIVE.get("BASE", ""), "logs", "topics_history.json")
+        if not os.path.exists(topics_file):
+            return
+
+        with open(topics_file, "r") as f:
+            data = _json.load(f)
+
+        topic_id = topic.get("id", "")
+        topic_title = topic.get("title", "")
+        now_str = _dt.now(_ZI("Asia/Kolkata")).isoformat()
+
+        for t in data.get("topics", []):
+            # Match by ID only — title matching is fragile (titles can change between runs)
+            if topic_id and t.get("id") == topic_id:
+                t["published"] = True
+                t["published_at"] = now_str
+                break
+
+        os.makedirs(os.path.dirname(topics_file), exist_ok=True)
+        with open(topics_file, "w") as f:
+            _json.dump(data, f, indent=2)
+
+    @staticmethod
+    def _copy_to_gdrive(topic: dict, state: dict):
+        """Copy ALL finished pipeline artifacts to Google Drive review folder.
+
+        When UPLOAD_ENABLED=false, this replaces YouTube upload.
+        Files are placed in: gdrive:/ViralDNA_Review/<date>_<topic_id>_<title>/
+
+        Copies:
+        - Main video + all short videos (.mp4)
+        - All thumbnails (.jpg) — main + per-short branded + clean
+        - Audio files (.mp3) — main + per-short voiceover
+        - Subtitle files (.ass)
+        - Slideshow frame directories
+        - Metadata manifest JSON (topic info, scores, file list)
+
+        Jay reviews manually and uploads to YouTube himself.
+        """
+        import subprocess as _sp
+        import shutil as _shutil
+        import glob as _glob
+        import time as _tm
+
+        ist_now = datetime.now(ZoneInfo("Asia/Kolkata"))
+        date_str = ist_now.strftime("%Y%m%d")
+        topic_id = topic.get("id", "unknown")
+        topic_title = topic.get("title", "")[:40].replace(" ", "_").replace("/", "_")
+        gdrive_base = "gdrive:ViralDNA_Review"
+        gdrive_dest = f"{gdrive_base}/{date_str}_{topic_id}"
+
+        # Local output directories
+        base = config.DRIVE.get("BASE", "/home/jay/ViralDNA")
+        videos_dir = config.DRIVE.get("VIDEO_OUTPUT", os.path.join(base, "videos"))
+        thumbs_dir = config.DRIVE.get("THUMBNAILS", os.path.join(base, "thumbnails"))
+        audio_dir = config.DRIVE.get("AUDIO_OUTPUT", os.path.join(base, "audio"))
+        runtime_dir = config.DRIVE.get("RUNTIME", os.path.join(base, "output", "runtime"))
+
+        files_to_copy = []
+
+        # 1. Only production video files (current run output)
+        for vname in ("production_main.mp4", "production_short_1.mp4", "production_short_2.mp4"):
+            vpath = os.path.join(videos_dir, vname)
+            if os.path.exists(vpath):
+                files_to_copy.append(vpath)
+
+        # 2. Only current topic thumbnails
+        if os.path.isdir(thumbs_dir):
+            for tname in ("production_branded.jpg", "production_clean.jpg",
+                          "short_1_branded.jpg", "short_1_clean.jpg",
+                          "short_2_branded.jpg", "short_2_clean.jpg"):
+                tpath = os.path.join(thumbs_dir, tname)
+                if os.path.exists(tpath):
+                    files_to_copy.append(tpath)
+
+        # 3. Only current audio files
+        if os.path.isdir(audio_dir):
+            for aname in ("production_main.mp3", "production_short_1.mp3", "production_short_2.mp3",
+                          "production_main.ass", "production_short_1.ass", "production_short_2.ass"):
+                apath = os.path.join(audio_dir, aname)
+                if os.path.exists(apath):
+                    files_to_copy.append(apath)
+
+        # 5. Current topic metadata from state
+        current_topic_file = os.path.join(base, "logs", "injected_topic.json")
+        if os.path.exists(current_topic_file):
+            files_to_copy.append(current_topic_file)
+
+        if not files_to_copy:
+            print(f"  [DriveCopy] No output files found")
+            return
+
+        # Create manifest with full YouTube upload metadata
+        optimized_title = state.get("optimized_title", "") or topic.get("title", "")
+        title_variants = state.get("title_variants", [])
+        shorts_variants = state.get("shorts_title_variants", [])
+        # Extract tags from topic
+        topic_tags = topic.get("tags", [])
+        topic_desc = topic.get("description", "")
+        topic_category = topic.get("category", "news_politics")
+        # Get main script text for description
+        main_script_text = ""
+        script_payload = state.get("script_payload")
+        if script_payload:
+            try:
+                main_seg = script_payload.get_segment("main")
+                if main_seg:
+                    main_script_text = main_seg.get("text", "")[:2000]
+            except Exception:
+                pass
+        manifest = {
+            "topic": topic.get("title", ""),
+            "topic_id": topic_id,
+            "score": topic.get("score", 0),
+            "date": ist_now.isoformat(),
+            "files": [os.path.basename(f) for f in files_to_copy],
+            "gdrive_folder": gdrive_dest,
+            "instructions": "Review videos, then upload to YouTube manually.",
+            "youtube_upload_metadata": {
+                "main_video": {
+                    "title": optimized_title,
+                    "description": topic_desc,
+                    "tags": topic_tags,
+                    "category": topic_category,
+                    "title_variants": [v.get("title", "") if isinstance(v, dict) else str(v) for v in title_variants[:5]],
+                    "privacy": "private",
+                    "made_for_kids": False,
+                },
+                "shorts": [
+                    {
+                        "title": shorts_variants[i].get("title", "") if i < len(shorts_variants) and isinstance(shorts_variants[i], dict) else f"Short {i+1}: {optimized_title[:80]}",
+                        "description": f"{optimized_title}\n\n{topic_desc[:200]}",
+                        "tags": topic_tags[:10],
+                    }
+                    for i in range(2)
+                ],
+                "script_excerpt": main_script_text[:500],
+            }
+        }
+        manifest_path = os.path.join("/tmp", f"_manifest_{topic_id}.json")
+        with open(manifest_path, "w") as mf:
+            json.dump(manifest, mf, indent=2, default=str)
+        files_to_copy.append(manifest_path)
+
+        # Copy each file via rclone (with delay to avoid Drive API quota)
+        print(f"  [DriveCopy] Copying {len(files_to_copy)} files to {gdrive_dest}/")
+        for idx, fpath in enumerate(files_to_copy):
+            fname = os.path.basename(fpath)
+            if idx > 0:
+                _tm.sleep(15)  # 15s between files to stay within Drive API quota
+            try:
+                result = _sp.run(
+                    ["rclone", "copyto", fpath, f"{gdrive_dest}/{fname}",
+                     "--transfers", "1", "--checkers", "2",
+                     "--low-level-retries", "5", "--retries", "3",
+                     "-v", "--stats", "10s"],
+                    capture_output=True, text=True, timeout=600
+                )
+                if result.returncode == 0:
+                    print(f"  [DriveCopy] OK: {fname}")
+                else:
+                    print(f"  [DriveCopy] FAILED: {fname}")
+                    print(f"    stderr: {result.stderr[:300]}")
+            except Exception as e:
+                print(f"  [DriveCopy] EXCEPTION copying {fname}: {e}")
+
+        # Cleanup manifest
+        try:
+            os.remove(manifest_path)
+        except Exception:
+            pass
 
 
 class ForensicAuditGateAgent(BaseAgent):
@@ -2255,6 +2544,21 @@ class MultiAgentOrchestrator:
                 print(f"\n✅ Topic accepted after {topic_idx + 1} attempt(s).")
                 break
             elif topic_failed:
+                # Check if this was a forensic audit failure — if so, HARD HALT immediately
+                # instead of trying other topics (they likely have the same content issues)
+                forensic_err = None
+                for err_msg in self.state.get("errors", []):
+                    if "FORENSIC AUDIT GATE HALT" in err_msg or "ForensicAuditError" in err_msg:
+                        forensic_err = err_msg
+                        break
+                if forensic_err:
+                    print(f"\n🛑 FORENSIC AUDIT HALT — Pipeline stopped.")
+                    print(f"   Reason: {forensic_err}")
+                    self.send_telegram_notification(
+                        f"🛑 ViralDNA HALTED: Forensic audit failed.\n{forensic_err}"
+                    )
+                    self.timer.print_report()
+                    sys.exit(1)
                 print(f"  → Skipping to next topic...")
 
         if not topic_accepted:

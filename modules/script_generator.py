@@ -437,6 +437,21 @@ class ScriptGenerator:
                         f"If low-performing patterns are noted, avoid them.\n"
                     )
 
+                # Extract state/region from context for explicit disambiguation
+                state_hints = []
+                context_lower = f"{title} {desc} {context}".lower()
+                if "telangana" in context_lower or "hyderabad" in context_lower or "revanth" in context_lower or "ktr" in context_lower or "chandrababu" not in context_lower and "tdp" in context_lower:
+                    state_hints.append("Telangana")
+                if "andhra pradesh" in context_lower or "andhra" in context_lower or "amaravati" in context_lower or "vijayawada" in context_lower or "vizag" in context_lower or "visakhapatnam" in context_lower:
+                    state_hints.append("Andhra Pradesh")
+                if "tamil nadu" in context_lower or "chennai" in context_lower:
+                    state_hints.append("Tamil Nadu")
+                if "karnataka" in context_lower or "bangalore" in context_lower or "bengaluru" in context_lower:
+                    state_hints.append("Karnataka")
+                if "kerala" in context_lower or "kochi" in context_lower or "thiruvananthapuram" in context_lower:
+                    state_hints.append("Kerala")
+                state_hint_str = ", ".join(state_hints) if state_hints else "the relevant Telugu state"
+
                 prompt = (
                     f"You are the Lead Writer for ViralDNA, a premium news channel for the Telugu community worldwide.\n"
                     f"Write an engaging, clear news package (1 Main Video Script + 3 Short Videos) for the following news item:\n\n"
@@ -446,15 +461,16 @@ class ScriptGenerator:
                     f"{rag_section}\n"
                     f"CRITICAL COMPLIANCE RULES:\n"
                     f"1. Tone and Vocabulary: Use simple, clear, layman-understandable English. Avoid any heavy English vocabulary or academic jargon (specifically, NEVER use the word 'diaspora'). It must be understandable to common people.\n"
-                    f"2. Language: Write in 100% pure English. Do NOT mix any Telugu phrases, words, or regional jargon into the script because the text-to-speech voice is unable to pronounce mixed-language words properly. (Standard English names of people and places like 'Andhra Pradesh' or 'Visakhapatnam' are allowed, but do not include any other Telugu words). NOTE: Title variants MAY include Telugu context keywords (e.g., 'Vijayawada | Andhra News') for bilingual SEO — these are handled separately by the bilingual title engine.\\n"
-                    f"3. Punctuation: Ensure excellent, standard punctuation with clear periods (.), commas (,), and question marks (?). These are critical cues for our speech generator to take natural pauses and not rush.\n"
-                    f"4. Length requirements:\n"
+                    f"2. Language: Write in 100% pure English. Do NOT mix any Telugu phrases, words, or regional jargon into the script because the text-to-speech voice is unable to pronounce mixed-language words properly.\n"
+                    f"3. STATE ACCURACY: The news item concerns {state_hint_str}. You MUST use ONLY this state name in scripts. If the source mentions {state_hint_str}, do NOT write 'Andhra Pradesh' for a Telangana story or vice versa. DO NOT mention the other Telugu state unless the source text explicitly mentions both. When in doubt, use regional descriptors like 'our Telugu homeland' or 'our state' instead of any state name.\n"
+                    f"4. Punctuation: Ensure excellent, standard punctuation with clear periods (.), commas (,), and question marks (?). These are critical cues for our speech generator to take natural pauses and not rush.\n"
+                    f"5. Length requirements:\n"
                     f"   - 'main': An informative, simple news report. It MUST be at least 150 words and at most 250 words to maintain our pacing.\n"
                     f"   - 'short_1': High-impact 15-20s highlights (approx 35-45 words). Start with a HOOK that creates curiosity.\n"
                     f"   - 'short_2': Simple summary of what this means for common people (approx 35-45 words).\n"
                     f"   - 'short_3': Direct, simple Call-to-Action for families watching from abroad (approx 35-45 words).\n"
-                    f"5. RETENTION HOOKS: For main video, start with a strong hook in first sentence. Mention 'subscribe' or 'follow ViralDNA' near the END of the main script (not the beginning) to keep viewers watching.\n"
-                    f"6. Format: Avoid markdown, bold text, brackets, URLs, or non-pronounceable tags. Keep the text clean, natural, and speakable.\n"
+                    f"6. RETENTION HOOKS: For main video, start with a strong hook in first sentence. Mention 'subscribe' or 'follow ViralDNA' near the END of the main script (not the beginning) to keep viewers watching.\n"
+                    f"7. Format: Avoid markdown, bold text, brackets, URLs, or non-pronounceable tags. Keep the text clean, natural, and speakable.\n"
                     f"\nIMPORTANT: The system message defines the exact JSON schema. Follow it strictly. Each key (main, short_1, short_2, short_3) must return an object with 'script' (string) and 'title_variants' (array of 3 objects with 'title' and 'description' keys).\n"
                 )
 
