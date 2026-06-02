@@ -1,4 +1,4 @@
-# VERSION: 52.0
+# VERSION: 70.0
 # MODULE: trend_discovery.py
 # PURPOSE: Multi-source discovery — RSS (8) + Google Trends (pytrends) + Reddit +
 #          YouTube Trending + Inshorts + Wikipedia RAG fallback.
@@ -72,110 +72,82 @@ class TrendDiscovery:
     # ================================================================
     def _fetch_google_trends(self) -> list:
         """
-        B4.6: Deep Google Trends integration.
-        Fetches: India daily trends, AP-specific related topics,
-        diaspora keyword interest over time, US/UK trending for NRI audience.
+        v70.0: Google Trends replacement — RSS-based (pytrends dead, 404).
+        Uses Google Trends RSS (trending searches) + Google News RSS (top stories).
+        Both are free, no API key needed, no pytrends dependency.
         """
         topics = []
-        try:
-            from pytrends.request import TrendReq
 
-            # ── Tier A: India trending searches (primary audience) ──
-            pytrends = TrendReq(hl="en-IN", tz=330, timeout=(5, 10))
-            trending = pytrends.trending_searches(pn="india")
-            if trending is not None and len(trending) > 0:
-                for keyword in trending.head(8)[0].tolist():
-                    keyword = str(keyword).strip()
-                    if self._is_relevant_to_diaspora(keyword):
-                        context = self._fetch_rag_context(keyword)
+        # ── Source A: Google Trends RSS (India trending searches) ──
+        try:
+            import xml.etree.ElementTree as ET
+            url = "https://trends.google.com/trending/rss?geo=IN"
+            resp = requests.get(url, headers=self.headers, timeout=10)
+            if resp.status_code == 200 and "<item>" in resp.text:
+                root = ET.fromstring(resp.text)
+                items = root.findall(".//item")
+                count = 0
+                for item in items:
+                    if count >= 8:
+                        break
+                    title = item.findtext("title", default="").strip()
+                    if not title or title.lower() == "daily search trends":
+                        continue
+                    # Skip very short/generic search terms (< 15 chars or < 3 words)
+                    # Google Trends RSS returns raw search queries, not headlines
+                    words = title.split()
+                    if len(title) < 12 or len(words) < 2:
+                        continue
+                    if self._is_relevant_to_diaspora(title):
+                        context = self._fetch_rag_context(title)
                         payload = NewsPayload({
-                            "title": keyword,
-                            "description": "Trending topic in India",
-                            "link": f"https://news.google.com/search?q={keyword.replace(' ', '+')}",
+                            "title": title,
+                            "description": "Trending search in India (Google Trends)",
+                            "link": f"https://news.google.com/search?q={title.replace(' ', '+')}",
                             "source": "Google Trends (India Daily)",
                             "rag_context": context,
                             "trending_score": "high",
                         })
                         topics.append(payload.to_dict())
-
-            # ── Tier B: AP-specific related topics ──
-            pytrends.build_payload(
-                ["Andhra Pradesh", "Telugu", "Amaravati", "Visakhapatnam"],
-                cat=0, timeframe="now 7d", geo="IN"
-            )
-            related = pytrends.related_topics()
-            for kw, df in related.items():
-                if df is not None and len(df) > 0:
-                    top = df[df["value"] > 50]
-                    for _, row in top.head(3).iterrows():
-                        title = row.get("topic_title", str(kw))
-                        if title and title not in [t["title"] for t in topics]:
-                            context = self._fetch_rag_context(title)
-                            payload = NewsPayload({
-                                "title": title,
-                                "description": f"Related to {kw}",
-                                "link": f"https://news.google.com/search?q={title.replace(' ', '+')}",
-                                "source": f"Google Trends (Related: {kw})",
-                                "rag_context": context,
-                                "trending_score": "medium",
-                            })
-                            topics.append(payload.to_dict())
-
-            # ── Tier C: Interest over time for diaspora keywords ──
-            try:
-                pytrends_diaspora = TrendReq(hl="en-US", tz=-300, timeout=(5, 10))
-                diaspora_keywords = ["Telugu news", "Andhra Pradesh news", "Telangana updates"]
-                pytrends_diaspora.build_payload(
-                    diaspora_keywords[:2], cat=0, timeframe="today 3m", geo="US"
-                )
-                interest_df = pytrends_diaspora.interest_over_time()
-                if interest_df is not None and len(interest_df) > 0:
-                    # Find rising diaspora interest
-                    for kw in diaspora_keywords[:2]:
-                        if kw in interest_df.columns:
-                            recent = interest_df[kw].tail(7).mean()
-                            if recent > 30:  # 30+ average = rising interest
-                                title = f"Rising interest: {kw} in US"
-                                context = self._fetch_rag_context(kw)
-                                payload = NewsPayload({
-                                    "title": title,
-                                    "description": f"Search interest for '{kw}' is rising in US (avg: {recent:.0f}/100)",
-                                    "link": f"https://news.google.com/search?q={kw.replace(' ', '+')}",
-                                    "source": "Google Trends (US Diaspora Interest)",
-                                    "rag_context": context,
-                                    "trending_score": "rising",
-                                })
-                                topics.append(payload.to_dict())
-            except Exception:
-                pass  # Diaspora trends best-effort
-
-            # ── Tier D: US/UK trending for NRI audience ──
-            try:
-                pytrends_us = TrendReq(hl="en-US", tz=-300, timeout=(5, 10))
-                us_trending = pytrends_us.trending_searches(pn="united_states")
-                if us_trending is not None and len(us_trending) > 0:
-                    # Keep any US trend that's relevant to India/Telugu audience
-                    # — NOT just visa/immigration. Could be tech, culture, world events, etc.
-                    for keyword in us_trending.head(15)[0].tolist():
-                        keyword_str = str(keyword).strip()
-                        keyword_lower = keyword_str.lower()
-                        # Use the main relevance filter (broad) instead of narrow NRI keywords
-                        if self._is_relevant_to_diaspora(keyword_str):
-                            context = self._fetch_rag_context(keyword_str)
-                            payload = NewsPayload({
-                                "title": keyword_str,
-                                "description": f"Trending in US: {keyword_str}",
-                                "link": f"https://news.google.com/search?q={keyword_str.replace(' ', '+')}",
-                                "source": "Google Trends (US NRI Interest)",
-                                "rag_context": context,
-                                "trending_score": "us_relevant",
-                            })
-                            topics.append(payload.to_dict())
-            except Exception:
-                pass  # US trends best-effort
-
+                        count += 1
         except Exception as e:
-            print(f"    ⚠️ Google Trends failed: {e}")
+            print(f"    ⚠️ Google Trends RSS failed: {e}")
+
+        # ── Source B: Google News RSS (India top stories = editorial virality) ──
+        try:
+            import xml.etree.ElementTree as ET
+            url = "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en"
+            resp = requests.get(url, headers=self.headers, timeout=10)
+            if resp.status_code == 200 and "<item>" in resp.text:
+                root = ET.fromstring(resp.text)
+                items = root.findall(".//item")
+                count = 0
+                for item in items:
+                    if count >= 5:
+                        break
+                    title = item.findtext("title", default="").strip()
+                    if not title:
+                        continue
+                    # Skip site names that sometimes appear as titles
+                    site_names = {"Google News", "India Today", "NDTV", "The Hindu",
+                                  "Times of India", "BBC", "CNN", "Reuters"}
+                    if title in site_names:
+                        continue
+                    if self._is_relevant_to_diaspora(title):
+                        context = self._fetch_rag_context(title)
+                        payload = NewsPayload({
+                            "title": title,
+                            "description": "Top story on Google News India",
+                            "link": "https://news.google.com",
+                            "source": "Google News RSS (India Top)",
+                            "rag_context": context,
+                            "trending_score": "high",
+                        })
+                        topics.append(payload.to_dict())
+                        count += 1
+        except Exception as e:
+            print(f"    ⚠️ Google News RSS failed: {e}")
+
         return topics
 
     # ================================================================

@@ -1,6 +1,8 @@
-# VERSION: 41.0
+# VERSION: 70.0
 # MODULE: visual_fetcher.py
 # PURPOSE: High-Res Visual Fetcher with strict image validation + quality scoring.
+#          v42.0: Added ComfyUI Stable Diffusion 1.5 as primary image source.
+#          Priority: ComfyUI (local generation) > Serper > Local image pack.
 #          Validates magic bytes, content-type, minimum file size,
 #          and actual image dimensions before accepting a download.
 #          Rejects HTML error pages, CAPTCHA responses, corrupt files,
@@ -91,11 +93,15 @@ def _validate_image_bytes(data: bytes, url: str) -> bool:
 
 def score_image_quality(data: bytes, url: str) -> dict:
     """
-    Score image quality using OpenCV heuristics.
+    v70.0: Score image quality using OpenCV heuristics — RELAXED for news photos.
     Returns: {"score": float (0-100), "issues": list of str}
     Lower score = worse quality. Score < 30 = reject.
-    Checks: blur, text/edges, color variance, border mismatch,
-            TV logo in corners, face detection, white/black ratio.
+
+    v70.0 changes: Disabled MSER text detection, TV logo detection, face detection,
+    and HSV skin-tone detection. These all rejected real news screenshots (which have
+    text overlays, channel logos, politicians' faces, and crowd scenes). Only blur,
+    resolution, edge density (relaxed), color variance, and white/black ratio remain.
+    Checks: blur, resolution, edge_density (relaxed), color variance, white/black ratio.
     """
     issues = []
     try:
@@ -120,121 +126,60 @@ def score_image_quality(data: bytes, url: str) -> dict:
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        # 1. Blur detection (Laplacian variance)
+        # 1. Blur detection (Laplacian variance) — keep, but relaxed
         laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-        if laplacian_var < 30:
+        if laplacian_var < 20:  # v70.0: Relaxed from 30
             return {"score": 0, "issues": [f"Too blurry (Laplacian: {laplacian_var:.1f})"]}
-        elif laplacian_var < 80:
-            score -= (80 - laplacian_var) * 0.5
+        elif laplacian_var < 50:  # v70.0: Relaxed from 80
+            score -= (50 - laplacian_var) * 0.3  # v70.0: Reduced penalty
             issues.append(f"moderate_blur({laplacian_var:.0f})")
 
-        # 2. Text / overlay detection  Canny edge density
+        # 2. Edge density — RELAXED (news screenshots have lots of edges)
         edges = cv2.Canny(gray, 50, 150)
         edge_density = np.count_nonzero(edges) / (w * h)
-        if edge_density > 0.25:
+        if edge_density > 0.40:  # v70.0: Relaxed from 0.25
             return {"score": 0, "issues": [f"Too many edges/text (density: {edge_density:.2f})"]}
-        elif edge_density > 0.15:
-            score -= (edge_density - 0.15) * 200
+        elif edge_density > 0.25:  # v70.0: Relaxed from 0.15
+            score -= (edge_density - 0.25) * 100  # v70.0: Reduced penalty from 200
             issues.append(f"high_edges({edge_density:.2f})")
 
-        # 3. MSER text region detection
-        try:
-            mser = cv2.MSER_create()
-            regions, _ = mser.detectRegions(gray)
-            text_like = [r for r in regions if 20 < len(r) < 500]
-            if len(text_like) > 80:
-                return {"score": 0, "issues": [f"MSER text regions: {len(text_like)}"]}
-            elif len(text_like) > 40:
-                score -= (len(text_like) - 40) * 0.3
-                issues.append(f"mser_text({len(text_like)})")
-        except Exception:
-            pass
+        # 3. MSER text region detection — DISABLED v70.0
+        # News screenshots legitimately have text overlays. Re-enabling this
+        # would reject most real news photos from Serper.
+        # Kept as no-op for backward compatibility.
+        pass
 
-        # 4. Color variance
+        # 4. Color variance — keep, but relaxed
         color_std = np.std(img, axis=(0, 1)).mean()
-        if color_std < 15:
+        if color_std < 10:  # v70.0: Relaxed from 15
             return {"score": 0, "issues": [f"Flat image (color std: {color_std:.1f})"]}
 
-        # 5. Border/frame detection
-        border_size = 10
-        top_border = img[:border_size, :, :].mean()
-        bottom_border = img[-border_size:, :, :].mean()
-        left_border = img[:, :border_size, :].mean()
-        right_border = img[:, -border_size:, :].mean()
-        border_avg = (top_border + bottom_border + left_border + right_border) / 4
-        center_avg = img[h//4:3*h//4, w//4:3*w//4, :].mean()
-        if abs(border_avg - center_avg) > 80:
-            score -= 20
-            issues.append("border_mismatch")
+        # 5. Border/frame detection — DISABLED v70.0
+        # Many news photos and stock images have borders/frames.
+        pass
 
-        # 6. TV logo / channel watermark in corners
-        corner_size = min(w, h) // 6
-        corners = [
-            gray[:corner_size, :corner_size],
-            gray[:corner_size, -corner_size:],
-            gray[-corner_size:, :corner_size],
-            gray[-corner_size:, -corner_size:],
-        ]
-        for corner in corners:
-            if corner.size == 0:
-                continue
-            corner_blur = cv2.Laplacian(corner, cv2.CV_64F).var()
-            corner_mean = corner.mean()
-            if corner_blur > 500 and (corner_mean < 60 or corner_mean > 200):
-                return {"score": 0, "issues": ["TV logo/watermark in corner"]}
-            corner_std = corner.std()
-            if corner_std < 20 and abs(corner_mean - corner_blur) > 100:
-                return {"score": 0, "issues": ["TV logo/watermark in corner"]}
+        # 6. TV logo / channel watermark — DISABLED v70.0
+        # News screenshots legitimately have channel logos in corners.
+        # This was rejecting real news photos from Indian news channels.
+        pass
 
-        # 7. Face detection  (reject large faces = news anchors)
-        try:
-            face_cascade = cv2.CascadeClassifier(
-                cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
-            )
-            if not face_cascade.empty():
-                faces = face_cascade.detectMultiScale(
-                    gray, scaleFactor=1.1, minNeighbors=4, minSize=(30, 30)
-                )
-                if len(faces) > 0:
-                    max_face_area = max(fw * fh for (_, _, fw, fh) in faces)
-                    face_ratio = max_face_area / (w * h)
-                    if face_ratio > 0.05:
-                        return {"score": 0, "issues": [f"Large face ({face_ratio:.1%} of image)"]}
-                    else:
-                        # REJECT all images with detected faces — no human faces allowed
-                        # in news visuals (prevents devil faces, AI-generated people, anchors)
-                        return {"score": 0, "issues": [f"Face detected ({len(faces)} face(s), {face_ratio:.1%}) — no human faces allowed"]}
-        except Exception:
-            pass
+        # 7. Face detection — DISABLED v70.0
+        # News photos of politicians, crowds, events ALL have faces.
+        # Rejecting faces means rejecting the most important news images.
+        # The "devil face" problem from ComjyUI is solved by using Serper (real photos).
+        pass
 
-        # 7b. AI-generated face / unnatural skin-tone detection
-        # Even when Haar cascade misses small/distorted AI faces, unnatural
-        # skin-tone pixel concentration reveals AI-generated human imagery.
-        try:
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            # Broad skin-tone range in HSV (covers light to dark skin)
-            skin_lower1 = np.array([0, 20, 70], dtype=np.uint8)
-            skin_upper1 = np.array([25, 180, 255], dtype=np.uint8)
-            skin_lower2 = np.array([160, 20, 70], dtype=np.uint8)
-            skin_upper2 = np.array([180, 180, 255], dtype=np.uint8)
-            skin_mask1 = cv2.inRange(hsv, skin_lower1, skin_upper1)
-            skin_mask2 = cv2.inRange(hsv, skin_lower2, skin_upper2)
-            skin_mask = cv2.bitwise_or(skin_mask1, skin_mask2)
-            skin_ratio = np.count_nonzero(skin_mask) / (w * h)
-            if skin_ratio > 0.25:
-                return {"score": 0, "issues": [f"AI-face/skin-tone ({skin_ratio:.1%} skin pixels) — likely AI-generated human"]}
-            elif skin_ratio > 0.15:
-                score -= 20
-                issues.append(f"elevated_skin_tone({skin_ratio:.1%})")
-        except Exception:
-            pass
+        # 7b. HSV skin-tone detection — DISABLED v70.0
+        # Crowd shots, group photos, political rallies all have skin-tone pixels.
+        # This was rejecting real news photos showing people.
+        pass
 
-        # 8. Near-white / near-black ratio
+        # 8. Near-white / near-black ratio — keep, but relaxed
         white_ratio = np.count_nonzero(gray > 240) / (w * h)
         black_ratio = np.count_nonzero(gray < 15) / (w * h)
-        if white_ratio > 0.6:
+        if white_ratio > 0.80:  # v70.0: Relaxed from 0.60
             return {"score": 0, "issues": [f"Mostly white ({white_ratio:.0%})"]}
-        if black_ratio > 0.5:
+        if black_ratio > 0.70:  # v70.0: Relaxed from 0.50
             return {"score": 0, "issues": [f"Mostly black ({black_ratio:.0%})"]}
 
         score = max(0, min(100, score))
@@ -247,26 +192,30 @@ def score_image_quality(data: bytes, url: str) -> dict:
 def score_semantic_relevance(topic_title: str, image_title: str = "",
                               image_source: str = "", image_domain: str = "") -> dict:
     """
-    Score how relevant a fetched image is to the news topic.
+    v70.0: Score how relevant a fetched image is to the news topic.
     Returns: {"relevant": bool, "score": float (0-100), "issues": list of str}
 
-    Uses multiple signals:
-    1. Keyword overlap between topic and image title/source (Jaccard-like)
-    2. Image title/source keyword matching against topic keywords
-    3. URL domain heuristics (stock photo vs editorial)
-    4. Penalty for generic stock-photo titles
+    Key changes v70.0:
+      - Default trust raised 70→80 (Serper already searched for our query)
+      - No-keyword-overlap penalty halved -30→-15 (real photos have generic titles)
+      - Stock photo penalty reduced -15→-5 (stock photos ARE real photos)
+      - Stock domains no longer penalized — moved to trusted list
+      - Added YouTube/Wikimedia/twitter image domains as trusted
+      - Threshold lowered 40→30 (more photos accepted)
+      - Telugu news domains added
 
-    Threshold: score < 40 = reject as off-topic.
+    Threshold: score < 30 = reject as off-topic.
     """
     issues = []
-    score = 70.0  # Default trust Serper's search relevance
+    score = 80.0  # v70.0: Trust Serper's search relevance more
 
     # Clean and tokenize
     import re
     stop_words = {"the", "a", "an", "is", "are", "was", "were", "in", "on", "at",
                   "to", "for", "of", "and", "or", "but", "with", "from", "by",
                   "about", "image", "photo", "stock", "picture", "photograph",
-                  "jpg", "png", "https", "http", "www", "com"}
+                  "jpg", "png", "https", "http", "www", "com", "just", "high",
+                  "resolution", "royalty", "free", "download", "close", "detail"}
 
     def tokenize(text):
         return set(w.lower() for w in re.findall(r'[a-zA-Z]{3,}', text) if w.lower() not in stop_words)
@@ -284,47 +233,62 @@ def score_semantic_relevance(topic_title: str, image_title: str = "",
         jaccard = overlap / total if total > 0 else 0
         score += jaccard * 30  # Up to +30 for full overlap
         if overlap == 0 and len(topic_tokens) >= 3:
-            score -= 30
+            score -= 15  # v70.0: Halved from -30 — real photos have generic titles
             issues.append("no_keyword_overlap")
     else:
-        score -= 10
+        score -= 5  # v70.0: Reduced from -10
         issues.append("empty_image_metadata")
 
-    # 2. Generic stock photo title detection
-    generic_phrases = ["free photo", "royalty free", "stock image", "shutterstock",
-                       "getty images", "istock", "dreamstime", "depositphotos",
-                       "123rf", "alamy", "bigstock", "clip art", "vector",
-                       "illustration", "cartoon", "meme", "emoji", "icon"]
+    # 2. Generic illustration/clip-art detection (not real photos)
+    # v70.0: Only penalize non-photo content — real photos from stock sites are OK
+    generic_phrases = ["clip art", "vector illustration", "cartoon image",
+                       "meme template", "emoji pack", "icon set",
+                       "ai generated", "ai image", "midjourney", "dall-e"]
     combined_lower = (image_title + " " + image_source).lower()
     for phrase in generic_phrases:
         if phrase in combined_lower:
-            score -= 15
-            issues.append(f"generic_stock({phrase})")
+            score -= 20  # Strong penalty for non-photo content
+            issues.append(f"non_photo({phrase})")
             break
 
-    # 3. URL domain heuristics
-    editorial_domains = ["bbc", "cnn", "ndtv", "thehindu", "timesofindia",
+    # 3. Trusted domain bonuses (legitimate news/image sources)
+    # v70.0: Merged editorial + stock into single trusted list — all real photos
+    trusted_editorial = ["bbc", "cnn", "ndtv", "thehindu", "timesofindia",
                          "reuters", "apnews", "aljazeera", "wikipedia",
                          "wikimedia", "nytimes", "washingtonpost", "guardian",
-                         "bbc.co.uk", "inquirer", "telugustop", "123telugu",
-                         "idlebrain", "greatandhra", "filmibeat"]
-    stock_domains = ["shutterstock", "getty", "istock", "istockphoto",
-                     "dreamstime", "depositphotos", "123rf", "alamy",
-                     "bigstock", "canstock", "pond5", "vectorsock"]
+                         "indianexpress", "hindustantimes", "scroll", "news18",
+                         "deccanherald", "deccanchronicle", "livemint",
+                         "economictimes", "firstpost", "thequint", "thewire",
+                         "siasat", "newslaundry", "telanganatoday",
+                         "thenewsminute", "greatandhra", "filmibeat",
+                         "telugustop", "123telugu", "idlebrain",
+                         "eenadu", "sakshi", "andhrajyothy", "vaartha",
+                         "pib.gov.in", "india.gov.in",
+                         "inquirer", "bbc.co.uk"]
+    trusted_image_domains = ["ytimg.com", "youtube.com",  # YouTube thumbnails
+                              "pbs.twimg.com", "x.com", "twitter.com",  # Social
+                              "istockphoto", "shutterstock", "gettyimages",  # Stock
+                              "dreamstime", "alamy", "depositphotos",
+                              "unsplash", "pexels", "pixabay",  # Free stock
+                              "upload.wikimedia.org", "wikimedia.org"]  # Wiki
 
     domain_lower = image_domain.lower().replace("www.", "")
-    for ed in editorial_domains:
-        if ed in domain_lower:
+
+    domain_bonus = False
+    for td in trusted_editorial:
+        if td in domain_lower:
             score += 10
+            domain_bonus = True
             break
-    for sd in stock_domains:
-        if sd in domain_lower:
-            score -= 10
-            issues.append("stock_domain")
+    if not domain_bonus:
+        for td in trusted_image_domains:
+            if td in domain_lower:
+                score += 5  # Smaller bonus for image domains
+                break
 
     score = max(0, min(100, score))
     return {
-        "relevant": score >= 40,
+        "relevant": score >= 30,  # v70.0: Lowered threshold from 40
         "score": round(score, 1),
         "issues": issues,
     }
@@ -341,7 +305,7 @@ class VisualFetcher:
         """
         Download, validate, quality-score, semantically score AND track license.
         Quality score < 30 = rejected.
-        Semantic relevance < 40 = rejected (off-topic).
+        Semantic relevance < 30 = rejected (off-topic).
         Returns True on success.
         """
         try:
@@ -468,39 +432,156 @@ class VisualFetcher:
         except Exception:
             pass  # License tracking must not break image fetching
 
+    def _fetch_from_comfyui(self, topic: dict) -> list:
+        """Generate images via ComfyUI Stable Diffusion 1.5 (local, high quality)."""
+        try:
+            from comfyui_image_generator import generate_scene_image
+            import random
+            topic_title = topic.get("title", "")
+            category = topic.get("category", "DEFAULT")
+            runtime = config.DRIVE["RUNTIME"]
+
+            # Detect category from topic
+            cat = "DEFAULT"
+            cat_keywords = {
+                "POLITICS": ["politics", "election", "minister", "party", "congress", "bjp", "tdp", "mla", "mp"],
+                "DISASTER": ["flood", "cyclone", "earthquake", "disaster", "fire", "accident", "collapse"],
+                "CRIME": ["murder", "theft", "arrest", "police", "crime", "scam", "fraud"],
+                "ECONOMICS": ["economy", "market", "price", "inflation", "budget", "trade", "stock"],
+                "SPORTS": ["cricket", "match", "player", "tournament", "sports", "game", "score"],
+                "HEALTH": ["health", "hospital", "disease", "covid", "medicine", "doctor", "vaccine"],
+                "TECHNOLOGY": ["tech", "ai", "software", "app", "digital", "internet", "cyber"],
+                "ENTERTAINMENT": ["movie", "film", "actor", "singer", "celebration", "award", "show"],
+            }
+            topic_lower = topic_title.lower()
+            for c, keywords in cat_keywords.items():
+                if any(kw in topic_lower for kw in keywords):
+                    cat = c
+                    break
+
+            # Build scene-specific prompts from topic title (3 distinct visual angles)
+            title = topic_title.strip()
+            prompts = [
+                f"wide establishing shot of {title}, documentary photojournalism, editorial",
+                f"close-up detail scene related to {title}, indian context, professional photography",
+                f"aerial or overview shot of {title}, cinematic composition, dramatic lighting",
+            ]
+
+            paths = []
+            for i, prompt in enumerate(prompts):
+                save_path = os.path.join(runtime, f"viz_comfyui_{i}.jpg")
+                ok = generate_scene_image(
+                    scene_description=prompt,
+                    output_path=save_path,
+                    category=cat,
+                    width=768,
+                    height=512,
+                    seed=random.randint(1, 2147483647)
+                )
+                if ok:
+                    paths.append(save_path)
+
+            if paths:
+                print(f"  [ComfyUI] Generated {len(paths)} scene images.")
+            return paths
+        except ImportError:
+            print("  [ComfyUI] comfyui_image_generator.py not available, skipping.")
+            return []
+        except Exception as e:
+            # ComfyUI must not crash the pipeline
+            print(f"  [ComfyUI] Error: {e}")
+            return []
+
+    def _fetch_from_comfyui_thumbnail(self, topic: dict, output_dir: str, nickname: str) -> dict:
+        """Generate thumbnail background via ComfyUI."""
+        try:
+            from comfyui_image_generator import generate_thumbnail_background
+            topic_title = topic.get("title", "")
+            category = topic.get("category", "DEFAULT")
+
+            thumb_bg_path = os.path.join(output_dir, f"{nickname}_comfyui_bg.png")
+            ok = generate_thumbnail_background(topic_title, category, thumb_bg_path)
+            if ok:
+                print(f"  [ComfyUI] Thumbnail background generated: {thumb_bg_path}")
+                return {"background": thumb_bg_path}
+            return {}
+        except Exception as e:
+            print(f"  [ComfyUI] Thumbnail bg error: {e}")
+            return {}
+
     def fetch_visuals(self, topic: dict) -> list:
-        """Fetch, semantically score + validate images from Serper Google Image Search."""
-        url = "https://google.serper.dev/images"
+        """
+        Fetch images with priority:
+        1. ComfyUI Stable Diffusion (local generation, best quality)
+        2. Serper Google Image Search (external, variable quality)
+        3. Local image pack (fallback)
+        """
         topic_title = topic.get("title", "")
-        # Build a documentary-style search query to avoid news screenshots
-        search_q = f"{topic_title} documentary photography high resolution"
-        payload = {"q": search_q, "num": 10}  # Request more to allow for rejections
+
+        # Strategy 1: Serper (real news photos — PRIMARY)
+        url = "https://google.serper.dev/images"
+        search_q = f"{topic_title} news photo"
+        payload = {"q": search_q, "num": 10}
         headers = {'X-API-KEY': self.api_key, 'Content-Type': 'application/json'}
 
+        serper_paths = []
         try:
             response = requests.post(url, json=payload, headers=headers, timeout=15).json()
             images = response.get('images', [])
-
-            paths = []
-            for img in images[:10]:  # Try up to 10 to get 3 valid ones
-                if len(paths) >= 3:
+            for img in images[:10]:
+                if len(serper_paths) >= 3:
                     break
                 img_url = img.get('imageUrl', '')
                 if not img_url:
                     continue
-                save_path = os.path.join(config.DRIVE["RUNTIME"], f"viz_news_{len(paths)}.jpg")
-                # Pass Serper metadata for semantic relevance scoring
+                save_path = os.path.join(config.DRIVE["RUNTIME"], f"viz_news_{len(serper_paths)}.jpg")
                 img_title = img.get('title', '')
                 img_source = img.get('source', '')
                 img_domain = img.get('domain', '')
                 if self._download_single_image(img_url, save_path, topic_title,
                                                 img_title, img_source, img_domain):
-                    paths.append(save_path)
-
-            if paths:
-                return paths
-            print("    No valid images fetched from Serper, using fallback.")
-            return [os.path.join(config.DRIVE["THUMBNAILS"], "production_thumb.jpg")]
+                    serper_paths.append(save_path)
         except Exception as e:
-            print(f"    Visual fetch failed: {e}")
-            return [os.path.join(config.DRIVE["THUMBNAILS"], "production_thumb.jpg")]
+            print(f"  Serper failed: {e}")
+
+        if serper_paths:
+            print(f"  VisualFetcher: Using {len(serper_paths)} Serper images.")
+            return serper_paths
+
+        # Strategy 2: ComfyUI (AI-generated — LAST RESORT)
+        comfy_paths = self._fetch_from_comfyui(topic)
+        if comfy_paths:
+            print(f"  VisualFetcher: Using {len(comfy_paths)} ComfyUI-generated images.")
+            return comfy_paths
+
+        # Strategy 3: Local image pack fallback
+        print("  ⚠️ All external sources failed, using local image pack.")
+        return self._local_image_pack_fallback(topic_title, runtime_dir=config.DRIVE["RUNTIME"])
+
+    def _local_image_pack_fallback(self, topic_text: str, runtime_dir: str) -> list:
+        """Pull topic-relevant images from the local image pack as fallback."""
+        try:
+            import importlib.util
+            lip_path = os.path.join(os.path.dirname(__file__), "local_image_pack.py")
+            spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
+            if spec and spec.loader:
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                pack = mod.LocalImagePack()
+                images = pack.get_images(topic_text, count=3, diversity=True)
+                if images:
+                    # Copy images to runtime dir with viz_news_ prefix for downstream consumption
+                    paths = []
+                    for i, src_path in enumerate(images):
+                        dest = os.path.join(runtime_dir, f"viz_news_{i}.jpg")
+                        import shutil
+                        shutil.copy2(src_path, dest)
+                        paths.append(dest)
+                    print(f"  ✓ Local pack: {len(images)} images for thumbnail/background")
+                    return paths
+                else:
+                    print(f"  ⚠️ Local pack returned 0 images for topic: '{topic_text[:40]}...'")
+        except Exception as e:
+            print(f"  ⚠️ Local image pack fallback failed: {e}")
+        # If even local pack fails, return None (signals no visuals; gate must allow this)
+        return None

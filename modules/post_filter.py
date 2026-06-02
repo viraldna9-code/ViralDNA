@@ -1,8 +1,11 @@
-# VERSION: 52.0
+# VERSION: 71.0
 # MODULE: post_filter.py
-# PURPOSE: Topic scoring driven by Google Trends (what people actually search)
-#          + source diversity + recency. Minimal CPM nudge only.
+# PURPOSE: Topic scoring driven by Google News RSS (editorially curated top stories)
+#          + Google Trends RSS (supplementary virality signal) + source diversity
+#          + recency + Telugu-relevance boost.
 #          Cross-run category-based deduplication to prevent topic repetition.
+#          v71.0: Redesigned scoring — Telugu relevance boost (up to +20), minimum
+#          headline quality gate for trending queries, Trends RSS demoted to supplementary.
 
 import json
 import os
@@ -201,90 +204,138 @@ def record_topic_usage(title: str, description: str = ""):
 class PostFilter:
     def __init__(self, config_dict: dict):
         self.config = dict(config_dict) if config_dict else {}
-        # Minimal CPM boost — only a tiny nudge, never the deciding factor.
-        # The scoring is driven by what people are ACTUALLY searching (Google Trends)
-        # and how many sources confirm it (source diversity).
-        self.cpm_boost_keywords = {
-            "telugu": 3, "andhra": 3, "telangana": 3,
-            "tollywood": 3, "hyderabad": 2, "vizag": 2,
+        # ── Telugu relevance boost keywords (v71.0) ──
+        # Topics directly about Telugu states, Tollywood, or Telugu people
+        # get a meaningful boost so they rank above generic India news.
+        # Max boost: +20 points (previously only +5).
+        self.telugu_keywords = {
+            # Telugu states and cities — highest priority
+            "andhra pradesh": 8, "andhra": 5, "telangana": 6,
+            "amaravati": 6, "hyderabad": 5, "visakhapatnam": 5, "vizag": 4,
+            "vijayawada": 4, "tirupati": 4, "guntur": 4, "kakinada": 4,
+            "nellore": 3, "warangal": 3, "karimnagar": 3, "kurnool": 3,
+            "rajahmundry": 3, "ongole": 3, "eluru": 3,
+            # Telugu politics — TDP/JSP/YSRCP leaders
+            "telugu desam": 8, "tdp": 6, "ysrcp": 6, "jsp": 5,
+            "nara lokesh": 8, "chandrababu naidu": 8, "chandrababu": 6,
+            "ys jagan": 8, "jagan": 5, "pawan kalyan": 7,
+            "naidu": 4, "amaravati": 5,
+            # Tollywood / Telugu entertainment
+            "tollywood": 6, "mahesh babu": 6, "prabhas": 6, "allu arjun": 6,
+            "jr ntr": 6, "ram charan": 6, "nani": 5, "sai pallavi": 5,
+            "keerthy suresh": 5, "samantha": 5, "rashmika": 5,
+            "ss rajamouli": 7, "anirudh": 4, "sukumar": 4, "koratala siva": 4,
+            "teja sajja": 4, "nithya menen": 4, "dulquer": 4, "fahad fasıl": 4,
+            "rrr": 5, "bahubali": 5, "pushpa": 5,
+            # Telugu identity / diaspora
+            "telugu": 5, "telugu people": 6, "telugu nri": 6, "telugu american": 6,
         }
 
-    def run(self, topics: list) -> list:
-        print("▶ Phase 1.2: Topic Scoring (Google Trends primary + source diversity + recency)...")
+    def run(self, topics: list):
+        import re
+        print("▶ Phase 1.2: Topic Scoring (Google News RSS + Trends + Telugu relevance + recency)...")
         weighted_topics = []
-        
+
         for t in topics:
             title_lower = t.get("title", "").lower()
             desc_lower = t.get("description", "").lower()
-            
-            # ── PRIMARY: Google Trends score (0-50) ──
-            # If people are actively searching for this, it MATTERS.
-            trending_score = 0
             source_name = t.get("source", "").lower()
+
+            # ── HEADLINE QUALITY GATE (v71.0) ──
+            # Reject Google Trends search queries that are too short/fragmentary
+            # to be usable as news headlines.
             if "google trends (india daily)" in source_name:
-                trending_score = 50  # India daily trends = what Telugu people are searching NOW
+                title_raw = t.get("title", "")
+                word_count = len(title_raw.split())
+                alpha_chars = sum(1 for c in title_raw if c.isalpha())
+                # Reject if: < 3 words OR < 15 alpha chars
+                # e.g. "times of india" (3 words, 13 alpha), "pm svanidhi" (2 words)
+                if word_count < 3 or alpha_chars < 15:
+                    print(f"  [SKIP] Low-quality trend query rejected: '{title_raw}'")
+                    continue
+
+            # ── PRIMARY: Source virality score (0-50) ──
+            # Google News RSS (Telugu-relevant) = 50 pts — people reading + Telugu boost
+            # Google News RSS (non-Telugu India) = 30 pts — people reading but not Telugu-focused
+            # Google Trends RSS = 20 pts — supplementary virality, search queries are lower quality
+            # RSS feeds = 10 pts — editorial news, baseline
+            trending_score = 0
+            if "google news rss" in source_name:
+                # v71.0: Telugu-relevant Google News stories get 50, generic India gets 30
+                # This ensures Telugu national news (e.g. AP politics in national press) wins
+                _title_check = title_lower + " " + desc_lower
+                _telugu_in_news = any(
+                    re.search(rf"\b{re.escape(kw)}\b", _title_check)
+                    for kw in ["andhra", "telangana", "telugu", "hyderabad", "vizag",
+                               "visakhapatnam", "tollywood", "tdp", "ysrcp", "amaravati",
+                               "chandrababu", "jagan", "lokesh", "pawan kalyan",
+                               "mahesh babu", "prabhas", "allu arjun", "jr ntr", "ram charan"]
+                )
+                if _telugu_in_news:
+                    trending_score = 50  # Telugu story in national news = maximum relevance
+                else:
+                    trending_score = 30  # Generic India trending news
+            elif "google trends (india daily)" in source_name:
+                trending_score = 20  # Search queries are supplementary, not headlines
             elif "google trends (related" in source_name:
-                trending_score = 35  # Related topics to AP/Telugu keywords
+                trending_score = 15
             elif "google trends (us" in source_name:
-                trending_score = 25  # US trends relevant to NRIs
+                trending_score = 10
             elif "youtube trending" in source_name:
-                trending_score = 20  # YouTube trending = viral content
+                trending_score = 20
             elif "reddit" in source_name:
-                trending_score = 15  # Reddit = community discussion
+                trending_score = 15
             elif "inshorts" in source_name:
-                trending_score = 12  # Inshorts = curated news
+                trending_score = 12
             elif "rss" in source_name or "feed" in source_name:
-                trending_score = 10  # RSS = editorial news
-            
-            # ── SECONDARY: Source diversity (0-30) ──
-            # Story confirmed by multiple independent sources = more credible/important
+                trending_score = 10
+
+            # ── SECONDARY: Source diversity (0-14) ──
             num_sources = t.get("num_sources", 1)
-            source_score = min(num_sources * 10, 30)
-            
+            source_score = min(num_sources * 7, 14)
+
             # ── TERTIARY: Recency decay (0-15) ──
-            # Fresher stories get a small boost
             recency_score = 0
             pub_date_str = t.get("published", t.get("date", ""))
             if pub_date_str:
                 try:
-                    from datetime import datetime, timedelta, timezone
                     if isinstance(pub_date_str, str):
                         pub_date = datetime.fromisoformat(pub_date_str.replace("Z", "+00:00"))
                     else:
                         pub_date = pub_date_str
-                    now = datetime.now(timezone.utc)
-                    age_hours = (now - pub_date).total_seconds() / 3600
+                    now_dt = datetime.now(timezone.utc)
+                    age_hours = (now_dt - pub_date).total_seconds() / 3600
                     if age_hours < 2:
-                        recency_score = 15  # Breaking: less than 2 hours old
+                        recency_score = 15
                     elif age_hours < 6:
-                        recency_score = 10  # Very fresh: under 6 hours
+                        recency_score = 10
                     elif age_hours < 12:
-                        recency_score = 5   # Same day: under 12 hours
+                        recency_score = 5
                 except Exception:
-                    recency_score = 5  # Can't parse date = give benefit of doubt
+                    recency_score = 5
             else:
-                recency_score = 5  # No date = treat as recent
-            
-            # ── MINIMAL: CPM niche nudge (0-5 max) ──
-            # Tiny boost for explicitly Telugu-relevant keywords.
-            # This should NEVER override a trending topic from Google Trends.
-            cpm_boost = 0
-            import re
-            for kw, score in self.cpm_boost_keywords.items():
+                recency_score = 5
+
+            # ── QUATERNARY: Telugu relevance boost (0-20) ──
+            # v71.0: Expanded from max +5 to max +20.
+            # Topics about Telugu states, politics, Tollywood, Telugu people
+            # get a MAJOR boost so they outrank generic India news.
+            telugu_boost = 0
+            for kw, score in self.telugu_keywords.items():
                 pattern = rf"\b{re.escape(kw)}\b"
                 if re.search(pattern, title_lower) or re.search(pattern, desc_lower):
-                    cpm_boost += score
-            cpm_boost = min(cpm_boost, 5)  # Hard cap at 5 points
-            
-            # ── FINAL WEIGHT: Trends + sources + recency + tiny CPM nudge ──
-            weight = 5 + trending_score + source_score + recency_score + cpm_boost
+                    telugu_boost += score
+            telugu_boost = min(telugu_boost, 20)  # Hard cap at 20 points
+
+            # ── FINAL WEIGHT ──
+            weight = 5 + trending_score + source_score + recency_score + telugu_boost
             t["cpm_weight"] = weight
             t["_trending_score"] = trending_score
             t["_source_score"] = source_score
             t["_recency_score"] = recency_score
-            t["_cpm_boost"] = cpm_boost
+            t["_telugu_boost"] = telugu_boost
             weighted_topics.append(t)
-            
+
         # Sort topics descending by weight
         weighted_topics.sort(key=lambda x: x["cpm_weight"], reverse=True)
 
@@ -306,7 +357,7 @@ class PostFilter:
                 print("  [DEDUP] All topics filtered — history too recent, allowing top topic through")
                 weighted_topics = [weighted_topics[0]]
 
-        for t in weighted_topics[:3]:
-            print(f"    Scored: {t['title'][:40]}... | Total: {t['cpm_weight']} (trend={t['_trending_score']}, src={t['_source_score']}, fresh={t['_recency_score']}, cpm={t['_cpm_boost']})")
+        for t in weighted_topics[:5]:
+            print(f"    Scored: {t['title'][:45]}... | Total: {t['cpm_weight']} (trend={t['_trending_score']}, src={t['_source_score']}, fresh={t['_recency_score']}, telugu={t['_telugu_boost']})")
 
         return weighted_topics

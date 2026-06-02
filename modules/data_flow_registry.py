@@ -10,6 +10,7 @@ class NewsPayload:
         self.link = str(data.get("link", "")).strip()
         self.source = str(data.get("source", "")).strip()
         self.rag_context = str(data.get("rag_context", "No additional background context.")).strip()
+        self.trending_score = str(data.get("trending_score", "normal")).strip()
         self.validate()
 
     def validate(self):
@@ -24,7 +25,8 @@ class NewsPayload:
             "description": self.description,
             "link": self.link,
             "source": self.source,
-            "rag_context": self.rag_context
+            "rag_context": self.rag_context,
+            "trending_score": self.trending_score,
         }
 
 
@@ -83,6 +85,12 @@ class ScriptPayload:
         # We enforce a strict lower bound to prevent the "2-second video" error
         if self.main_word_count < 100:
             raise ValueError(f"❌ ScriptPayload Validation Failed: Main script too short ({self.main_word_count} words).")
+        # Shorts must have minimum 20 words to produce meaningful 8-10s video
+        for short_name, short_wc in [("short_1", self.short_1_word_count),
+                                      ("short_2", self.short_2_word_count),
+                                      ("short_3", self.short_3_word_count)]:
+            if short_wc > 0 and short_wc < 20:
+                raise ValueError(f"❌ ScriptPayload Validation Failed: {short_name} too short ({short_wc} words, minimum 20). Short was generated but is too brief for a meaningful video.")
         print(f"    📊 Script Audit: Main duration is {self.main_duration:.1f}s | Word Count: {self.main_word_count}")
         print(f"    📊 Script Audit: Short 1 duration is {self.short_1_duration:.1f}s | Word Count: {self.short_1_word_count}")
 

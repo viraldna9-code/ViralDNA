@@ -1,7 +1,8 @@
-# VERSION: 63.0
+# VERSION: 72.0
 # MODULE: gemini_engine.py
 # PURPOSE: Hybrid Unified Interface — Direct Google AI Studio (Pay-as-you-go)
 #          priority, OpenRouter as fallback, local heuristic as last resort.
+#          v71.1: Reordered models — gemini-2.5-flash-lite first (separate quota pool).
 
 import requests
 import json
@@ -21,7 +22,7 @@ class GeminiEngine:
 
         # Primary models for routing
         self.openrouter_models = ["google/gemini-2.5-flash", "google/gemini-2.5-pro", "meta-llama/llama-3-8b-instruct"]
-        self.gemini_models = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-2.5-pro"]
+        self.gemini_models = ["gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-2.5-flash", "gemini-flash-latest"]
 
     def _generate_local_fallback(self, prompt: str) -> dict:
         """Dynamic Local Heuristic Fallback: Generates a detailed script locally."""
@@ -58,7 +59,7 @@ class GeminiEngine:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.gemini_key}"
                 try:
                     print(f"    GeminiEngine: Routing raw ask to direct {model}...")
-                    response = requests.post(url, json=payload, timeout=8).json()
+                    response = requests.post(url, json=payload, timeout=15).json()
                     if "candidates" in response:
                         print(f"    ✅ GeminiEngine Success: {model} responded directly.")
                         return response["candidates"][0]["content"]["parts"][0]["text"]

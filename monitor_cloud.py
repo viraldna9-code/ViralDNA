@@ -4,10 +4,10 @@ ViralDNA Spike Monitor — GitHub Actions Edition
 ================================================
 Runs every 30 min on GitHub Actions (cloud).
 Polls RSS + Google Trends + Reddit, scores topics editorially.
-|Sends Telegram alert if a topic scores >= 20/30 (truly viral).
-|Saves best topics to topics.json (persisted in repo via git push).
+Sends Telegram alert if a topic scores >= 20/30 (truly viral).
+Saves best topics to topics.json (persisted in repo via git push).
 
-Credentials: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID from GitHub Secrets.
+Credentials: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID from GitHub Secrets (or .env for local).
 """
 
 import json
@@ -17,6 +17,22 @@ import sys
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
+
+# Load .env for local/WSL runs (GitHub Actions sets env vars directly)
+try:
+    from dotenv import load_dotenv
+    _env_loaded = False
+    for _candidate in (
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
+        os.path.join(os.path.expanduser("~"), ".env"),
+        ".env",
+    ):
+        if os.path.isfile(_candidate):
+            load_dotenv(_candidate, override=False)
+            _env_loaded = True
+            break
+except ImportError:
+    pass
 
 # ── Config ──
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -118,18 +134,21 @@ def score_editorial(title, source_topics):
         breakdown.append("BIG_NAME +10 (" + name_matches[0] + ")")
 
     # 2. AP/Telangana direct relevance (+6) — bonus on top of name
-    if any(term in t for term in AP_TE_TERMS):
+    # Use word boundary matching to avoid substring false positives
+    # e.g. "ts" should NOT match "gets", "app" should NOT match "appointed"
+    ap_te_pattern = '|'.join(re.escape(term) for term in sorted(AP_TE_TERMS, key=len, reverse=True))
+    if re.search(rf'\b(?:{ap_te_pattern})\b', t):
         score += 6
         breakdown.append("AP/TS +6")
 
     # 3. India national relevance — affects Telugu people (+4)
-    india_matches = [n for n in INDIA_RELEVANT if n in t]
+    india_matches = [n for n in INDIA_RELEVANT if re.search(rf'\b{re.escape(n)}\b', t)]
     if india_matches:
         score += 4
         breakdown.append("IndiaRel +4 (" + india_matches[0] + ")")
 
     # 4. Channel growth topics (+3) — festivals, immigration, etc.
-    if any(term in t for term in CHANNEL_GROWTH_TOPICS):
+    if any(re.search(rf'\b{re.escape(term)}\b', t) for term in CHANNEL_GROWTH_TOPICS):
         score += 3
         breakdown.append("ChannelGrowth +3")
 
@@ -340,7 +359,7 @@ def main():
             t["id"] = f"VDNA{max_id_num:03d}"
         t["date"] = date_prefix
 
-    # ── Load history, check cooldown ──
+    # ── Load history, check cooldown + daily cap ──
     history = load_topics_history()
     last_alert_time = None
     if history.get("last_alert"):
@@ -352,32 +371,42 @@ def main():
     cooldown_passed = True
     if last_alert_time:
         elapsed = (now - last_alert_time).total_seconds() / 3600
-        if elapsed < 3:  # 3-hour cooldown between alerts
+        if elapsed < 4:  # 4-hour cooldown between alerts
             cooldown_passed = False
-            print(f"\n  Cooldown active: {elapsed:.1f}h since last alert (need 3h)")
+            print(f"\n  Cooldown active: {elapsed:.1f}h since last alert (need 4h)")
+
+    # Max 3 spike alerts per day (prioritized by score)
+    daily_alert_count = history.get("daily_alert_count", 0)
+    daily_alert_date = history.get("daily_alert_date", "")
+    today_str = now.strftime("%Y-%m-%d")
+    if daily_alert_date != today_str:
+        daily_alert_count = 0  # reset on new day
+        daily_alert_date = today_str
+        history["daily_alert_count"] = 0
+        history["daily_alert_date"] = today_str
+    max_daily_alerts = 3
+    daily_cap_ok = daily_alert_count < max_daily_alerts
+    if not daily_cap_ok:
+        print(f"\n  Daily cap reached: {daily_alert_count}/{max_daily_alerts} alerts today")
 
     # ── Find best topic ──
     # Threshold >= 20: need multiple strong signals (e.g. big name + AP/TS + viral keyword)
     # Typical scores: routine news = 0-9, interesting = 10-19, truly viral = 20-30
     produce_topics = [t for t in scored if t["score"] >= 20]
-    consider_topics = [t for t in scored if 15 <= t["score"] < 20]
 
     print("\nPRODUCER topics (>=20): " + str(len(produce_topics)))
-    print("CONSIDER topics (15-19): " + str(len(consider_topics)))
     print("\nScore | Topic")
     print("-" * 60)
     for t in scored[:5]:
-        marker = "PRODUCE" if t["score"] >= 20 else ("CONSIDER" if t["score"] >= 15 else "low")
+        marker = "PRODUCE" if t["score"] >= 20 else "low"
         print("  [" + marker + "] [" + str(t['score']).zfill(2) + "] " + t['title'][:60])
 
-    # Alert logic
+    # Alert logic: ONLY alert on PRODUCE topics (>=20)
+    # No CONSIDER fallback — marginal topics don't deserve alerts
     alert_topic = None
-    if produce_topics and cooldown_passed:
+    if produce_topics and cooldown_passed and daily_cap_ok:
         alert_topic = produce_topics[0]
         print("\nPRODUCE: " + alert_topic['title'][:70])
-    elif consider_topics and cooldown_passed:
-        alert_topic = consider_topics[0]
-        print("\nCONSIDER: " + alert_topic['title'][:70])
 
     if alert_topic:
         score = alert_topic["score"]
@@ -386,7 +415,7 @@ def main():
         topic_id = alert_topic.get("id", "VDNA???")
         breakdown = " | ".join(alert_topic.get("breakdown", []))
 
-        rec = "PRODUCE" if score >= 20 else "CONSIDER"
+        rec = "PRODUCE"
 
         alert_text = (
             f"🎬 <b>ViralDNA — Topic Alert</b>\n"
@@ -410,6 +439,8 @@ def main():
 
         if sent:
             history["last_alert"] = now.isoformat()
+            history["daily_alert_count"] = daily_alert_count + 1
+            history["daily_alert_date"] = daily_alert_date
 
     # ── Merge topics into history (persistent) ──
     # Build map of existing topics by normalized title

@@ -1,6 +1,13 @@
-# VERSION: 65.0
+# VERSION: 70.0
 # MODULE: video_assembler.py
 # PURPOSE: Advanced Generative Slideshow + Kinetic Typography Captioning Engine.
+#          v69.0: Image pipeline reworked for real news photos:
+#                  - Source 1: Serper Image Search (try all 10 results)
+#                  - Source 2: Wikimedia Commons API (real politician/event photos)
+#                  - Source 3: Unsplash, Source 4: Pexels, Source 5: Pixabay
+#                  - Source 6: ComfyUI (LAST RESORT — AI illustrations if all real sources fail)
+#                  - Removed Serper-Web (too slow, news sites timeout at 3-5s)
+#                  - ComfyUI: steps 20→30, CFG 7→8, added face-deformation negative prompts
 #          v65.0: Fixed sync FFmpeg pipe deadlock (capture_output=True → log file)
 #                  processing queue with progress tracking (K2.8), async upload prep.
 
@@ -180,9 +187,14 @@ class VideoAssembler:
 
     def _check_relevance(self, img_info: dict, prompt: str, topic_title: str) -> dict:
         """
-        Semantic relevance gate — uses Serper image metadata (title, source domain)
-        to reject off-topic images. Checks that the image title/URL contains at
-        least one keyword from the scene prompt or topic title.
+        v70.0: Semantic relevance gate — relaxed for real news photos.
+        Uses Serper image metadata (title, source domain) to reject off-topic images.
+        Key changes v70.0:
+          - Lowered threshold from 10% to 5% (real photos have generic titles)
+          - Added stock photo domain whitelist (istock, shutterstock, getty, etc.)
+          - Added YouTube thumbnail domain whitelist (ytimg.com)
+          - Single keyword match is enough for trusted domains
+          - Broader domain matching (handles timesofindia.indiatimes.com, etc.)
         Returns: {"relevant": bool, "reason": str}
         """
         # Extract keywords from prompt and topic (words > 4 chars, lowercase)
@@ -193,7 +205,8 @@ class VideoAssembler:
         # Remove generic filler words that match everything
         filler = {"professional", "photorealistic", "cinematic", "report", "visualization",
                   "showing", "background", "lighting", "studio", "dramatic", "broadcast",
-                  "quality", "image", "photo", "picture", "scene"}
+                  "quality", "image", "photo", "picture", "scene", "close", "detail",
+                  "related", "search", "query", "just", "high", "resolution"}
         key_terms -= filler
         if not key_terms:
             return {"relevant": True, "reason": "no key terms to check"}
@@ -206,14 +219,52 @@ class VideoAssembler:
 
         # Count how many key terms appear in the image metadata
         matches = sum(1 for term in key_terms if term in check_text)
-        match_ratio = matches / len(key_terms)
+        match_ratio = matches / len(key_terms) if key_terms else 0
 
-        if match_ratio < 0.15:  # Less than 15% of topic keywords found
+        # Trusted news/image domains — accept even with very low keyword match
+        # These domains have real photos even when the title doesn't contain our exact keywords
+        trusted_domains = {
+            # Indian news
+            'thewire.in', 'thehindu.com', 'hindustantimes.com', 'ndtv.com',
+            'indianexpress.com', 'scroll.in', 'news18.com', 'reuters.com',
+            'apnews.com', 'bbc.com', 'cnn.com', 'aljazeera.com',
+            'deccanherald.com', 'deccanchronicle.com', 'newindianexpress.com',
+            'timesofindia.indiatimes.com', 'indiatimes.com', 'livemint.com',
+            'economictimes.com', 'firstpost.com', 'thequint.com',
+            'siasat.com', 'deshabhimani.com', 'telanganatoday.com',
+            'thenewsminute.com', 'newslaundry.com', 'thewire.in',
+            # YouTube thumbnails (ytimg.com)
+            'ytimg.com', 'youtube.com',
+            # Twitter/social
+            'pbs.twimg.com', 'x.com', 'twitter.com',
+            # Stock photo sites (real photos, generic titles)
+            'istockphoto.com', 'shutterstock.com', 'gettyimages.com',
+            'gettyimages.in', 'dreamstime.com', 'alamy.com',
+            'stock.adobe.com', 'pexels.com', 'unsplash.com',
+            'pixabay.com', 'freepik.com', 'pngtree.com',
+            # Wikipedia / Wikimedia
+            'wikimedia.org', 'wikipedia.org', 'upload.wikimedia.org',
+            # Telugu news sites
+            'eenadu.net', 'sakshi.com', 'andhrabhoomi.com',
+            'andhrajyothy.com', 'vaartha.com', 'namasthetelangana.com',
+            'telugu360.com', 'greatandhra.com', 'mirchilife.com',
+            'apnews.gov.in', 'pib.gov.in',
+        }
+        domain_is_trusted = any(td in domain for td in trusted_domains)
+
+        # For trusted domains: accept if ANY single keyword matches
+        if domain_is_trusted and matches >= 1:
+            return {"relevant": True, "reason": f"Trusted domain + match ({domain})"}
+        # For trusted domains with zero keyword match: still accept (stock photos have generic titles)
+        if domain_is_trusted and match_ratio < 0.05:
+            return {"relevant": True, "reason": f"Trusted image domain ({domain})"}
+        # For untrusted domains: require 5% match (relaxed from 10%)
+        if match_ratio < 0.05:
             return {
                 "relevant": False,
                 "reason": f"Off-topic (title: '{title[:60]}', match: {match_ratio:.0%})"
             }
-        return {"relevant": True, "reason": f"Relevant ({match_ratio:.0%} match, title: '{title[:40]}')"}
+        return {"relevant": True, "reason": f"Relevant ({match_ratio:.0%} match)"}
 
     def generate_image_prompts(self, script_text, num_scenes):
         prompts = []
@@ -291,9 +342,11 @@ Script:
             score = 100.0
             reasons = []
 
-            # 1. Resolution check — minimum 640x360
-            if w < 640 or h < 360:
-                return {"passed": False, "reason": f"Too small: {w}x{h} (min 640x360)", "score": 0}
+            # 1. Resolution check — minimum total pixels (accepts both landscape and portrait)
+            # YouTube/news thumbnails come in various orientations
+            total_pixels = w * h
+            if total_pixels < 300000:  # ~640x480 or equivalent
+                return {"passed": False, "reason": f"Too small: {w}x{h} ({total_pixels:,} px, min 300k)", "score": 0}
 
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -308,28 +361,32 @@ Script:
 
             # 3. Text / overlay detection — multi-method
             # Method A: Canny edge density (news screenshots have dense text edges)
+            # Threshold relaxed: 0.35 catches real screenshots, allows news photos with light text
             edges = cv2.Canny(gray, 50, 150)
             edge_density = np.count_nonzero(edges) / (w * h)
-            if edge_density > 0.25:
+            if edge_density > 0.35:
                 return {"passed": False, "reason": f"Too many edges/text overlay (density: {edge_density:.2f})", "score": 0}
-            elif edge_density > 0.15:
-                score -= (edge_density - 0.15) * 200
+            elif edge_density > 0.20:
+                score -= (edge_density - 0.20) * 150
                 reasons.append(f"high_edges({edge_density:.2f})")
 
             # Method B: MSER text region detection
-            # News screenshots have many small high-contrast text regions
-            try:
-                mser = cv2.MSER_create()
-                regions, _ = mser.detectRegions(gray)
-                # Filter to small regions (text-sized)
-                text_like = [r for r in regions if 20 < len(r) < 500]
-                if len(text_like) > 80:
-                    return {"passed": False, "reason": f"MSER text regions: {len(text_like)} (news screenshot?)", "score": 0}
-                elif len(text_like) > 40:
-                    score -= (len(text_like) - 40) * 0.3
-                    reasons.append(f"mser_text({len(text_like)})")
-            except Exception:
-                pass  # MSER not critical
+            # DISABLED for news content — real news photos frequently have watermarks,
+            # captions, and channel logos that trigger false positives.
+            # The edge density check (Method A) is sufficient to catch actual screenshots.
+            # try:
+            #     mser = cv2.MSER_create()
+            #     regions, _ = mser.detectRegions(gray)
+            #     text_like = [r for r in regions if 20 < len(r) < 500]
+            #     if len(text_like) > 200:
+            #         return {"passed": False, "reason": f"MSER text regions: {len(text_like)} (news screenshot?)", "score": 0}
+            #     elif len(text_like) > 100:
+            #         score -= (len(text_like) - 100) * 0.1
+            #         reasons.append(f"mser_text({len(text_like)})")
+            # except Exception:
+            #     pass
+            # Face detection — reject close-up face shots (often press photos, not scene images)
+            # DISABLED — news photos of politicians are legitimate scene images
 
             # 4. Color variance check — reject flat/gradient-only images
             color_std = np.std(img, axis=(0, 1)).mean()
@@ -349,60 +406,36 @@ Script:
                 reasons.append("border_mismatch")
 
             # 6. TV logo / channel watermark detection
-            # News channels place logos in corners — check for high-contrast
-            # small regions in corners that differ from surroundings
-            corner_size = min(w, h) // 6
-            corners = [
-                gray[:corner_size, :corner_size],           # top-left
-                gray[:corner_size, -corner_size:],          # top-right
-                gray[-corner_size:, :corner_size],          # bottom-left
-                gray[-corner_size:, -corner_size:],         # bottom-right
-            ]
-            logo_detected = False
-            for ci, corner in enumerate(corners):
-                if corner.size == 0:
-                    continue
-                # Logos are small bright/dark patches on uniform backgrounds
-                corner_blur = cv2.Laplacian(corner, cv2.CV_64F).var()
-                corner_mean = corner.mean()
-                # High variance in a small corner region = likely a logo
-                if corner_blur > 500 and (corner_mean < 60 or corner_mean > 200):
-                    logo_detected = True
-                    break
-                # Also check for solid-color patches (typical logo backgrounds)
-                corner_std = corner.std()
-                if corner_std < 20 and abs(corner_mean - corner_blur) > 100:
-                    logo_detected = True
-                    break
-            if logo_detected:
-                return {"passed": False, "reason": "TV logo/watermark detected in corner", "score": 0}
+            # DISABLED for news content — real news photos ALWAYS have channel watermarks
+            # (TV9, ETV, NTV, etc. in corners). This is normal and expected for news.
+            # A watermark doesn't make an image invalid — it proves it's a real news photo.
+            # if logo_detected:
+            #     return {"passed": False, "reason": "TV logo/watermark detected in corner", "score": 0}
 
-            # 7. Face detection — reject news screenshots with people
-            # (We want documentary/stock photos, not news anchor shots)
-            try:
-                face_cascade = cv2.CascadeClassifier(
-                    cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
-                )
-                if not face_cascade.empty():
-                    faces = face_cascade.detectMultiScale(
-                        gray, scaleFactor=1.1, minNeighbors=4,
-                        minSize=(30, 30)
-                    )
-                    if len(faces) > 0:
-                        # Check face size — large faces = news anchor/screenshot
-                        max_face_area = max(fw * fh for (_, _, fw, fh) in faces)
-                        img_area = w * h
-                        face_ratio = max_face_area / img_area
-                        if face_ratio > 0.05:  # Face takes >5% of image
-                            return {"passed": False, "reason": f"Large face detected ({len(faces)} faces, max {face_ratio:.1%} of image)", "score": 0}
-                        else:
-                            # Small faces in crowd shots are OK but penalize
-                            score -= len(faces) * 3
-                            reasons.append(f"small_faces({len(faces)})")
-            except Exception:
-                pass  # Face detection not critical
+            # 7. Face detection — DISABLED for news content
+            # News photos of politicians, rallies, events WITH faces are legitimate.
+            # We WANT to see Nara Lokesh's face in a TDP rally photo.
+            # Face detection was rejecting real news photos with people in them.
+            # try:
+            #     face_cascade = cv2.CascadeClassifier(
+            #         cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+            #     )
+            #     if not face_cascade.empty():
+            #         faces = face_cascade.detectMultiScale(
+            #             gray, scaleFactor=1.1, minNeighbors=4, minSize=(30, 30)
+            #         )
+            #         if len(faces) > 0:
+            #             max_face_area = max(fw * fh for (_, _, fw, fh) in faces)
+            #             face_ratio = max_face_area / (w * h)
+            #             if face_ratio > 0.05:
+            #                 return {"passed": False, "reason": f"Large face detected", "score": 0}
+            #             else:
+            #                 score -= len(faces) * 3
+            #                 reasons.append(f"small_faces({len(faces)})")
+            # except Exception:
+            #     pass
 
-            # 8. Near-white / near-black ratio — news screenshots are often
+            # 8. Near-white / near-black ratio — catches blank/webpage screenshots only
             # mostly white (web page) or have large text blocks
             white_ratio = np.count_nonzero(gray > 240) / (w * h)
             black_ratio = np.count_nonzero(gray < 15) / (w * h)
@@ -450,55 +483,104 @@ Script:
                     pass
             downloaded = False
 
-            # Source 1: Serper (try up to 3 results, pick best quality)
+            # Source 1: Serper Image Search (real news photos — PRIMARY)
+            # Try up to 10 results before giving up
             if not downloaded:
                 try:
-                    print(f"    Assembler: [Serper] Fetching scene {i}...")
+                    print(f"    Assembler: [Serper-Img] Fetching scene {i}...")
                     serper_key = config.API_KEYS.get("SERPER_API_KEY", "")
                     if serper_key:
                         headers = {'X-API-KEY': serper_key, 'Content-Type': 'application/json'}
-                        search_q = prompt[:100] if prompt else topic_title
-                        # Add negative keywords to filter out text/logos/screenshots
-                        search_q += " -logo -text -screenshot -watermark -meme"
-                        payload = {"q": search_q, "num": 5, "imgSize": "large"}
+                        payload = {"q": topic_title if topic_title else prompt, "num": 10}
                         req_data = json.dumps(payload).encode('utf-8')
                         req = urllib.request.Request("https://google.serper.dev/images", data=req_data, headers=headers)
                         with urllib.request.urlopen(req, timeout=10) as resp:
-                            data = json.loads(resp.read())
-                        images = data.get("images", [])
-                        # Try up to 3 results, pick the one that passes quality AND relevance gates
-                        for attempt_idx, img_info in enumerate(images[:3]):
-                            img_url = img_info.get("imageUrl", "")
-                            if not img_url:
-                                continue
-                            # Relevance gate BEFORE downloading (no need to download off-topic images)
-                            rel = self._check_relevance(img_info, prompt, topic_title)
-                            if not rel["relevant"]:
-                                print(f"      ⚠️ [Serper] Result {attempt_idx} off-topic: {rel['reason']}")
-                                continue
-                            urllib.request.urlretrieve(img_url, img_path)
-                            if os.path.exists(img_path) and os.path.getsize(img_path) > 5120 and _is_valid_image(img_path):
-                                # Quality gate — blur, text, edge density checks
-                                quality = self._validate_image_quality(img_path)
-                                if quality["passed"]:
+                            data = json.loads(resp.read().decode())
+                            images = data.get("images", [])
+                            for attempt_idx, img_info in enumerate(images[:10]):
+                                try:
+                                    url = img_info.get("imageUrl", "")
+                                    if not url: continue
+                                    req2 = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                                    with urllib.request.urlopen(req2, timeout=10) as dl:
+                                        raw = dl.read()
+                                    if len(raw) < 10000: continue
+                                    with open(img_path, 'wb') as f:
+                                        f.write(raw)
+                                    from PIL import Image
+                                    import numpy as np
+                                    import cv2
+                                    import tempfile
+                                    im = Image.open(img_path).convert("RGB")
+                                    arr = np.array(im)
+                                    h_img, w_img = im.size[1], im.size[0]
+                                    sz = os.path.getsize(img_path)
+                                    color_std = arr.std()
+                                    if sz < 10000: os.remove(img_path); continue
+                                    if color_std < 15: os.remove(img_path); continue
+                                    if w_img < 400 or h_img < 300: os.remove(img_path); continue
+                                    gray = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+                                    edges = cv2.Canny(gray, 50, 150)
+                                    edge_density = np.count_nonzero(edges) / (w_img * h_img)
+                                    if edge_density > 0.50: os.remove(img_path); continue
+                                    print(f"      [Serper-Img] Scene {i} saved ({sz//1024}KB, {w_img}x{h_img}, std={color_std:.1f}, edges={edge_density:.2f})")
                                     image_paths.append(img_path)
                                     downloaded = True
-                                    print(f"      ✅ [Serper] Scene {i} saved ({os.path.getsize(img_path):,} bytes) — quality: {quality['score']:.0f}/100, {rel['reason']}")
                                     break
-                                else:
-                                    print(f"      ⚠️ [Serper] Result {attempt_idx} rejected: {quality['reason']}")
-                                    os.remove(img_path)
-                            else:
-                                if os.path.exists(img_path):
-                                    os.remove(img_path)
+                                except Exception as e:
+                                    if os.path.exists(img_path): 
+                                        try: os.remove(img_path)
+                                        except: pass
                 except Exception as e:
-                    print(f"      ⚠️ [Serper] Scene {i} failed: {e}")
+                    print(f"      [Serper-Img] Scene {i} failed: {e}")
 
-            # Source 2: Unsplash (random from curated photo site — usually high quality)
+            # Source 2: Wikimedia Commons (real politician/event photos — fast & reliable)
+            if not downloaded:
+                try:
+                    print(f"    Assembler: [WikiCommons] Fetching scene {i}...")
+                    import tempfile
+                    from PIL import Image
+                    import numpy as np
+                    search_q = topic_title if topic_title else prompt[:100]
+                    # Search Wikimedia Commons API directly (fast, no HTML parsing)
+                    wiki_url = f"https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch={urllib.parse.quote(search_q + ' filetype:bitmap')}&gsrnamespace=6&gsrlimit=5&prop=imageinfo&iiprop=url|size&iiurlwidth=1280&format=json"
+                    req = urllib.request.Request(wiki_url, headers={'User-Agent': 'ViralDNA/69.0'})
+                    with urllib.request.urlopen(req, timeout=8) as resp:
+                        data = json.loads(resp.read().decode())
+                    pages = (data.get('query', {}) or {}).get('pages', {})
+                    for pid, pdata in pages.items():
+                        try:
+                            ii = (pdata.get('imageinfo') or [{}])[0]
+                            thumb = ii.get('thumburl', '') or ii.get('url', '')
+                            if not thumb or not thumb.startswith('http'): continue
+                            sz_info = ii.get('size', 0)
+                            if sz_info and sz_info > 10*1024*1024: continue  # skip >10MB originals
+                            req2 = urllib.request.Request(thumb, headers={'User-Agent': 'ViralDNA/69.0'})
+                            with urllib.request.urlopen(req2, timeout=8) as dl:
+                                raw = dl.read()
+                            if len(raw) < 10000: continue
+                            with open(img_path, 'wb') as f:
+                                f.write(raw)
+                            im = Image.open(img_path).convert('RGB')
+                            arr = np.array(im)
+                            h_img, w_img = im.size[1], im.size[0]
+                            sz = os.path.getsize(img_path)
+                            if arr.std() < 15 or w_img < 400 or h_img < 300:
+                                os.remove(img_path); continue
+                            print(f"      [WikiCommons] Scene {i} saved ({sz//1024}KB, {w_img}x{h_img})")
+                            downloaded = True
+                            break
+                        except Exception:
+                            if os.path.exists(img_path):
+                                try: os.remove(img_path)
+                                except: pass
+                except Exception as e:
+                    print(f"      [WikiCommons] Scene {i} failed: {e}")
+
+            # Source 3: Unsplash (random from curated photo site — usually high quality)
             if not downloaded:
                 try:
                     print(f"    Assembler: [Unsplash] Fetching scene {i}...")
-                    # Add quality keywords to filter
                     quality_term = urllib.parse.quote((prompt[:80] if prompt else topic_title) + " professional photography")
                     url = f"https://source.unsplash.com/1280x720/?{quality_term}"
                     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -583,71 +665,46 @@ Script:
                 except Exception as e:
                     print(f"      ⚠️ [Pixabay] Scene {i} failed: {e}")
 
-            # Source 5: Craiyon
+            # Source 5: ComfyUI (LAST RESORT — generates AI illustrations, not real photos)
+            # Only used if all real-photo sources fail. Images are obviously AI-generated.
             if not downloaded:
                 try:
-                    print(f"    Assembler: [Craiyon] Generating scene {i}...")
-                    payload = json.dumps({
-                        "prompt": prompt[:200] if prompt else topic_title,
-                        "token": None, "model": "photo",
-                        "negative_prompt": "text, logo, watermark, writing"
-                    }).encode('utf-8')
-                    req = urllib.request.Request(
-                        "https://api.craiyon.com/v3", data=payload,
-                        headers={'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}
-                    )
-                    with urllib.request.urlopen(req, timeout=60) as resp:
-                        data = json.loads(resp.read())
-                    images = data.get("images", [])
-                    if images:
-                        import base64
-                        img_data = images[0]
-                        if isinstance(img_data, str) and img_data.startswith("data:image"):
-                            img_data = base64.b64decode(img_data.split(",", 1)[1])
-                        elif isinstance(img_data, str):
-                            img_data = base64.b64decode(img_data)
-                        with open(img_path, 'wb') as f:
-                            f.write(img_data)
-                        if os.path.exists(img_path) and os.path.getsize(img_path) > 5120 and _is_valid_image(img_path):
-                            quality = self._validate_image_quality(img_path)
-                            if quality["passed"]:
+                    from comfyui_image_generator import generate_scene_image, ensure_ready
+                    comfy_ready = ensure_ready()
+                    if comfy_ready:
+                        print(f"    Assembler: [ComfyUI-LAST-RESORT] Generating scene {i}...")
+                        comfy_out = img_path.replace(".jpg", ".png")
+                        result = generate_scene_image(
+                            scene_description=prompt[:200] if prompt else topic_title,
+                            output_path=comfy_out,
+                            width=1280, height=720
+                        )
+                        if result and os.path.exists(comfy_out):
+                            from PIL import Image as _IMG
+                            _im = _IMG.open(comfy_out).convert("RGB")
+                            _im.save(img_path, "JPEG", quality=92)
+                            os.remove(comfy_out)
+                            if os.path.exists(img_path) and os.path.getsize(img_path) > 5120:
                                 image_paths.append(img_path)
                                 downloaded = True
-                                print(f"      ✅ [Craiyon] Scene {i} — quality: {quality['score']:.0f}/100")
+                                print(f"      ⚠️ [ComfyUI-LAST-RESORT] Scene {i} saved ({os.path.getsize(img_path):,} bytes) — AI-generated, not real")
                             else:
-                                print(f"      ⚠️ [Craiyon] Rejected: {quality['reason']}")
-                                os.remove(img_path)
-                        else:
-                            if os.path.exists(img_path):
-                                os.remove(img_path)
+                                if os.path.exists(img_path):
+                                    os.remove(img_path)
+                        elif result and os.path.exists(img_path):
+                            if os.path.getsize(img_path) > 5120:
+                                image_paths.append(img_path)
+                                downloaded = True
+                                print(f"      ⚠️ [ComfyUI-LAST-RESORT] Scene {i} saved ({os.path.getsize(img_path):,} bytes) — AI-generated, not real")
+                    else:
+                        print(f"      ⚠️ [ComfyUI] Server not ready, skipping...")
+                except ImportError:
+                    pass
                 except Exception as e:
-                    print(f"      ⚠️ [Craiyon] Scene {i} failed: {e}")
+                    print(f"      ⚠️ [ComfyUI] Scene {i} failed: {e}")
 
-            # Source 6: Pollinations
-            if not downloaded:
-                try:
-                    print(f"    Assembler: [Pollinations] Fetching scene {i}...")
-                    encoded_prompt = urllib.parse.quote(prompt[:200] if prompt else topic_title)
-                    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1280&height=720&nologo=true&private=true&seed={i}"
-                    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-                    with urllib.request.urlopen(req, timeout=30) as resp:
-                        content = resp.read()
-                    if len(content) > 5120:
-                        with open(img_path, 'wb') as f:
-                            f.write(content)
-                        if _is_valid_image(img_path):
-                            quality = self._validate_image_quality(img_path)
-                            if quality["passed"]:
-                                image_paths.append(img_path)
-                                downloaded = True
-                                print(f"      ✅ [Pollinations] Scene {i} — quality: {quality['score']:.0f}/100")
-                            else:
-                                print(f"      ⚠️ [Pollinations] Rejected: {quality['reason']}")
-                                os.remove(img_path)
-                        else:
-                            os.remove(img_path)
-                except Exception as e:
-                    print(f"      ⚠️ [Pollinations] Scene {i} failed: {e}")
+            # Source 6: Craiyon (disabled — consistently returns 403)
+            # Source 7: Pollinations (disabled — returns news screenshots with text)
 
             if not downloaded:
                 print(f"      ❌ All image sources failed for scene {i}. Will use fallback background.")
@@ -754,6 +811,30 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             prompts = self.generate_image_prompts(script_text, num_scenes)
             slideshow_dir = os.path.join(runtime_dir, f"slideshow_{output_name.replace('.mp4', '')}")
             image_paths = self.download_scene_images(prompts, slideshow_dir, topic_title=script_text[:100])
+
+        if not image_paths:
+            # v52.1: Try local image pack before falling back to static background
+            print("    Assembler: API image sources failed, trying local image pack...")
+            try:
+                import importlib.util
+                lip_path = os.path.join(os.path.dirname(__file__), "local_image_pack.py")
+                spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
+                if spec and spec.loader:
+                    mod = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
+                    pack = mod.LocalImagePack()
+                local_images = pack.get_images(script_text or "", count=num_scenes, diversity=True)
+                if local_images:
+                    slideshow_dir = os.path.join(runtime_dir, f"slideshow_{output_name.replace('.mp4', '')}")
+                    os.makedirs(slideshow_dir, exist_ok=True)
+                    for i, src in enumerate(local_images):
+                        import shutil
+                        dest = os.path.join(slideshow_dir, f"scene_{i}.jpg")
+                        shutil.copy2(src, dest)
+                        image_paths.append(dest)
+                    print(f"    Assembler: ✓ Local pack: {len(image_paths)} images for slideshow")
+            except Exception:
+                pass
 
         if not image_paths:
             print(f"    Assembler: Falling back to static background loop ({visual_path}).")
