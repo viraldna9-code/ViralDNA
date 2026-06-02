@@ -80,6 +80,7 @@ from blog_companion import BlogCompanionGenerator
 from newsletter_generator import NewsletterGenerator
 from community_poster import CommunityPoster
 from forensic_audit import ForensicAudit, ForensicAuditError
+from pre_ship_check import PreShipCheck, PreShipCheckError
 from humanizer_engine import HumanizerEngine
 from visual_normalizer import normalize_visual
 from rag_feedback import RagFeedbackLoop
@@ -1315,6 +1316,25 @@ class ForensicAuditGateAgent(BaseAgent):
             state["forensic_audit_passed"] = True
             self.orchestrator.timer.stop("Phase 7: Forensic Audit", "7.15 Pre-Ship Audit")
             self.log("✅ FORENSIC AUDIT PASSED — All artifacts cleared for shipping")
+
+            # ── v75.1: PRE-SHIP CONTENT ACCURACY CHECK ──
+            # Runs AFTER forensic audit passes. Catches content accuracy issues
+            # that file-existence/silence checks cannot detect.
+            self.log("🔎 PRE-SHIP CHECK — Verifying content accuracy...")
+            self.orchestrator.timer.start("Phase 7: Pre-Ship Check", "7.16 Content Accuracy")
+            try:
+                pre_ship = PreShipCheck(config.DRIVE["BASE"])
+                pre_ship_report = pre_ship.run(state)
+                state["pre_ship_check_report"] = pre_ship_report
+                state["pre_ship_check_passed"] = True
+                self.orchestrator.timer.stop("Phase 7: Pre-Ship Check", "7.16 Content Accuracy")
+                self.log("✅ PRE-SHIP CHECK PASSED — Content accuracy verified")
+            except PreShipCheckError as e:
+                state["pre_ship_check_passed"] = False
+                state["pre_ship_check_error"] = str(e)
+                self.orchestrator.timer.fail("Phase 7: Pre-Ship Check", "7.16 Content Accuracy")
+                raise RuntimeError(f"PRE-SHIP CHECK HALT: {e}")
+
         except ForensicAuditError as e:
             state["forensic_audit_passed"] = False
             state["forensic_audit_error"] = str(e)
@@ -2544,11 +2564,11 @@ class MultiAgentOrchestrator:
                 print(f"\n✅ Topic accepted after {topic_idx + 1} attempt(s).")
                 break
             elif topic_failed:
-                # Check if this was a forensic audit failure — if so, HARD HALT immediately
-                # instead of trying other topics (they likely have the same content issues)
+                # Check if this was a forensic/pre-ship audit failure — HARD HALT
                 forensic_err = None
                 for err_msg in self.state.get("errors", []):
-                    if "FORENSIC AUDIT GATE HALT" in err_msg or "ForensicAuditError" in err_msg:
+                    if "FORENSIC AUDIT GATE HALT" in err_msg or "ForensicAuditError" in err_msg \
+                       or "PRE-SHIP CHECK HALT" in err_msg or "PreShipCheckError" in err_msg:
                         forensic_err = err_msg
                         break
                 if forensic_err:

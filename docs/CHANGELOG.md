@@ -4,6 +4,54 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v75.1] — 2026-06-02 — Pre-Ship Content Accuracy Check
+
+### Problem
+Forensic audit (v75.0) catches file existence, word count, silence, PII — but NOT
+content accuracy. VDNA120 state mismatch passed forensic because the script had
+correct word count and no PII. Title, audio-script alignment, image authenticity,
+and source freshness were unverified.
+
+### What changed
+
+#### New: `modules/pre_ship_check.py` — 5 content accuracy checks
+
+| # | Check | What it does | Critical? |
+|---|-------|-------------|-----------|
+| 1 | THUMBNAIL_TOPIC_MATCH | Thumbnail filesize >30KB, no cross-contamination from previous runs | Warning |
+| 2 | AUDIO_SCRIPT_ALIGNMENT | ffprobe duration vs word count heuristic (100-200 wpm for PrabhatNeural) | Warning |
+| 3 | REAL_PHOTOS | Detects AI-generated (comfyui_ prefix), placeholder images, 0% trusted news domains | Critical if ALL-AI |
+| 4 | TITLE_DESCRIPTION_ACCURACY | Cross-entity state disambiguation in title, generic title rejection, length 20-100 chars | Critical if STATE MISMATCH |
+| 5 | SOURCE_FRESHNESS | URL validity, score threshold >=10, topic age <48h | Warning (critical if no URL) |
+
+- Runs INSIDE `ForensicAuditGateAgent.execute()` — after forensic audit passes
+- Critical failures raise `PreShipCheckError` → caught as `RuntimeError("PRE-SHIP CHECK HALT")`
+- Pipeline execute loop catches halt → immediate `sys.exit(1)` + Telegram notification
+- Non-critical warnings → logged to `logs/pre_ship_check.log`
+
+#### Modified: `modules/run_multi_agent_pipeline.py`
+- `ForensicAuditGateAgent.execute()`: Added pre_ship_check run block after forensic audit pass
+- `execute_pipeline()`: Halt detection now catches `"PRE-SHIP CHECK HALT"` and `"PreShipCheckError"`
+  (previously only caught forensic audit halts)
+- Import: Added `from pre_ship_check import PreShipCheck, PreShipCheckError`
+
+### What this means
+```
+Old pipeline: Script → Audio → Video → Assembly → [Forensic: files exist?] → UPLOAD
+New pipeline: Script → Audio → Video → Assembly → [Forensic: files exist?]
+              → [PreShip: content accurate?] → UPLOAD
+```
+Two gates. Forensic = structural integrity. Pre-ship = content accuracy.
+
+### Test results
+17/17 unit tests passed:
+- Thumbnail: empty state, missing file, tiny file, valid file
+- Images: no images, all-AI, trusted-news, all-AI-sources
+- Title: state mismatch, correct state, generic title, too-short title
+- Source: no URL, no score, low score, old topic, fresh+good score
+
+---
+
 ## [v75.0] — 2026-06-02 — Forensic Audit State Accuracy + Image Quality Hard Gate
 
 ### Problem
