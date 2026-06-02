@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 IST = timezone(timedelta(hours=5, minutes=30))
-PROJECT_ROOT = Path(__file__).parent
+PROJECT_ROOT = Path(__file__).parent.parent  # scripts/ -> ViralDNA/
 
 # Load env
 from dotenv import load_dotenv
