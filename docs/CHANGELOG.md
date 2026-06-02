@@ -4,6 +4,41 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v75.0] — 2026-06-02 — Forensic Audit State Accuracy + Image Quality Hard Gate
+
+### Problem
+VDNA120 (Telangana farmers topic) had two systemic failures:
+1. **Wrong state**: Gemini wrote "Andhra Pradesh" for a Telangana story — no state disambiguation in prompt
+2. **Wrong images**: Serper returned Trump/Netanyahu/Jagan photos — no image relevance filter
+
+The forensic audit (`forensic_audit.py`) existed but only treated VIDEO/AUDIO failures as critical. State accuracy and image quality issues were silently ignored. The pipeline's error handler caught `ForensicAuditError` and just moved to the next topic.
+
+### Solution — 8 fixes across 3 files
+
+**script_generator.py:**
+- Added state disambiguation to Gemini prompt. Detects state from source context keywords (telangana/hyderabad/andhra/amaravati/etc.), passes detected state as CRITICAL RULE #3
+
+**video_assembler.py:**
+- Serper query builder now extracts state from topic_title, builds state-specific queries
+- Image relevance filter checks Serper title+source against topic keywords before accepting
+- Graphic/meme detection via Serper title keyword check
+
+**forensic_audit.py:**
+- `_audit_text()`: Added state accuracy check — detects expected state from topic metadata, verifies script mentions correct state
+- `_audit_images()`: Added scene image audit — min 3 images, detects tiny/placeholder (<15KB), detects duplicates (identical sizes)
+- `run_full_audit()`: STATE MISMATCH, STATE MISSING, and image quality failures now CRITICAL (raise `ForensicAuditError`)
+- Added `_log_warning()` for non-critical warnings → `logs/audit_warnings.log`
+
+**run_multi_agent_pipeline.py:**
+- Forensic audit failure now triggers immediate `sys.exit(1)` + Telegram notification instead of silently trying next topic
+
+### Result
+- Wrong state names → caught at Gemini prompt level AND forensic audit level (defense in depth)
+- Wrong images → caught at Serper query level AND image relevance filter AND forensic audit level
+- Forensic audit failures → hard halt with alert, no silent skipping
+
+---
+
 ## [v74.0] — 2026-06-02 — Channel-Growth Scoring Rewrite
 
 ### Problem
