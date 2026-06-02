@@ -677,3 +677,25 @@ The first pipeline run tonight (15:01 IST) failed at Phase 7 (Assembly) — ALL 
 - **No-delete policy**: Once videos are published to YouTube, NEVER delete them
 - **Upload ban (May 31 2026)**: Automatic YouTube uploads DISABLED until Jay explicitly reverses in writing
 - **Pipeline output**: Google Drive review folder for manual upload by Jay
+
+---
+
+## [72.1] — 2026-06-02 — FORENSIC AUDIT: 5 bugs found and fixed
+
+### What was broken
+1. **execute_topic.py called wrong entrypoint (CRITICAL)**: Called `run_local.py --mode X` which has NO `--topic-file` support and never loads `injected_topic.json`. Topic was written to disk but pipeline always ran normal discovery, ignoring the selected topic entirely.
+2. **daily_publish.py Telegram send used form-encode**: `send_telegram()` used `urllib.parse.urlencode` (form-encoded) while every other module uses JSON payload. Telegram may not parse `parse_mode: HTML` in form-encoded messages.
+3. **daily_publish.py hardcoded TELEGRAM_CHAT_ID**: Module-level hardcoded fallback `"8659664950"` instead of `os.environ.get()`. Worked by coincidence since `~/.env` had the same value.
+4. **execute_topic.py score_breakdown falsy check**: `topic.get("score_breakdown") or topic.get("breakdown", [])` — empty list `[]` is falsy, so fell through to stale `breakdown` with false positives.
+5. **monitor_cloud.py VIRAL_KEYWORDS substring match**: Used `if kw in t:` (substring) while all 4 other keyword lists use word boundary regex. "deadly" matched "dead", "terrorists" matched "terror", "arrested" matched "arrest".
+
+### What was fixed
+- **execute_topic.py**: Changed to call `run_pipeline_entrypoint.py --mode X --topic-file injected_topic.json` so topic injection actually works.
+- **daily_publish.py send_telegram()**: Changed to JSON payload with `Content-Type: application/json` header.
+- **daily_publish.py creds**: Changed to `os.environ.get()` with hardcoded fallback, consistent env-first pattern.
+- **execute_topic.py**: Changed to `sb if sb is not None else topic.get("breakdown", [])`.
+- **monitor_cloud.py**: Changed to `re.search(r'\b' + re.escape(kw) + r'\b', t)` for word boundary matching.
+
+### Impact
+- 10 existing topics had false-positive ViralKW scores from substring matches (e.g., "deadly"→"dead", "terrorists"→"terror"). Only affects new scoring going forward.
+- execute_topic.py injection now works end-to-end: alert → execute_topic.py → run_pipeline_entrypoint.py --topic-file → orchestrator.state["injected_topic"] → pipeline uses selected topic.
