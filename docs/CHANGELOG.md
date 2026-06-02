@@ -4,6 +4,30 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v75.2] — 2026-06-02 — Monitor Multi-Alert + Pending Review + GitHub Action Fix
+
+### Problem
+1. **Only 1 alert per monitor run**: If 4 topics scored >=20, only the top one got a Telegram alert. Others were invisible.
+2. **GitHub Action not persisting topics**: The `git diff --staged --quiet` check meant if topics_history.json hadn't changed from the repo's version, no commit happened. Local copy was always stale.
+3. **No pending review list**: Topics scoring >=20 during cooldown were lost — no way to see them without waiting for the next alert.
+
+### Fixes (monitor_cloud.py)
+- **Multi-alert**: Now sends alerts for ALL >=20 topics per run (up to daily cap of 3)
+- **Pending review accumulator**: All >=20 topics added to `pending_review` list in topics_history.json, marked with alert_sent status
+- **Better logging**: Each alert shows ✅/❌ with topic ID; summary shows total alerts sent
+
+### Fixes (.github/workflows/spipe-monitor.yml)
+- **Explicit push**: Changed from `git push \|\| true` (silent failure) to explicit `git push origin main`
+- **Unshallow fetch**: Added `git fetch --unshallow` before push to handle shallow clone issues
+- **Targeted commit**: Only committed `logs/topics_history.json` (not all of logs/)
+
+### Result
+- All PRODUCE topics now get Telegram alerts (not just #1)
+- topics_history.json is properly committed back to repo after each run
+- Full pending review list visible in topics_history.json with VDNA IDs
+
+---
+
 ## [v75.1] — 2026-06-02 — Pre-Ship Content Accuracy Check
 
 ### Problem

@@ -396,7 +396,7 @@ def load_topics_history():
     if os.path.exists(TOPICS_FILE):
         with open(TOPICS_FILE) as f:
             return json.load(f)
-    return {"topics": [], "last_alert": None}
+    return {"topics": [], "last_alert": None, "pending_review": []}
 
 
 def save_topics_history(history):
@@ -404,6 +404,31 @@ def save_topics_history(history):
     os.makedirs(TOPICS_DIR, exist_ok=True)
     with open(TOPICS_FILE, "w") as f:
         json.dump(history, f, indent=2)
+
+
+def update_pending_review(history, produce_topics, now_str):
+    """Add all >=20 topics to pending_review list.
+    Deduplicates by ID. Marks whether alert was sent or blocked by cooldown."""
+    pending = history.get("pending_review", [])
+    existing_ids = {p["id"] for p in pending}
+    for t in produce_topics:
+        if t["id"] not in existing_ids:
+            pending.append({
+                "id": t["id"],
+                "title": t["title"][:80],
+                "score": t["score"],
+                "source": t["source"],
+                "date": now_str,
+                "alert_sent": False,
+            })
+            existing_ids.add(t["id"])
+    # Mark topics that were just alerted as sent
+    alerted_ids = {t["id"] for t in produce_topics}
+    for p in pending:
+        if p["id"] in alerted_ids:
+            p["alert_sent"] = True
+    # Keep last 20 pending topics
+    history["pending_review"] = pending[-20:]
 
 
 def main():
@@ -531,7 +556,7 @@ def main():
     if not daily_cap_ok:
         print(f"\n  Daily cap reached: {daily_alert_count}/{max_daily_alerts} alerts today")
 
-    # ── Find best topic ──
+    # ── Find best topics ──
     # Threshold >= 20: need multiple strong signals (e.g. big name + AP/TS + viral keyword)
     # Typical scores: routine news = 0-9, interesting = 10-19, truly viral = 20-30
     produce_topics = [t for t in scored if t["score"] >= 20]
@@ -543,46 +568,60 @@ def main():
         marker = "PRODUCE" if t["score"] >= 20 else "low"
         print("  [" + marker + "] [" + str(t['score']).zfill(2) + "] " + t['title'][:60])
 
-    # Alert logic: ONLY alert on PRODUCE topics (>=20)
-    # No CONSIDER fallback — marginal topics don't deserve alerts
-    alert_topic = None
+    # ── Alert logic: alert on ALL produce topics (up to daily cap) ──
+    # Each alert consumes 1 daily cap slot. Max 3 alerts/day.
     if produce_topics and cooldown_passed and daily_cap_ok:
-        alert_topic = produce_topics[0]
-        print("\nPRODUCE: " + alert_topic['title'][:70])
+        alerts_sent = 0
+        max_alerts = min(len(produce_topics), max_daily_alerts - daily_alert_count)
+        for alert_topic in produce_topics[:max_alerts]:
+            score = alert_topic["score"]
+            title = alert_topic["title"]
+            source = alert_topic["source"]
+            topic_id = alert_topic.get("id", "VDNA???")
+            breakdown = " | ".join(alert_topic.get("breakdown", []))
 
-    if alert_topic:
-        score = alert_topic["score"]
-        title = alert_topic["title"]
-        source = alert_topic["source"]
-        topic_id = alert_topic.get("id", "VDNA???")
-        breakdown = " | ".join(alert_topic.get("breakdown", []))
+            alert_text = (
+                f"🎬 <b>ViralDNA — Topic Alert</b>\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"📅 {now_str}\n"
+                f"🆔 Topic ID: <b>{topic_id}</b>\n"
+                f"📊 Score: <b>{score}/30</b> (PRODUCE)\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+                f"📰 <b>{title[:100]}</b>\n"
+                f"📡 {source}\n"
+                f"🔍 {breakdown}\n\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"💻 Open laptop → Hermes chat → type:\n"
+                f"   <b>{topic_id} Post</b>\n"
+                f"❌ Not interested? Ignore.\n"
+                f"⏰ Next check in 30 min."
+            )
 
-        rec = "PRODUCE"
+            sent = send_telegram(alert_text)
+            if sent:
+                alerts_sent += 1
+                print(f"\n✅ Alert sent: {topic_id} ({title[:50]})")
+            else:
+                print(f"\n❌ Alert failed: {topic_id} ({title[:50]})")
 
-        alert_text = (
-            f"🎬 <b>ViralDNA — Topic Alert</b>\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"📅 {now_str}\n"
-            f"🆔 Topic ID: <b>{topic_id}</b>\n"
-            f"📊 Score: <b>{score}/30</b> ({rec})\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"📰 <b>{title[:100]}</b>\n"
-            f"📡 {source}\n"
-            f"🔍 {breakdown}\n\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"💻 Open laptop → Hermes chat → type:\n"
-            f"   <b>{topic_id} Post</b>\n"
-            f"❌ Not interested? Ignore.\n"
-            f"⏰ Next check in 30 min."
-        )
-
-        sent = send_telegram(alert_text)
-        print(f"\nTelegram alert sent: {sent}")
-
-        if sent:
+        if alerts_sent > 0:
             history["last_alert"] = now.isoformat()
-            history["daily_alert_count"] = daily_alert_count + 1
+            history["daily_alert_count"] = daily_alert_count + alerts_sent
             history["daily_alert_date"] = daily_alert_date
+            print(f"\nTotal alerts sent this run: {alerts_sent}")
+    else:
+        if not cooldown_passed:
+            print("\nNo alert sent: cooldown active")
+        elif not daily_cap_ok:
+            print("\nNo alert sent: daily cap reached")
+        elif not produce_topics:
+            print("\nNo alert sent: no topics >= 20")
+
+    # ── Update pending review list ──
+    if produce_topics:
+        update_pending_review(history, produce_topics, now_str)
+        pending_count = len(history.get("pending_review", []))
+        print(f"\n📋 Pending review list: {pending_count} topic(s)")
 
     # ── Merge topics into history (persistent) ──
     # Build map of existing topics by normalized title
@@ -612,9 +651,6 @@ def main():
     history["topics"] = all_topics
     history["last_run"] = now.isoformat()
     save_topics_history(history)
-
-    if not alert_topic:
-        print("\nNo alert sent (cooldown or no good topics)")
 
     print(f"\nDone. Next run in 30 min.")
 
