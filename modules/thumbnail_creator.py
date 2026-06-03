@@ -238,6 +238,117 @@ class ThumbnailCreator:
         # 4. LAST RESORT: solid color (should almost never reach this)
         return None
 
+    def _load_background_images(self, runtime_dir: str, slideshow_dir: str = None,
+                                   topic_text: str = None, count: int = 4) -> list:
+        """
+        Load MULTIPLE background images for variant diversity.
+        Returns a list of PIL Images (up to `count`).
+        v81.0: Each thumbnail variant gets a different background.
+        """
+        results = []
+        seen_hashes = set()
+
+        def _add_image(img):
+            if img and len(results) < count:
+                # Simple dedup: compare resized thumb hashes
+                try:
+                    thumb = img.resize((64, 36), Image.LANCZOS).convert("L")
+                    h = hashlib.md5(thumb.tobytes()).hexdigest()
+                    if h not in seen_hashes:
+                        seen_hashes.add(h)
+                        results.append(img)
+                except Exception:
+                    results.append(img)
+
+        # 1. Check slideshow dir — prefer scene_img_* (real photos) over scene_*
+        if runtime_dir and os.path.isdir(runtime_dir):
+            if slideshow_dir and os.path.isdir(slideshow_dir):
+                all_files = os.listdir(slideshow_dir)
+                serper_files = sorted(
+                    [f for f in all_files if f.startswith("scene_img_") and f.endswith((".jpg", ".png"))],
+                    reverse=True
+                )
+                pack_files = sorted(
+                    [f for f in all_files if f.startswith("scene_") and not f.startswith("scene_img_") and f.endswith((".jpg", ".png"))],
+                    reverse=True
+                )
+                for fname in serper_files + pack_files:
+                    fpath = os.path.join(slideshow_dir, fname)
+                    img = self._try_load_image(fpath)
+                    if img:
+                        try:
+                            from PIL import Image as PILImage
+                            from PIL.ExifTags import TAGS as EXIF_TAGS
+                            im = PILImage.open(fpath)
+                            exif = im.getexif()
+                            if exif:
+                                for tid, val in exif.items():
+                                    tag = EXIF_TAGS.get(tid, tid)
+                                    if tag in ("Copyright", "Artist", "ImageDescription"):
+                                        val_lower = str(val).lower()
+                                        _bad = ["hindustan times", "getty", "shutterstock", "dreamstime", "alamy", "reuters", "afp"]
+                                        if any(b in val_lower for b in _bad):
+                                            img = None
+                                            break
+                        except Exception:
+                            pass
+                    _add_image(img)
+                    if len(results) >= count:
+                        return results
+
+            # 2. Check runtime viz_news images
+            if runtime_dir and os.path.isdir(runtime_dir):
+                candidates = sorted(
+                    [f for f in os.listdir(runtime_dir) if f.startswith("viz_news_") and f.endswith(".jpg")],
+                    reverse=True
+                )
+                for fname in candidates:
+                    fpath = os.path.join(runtime_dir, fname)
+                    img = self._try_load_image(fpath)
+                    if img:
+                        try:
+                            from PIL import Image as PILImage
+                            from PIL.ExifTags import TAGS as EXIF_TAGS
+                            im = PILImage.open(fpath)
+                            exif = im.getexif()
+                            if exif:
+                                for tid, val in exif.items():
+                                    tag = EXIF_TAGS.get(tid, tid)
+                                    if tag in ("Copyright", "Artist", "ImageDescription"):
+                                        val_lower = str(val).lower()
+                                        _bad = ["hindustan times", "getty", "shutterstock", "dreamstime", "alamy", "reuters", "afp"]
+                                        if any(b in val_lower for b in _bad):
+                                            img = None
+                                            break
+                        except Exception:
+                            pass
+                    _add_image(img)
+                    if len(results) >= count:
+                        return results
+
+        # 3. FALLBACK: Local Image Pack
+        if topic_text and len(results) < count:
+            try:
+                import importlib.util
+                lip_path = os.path.join(os.path.dirname(__file__), "local_image_pack.py")
+                spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
+                if spec and spec.loader:
+                    mod = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
+                    pack = mod.LocalImagePack()
+                    images = pack.get_images(topic_text, count=count * 2)
+                    if images:
+                        images.sort(key=lambda p: os.path.getsize(p), reverse=True)
+                        for ipath in images:
+                            img = self._try_load_image(ipath)
+                            _add_image(img)
+                            if len(results) >= count:
+                                break
+            except Exception as e:
+                print(f"  Thumbnail local image pack fallback failed: {e}")
+
+        return results
+
     def _try_load_image(self, fpath: str) -> Image.Image | None:
         try:
             img = Image.open(fpath)
@@ -321,10 +432,11 @@ class ThumbnailCreator:
                     slideshow_dir = candidate
                     break
         topic_text = topic.get("title", "") if topic else ""
-        bg_img = self._load_background_image(runtime_dir, slideshow_dir=slideshow_dir,
-                                              topic_text=topic_text)
-        if bg_img:
-            img = self._center_crop(bg_img, W, H).convert("RGBA").resize((W, H), Image.LANCZOS)
+        # v81.0: Load MULTIPLE background images for variant diversity
+        bg_images = self._load_background_images(runtime_dir, slideshow_dir=slideshow_dir,
+                                                  topic_text=topic_text, count=4)
+        if bg_images:
+            img = self._center_crop(bg_images[0], W, H).convert("RGBA").resize((W, H), Image.LANCZOS)
         else:
             img = Image.new("RGBA", (W, H), (15, 15, 30, 255))
 
@@ -347,7 +459,15 @@ class ThumbnailCreator:
         result = {"path": branded_path, "clean_path": clean_path, "variants": []}
 
         for v_idx, title_text in enumerate(variant_titles):
-            variant_img = img.copy()
+            # v81.0: Use a DIFFERENT background image for each variant
+            if bg_images and v_idx < len(bg_images):
+                variant_base = self._center_crop(bg_images[v_idx], W, H).convert("RGBA").resize((W, H), Image.LANCZOS)
+            elif bg_images:
+                variant_base = self._center_crop(bg_images[v_idx % len(bg_images)], W, H).convert("RGBA").resize((W, H), Image.LANCZOS)
+            else:
+                variant_base = img.copy()
+            variant_gradient = self._create_gradient_overlay(W, H)
+            variant_img = Image.alpha_composite(variant_base, variant_gradient)
             draw = ImageDraw.Draw(variant_img)
 
             # ── A4.8: Category-specific accent bar ──
@@ -456,10 +576,12 @@ class ThumbnailCreator:
                     print(f"  ⚠️ Logo watermark error: {e}")
 
             # Save variant thumbnail
+            # v81.0: Only save branded_path for v_idx==0, variants start at v1
             if v_idx == 0:
                 img_branded.save(branded_path, "JPEG", quality=92)
                 result["path"] = branded_path
 
+            # Always save numbered variant (v1, v2, v3...)
             variant_path = os.path.join(thumb_output_dir, f"{sk}_branded_v{v_idx + 1}.jpg")
             img_branded.save(variant_path, "JPEG", quality=92)
             result["variants"].append({"path": variant_path, "title": title_text, "index": v_idx + 1})

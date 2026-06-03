@@ -570,7 +570,42 @@ Script:
                     pass
             downloaded = False
 
-            # Source 1: Serper Image Search (real news photos — PRIMARY)
+            # Source 0: Indian News RSS Feeds (real news photos — PRIMARY, no API key needed)
+            # v81.0: Fetches from The Hindu, NDTV, Indian Express, Deccan Chronicle RSS feeds
+            # These provide REAL news photos with direct image URLs (no redirects)
+            if not downloaded and topic_title:
+                try:
+                    from modules.news_image_fetcher import fetch_news_images
+                    print(f"    Assembler: [NewsRSS] Fetching real news photos for scene {i}...")
+                    # Fetch one image per scene (already deduped via used_image_hashes)
+                    rss_results = fetch_news_images(topic_title, count=1,
+                                                     used_hashes=used_image_hashes)
+                    if rss_results:
+                        result = rss_results[0]
+                        img_data = result["data"]
+                        with open(img_path, 'wb') as _f:
+                            _f.write(img_data)
+                        if os.path.exists(img_path) and os.path.getsize(img_path) > 5120:
+                            # Validate quality
+                            quality = self._validate_image_quality(img_path)
+                            if quality["passed"]:
+                                used_image_hashes.add(result["hash"])
+                                image_paths.append(img_path)
+                                downloaded = True
+                                print(f"      ✅ [NewsRSS] Scene {i} — {result['source']} | "
+                                      f"{result['title'][:50]} | {result['size']//1024}KB")
+                            else:
+                                print(f"      ⚠️ [NewsRSS] Rejected: {quality['reason']}")
+                                os.remove(img_path)
+                        else:
+                            if os.path.exists(img_path):
+                                os.remove(img_path)
+                except ImportError:
+                    pass
+                except Exception as e:
+                    print(f"      ⚠️ [NewsRSS] Scene {i} failed: {e}")
+
+            # Source 1: Serper Image Search (real news photos — SECONDARY)
             # Try up to 10 results before giving up
             if not downloaded:
                 try:

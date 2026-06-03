@@ -576,7 +576,31 @@ class VisualFetcher:
         """
         topic_title = topic.get("title", "")
 
-        # Strategy 1: Serper (real news photos — PRIMARY)
+        # Strategy 0: Indian News RSS Feeds (real news photos — PRIMARY, no API key)
+        # v81.0: Fetches from The Hindu, NDTV, Indian Express, Deccan Chronicle RSS
+        try:
+            from modules.news_image_fetcher import fetch_news_images
+            rss_results = fetch_news_images(topic_title, count=3,
+                                             used_hashes=self._used_image_hashes)
+            if rss_results:
+                rss_paths = []
+                for r in rss_results:
+                    save_path = os.path.join(config.DRIVE["RUNTIME"],
+                                             f"viz_news_{len(rss_paths)}.jpg")
+                    with open(save_path, 'wb') as _f:
+                        _f.write(r["data"])
+                    if os.path.exists(save_path) and os.path.getsize(save_path) > 5120:
+                        rss_paths.append(save_path)
+                        self._used_image_hashes.add(r["hash"])
+                if rss_paths:
+                    print(f"  VisualFetcher: Using {len(rss_paths)} News RSS images.")
+                    return rss_paths
+        except ImportError:
+            pass
+        except Exception as e:
+            print(f"  News RSS failed: {e}")
+
+        # Strategy 1: Serper (real news photos — SECONDARY)
         url = "https://google.serper.dev/images"
         search_q = f"{topic_title} news photo"
         payload = {"q": search_q, "num": 10}
