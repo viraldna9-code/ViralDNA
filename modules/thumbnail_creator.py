@@ -144,28 +144,78 @@ class ThumbnailCreator:
 
     # ── Background loading (unchanged logic) ──
 
-    def _load_background_image(self, runtime_dir: str, slideshow_dir: str = None) -> Image.Image | None:
-        if not runtime_dir or not os.path.isdir(runtime_dir):
-            return None
-        if slideshow_dir and os.path.isdir(slideshow_dir):
+    def _load_background_image(self, runtime_dir: str, slideshow_dir: str = None,
+                                  topic_text: str = None) -> Image.Image | None:
+        # 1. Check slideshow dir — prefer scene_img_* (Serper/real photos) over scene_* (image_pack fallback)
+        if runtime_dir and os.path.isdir(runtime_dir):
+            if slideshow_dir and os.path.isdir(slideshow_dir):
+                # Prefer Serper-fetched images (scene_img_*) over pre-generated pack (scene_*)
+                all_files = os.listdir(slideshow_dir)
+                serper_files = sorted(
+                    [f for f in all_files if f.startswith("scene_img_") and f.endswith((".jpg", ".png"))],
+                    reverse=True
+                )
+                pack_files = sorted(
+                    [f for f in all_files if f.startswith("scene_") and not f.startswith("scene_img_") and f.endswith((".jpg", ".png"))],
+                    reverse=True
+                )
+                # Try Serper images first, then pack images
+                for fname in serper_files + pack_files:
+                    fpath = os.path.join(slideshow_dir, fname)
+                    img = self._try_load_image(fpath)
+                    if img:
+                        # v75.3: Reject watermarked stock photos in thumbnail
+                        try:
+                            from PIL import Image as PILImage
+                            from PIL.ExifTags import TAGS as EXIF_TAGS
+                            im = PILImage.open(fpath)
+                            exif = im.getexif()
+                            if exif:
+                                for tid, val in exif.items():
+                                    tag = EXIF_TAGS.get(tid, tid)
+                                    if tag in ("Copyright", "Artist", "ImageDescription"):
+                                        val_lower = str(val).lower()
+                                        _bad = ["hindustan times", "getty", "shutterstock", "dreamstime", "alamy", "reuters", "afp"]
+                                        if any(b in val_lower for b in _bad):
+                                            print(f"  Thumbnail: REJECTED {fname} (copyright: {val[:60]})")
+                                            img = None
+                                            break
+                        except Exception:
+                            pass
+                        if img:
+                            return img
+            # 2. Check runtime viz_news images
             candidates = sorted(
-                [f for f in os.listdir(slideshow_dir) if f.endswith((".jpg", ".png"))],
+                [f for f in os.listdir(runtime_dir) if f.startswith("viz_news_") and f.endswith(".jpg")],
                 reverse=True
             )
             for fname in candidates:
-                fpath = os.path.join(slideshow_dir, fname)
+                fpath = os.path.join(runtime_dir, fname)
                 img = self._try_load_image(fpath)
                 if img:
                     return img
-        candidates = sorted(
-            [f for f in os.listdir(runtime_dir) if f.startswith("viz_news_") and f.endswith(".jpg")],
-            reverse=True
-        )
-        for fname in candidates:
-            fpath = os.path.join(runtime_dir, fname)
-            img = self._try_load_image(fpath)
-            if img:
-                return img
+
+        # 3. FALLBACK: Local Image Pack (v52.1 — prevents solid-color thumbnails)
+        if topic_text:
+            try:
+                import importlib.util
+                lip_path = os.path.join(os.path.dirname(__file__), "local_image_pack.py")
+                spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
+                if spec and spec.loader:
+                    mod = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
+                    pack = mod.LocalImagePack()
+                    images = pack.get_images(topic_text, count=5)
+                    if images:
+                        # Pick the largest image (best quality)
+                        images.sort(key=lambda p: os.path.getsize(p), reverse=True)
+                        img = self._try_load_image(images[0])
+                        if img:
+                            return img
+            except Exception as e:
+                print(f"  ⚠️ Thumbnail local image pack fallback failed: {e}")
+
+        # 4. LAST RESORT: solid color (should almost never reach this)
         return None
 
     def _try_load_image(self, fpath: str) -> Image.Image | None:
@@ -250,7 +300,9 @@ class ThumbnailCreator:
                 if os.path.isdir(candidate):
                     slideshow_dir = candidate
                     break
-        bg_img = self._load_background_image(runtime_dir, slideshow_dir=slideshow_dir)
+        topic_text = topic.get("title", "") if topic else ""
+        bg_img = self._load_background_image(runtime_dir, slideshow_dir=slideshow_dir,
+                                              topic_text=topic_text)
         if bg_img:
             img = self._center_crop(bg_img, W, H).convert("RGBA").resize((W, H), Image.LANCZOS)
         else:

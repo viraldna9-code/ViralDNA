@@ -472,6 +472,50 @@ Script:
     def download_scene_images(self, prompts, output_dir, topic_title=""):
         image_paths = []
         os.makedirs(output_dir, exist_ok=True)
+        used_image_hashes = set()  # prevent duplicate images across scenes
+
+        # Known stock photo / watermark domains and copyright strings to reject
+        REJECT_DOMAINS = {
+            "gettyimages", "shutterstock", "dreamstime", "alamy", "istockphoto",
+            "stock.adobe", "bigstock", "depositphotos", "123rf", "pond5",
+            "canstockphoto", "fotolia", "featurepics", "photodune",
+        }
+        REJECT_COPYRIGHT = {
+            "hindustan times", "getty images", "shutterstock", "dreamstime",
+            "alamy", "istock", "adobe stock", "bigstock", "depositphotos",
+            "reuters", "afp", "ani",  # news agency watermarks cause strikes
+        }
+
+        def _is_watermarked_stock(img_path, img_url="", img_title="", img_source=""):
+            """Reject stock photos with watermarks/copyright that cause channel strikes."""
+            # Check URL domain
+            from urllib.parse import urlparse
+            domain = urlparse(img_url).netloc.lower()
+            for rd in REJECT_DOMAINS:
+                if rd in domain:
+                    return True, f"stock domain: {rd}"
+            # Check EXIF copyright
+            try:
+                from PIL import Image as PILImage
+                from PIL.ExifTags import TAGS as EXIF_TAGS
+                im = PILImage.open(img_path)
+                exif = im.getexif()
+                if exif:
+                    for tid, val in exif.items():
+                        tag = EXIF_TAGS.get(tid, tid)
+                        if tag in ("Copyright", "Artist", "ImageDescription"):
+                            val_lower = str(val).lower()
+                            for rc in REJECT_COPYRIGHT:
+                                if rc in val_lower:
+                                    return True, f"copyright: {rc}"
+            except Exception:
+                pass
+            # Check title/source text
+            meta_text = (img_title + " " + img_source).lower()
+            for rc in REJECT_COPYRIGHT:
+                if rc in meta_text:
+                    return True, f"meta: {rc}"
+            return False, ""
 
         def _is_valid_image(path):
             try:
@@ -604,6 +648,31 @@ Script:
                                                     print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED wrong state (title: {img_title[:60]}...)")
                                                     continue
 
+                                    # v75.3: Person-name verification
+                                    # If topic has specific person names, the image MUST contain them
+                                    # Extract capitalized proper nouns from topic_title as person name candidates
+                                    import re as _re
+                                    _skip_words = {"and", "the", "with", "for", "from", "new", "old", "big", "small",
+                                                   "meets", "visit", "talks", "meeting", "after", "over", "under",
+                                                   "then", "now", "today", "yesterday", "first", "last", "next",
+                                                   "more", "most", "some", "all", "any", "each", "every", "both",
+                                                   "india", "indian", "delhi", "news", "minister", "chief", "leader",
+                                                   "president", "bjp", "congress", "tdp", "ysrcp", "mla", "mp",
+                                                   "pm", "cm", "govt", "government", "state", "central", "party"}
+                                    _topic_title_raw = topic_title or ""
+                                    _proper_nouns = []
+                                    for _w in _re.findall(r'\b[A-Z][a-z]{2,}\b', _topic_title_raw):
+                                        if _w.lower() not in _skip_words:
+                                            _proper_nouns.append(_w.lower())
+                                    # If the topic has a person name (like "Annamalai", "Naidu", "Reddy"),
+                                    # reject images whose title doesn't include ANY of those names
+                                    if _proper_nouns:
+                                        _img_title_lower = img_title.lower()
+                                        _any_name_found = any(_pn in _img_title_lower for _pn in _proper_nouns)
+                                        if not _any_name_found:
+                                            print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED person missing (expected: {_proper_nouns[:3]}, title: {img_title[:60]}...)")
+                                            continue
+
                                     req2 = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
                                     with urllib.request.urlopen(req2, timeout=10) as dl:
                                         raw = dl.read()
@@ -626,6 +695,30 @@ Script:
                                     edges = cv2.Canny(gray, 50, 150)
                                     edge_density = np.count_nonzero(edges) / (w_img * h_img)
                                     if edge_density > 0.50: os.remove(img_path); continue
+
+                                    # v75.3: Reject watermarked stock photos (channel strike risk)
+                                    is_stock, stock_reason = _is_watermarked_stock(
+                                        img_path, img_url=url,
+                                        img_title=img_info.get("title", ""),
+                                        img_source=img_info.get("source", "")
+                                    )
+                                    if is_stock:
+                                        print(f"      [Serper-Img] Scene {i} REJECTED stock/watermark: {stock_reason}")
+                                        try: os.remove(img_path)
+                                        except: pass
+                                        continue
+
+                                    # v75.3: Reject duplicate images within same run
+                                    import hashlib
+                                    with open(img_path, 'rb') as _hf:
+                                        _h = hashlib.md5(_hf.read()).hexdigest()
+                                    if _h in used_image_hashes:
+                                        print(f"      [Serper-Img] Scene {i} REJECTED duplicate (hash {_h[:12]})")
+                                        try: os.remove(img_path)
+                                        except: pass
+                                        continue
+                                    used_image_hashes.add(_h)
+
                                     print(f"      [Serper-Img] Scene {i} saved ({sz//1024}KB, {w_img}x{h_img}, std={color_std:.1f}, edges={edge_density:.2f})")
                                     image_paths.append(img_path)
                                     downloaded = True
@@ -670,6 +763,24 @@ Script:
                             sz = os.path.getsize(img_path)
                             if arr.std() < 15 or w_img < 400 or h_img < 300:
                                 os.remove(img_path); continue
+                            # v75.3: Reject watermarked stock photos
+                            is_stock, stock_reason = _is_watermarked_stock(
+                                img_path, img_url=thumb)
+                            if is_stock:
+                                print(f"      [WikiCommons] Scene {i} REJECTED: {stock_reason}")
+                                try: os.remove(img_path)
+                                except: pass
+                                continue
+                            # v75.3: Reject duplicates
+                            import hashlib
+                            with open(img_path, 'rb') as _hf:
+                                _h = hashlib.md5(_hf.read()).hexdigest()
+                            if _h in used_image_hashes:
+                                print(f"      [WikiCommons] Scene {i} REJECTED duplicate")
+                                try: os.remove(img_path)
+                                except: pass
+                                continue
+                            used_image_hashes.add(_h)
                             print(f"      [WikiCommons] Scene {i} saved ({sz//1024}KB, {w_img}x{h_img})")
                             downloaded = True
                             break
@@ -695,9 +806,27 @@ Script:
                         if _is_valid_image(img_path):
                             quality = self._validate_image_quality(img_path)
                             if quality["passed"]:
-                                image_paths.append(img_path)
-                                downloaded = True
-                                print(f"      ✅ [Unsplash] Scene {i} — quality: {quality['score']:.0f}/100")
+                                # v75.3: Reject watermarked stock photos
+                                is_stock, stock_reason = _is_watermarked_stock(
+                                    img_path, img_url=url)
+                                if is_stock:
+                                    print(f"      [Unsplash] Scene {i} REJECTED: {stock_reason}")
+                                    try: os.remove(img_path)
+                                    except: pass
+                                else:
+                                    # v75.3: Reject duplicates
+                                    import hashlib
+                                    with open(img_path, 'rb') as _hf:
+                                        _h = hashlib.md5(_hf.read()).hexdigest()
+                                    if _h in used_image_hashes:
+                                        print(f"      [Unsplash] Scene {i} REJECTED duplicate")
+                                        try: os.remove(img_path)
+                                        except: pass
+                                    else:
+                                        used_image_hashes.add(_h)
+                                        image_paths.append(img_path)
+                                        downloaded = True
+                                        print(f"      ✅ [Unsplash] Scene {i} — quality: {quality['score']:.0f}/100")
                             else:
                                 print(f"      ⚠️ [Unsplash] Rejected: {quality['reason']}")
                                 os.remove(img_path)
@@ -725,9 +854,27 @@ Script:
                                 if os.path.exists(img_path) and os.path.getsize(img_path) > 5120 and _is_valid_image(img_path):
                                     quality = self._validate_image_quality(img_path)
                                     if quality["passed"]:
-                                        image_paths.append(img_path)
-                                        downloaded = True
-                                        print(f"      ✅ [Pexels] Scene {i} — quality: {quality['score']:.0f}/100")
+                                        # v75.3: Reject watermarked stock photos
+                                        is_stock, stock_reason = _is_watermarked_stock(
+                                            img_path, img_url=img_url)
+                                        if is_stock:
+                                            print(f"      [Pexels] Scene {i} REJECTED: {stock_reason}")
+                                            try: os.remove(img_path)
+                                            except: pass
+                                        else:
+                                            # v75.3: Reject duplicates
+                                            import hashlib
+                                            with open(img_path, 'rb') as _hf:
+                                                _h = hashlib.md5(_hf.read()).hexdigest()
+                                            if _h in used_image_hashes:
+                                                print(f"      [Pexels] Scene {i} REJECTED duplicate")
+                                                try: os.remove(img_path)
+                                                except: pass
+                                            else:
+                                                used_image_hashes.add(_h)
+                                                image_paths.append(img_path)
+                                                downloaded = True
+                                                print(f"      ✅ [Pexels] Scene {i} — quality: {quality['score']:.0f}/100")
                                     else:
                                         print(f"      ⚠️ [Pexels] Rejected: {quality['reason']}")
                                         os.remove(img_path)
@@ -756,9 +903,27 @@ Script:
                                 if os.path.exists(img_path) and os.path.getsize(img_path) > 5120 and _is_valid_image(img_path):
                                     quality = self._validate_image_quality(img_path)
                                     if quality["passed"]:
-                                        image_paths.append(img_path)
-                                        downloaded = True
-                                        print(f"      ✅ [Pixabay] Scene {i} — quality: {quality['score']:.0f}/100")
+                                        # v75.3: Reject watermarked stock photos
+                                        is_stock, stock_reason = _is_watermarked_stock(
+                                            img_path, img_url=img_url)
+                                        if is_stock:
+                                            print(f"      [Pixabay] Scene {i} REJECTED: {stock_reason}")
+                                            try: os.remove(img_path)
+                                            except: pass
+                                        else:
+                                            # v75.3: Reject duplicates
+                                            import hashlib
+                                            with open(img_path, 'rb') as _hf:
+                                                _h = hashlib.md5(_hf.read()).hexdigest()
+                                            if _h in used_image_hashes:
+                                                print(f"      [Pixabay] Scene {i} REJECTED duplicate")
+                                                try: os.remove(img_path)
+                                                except: pass
+                                            else:
+                                                used_image_hashes.add(_h)
+                                                image_paths.append(img_path)
+                                                downloaded = True
+                                                print(f"      ✅ [Pixabay] Scene {i} — quality: {quality['score']:.0f}/100")
                                     else:
                                         print(f"      ⚠️ [Pixabay] Rejected: {quality['reason']}")
                                         os.remove(img_path)

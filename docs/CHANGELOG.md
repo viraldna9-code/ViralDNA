@@ -4,6 +4,38 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v75.3] — 2026-06-03 — Image Pipeline Overhaul: Watermark Rejection + Person Verification + Dedup
+
+### Problem (VDNA121 quality failures)
+1. **Watermarked stock photos in video**: NDTV/Hindustan Times watermarked photos used in main video and shorts → copyright strike risk
+2. **Wrong person in shorts**: short_1 had "Amit Shah + Modi (2019)" photo instead of Annamalai
+3. **Same image reused across shorts**: short_1 and short_2 used identical photo
+4. **"Same old thumbnail"**: Serper returning same generic Amit Shah photo every run
+5. **Manifest not on Drive**: Drive copy ordering put large videos first, consuming API quota before manifest
+
+### Root Causes
+- Serper "Amit Shah" query returns ANY Amit Shah photo (including 2019 Modi-Shah handshake with HT watermark)
+- Image relevance check only required 1 keyword overlap ("bjp"/"amit"/"shah" matched) — too loose
+- No person-name verification: "Annamalai" in topic ≠ "Annamalai" in image title
+- No EXIF metadata check for copyright/watermark strings
+- No deduplication across scenes within a run
+- Drive copy had no priority ordering (large videos consumed quota first)
+
+### Fixes (video_assembler.py)
+- **Watermark/stock rejection**: `_is_watermarked_stock()` checks EXIF Copyright/Artist, URL domains (gettyimages, shutterstock, dreamstime, alamy, etc.), and title text for stock photo indicators
+- **Person-name verification**: Extracts proper nouns from topic_title; requires them in image title. "Annamalai meets Amit Shah" → rejects images without "Annamalai"
+- **Duplicate detection**: `used_image_hashes` set tracks MD5 of all downloaded images; rejects duplicates within a run
+- Applied to ALL image sources: Serper, Wikimedia, Unsplash, Pexels, Pixabay
+
+### Fixes (thumbnail_creator.py)
+- **Prefer Serper images**: `scene_img_*` (Serper) sorted before `scene_*` (image_pack fallback)
+- **Watermark check in thumbnail**: EXIF copyright check on thumbnail background image
+
+### Fixes (run_multi_agent_pipeline.py)
+- **Drive copy priority**: Manifest copied first (small), then JSON/text, then video files
+- **Retry failed uploads**: 60s cooldown then retry with higher retry counts
+- **Keep manifest on failure**: Won't delete manifest if uploads fail (for debugging)
+
 ## [v75.2] — 2026-06-02 — Monitor Multi-Alert + Pending Review + GitHub Action Fix
 
 ### Problem

@@ -1254,7 +1254,20 @@ class ResilientUploaderAgent(BaseAgent):
         files_to_copy.append(manifest_path)
 
         # Copy each file via rclone (with delay to avoid Drive API quota)
+        # v75.3: Copy manifest FIRST (small file) before large videos consume quota
+        # Sort: manifest first, then smaller files, then large video files
+        def _copy_priority(fpath):
+            fname = os.path.basename(fpath)
+            if "_manifest_" in fname:
+                return 0  # highest priority
+            if fname.endswith(".json") or fname.endswith(".txt"):
+                return 1
+            sz = os.path.getsize(fpath) if os.path.exists(fpath) else 0
+            return 2 + sz  # larger files later
+        files_to_copy.sort(key=_copy_priority)
+
         print(f"  [DriveCopy] Copying {len(files_to_copy)} files to {gdrive_dest}/")
+        failed_files = []
         for idx, fpath in enumerate(files_to_copy):
             fname = os.path.basename(fpath)
             if idx > 0:
@@ -1270,14 +1283,39 @@ class ResilientUploaderAgent(BaseAgent):
                 if result.returncode == 0:
                     print(f"  [DriveCopy] OK: {fname}")
                 else:
-                    print(f"  [DriveCopy] FAILED: {fname}")
+                    print(f"  [DriveCopy] FAILED: {fname} (rc={result.returncode})")
                     print(f"    stderr: {result.stderr[:300]}")
+                    failed_files.append((idx, fpath, fname))
             except Exception as e:
                 print(f"  [DriveCopy] EXCEPTION copying {fname}: {e}")
+                failed_files.append((idx, fpath, fname))
 
-        # Cleanup manifest
+        # v75.3: Retry failed files once after a longer delay
+        if failed_files:
+            print(f"  [DriveCopy] Retrying {len(failed_files)} failed files after 60s cooldown...")
+            _tm.sleep(60)
+            for idx, fpath, fname in failed_files:
+                try:
+                    result = _sp.run(
+                        ["rclone", "copyto", fpath, f"{gdrive_dest}/{fname}",
+                         "--transfers", "1", "--checkers", "2",
+                         "--low-level-retries", "10", "--retries", "5",
+                         "-v", "--stats", "10s"],
+                        capture_output=True, text=True, timeout=600
+                    )
+                    if result.returncode == 0:
+                        print(f"  [DriveCopy] RETRY OK: {fname}")
+                    else:
+                        print(f"  [DriveCopy] RETRY FAILED: {fname} (rc={result.returncode})")
+                except Exception as e:
+                    print(f"  [DriveCopy] RETRY EXCEPTION: {fname}: {e}")
+
+        # Cleanup manifest (keep local copy on failure for debugging)
         try:
-            os.remove(manifest_path)
+            if not failed_files:
+                os.remove(manifest_path)
+            else:
+                print(f"  [DriveCopy] Keeping manifest locally due to {len(failed_files)} failed uploads")
         except Exception:
             pass
 
