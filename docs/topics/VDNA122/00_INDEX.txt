@@ -1,0 +1,25 @@
+VDNA122 — Topic Index
+============================================================
+Topic:    Pawan Kalyan announces Jana Sena will contest elections in Telangana
+Score:    17/30
+Source:   The Hindu
+Date:     20260602
+Status:    PRODUCED ✅
+
+Files:
+  00_INDEX.txt       — this file
+  01_MAIN_VIDEO.txt  — main video metadata
+  02_SHORT_1.txt     — short 1 metadata
+
+Videos:
+  production_main.mp4    — 12MB, 86.7s
+  production_short_1.mp4 — 4.4MB, 16.0s
+
+Thumbnails:
+  production_clean.jpg    — clean canvas
+  production_branded.jpg  — branded card
+  production_branded_v2.jpg
+  production_branded_v3.jpg
+
+Pipeline: v81.0 | Run: 2026-06-03 20:15 IST | Exit: 0
+============================================================
