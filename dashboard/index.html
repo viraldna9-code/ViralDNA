@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ViralDNA Dashboard — System Audit & Health</title>
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #c9d1d9;
+  --accent: #58a6ff; --green: #3fb950; --red: #f85149; --yellow: #d29922;
+  --orange: #db6d28; --purple: #a371f7; --cyan: #39c5cf;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family: -apple-system, 'SF Mono', 'Fira Code', monospace; font-size:13px; line-height:1.5; }
+h1 { font-size:18px; color:var(--accent); padding:16px 20px; border-bottom:1px solid var(--border); }
+h2 { font-size:15px; color:var(--text); margin-bottom:12px; }
+h3 { font-size:13px; color:var(--accent); margin-bottom:8px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:16px; padding:16px 20px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
+.card h2 { border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:12px; }
+.metric { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border); }
+.metric:last-child { border-bottom:none; }
+.metric-label { color:var(--text); }
+.metric-value { font-weight:bold; }
+.metric-value.ok { color:var(--green); }
+.metric-value.warn { color:var(--yellow); }
+.metric-value.crit { color:var(--red); }
+.metric-value.info { color:var(--accent); }
+.metric-value.purple { color:var(--purple); }
+.status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+.status-dot.ok { background:var(--green); }
+.status-dot.warn { background:var(--yellow); }
+.status-dot.crit { background:var(--red); }
+.status-dot.unk { background:var(--border); }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--border); }
+th { color:var(--accent); font-weight:600; }
+tr:hover { background:rgba(88,166,255,0.05); }
+.badge { display:inline-block; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; }
+.badge-ok { background:rgba(63,185,80,0.15); color:var(--green); }
+.badge-warn { background:rgba(210,153,34,0.15); color:var(--yellow); }
+.badge-crit { background:rgba(248,81,73,0.15); color:var(--red); }
+.badge-info { background:rgba(88,166,255,0.15); color:var(--accent); }
+.badge-dead { background:rgba(48,54,61,0.8); color:var(--border); }
+.flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; font-size:11px; }
+.flow-step { padding:4px 10px; border-radius:4px; border:1px solid var(--border); background:var(--surface); }
+.flow-arrow { color:var(--border); }
+.problem { padding:8px 12px; margin:6px 0; border-radius:6px; border-left:3px solid var(--red); background:rgba(248,81,73,0.08); font-size:12px; }
+.problem.warn { border-left-color:var(--yellow); background:rgba(210,153,34,0.08); }
+.problem.ok { border-left-color:var(--green); background:rgba(63,185,80,0.08); }
+.problem .title { font-weight:600; margin-bottom:detail { color:var(--text); opacity:0.8; font-size:11px; }
+.nav { display:flex; gap:4px; padding:0 20px; border-bottom:1px solid var(--border); overflow-x:auto; }
+.nav-btn { padding:8px 16px; cursor:pointer; border:none; background:none; color:var(--text); opacity:0.7; font-size:12px; border-bottom:2px solid transparent; white-space:nowrap; }
+.nav-btn:hover, .nav-btn.active { opacity:1; border-bottom-color:var(--accent); color:var(--accent); }
+.section { display:none; }
+.section.active { display:block; }
+#log { font-size:11px; max-height:400px; overflow-y:auto; background:var(--bg); padding:12px; border:1px solid var(--border); border-radius:6px; }
+.progress-bar { height:6px; background:var(--border); border-radius:3px; overflow:hidden; margin-top:4px; }
+.progress-fill { height:100%; border-radius:3px; transition:width 0.3s; }
+.fill-ok { background:var(--green); }
+.fill-warn { background:var(--yellow); }
+.fill-crit { background:var(--red); }
+</style>
+</head>
+<body>
+
+<h1>🧬 ViralDNA Dashboard — Forensic Audit & System Health</h1>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('overview',this)">📊 Overview</button>
+  <button class="nav-btn" onclick="showSection('pipeline',this)">⚙️ Pipeline</button>
+  <button class="nav-btn" onclick="showSection('agents',this)">🤖 Agents</button>
+  <button class="nav-btn" onclick="showSection('images',this)">🖼️ Image Pipeline</button>
+  <button class="nav-btn" onclick="showSection('errors',this)">🐛 Errors & Failures</button>
+  <button class="nav-btn" onclick="showSection('cron',this)">⏰ Cron & Triggers</button>
+  <button class="nav-btn" onclick="showSection('dead',this)">💀 Dead Code</button>
+  <button class="nav-btn" onclick="showSection('rootcause',this)">🔍 Root Causes</button>
+  <button class="nav-btn" onclick="showSection('action',this)">✅ Action Plan</button>
+</div>
+
+<!-- ===== OVERVIEW ===== -->
+<div id="overview" class="section active">
+<div class="grid">
+  <div class="card">
+    <h2>📊 Codebase Summary</h2>
+    <div class="metric"><span class="metric-label">Total Python Files</span><span class="metric-value info">125</span></div>
+    <div class="metric"><span class="metric-label">Total Lines of Code</span><span class="metric-value info">30,066</span></div>
+    <div class="metric"><span class="metric-label">Modules (modules/)</span><span class="metric-value info">79</span></div>
+    <div class="metric"><span class="metric-label">Entry Points (__main__)</span><span class="metric-value warn">43</span></div>
+    <div class="metric"><span class="metric-label">Dead Entry Points</span><span class="metric-value crit">4</span></div>
+    <div class="metric"><span class="metric-label">Orphaned Modules (never imported)</span><span class="metric-value crit">75</span></div>
+  </div>
+  <div class="card">
+    <h2>🚨 Error Summary</h2>
+    <div class="metric"><span class="metric-label">Bare Except Blocks</span><span class="metric-value crit">55</span></div>
+    <div class="metric"><span class="metric-label">Silent Failures (except+pass/print)</span><span class="metric-value crit">26</span></div>
+    <div class="metric"><span class="metric-label">Missing try/except on APIs</span><span class="metric-value warn">untracked in 7 files</span></div>
+    <div class="metric"><span class="metric-label">Duplicate Image Hashes (VDNA121)</span><span class="metric-value crit">Confirmed</span></div>
+    <div class="metric"><span class="metric-label">Watermarked Stock Photos Used</span><span class="metric-value crit">3+ found</span></div>
+    <div class="metric"><span class="metric-label">Wrong Person in Thumbnail</span><span class="metric-value crit">VDNA121</span></div>
+  </div>
+  <div class="card">
+    <h2>🔄 Active Pipelines</h2>
+    <div class="metric"><span class="metric-label">Manual Trigger (execute_topic.py)</span><span class="metric-value ok">ACTIVE</span></div>
+    <div class="metric"><span class="metric-label">GitHub Spike Monitor (30min)</span><span class="metric-value ok">ACTIVE</span></div>
+    <div class="metric"><span class="metric-label">YouTube Upload</span><span class="metric-value crit">BANNED (Jay)</span></div>
+    <div class="metric"><span class="metric-label">Shorts Production</span><span class="metric-value warn">PAUSED (Jay)</span></div>
+    <div class="metric"><span class="metric-label">Output Destination</span><span class="metric-value info">Google Drive (Manual Review)</span></div>
+    <div class="metric"><span class="metric-label">v75.3 Watermark Patches</span><span class="metric-value ok">APPLIED</span></div>
+  </div>
+  <div class="card">
+    <h2>📈 System Health Score</h2>
+    <div class="metric"><span class="metric-label">Code Quality</span><span class="metric-value crit">3/10</span></div>
+    <div class="progress-bar"><div class="progress-fill fill-crit" style="width:30%"></div></div>
+    <div class="metric"><span class="metric-label">Error Handling</span><span class="metric-value crit">2/10</span></div>
+    <div class="progress-bar"><div class="progress-fill fill-crit" style="width:20%"></div></div>
+    <div class="metric"><span class="metric-label">Image Pipeline Safety</span><span class="metric-value warn">5/10 (after v75.3)</span></div>
+    <div class="progress-bar"><div class="progress-fill fill-warn" style="width:50%"></div></div>
+    <div class="metric"><span class="metric-label">Test Coverage</span><span class="metric-value crit">0/10</span></div>
+    <div class="progress-bar"><div class="progress-fill fill-crit" style="width:0%"></div></div>
+    <div class="metric"><span class="metric-label">Architecture Clarity</span><span class="metric-value crit">2/10</span></div>
+    <div class="progress-bar"><div class="progress-fill fill-crit" style="width:20%"></div></div>
+    <div class="metric"><span class="metric-label">Documentation</span><span class="metric-value warn">4/10</span></div>
+    <div class="progress-bar"><div class="progress-fill fill-warn" style="width:40%"></div></div>
+    <br>
+    <div class="metric"><span class="metric-label"><strong>OVERALL</strong></span><span class="metric-value crit"><strong>3.2/10</strong></span></div>
+  </div>
+</div>
+</div>
+
+<!-- ===== PIPELINE ===== -->
+<div id="pipeline" class="section">
+<div class="grid">
+  <div class="card" style="grid-column:1/-1">
+    <h2>⚙️ Execution Flow — Complete Data Path</h2>
+    <h3>Production Flow (triggered by execute_topic.py)</h3>
+    <div class="flow">
+      <span class="flow-step" style="border-color:var(--green)">execute_topic.py</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">git pull topics_history.json</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">find topic by VDNA ID</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">write injected_topic.json</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="border-color:var(--green)">run_pipeline_entrypoint.py</span>
+    </div>
+    <h3>Main Pipeline (run_multi_agent_pipeline.py — MultiAgentOrchestrator)</h3>
+    <div class="flow">
+      <span class="flow-step">PRE: CleanupAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRE: LicenseComplianceAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRE: UploadTimeOptimizationAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRE: ContentCalendarAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRE: PrimetimeSchedulerAgent</span>
+    </div>
+    <div class="flow">
+      <span class="flow-step" style="border-color:var(--purple)">TASK: DiscoveryAgent</span>
+      <span class="flow-arrow">+</span>
+      <span class="flow-step">SKIP if injected_topic</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="border-color:var(--purple)">TASK: WeightingAgent</span>
+      <span class="flow-arrow">+</span>
+      <span class="flow-step">SKIP if injected_topic</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="border-color:var(--cyan)">TASK: ScriptingAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">TASK: ComplianceAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">TASK: AdFriendlyCheckAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="border-color:var(--yellow)">TASK: VoiceSynthesisAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="border-color:var(--yellow)">TASK: VisualHarvestingAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="border-color:var(--yellow)">TASK: ThumbnailSynthesisAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">TASK: CTROptimizationAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="border-color:var(--red)">TASK: SequentialAssemblyAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="border-color:var(--red)">+ VisualForensicGate (inline)</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">TASK: ForensicAuditGateAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">TASK: ResilientUploaderAgent</span>
+    </div>
+    <div class="flow">
+      <span class="flow-step">POST: FeedbackAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">POST: YouTubeAnalyticsAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">POST: CommunityEngagementAgent</span>
+      <span class="flow-arrow">→...</span>
+      <span class="flow-step">POST: ContinuousAuditorAgent</span>
+    </div>
+
+    <h3 style="margin-top:16px">Image Pipeline (inside SequentialAssemblyAgent → VideoAssembler)</h3>
+    <div class="flow">
+      <span class="flow-step">assemble_video() called</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">generate_image_prompts()</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="border-color:var(--red)">download_scene_images()</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Serper API</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Wikimedia</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Unsplash</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Pexels</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Pixabay</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">ComfyUI</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">local_image_pack fallback</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">static background fallback</span>
+    </div>
+
+    <h3 style="margin-top:16px">⚠️ Parallel Image Path (NOT shared validation!)</h3>
+    <div class="flow">
+      <span class="flow-step" style="border-color:var(--yellow)">VisualHarvestingAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">VisualFetcher.fetch_visuals()</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">state["background_canvas"]</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">ThumbnailSynthesisAgent</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">ThumbnailCreator.create_thumbnail()</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">state["branded_thumbnail"]</span>
+    </div>
+    <p style="color:var(--yellow);font-size:12px;margin-top:8px">
+      ⚠️ VisualFetcher (522 lines) and VideoAssembler.download_scene_images() are TWO SEPARATE image pipelines.
+      They fetch from the SAME sources (Serper, etc.) but have DIFFERENT validation.
+      v75.3 watermark checks were added to VideoAssembler but NOT to VisualFetcher!
+    </p>
+  </div>
+</div>
+</div>
+
+<!-- ===== AGENTS ===== -->
+<div id="agents" class="section">
+<div class="grid">
+  <div class="card" style="grid-column:1/-1">
+    <h2>🤖 Agent Analysis — 48 Classes in run_multi_agent_pipeline.py</h2>
+    <table>
+    <tr><th>Agent</th><th>Type</th><th>Execute@</th><th>Ops</th><th>State Update</th><th>External Calls</th><th>Status</th></tr>
+    <tr><td>DiscoveryAgent</td><td>Task</td><td>L434</td><td>8</td><td>✅ raw_news</td><td>✅ TrendDiscovery.run()</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>WeightingAgent</td><td>Task</td><td>L474</td><td>6</td><td>✅ sorted_topics</td><td>✅ Gemini scoring</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>ScriptingAgent</td><td>Task</td><td>L551</td><td>5</td><td>✅ script_payload</td><td>✅ GeminiEngine</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>ComplianceAgent</td><td>Task</td><td>L607</td><td>4</td><td>✅ compliance_result</td><td>✅ rules check</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>VoiceSynthesisAgent</td><td>Task</td><td>L666</td><td>5</td><td>✅ voiceover_assets</td><td>✅ TTS/RVC call</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>VisualHarvestingAgent</td><td>Task</td><td>L717</td><td>3</td><td>✅ visuals</td><td>✅ VisualFetcher</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>ThumbnailSynthesisAgent</td><td>Task</td><td>L751</td><td>5</td><td>✅ branded_thumbnail</td><td>✅ ThumbnailCreator</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>SequentialAssemblyAgent</td><td>Task</td><td>L880</td><td>12</td><td>✅ compiled_videos</td><td>✅ FFmpeg + ForensicGate</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>ForensicAuditGateAgent</td><td>Task</td><td>L1347</td><td>6</td><td>✅ audit_report</td><td>✅ forensic_audit+pre_ship</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>ResilientUploaderAgent</td><td>Task</td><td>L1037</td><td>8</td><td>✅ upload_results</td><td>✅ Drive copy + YouTube</td><td><span class="badge badge-ok">WORKS</span></td></tr>
+    <tr><td>CleanupAgent</td><td>Pre</td><td>L226</td><td>1</td><td>❌</td><td>❌ only os.remove</td><td><span class="badge badge-warn">TRIVIAL</span></td></tr>
+    <tr><td>PrimetimeSchedulerAgent</td><td>Pre</td><td>L309</td><td>1</td><td>❌</td><td>❌ only returns state</td><td><span class="badge badge-warn">NO-OP</span></td></tr>
+    <tr><td>LicenseComplianceAgent</td><td>Pre</td><td>L1662</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>UploadTimeOptimizationAgent</td><td>Pre</td><td>L1623</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>ContentCalendarAgent</td><td>Pre</td><td>L1700</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>AdFriendlyCheckAgent</td><td>Task</td><td>L1749</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>CTROptimizationAgent</td><td>Task</td><td>L1800</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>FeedbackAgent</td><td>Post</td><td>L1403</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>IntelligenceAgent</td><td>Post</td><td>L1489</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>ContinuousAuditorAgent</td><td>Post</td><td>L1559</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>YouTubeAnalyticsAgent</td><td>Post</td><td>L1871</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>CommunityEngagementAgent</td><td>Post</td><td>L1923</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>CompetitorIntelAgent</td><td>Post</td><td>L1967</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>RetentionOptimizationAgent</td><td>Post</td><td>L2002</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>ShortsOptimizationAgent</td><td>Post</td><td>L2046</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>ContentQualityAgent</td><td>Post</td><td>L2099</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>ReliabilityAgent</td><td>Post</td><td>L2153</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>CollaborationAgent</td><td>Post</td><td>L2207</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>BlogCompanionAgent</td><td>Post</td><td>L2238</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>NewsletterAgent</td><td>Post</td><td>L2283</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>CommunityPosterAgent</td><td>Post</td><td>L2313</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    <tr><td>UploadTimingAgent</td><td>Post</td><td>L2351</td><td>0</td><td>❌</td><td>❌</td><td><span class="badge badge-crit">EMPTY</span></td></tr>
+    </table>
+    <p style="margin-top:12px">
+      <span class="badge badge-ok">WORKS</span> 10 agents actually do useful work |
+      <span class="badge badge-warn">TRIVIAL/NO-OP</span> 3 have minimal or no logic |
+      <span class="badge badge-crit">EMPTY</span> 20+ are empty shells with `return state` only
+    </p>
+    <p style="color:var(--yellow);font-size:12px;margin-top:8px">
+      All 11 Integration Agents (DiscoveryWeightingIntegration, etc.) are also empty — they just call `super().execute(state)` which returns state unchanged.
+    </p>
+  </div>
+</div>
+</div>
+
+<!-- ===== IMAGE PIPELINE ===== -->
+<div id="images" class="section">
+<div class="grid">
+  <div class="card" style="grid-column:1/-1">
+    <h2>🖼️ Image Pipeline — Dual Path Architecture Flaw</h2>
+    <div class="problem crit">
+      <div class="title">🔴 CRITICAL: Two separate image pipelines with NO shared validation</div>
+      <div class="detail">Path A: VisualHarvestingAgent → VisualFetcher (522 lines) → background_canvas → ThumbnailCreator</div>
+      <div class="detail">Path B: SequentialAssemblyAgent → VideoAssembler.download_scene_images() (472 lines) → scene slideshow</div>
+      <div class="detail">Both fetch from Serper, Wikimedia, Unsplash, Pexels, Pixabay. But v75.3 watermark checks were ONLY added to Path B.</div>
+      <div class="detail">Path A (VisualFetcher) still has ZERO watermark/logo/person verification!</div>
+    </div>
+
+    <h3 style="margin-top:16px">Image Sources (all 7 branches in download_scene_images)</h3>
+    <table>
+    <tr><th>Source</th><th>Branch@</th><th>Watermark Check (v75.3)</th><th>Person Check</th><th>Dedup Check</th></tr>
+    <tr><td>Serper API</td><td>L~600</td><td>✅ v75.3 added</td><td>✅ v75.3 person-name check</td><td>✅ used_image_hashes</td></tr>
+    <tr><td>Wikimedia</td><td>L~750</td><td>✅ v75.3 added</td><td>✅ v75.3 person-name check</td><td>✅ used_image_hashes</td></tr>
+    <tr><td>Unsplash</td><td>L~795</td><td>✅ v75.3 added</td><td>✅ v75.3 person-name check</td><td>✅ used_image_hashes</td></tr>
+    <tr><td>Pexels</td><td>L~840</td><td>✅ v75.3 added</td><td>✅ v75.3 person-name check</td><td>✅ used_image_hashes</td></tr>
+    <tr><td>Pixabay</td><td>L~870</td><td>✅ v75.3 added</td><td>✅ v75.3 person-name check</td><td>✅ used_image_hashes</td></tr>
+    <tr><td>ComfyUI</td><td>L~900</td><td>⚠️ NOT PATCHED</td><td>⚠️ NOT PATCHED</td><td>⚠️ NOT PATCHED</td></tr>
+    <tr><td>Local Image Pack</td><td>L~916</td><td>⚠️ Trusted (local)</td><td>⚠️ No person check</td><td>⚠️ No dedup</td></tr>
+    </table>
+
+    <h3 style="margin-top:16px">Thumbnail Pipeline (ThumbnailCreator)</h3>
+    <table>
+    <tr><th>Step</th><th>Current Behavior</th><th>Risk</th><th>Status</th></tr>
+    <tr><td>_load_background_image</td><td>Picks from slideshow_dir reverse-alphabetical</td><td>May pick watermarked image</td><td><span class="badge badge-warn">v75.3 patched but not tested</span></td></tr>
+    <tr><td>_create_topic_thumbnail</td><td>Uses Serper + local image pack</td><td>Serper returns stock photos</td><td><span class="badge badge-warn">Partial fix</span></td></tr>
+    <tr><td>Serper check in thumbnail</td><td>No person-name check in thumbnail_creator!</td><td>Wrong person possible</td><td><span class="badge badge-crit">NOT PATCHED</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🎯 VDNA121 Forensic Evidence</h2>
+    <div class="problem crit">
+      <div class="title">Background image: Hindustan Times 2019 stock photo</div>
+      <div class="detail">EXIF: "BJP National President Amit Shah shake hands with PM Modi on January 11, 2019"</div>
+      <div class="detail">Topic was "TN BJP leader K. Annamalai meets Amit Shah" — Annamalai not in photo!</div>
+    </div>
+    <div class="problem crit">
+      <div class="title">Same image reused across shorts</div>
+      <div class="detail">short_1/scene_img_0.jpg MD5 = 4cdaf2ccc67e</div>
+      <div class="detail">short_2/scene_img_0.jpg MD5 = 4cdaf2ccc67e (IDENTICAL)</div>
+    </div>
+    <div class="problem crit">
+      <div class="title">watermark: Dreamstime</div>
+      <div class="detail">short_2/scene_img_2.jpg — Dreamstime watermarked</div>
+    </div>
+    <div class="problem crit">
+      <div class="title">NDTV logo in B-roll video</div>
+      <div class="detail">Video B-roll sourced from NDTV — copyright strike risk</div>
+    </div>
+    <div class="problem crit">
+      <div class="title">Metadata manifest missing in Drive</div>
+      <div class="detail">Drive API quota exhausted during copy, manifest may have been skipped</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== ERRORS ===== -->
+<div id="errors" class="section">
+<div class="grid">
+  <div class="card" style="grid-column:1/-1">
+    <h2>🐛 Error Handling Audit — Core 21 Files</h2>
+    <table>
+    <tr><th>File</th><th>Lines</th><th>Bare Excepts</th><th>Silent Failures</th><th>Risk</th></tr>
+    <tr><td>modules/video_assembler.py</td><td>1240</td><td class="crit">19</td><td class="crit">14</td><td><span class="badge badge-crit">CRITICAL</span></td></tr>
+    <tr><td>modules/run_multi_agent_pipeline.py</td><td>2700</td><td class="warn">7</td><td class="warn">4</td><td><span class="badge badge-warn">HIGH</span></td></tr>
+    <tr><td>channel_health.py</td><td>1071</td><td class="warn">9</td><td class="info">1</td><td><span class="badge badge-warn">HIGH</span></td></tr>
+    <tr><td>modules/thumbnail_creator.py</td><td>~500</td><td class="warn">5</td><td class="info">0</td><td><span class="badge badge-warn">HIGH</span></td></tr>
+    <tr><td>monitor_cloud.py</td><td>660</td><td class="warn">5</td><td class="info">0</td><td><span class="badge badge-warn">MEDIUM</span></td></tr>
+    <tr><td>modules/youtube_uploader.py</td><td>1209</td><td class="warn">4</td><td class="warn">4</td><td><span class="badge badge-warn">HIGH</span></td></tr>
+    <tr><td>modules/pre_ship_check.py</td><td>~500</td><td class="info">2</td><td class="warn">2</td><td><span class="badge badge-warn">HIGH</span></td></tr>
+    <tr><td>modules/visual_fetcher.py</td><td>522</td><td class="info">1</td><td class="warn">1</td><td><span class="badge badge-warn">HIGH</span></td></tr>
+    <tr><td>modules/voiceover.py</td><td>~400</td><td class="info">1</td><td class="info">0</td><td><span class="badge badge-info">LOW</span></td></tr>
+    <tr><td>modules/post_filter.py</td><td>~350</td><td class="info">1</td><td class="info">0</td><td><span class="badge badge-info">LOW</span></td></tr>
+    <tr><td>modules/trend_discovery.py</td><td>~400</td><td class="info">1</td><td class="info">0</td><td><span class="badge badge-info">LOW</span></td></tr>
+    </table>
+
+    <h3 style="margin-top:16px">What "Silent Failure" Means</h3>
+    <div class="problem crit">
+      <div class="title">Example: video_assembler.py line 708</div>
+      <div class="detail"><code>except: pass</code> — Image download fails silently. No log. No retry. Just moves to next source.</div>
+    </div>
+    <div class="problem crit">
+      <div class="title">Example: video_assembler.py line 606</div>
+      <div class="detail"><code>except Exception: pass</code> — Serper image validation fails silently. Bad image accepted.</div>
+    </div>
+    <div class="problem warn">
+      <div class="title">Example: run_multi_agent_pipeline.py line 257</div>
+      <div class="detail"><code>except Exception: self.log(...)</code> — Error logged but state unchanged. Pipeline continues with corrupted data.</div>
+    </div>
+
+    <h3 style="margin-top:16px">🔴 Completely Unprotected API Calls (no try/except at all)</h3>
+    <div class="problem crit">
+      <div class="title">visual_fetcher.py:522 — Serper API call</div>
+      <div class="detail"><code>url = "https://google.serper.dev/images"</code> — requests.post() with NO error handling</div>
+    </div>
+    <div class="problem crit">
+      <div class="title">thumbnail_creator.py:154 — Serper file scan</div>
+      <div class="detail"><code>serper_files = sorted(glob(...))</code> — No check if Serper images exist before using</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== CRON ===== -->
+<div id="cron" class="section">
+<div class="grid">
+  <div class="card" style="grid-column:1/-1">
+    <h2>⏰ Cron Jobs & Triggers</h2>
+    <table>
+    <tr><th>Job Name</th><th>Schedule</th><th>Last Run</th><th>Status</th><th>Issue</th></tr>
+    <tr>
+      <td>viraldna-analytics-daily</td><td>Daily 00:00</td><td>Never ran</td>
+      <td><span class="badge badge-info">active</span></td>
+      <td>New job, awaiting first run</td>
+    </tr>
+    <tr>
+      <td>viraldna-report-daily</td><td>Daily 00:00</td><td>Never ran</td>
+      <td><span class="badge badge-info">active</span></td>
+      <td>New job, awaiting first run</td>
+    </tr>
+    <tr>
+      <td>ViralDNA Daily Analytics Report</td><td>Daily 00:30</td><td>2026-05-30</td>
+      <td><span class="badge badge-crit">error</span></td>
+      <td>TimeoutError: idle 24046s (limit 600s) — terminal tool hung</td>
+    </tr>
+    <tr>
+      <td>ViralDNA Weekly Analytics Report</td><td>Sunday 00:30</td><td>Never ran</td>
+      <td><span class="badge badge-info">active</span></td>
+      <td>Scheduled for 2026-06-07</td>
+    </tr>
+    <tr>
+      <td>ViralDNA Channel Health Monitor</td><td>Every 120m</td><td>2026-06-02</td>
+      <td><span class="badge badge-ok">ok</span></td>
+      <td>Running normally</td>
+    </tr>
+    <tr>
+      <td>ViralDNA System Monitor</td><td>Daily 09:00</td><td>2026-06-02</td>
+      <td><span class="badge badge-ok">ok</span></td>
+      <td>Running normally</td>
+    </tr>
+    </table>
+
+    <h3 style="margin-top:16px">GitHub Actions</h3>
+    <table>
+    <tr><th>Workflow</th><th>Trigger</th><th>Last Run</th><th>Status</th></tr>
+    <tr>
+      <td>spike-monitor.yml</td>
+      <td>Cron: */30 * * * * + manual</td>
+      <td>Varies</td>
+      <td><span class="badge badge-ok">active</span></td>
+    </tr>
+    </table>
+    <p style="font-size:12px;color:var(--yellow);margin-top:4px">
+      ⚠️ GitHub Action runs monitor_cloud.py (spike detection). Does NOT run pipeline.
+      GitHub has TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID secrets.
+    </p>
+
+    <h3 style="margin-top:16px">Entry Point Analysis (43 total)</h3>
+    <table>
+    <tr><th>Entry Point</th><th>Lines</th><th>Used By</th><th>Category</th></tr>
+    <tr><td>execute_topic.py</td><td>88</td><td>Manual (Jay triggers)</td><td><span class="badge badge-ok">PRODUCTION</span></td></tr>
+    <tr><td>run_pipeline_entrypoint.py</td><td>115</td><td>execute_topic.py, daily_publish.py, trigger_topic.py</td><td><span class="badge badge-ok">PRODUCTION</span></td></tr>
+    <tr><td>trigger_topic.py</td><td>376</td><td>build_topic.py, daily_publish.py</td><td><span class="badge badge-ok">PRODUCTION</span></td></tr>
+    <tr><td>run_local.py</td><td>227</td><td>run_multi_agent_pipeline.py</td><td><span class="badge badge-ok">PRODUCTION</span></td></tr>
+    <tr><td>daily_publish.py</td><td>476</td><td>Standalone (cron?)</td><td><span class="badge badge-warn">UNCLEAR</span></td></tr>
+    <tr><td>channel_health.py</td><td>1071</td><td>scripts/daily_report.py, system_monitor.py</td><td><span class="badge badge-ok">MONITORING</span></td></tr>
+    <tr><td>channel_analytics.py</td><td>586</td><td>scripts/one-offs/send_analytics_report.py</td><td><span class="badge badge-info">ONE-OFF</span></td></tr>
+    <tr><td>smart_scheduler.py</td><td>299</td><td>daily_publish.py</td><td><span class="badge badge-warn">UNCLEAR</span></td></tr>
+    <tr><td>monitor_cloud.py</td><td>660</td><td>GitHub Actions</td><td><span class="badge badge-ok">PRODUCTION</span></td></tr>
+    <tr><td>monitor_and_alert.py</td><td>321</td><td>Standalone</td><td><span class="badge badge-warn">REDUNDANT?</span></td></tr>
+    <tr><td>modules/youtube_selenium_uploader.py</td><td>361</td><td>Standalone</td><td><span class="badge badge-warn">UPLOAD BANNED</span></td></tr>
+    <tr><td>modules/trailer_generator.py</td><td>940</td><td>setup_channel_and_upload_trailer.py</td><td><span class="badge badge-info">ONE-TIME</span></td></tr>
+    <tr><td>modules/rvc_infer.py</td><td>265</td><td>modules/voiceover.py</td><td><span class="badge badge-ok">PRODUCTION</span></td></tr>
+    <tr><td>modules/comfyui_image_generator.py</td><td>398</td><td>video_assembler, visual_fetcher</td><td><span class="badge badge-ok">PRODUCTION</span></td></tr>
+    <tr><td>direct_upload.py</td><td>213</td><td><strong>NO REFERENCES</strong></td><td><span class="badge badge-dead">DEAD</span></td></tr>
+    <tr><td>build_image_pack.py</td><td>246</td><td><strong>NO REFERENCES</strong></td><td><span class="badge badge-dead">DEAD</span></td></tr>
+    <tr><td>setup_channel_and_upload_trailer.py</td><td>318</td><td><strong>NO REFERENCES</strong></td><td><span class="badge badge-dead">DEAD</span></td></tr>
+    <tr><td>modules/calendar_import.py</td><td>157</td><td><strong>NO REFERENCES</strong></td><td><span class="badge badge-dead">DEAD</span></td></tr>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- ===== DEAD CODE ===== -->
+<div id="dead" class="section">
+<div class="grid">
+  <div class="card" style="grid-column:1/-1">
+    <h2>💀 Dead Code & Orphaned Files</h2>
+
+    <h3>Orphaned modules/ files (never imported by anything)</h3>
+    <p style="font-size:12px;color:var(--yellow)">
+      75 of 79 files in modules/ are never imported. Most contain classes/functions that are instantiated only within run_multi_agent_pipeline.py's imports but many are never actually called.
+    </p>
+
+    <table>
+    <tr><th>Category</th><th>Count</th><th>Examples</th><th>Action</th></tr>
+    <tr>
+      <td>Test files in modules/</td>
+      <td>10</td>
+      <td>test_phase1.py, test_phase2.py, test_phase3.py, test_phase4.py, test_voice_variants.py, test_custom_ssml.py, test_stitching.py, test_segmentation.py, test_multilingual_voice.py, test_rvc.py</td>
+      <td><span class="badge badge-warn">MOVE to /tests/</span></td>
+    </tr>
+    <tr>
+      <td>Diagnostic/One-off scripts</td>
+      <td>8</td>
+      <td>diagnostics/ffmpeg_filter_precheck.py, scripts/xurl_oauth.py, scripts/one-offs/send_analytics_report.py, scripts/test_scraps/*</td>
+      <td><span class="badge badge-info">KEEP separate</span></td>
+    </tr>
+    <tr>
+      <td>Empty agent stubs</td>
+      <td>20+</td>
+      <td>All integration agents, LicenseComplianceAgent, ContentCalendarAgent, etc.</td>
+      <td><span class="badge badge-crit">DELETE or IMPLEMENT</span></td>
+    </tr>
+    <tr>
+      <td>Unused imports in pipeline</td>
+      <td>2</td>
+      <td>NewsPayload, ScriptPayload imported from payload_types but never used</td>
+      <td><span class="badge badge-warn">CLEAN UP</span></td>
+    </tr>
+    <tr>
+      <td> videos/trailer/ directory</td>
+      <td>1</td>
+      <td>trailer_v6_master.py (1056 lines) — trailer generation</td>
+      <td><span class="badge badge-info">KEEP (one-time)</span></td>
+    </tr>
+    <tr>
+      <td>modules/submit_review.py</td>
+      <td>1</td>
+      <td>42 lines, self-referencing only</td>
+      <td><span class="badge badge-dead">DEAD</span></td>
+    </tr>
+    <tr>
+      <td>modules/webhook_fire.py</td>
+      <td>1</td>
+      <td>99 lines, self-referencing only</td>
+      <td><span class="badge badge-dead">DEAD</span></td>
+    </tr>
+    <tr>
+      <td>modules/test_*.py files inside modules/</td>
+      <td>6+</td>
+      <td>Mixed in with production code</td>
+      <td><span class="badge badge-crit">MOVE to /tests/</span></td>
+    </tr>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- ===== ROOT CAUSES ===== -->
+<div id="rootcause" class="section">
+<div class="grid">
+  <div class="card" style="grid-column:1/-1">
+    <h2>🔍 Root Cause Analysis — Why Errors Weren't Found</h2>
+
+    <div class="problem crit">
+      <div class="title">1. NO SHARED VALIDATION LAYER</div>
+      <div class="detail">
+        VisualFetcher (522 lines) and VideoAssembler.download_scene_images() (200+ lines) each independently fetch images from the same sources.
+        They have ZERO shared code. When you fix one, the other remains broken.
+        <strong>Watermark checks were added to VideoAssembler but NOT VisualFetcher — the thumbnail still uses VisualFetcher!</strong>
+      </div>
+    </div>
+
+    <div class="problem crit">
+      <div class="title">2. 26 SILENT FAILURES MASK EVERY ERROR</div>
+      <div class="detail">
+        <code>except: pass</code> and <code>except Exception: pass</code> appear 26 times in core files.
+        When Serper returns a watermarked photo, the validation error is swallowed. The bad image is accepted silently.
+        The pipeline never KNOWS it failed. Logs show everything "succeeded."
+      </div>
+    </div>
+
+    <div class="problem crit">
+      <div class="title">3. PRE-SHIP CHECK ONLY VALIDATES TEXT, NOT IMAGES</div>
+      <div class="detail">
+        forensic_audit.py (1069 lines) checks: file existence, JSON validity, SEO fields, script-wordcount match.
+        It does NOT check: EXIF data, image content, watermarks, face match, logo detection.
+        pre_ship_check.py checks: Gemini content accuracy, keyword presence, blacklist words.
+        Neither checks if the IMAGE matches the TOPIC. VDNA121 passed both with flying colors.
+      </div>
+    </div>
+
+    <div class="problem crit">
+      <div class="title">4. VISUAL FORENSIC GATE TOO WEAK</div>
+      <div class="detail">
+        visual_forensic_gate.py (305 lines) checks: frame diversity, file size, thumbnail solid-color, SSIM static detection.
+        All structure checks. Zero content checks. Can't tell if image is wrong person, watermarked, or has NDTV logo.
+        Even SSIM passes if you have 3 different watermarked frames — it sees "diversity" but not "wrong content."
+      </div>
+    </div>
+
+    <div class="problem crit">
+      <div class="title">5. NO INTEGRATION TESTS, NO END-TO-END VALIDATION</div>
+      <div class="detail">
+        test_*.py files exist inside modules/ but they're unit tests or scraps.
+        No script runs the full pipeline and validates output images vs topic.
+        Nobody ran <code>execute_topic.py</code> and then checked if production_branded.jpg shows the right person.
+      </div>
+    </div>
+
+    <div class="problem crit">
+      <div class="title">6. AGENT ARCHITECTURE IS THEATER</div>
+      <div class="detail">
+        48 agent classes sound impressive. But 20+ are empty shells. The "integration gates" do nothing.
+        The complexity is FAKE — it LOOKS like a robust multi-agent system but it's a single-threaded
+        sequential script with <code>for agent in task_agents: agent.execute(state)</code>.
+        Empty agents inflate the codebase and make auditing harder.
+      </div>
+    </div>
+
+    <div class="problem warn">
+      <div class="title">7. PATCHES APPLIED TO WRONG LAYER</div>
+      <div class="detail">
+        v75.3 added watermark checks inside download_scene_images() — a method deep inside video_assembler.py.
+        But the SAME method has 19 bare except blocks that can swallow the new validation errors.
+        The fix works ONLY if the exception propagates — but most image download errors are caught by bare excepts.
+      </div>
+    </div>
+
+    <div class="problem warn">
+      <div class="title">8. IMMEDIATE FIX: NO PIPELINE RUN TO VERIFY</div>
+      <div class="detail">
+        v75.3 patches were committed and pushed. But no execute_topic.py run was done AFTER the patches.
+        We don't know if the person-name check actually works. We don't know if Serper returns any valid images
+        when required person-name is in the title filter. This needs testing before production.
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===== ACTION PLAN ===== -->
+<div id="action" class="section">
+<div class="grid">
+  <div class="card" style="grid-column:1/-1">
+    <h2>✅ Action Plan — Before Production</h2>
+
+    <h3 style="color:var(--red)">P0 — CRITICAL (do NOW)</h3>
+    <table>
+    <tr><th>#</th><th>Task</th><th>File(s)</th><th>Impact</th></tr>
+    <tr>
+      <td>1</td>
+      <td>Add watermark + person-name + dedup checks to VisualFetcher</td>
+      <td>modules/visual_fetcher.py</td>
+      <td><span class="badge badge-crit">FIXES thumbnail images</span></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Add same checks to ThumbnailCreator._load_background_image</td>
+      <td>modules/thumbnail_creator.py</td>
+      <td><span class="badge badge-crit">FIXES person verification for thumbs</span></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Add checks to ComfyUI branch in download_scene_images</td>
+      <td>modules/video_assembler.py</td>
+      <td><span class="badge badge-crit">COMPLETES v75.3 coverage</span></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Add B-roll logo detection (NDTV, Aaj Tak, Republic) in video_assembler B-roll fetch</td>
+      <td>modules/video_assembler.py</td>
+      <td><span class="badge badge-crit">PREVENTS copyright strike</span></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Run execute_topic.py and VERIFY output images visually</td>
+      <td>execute_topic.py</td>
+      <td><span class="badge badge-crit">CONFIRMS fixes work</span></td>
+    </tr>
+    </table>
+
+    <h3 style="color:var(--yellow)">P1 — HIGH (do this week)</h3>
+    <table>
+    <tr><th>#</th><th>Task</th><th>File(s)</th><th>Impact</th></tr>
+    <tr>
+      <td>6</td>
+      <td>Refactor: Create shared ImageValidator class — both VisualFetcher and VideoAssembler must use it</td>
+      <td>NEW: modules/image_validator.py</td>
+      <td><span class="badge badge-warn">Prevents dual-path bugs</span></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Add visual content check to pre_ship_check.py (EXIF inspection, logo detection)</td>
+      <td>modules/pre_forensic_audit.py + pre_ship_check.py</td>
+      <td><span class="badge badge-warn">Catches visual errors pre-upload</span></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Replace ALL <code>except: pass</code> with proper error propagation in video_assembler.py</td>
+      <td>modules/video_assembler.py</td>
+      <td><span class="badge badge-warn">Unmasks hidden failures</span></td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Implement visual_forensic_gate.py image quality checks: watermark detection, logo detection</td>
+      <td>modules/visual_forensic_gate.py</td>
+      <td><span class="badge badge-warn">Strengthens gate</span></td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Delete or implement 20 empty agent stubs</td>
+      <td>modules/run_multi_agent_pipeline.py</td>
+      <td><span class="badge badge-info">Reduces complexity</span></td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>Move test_*.py files from modules/ to tests/</td>
+      <td>Multiple files</td>
+      <td><span class="badge badge-info">Clean architecture</span></td>
+    </tr>
+    </table>
+
+    <h3 style="color:var(--accent)">P2 — MEDIUM (do before auto-cron)</h3>
+    <table>
+    <tr><th>#</th><th>Task</th><th>File(s)</th><th>Impact</th></tr>
+    <tr><td>12</td><td>Delete 4 dead entry points (direct_upload.py, build_image_pack.py, etc.)</td><td>Root dir</td><td><span class="badge badge-info">Reduces confusion</span></td></tr>
+    <tr><td>13</td><td>Fix 2 duplicate cron jobs (viraldna-analytics-daily and viraldna-report-daily both at 00:00)</td><td>Hermes cron</td><td><span class="badge badge-warn">Reduces quota waste</span></td></tr>
+    <tr><td>14</td><td>Remove daily timeout-failing Analytics Report cron (or fix root cause)</td><td>Hermes cron</td><td><span class="badge badge-warn">Stops error spam</span></td></tr>
+    <tr><td>15</td><td>Consolidate entry points: reduce from 43 to ~10 meaningful ones</td><td>Multiple</td><td><span class="badge badge-info">Clean architecture</span></td></tr>
+    <tr><td>16</td><td>Add end-to-end test: run pipeline, verify images match topic via Gemini vision</td><td>NEW test file</td><td><span class="badge badge-info">Prevents regressions</span></td></tr>
+    <tr><td>17</td><td>Send YouTube API compliance review email</td><td>Manual</td><td><span class="badge badge-warn">Required for uploads</span></td></tr>
+    <tr><td>18</td><td>Clarify shorts status: permanent delete or temporary pause?</td><td>Policy</td><td><span class="badge badge-info">Needed for planning</span></td></tr>
+    </table>
+
+    <div style="margin-top:16px;padding:16px;background:rgba(248,81,73,0.08);border:1px solid var(--red);border-radius:8px">
+      <strong style="color:var(--red)">⛔ DO NOT MOVE TO PRODUCTION UNTIL P0 TASKS ARE COMPLETE</strong>
+      <br><br>
+      Current state: v75.3 patches are INCOMPLETE. They fix VideoAssembler but NOT VisualFetcher.
+      Thumbnails still come from the unprotected pipeline. A new topic will get the same watermarked photos.
+      <br><br>
+      Next step: I will implement P0 tasks 1-4, then run execute_topic.py, then you visually verify output.
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
