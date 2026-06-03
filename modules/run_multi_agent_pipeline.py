@@ -529,6 +529,16 @@ class WeightingAgent(BaseAgent):
 
             self.orchestrator.timer.stop("Phase 2: Weighting", "2.1 Topic Scoring & Selection")
             self.log(f"Selected: '{state['selected_topic'].get('title')}' (score: {state['selected_topic'].get('cpm_weight', 'N/A')})")
+
+            # ── v82.0: Compute topic slug for file naming ──
+            _sel = state["selected_topic"]
+            _raw = _sel.get("title", _sel.get("id", "topic"))
+            _words = _raw.split()[:6]
+            _slug = "_".join(w for w in _words if w).replace("/", "_").replace(":", "").replace("'", "").replace("?", "").replace("!", "")
+            if not _slug:
+                _slug = _sel.get("id", "topic")
+            state["topic_slug"] = _slug
+            self.log(f"Topic slug: {_slug}")
         except Exception as e:
             self.orchestrator.timer.fail("Phase 2: Weighting", "2.1 Topic Scoring & Selection")
             raise RuntimeError(f"Weighting Agent failed: {e}")
@@ -760,8 +770,10 @@ class ThumbnailSynthesisAgent(BaseAgent):
             main_title_variants = []
             if script_payload:
                 main_title_variants = getattr(script_payload, "main_title_variants", [])
+            # v82.0: Use topic_slug for thumbnail file naming
+            _thumb_slug = state.get("topic_slug", "production")
             thumb_data = self.tc.create_thumbnail(
-                selected_topic, config.DRIVE["THUMBNAILS"], "production",
+                selected_topic, config.DRIVE["THUMBNAILS"], _thumb_slug,
                 runtime_dir=config.DRIVE["RUNTIME"], title_variants=main_title_variants
             )
             state["background_canvas"] = thumb_data["clean_path"]
@@ -810,7 +822,7 @@ class ThumbnailSynthesisAgent(BaseAgent):
                 if short_title_variants:
                     try:
                         short_thumb_data = self.tc.create_thumbnail(
-                            selected_topic, config.DRIVE["THUMBNAILS"], f"short_{s_idx}",
+                            selected_topic, config.DRIVE["THUMBNAILS"], f"{_thumb_slug}_Short{s_idx}",
                             runtime_dir=config.DRIVE["RUNTIME"], title_variants=short_title_variants
                         )
                         short_thumb_paths[short_key] = short_thumb_data["path"]
@@ -901,6 +913,11 @@ class SequentialAssemblyAgent(BaseAgent):
             raise ValueError("Required assembly inputs missing in state.")
 
         compiled_videos = []
+
+        # ── v82.0: Use topic slug from state (computed in Weighting Agent) ──
+        topic_slug = state.get("topic_slug", selected_topic.get("id", "topic"))
+        self.log(f"Output file prefix: {topic_slug}")
+
         try:
             # Main video — sequential
             if decision.produce_main:
@@ -908,14 +925,15 @@ class SequentialAssemblyAgent(BaseAgent):
                 audio_path = voiceover_assets.get("main")
                 if not audio_path:
                     raise ValueError("Main audio asset missing.")
-                self.log("Assembling production_main.mp4 (sequential)...")
+                main_filename = f"{topic_slug}_Main.mp4"
+                self.log(f"Assembling {main_filename} (sequential)...")
                 self.va.assemble_video(
-                    "production_main.mp4", audio_path, background_canvas,
-                    "production_main.mp4", main_seg["target_duration_s"],
+                    main_filename, audio_path, background_canvas,
+                    main_filename, main_seg["target_duration_s"],
                     async_mode=False, script_text=main_seg["text"], is_short=False,
                     topic_title=selected_topic.get("title", "")
                 )
-                main_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], "production_main.mp4")
+                main_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], main_filename)
                 if self._validate_compiled_video(main_path):
                     compiled_videos.append(main_path)
                 else:
@@ -929,20 +947,22 @@ class SequentialAssemblyAgent(BaseAgent):
                 if key in voiceover_assets:
                     short_seg = script_payload.get_segment(key)
                     short_audio = voiceover_assets[key]
-                    self.log(f"Assembling production_short_{i}.mp4 (sequential)...")
+                    short_filename = f"{topic_slug}_Short{i}.mp4"
+                    self.log(f"Assembling {short_filename} (sequential)...")
                     self.va.assemble_video(
-                        f"production_short_{i}.mp4", short_audio, background_canvas,
-                        f"production_short_{i}.mp4", short_seg["target_duration_s"],
+                        short_filename, short_audio, background_canvas,
+                        short_filename, short_seg["target_duration_s"],
                         async_mode=False, script_text=short_seg["text"], is_short=True,
                         topic_title=selected_topic.get("title", "")
                     )
-                    short_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], f"production_short_{i}.mp4")
+                    short_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], short_filename)
                     if self._validate_compiled_video(short_path):
                         compiled_videos.append(short_path)
                     else:
                         raise ValueError(f"Short {i} failed forensic audit.")
 
             state["compiled_videos"] = compiled_videos
+            state["topic_slug"] = topic_slug
 
             # ── v52.1: VISUAL FORENSIC GATE ──
             # Rejects videos with no visual diversity (solid color, single frame)
@@ -1160,6 +1180,7 @@ class ResilientUploaderAgent(BaseAgent):
         topic_id = topic.get("id", "unknown")
         topic_title = topic.get("title", "")[:40].replace(" ", "_").replace("/", "_")
         gdrive_base = "gdrive:ViralDNA_Review"
+        topic_slug = state.get("topic_slug", topic_id)
         gdrive_dest = f"{gdrive_base}/{date_str}_{topic_id}"
 
         # Local output directories
@@ -1171,25 +1192,30 @@ class ResilientUploaderAgent(BaseAgent):
 
         files_to_copy = []
 
-        # 1. Only production video files (current run output)
-        for vname in ("production_main.mp4", "production_short_1.mp4", "production_short_2.mp4"):
+        # 1. Topic-named video files (v82.0: TopicName_Main.mp4, TopicName_Short1.mp4, TopicName_Short2.mp4)
+        for vname in (f"{topic_slug}_Main.mp4", f"{topic_slug}_Short1.mp4", f"{topic_slug}_Short2.mp4"):
             vpath = os.path.join(videos_dir, vname)
             if os.path.exists(vpath):
                 files_to_copy.append(vpath)
 
-        # 2. Only current topic thumbnails
+        # 2. Topic-named thumbnails (v82.0)
         if os.path.isdir(thumbs_dir):
-            for tname in ("production_branded.jpg", "production_clean.jpg",
-                          "short_1_branded.jpg", "short_1_clean.jpg",
+            for tname in (f"{topic_slug}_branded.jpg", f"{topic_slug}_clean.jpg",
+                          f"{topic_slug}_branded_v2.jpg", f"{topic_slug}_branded_v3.jpg"):
+                tpath = os.path.join(thumbs_dir, tname)
+                if os.path.exists(tpath):
+                    files_to_copy.append(tpath)
+            # Also copy short thumbnails if they exist
+            for tname in ("short_1_branded.jpg", "short_1_clean.jpg",
                           "short_2_branded.jpg", "short_2_clean.jpg"):
                 tpath = os.path.join(thumbs_dir, tname)
                 if os.path.exists(tpath):
                     files_to_copy.append(tpath)
 
-        # 3. Only current audio files
+        # 3. Topic-named audio files (v82.0)
         if os.path.isdir(audio_dir):
-            for aname in ("production_main.mp3", "production_short_1.mp3", "production_short_2.mp3",
-                          "production_main.ass", "production_short_1.ass", "production_short_2.ass"):
+            for aname in (f"{topic_slug}_Main.mp3", f"{topic_slug}_Short1.mp3", f"{topic_slug}_Short2.mp3",
+                          f"{topic_slug}_Main.ass", f"{topic_slug}_Short1.ass", f"{topic_slug}_Short2.ass"):
                 apath = os.path.join(audio_dir, aname)
                 if os.path.exists(apath):
                     files_to_copy.append(apath)
@@ -1311,10 +1337,39 @@ class ResilientUploaderAgent(BaseAgent):
         copy_paste_lines.append(f"{'='*60}")
         copy_paste_lines.append("")
 
+        # ── v82.0: File naming ──
+        copy_paste_lines.append(f"{'─'*40}")
+        copy_paste_lines.append(f"📁 FILES (Topic-based naming)")
+        copy_paste_lines.append(f"{'─'*40}")
+        copy_paste_lines.append(f"Main:  {topic_slug}_Main.mp4")
+        copy_paste_lines.append(f"Short1: {topic_slug}_Short1.mp4")
+        copy_paste_lines.append(f"Short2: {topic_slug}_Short2.mp4")
+        copy_paste_lines.append("")
+
+        # ── v82.0: Main video with 3 title variants ──
         copy_paste_lines.append(f"{'─'*40}")
         copy_paste_lines.append(f"📹 MAIN VIDEO")
         copy_paste_lines.append(f"{'─'*40}")
-        copy_paste_lines.append(f"TITLE: {main_meta['title']}")
+        copy_paste_lines.append("")
+
+        # Show all 3 title variants
+        _all_variants = state.get("ab_title_variants", [])
+        if not _all_variants:
+            _all_variants = state.get("title_variants", [])
+        if not _all_variants:
+            _all_variants = [{"title": main_title, "score": "N/A"}]
+
+        copy_paste_lines.append("📝 TITLE VARIANTS (A/B Test):")
+        copy_paste_lines.append("")
+        for vi, var in enumerate(_all_variants[:3]):
+            var_title = var.get("title", "") if isinstance(var, dict) else str(var)
+            var_score = var.get("score", "") if isinstance(var, dict) else ""
+            marker = " ★ BEST" if vi == 0 else ""
+            copy_paste_lines.append(f"  Variant {vi+1}{marker}: {var_title}")
+            if var_score:
+                copy_paste_lines.append(f"           CTR Score: {var_score}")
+        copy_paste_lines.append("")
+        copy_paste_lines.append(f"★ RECOMMENDED TITLE: {_all_variants[0].get('title', main_title) if isinstance(_all_variants[0], dict) else str(_all_variants[0])}")
         copy_paste_lines.append("")
         copy_paste_lines.append(f"DESCRIPTION:\n{main_meta['description']}")
         copy_paste_lines.append("")
@@ -1336,10 +1391,16 @@ class ResilientUploaderAgent(BaseAgent):
             copy_paste_lines.append(f"TAGS ({len(sm['tags'])}):\n{', '.join(sm['tags'])}")
             copy_paste_lines.append("")
 
+        # ── v82.0: A/B Testing thumbnails ──
         copy_paste_lines.append(f"{'='*60}")
-        copy_paste_lines.append(f"THUMBNAILS")
+        copy_paste_lines.append(f"🖼️ THUMBNAILS (A/B Testing)")
         copy_paste_lines.append(f"{'='*60}")
-        copy_paste_lines.append(f"Main: production_branded.jpg (or v1/v2/v3 for A/B)")
+        copy_paste_lines.append(f"Variant 1 (default): {topic_slug}_branded.jpg")
+        copy_paste_lines.append(f"Variant 2:            {topic_slug}_branded_v2.jpg")
+        copy_paste_lines.append(f"Variant 3:            {topic_slug}_branded_v3.jpg")
+        copy_paste_lines.append("")
+        copy_paste_lines.append("Upload all 3 to YouTube Studio → Test & Compare")
+        copy_paste_lines.append("")
         for si in range(2):
             copy_paste_lines.append(f"Short {si+1}: short_{si+1}_branded.jpg")
         copy_paste_lines.append("")

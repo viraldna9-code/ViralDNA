@@ -281,12 +281,18 @@ class YouTubeUploader:
             "🇮🇳 National India — politics, economy, policy",
             "🌍 Telugu people worldwide",
             "",
-            "New videos daily at 9:00 AM and 7:00 PM IST",
-            "Shorts at 12:00 PM and 9:00 PM IST",
+            "🕘 New videos daily at 9:00 AM and 7:00 PM IST",
+            "📱 Shorts at 12:00 PM and 9:00 PM IST",
             "",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "🔔 SUBSCRIBE & GROW WITH US",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
             "🔔 Subscribe: https://www.youtube.com/@TheViralDNA",
-            "👍 Like | 💬 Comment | 📤 Share with family",
-            "📧 Contact: viraldna9@gmail.com",
+            "👍 Like this video — it helps us reach more Telugu people",
+            "💬 Comment your thoughts — we read every comment",
+            "📤 Share with family & friends — spread Telugu news",
+            "",
+            "📧 Business/Collab: viraldna9@gmail.com",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
             "",
         ])
@@ -316,7 +322,6 @@ class YouTubeUploader:
 
         description_lines.extend([
             "",
-            "📧 Contact: viraldna9@gmail.com",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
             "",
         ])

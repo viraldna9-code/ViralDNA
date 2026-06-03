@@ -4,7 +4,74 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
-## [v75.3] — 2026-06-03 — Image Pipeline Overhaul: Watermark Rejection + Person Verification + Dedup
+## [v82.0] — 2026-06-03 — Topic-Based File Naming + 3 Title Variants + A/B Thumbnails + Growth-Focused Descriptions
+
+### Problem
+1. **Generic file names**: All output files named `production_main.mp4`, `production_short_1.mp4` — impossible to distinguish between topic runs, especially when reviewing on Google Drive
+2. **Single title in metadata**: Copy-paste doc showed only 1 title — no A/B testing support
+3. **Thumbnails not clearly listed**: A/B thumbnail variants not explicitly called out in metadata doc
+4. **Weak growth CTA**: Description template had minimal subscribe/share/like prompts — missing monetization hooks
+
+### Changes
+
+#### 1. Topic-Based File Naming (`run_multi_agent_pipeline.py`)
+- **Weighting Agent** now computes a `topic_slug` from the first 6 words of the topic title
+  - e.g. "Pawan Kalyan announces Jana Sena will contest" → `Pawan_Kalyan_announces_Jana_Sena_will`
+  - Stored in `state["topic_slug"]` for all downstream phases
+- **Assembly phase** uses slug for all output files:
+  - `{slug}_Main.mp4` (was `production_main.mp4`)
+  - `{slug}_Short1.mp4` (was `production_short_1.mp4`)
+  - `{slug}_Short2.mp4` (was `production_short_2.mp4`)
+- **Thumbnail phase** uses slug for all thumbnail files:
+  - `{slug}_branded.jpg`, `{slug}_clean.jpg` (was `production_branded.jpg`, `production_clean.jpg`)
+  - `{slug}_branded_v2.jpg`, `{slug}_branded_v3.jpg` (A/B variants)
+  - `{slug}_Short1.jpg`, `{slug}_Short2.jpg` (short thumbnails)
+- **Audio files** also renamed: `{slug}_Main.mp3`, `{slug}_Short1.mp3`, `{slug}_Short2.mp3`
+- **Drive copy** updated to look for topic-named files instead of `production_*`
+
+#### 2. 3 Title Variants in Metadata (`run_multi_agent_pipeline.py` → `_copy_to_gdrive`)
+- Copy-paste doc now shows **3 title variants** for main video with CTR scores:
+  ```
+  📝 TITLE VARIANTS (A/B Test):
+    Variant 1 ★ BEST: <title> (CTR: <score>)
+    Variant 2: <title> (CTR: <score>)
+    Variant 3: <title> (CTR: <score>)
+  ★ RECOMMENDED TITLE: <title>
+  ```
+- Reads from `state["ab_title_variants"]` or `state["title_variants"]` (set by CTROptimizerAgent)
+- Falls back to single title if no variants in state
+
+#### 3. A/B Testing Thumbnails (`run_multi_agent_pipeline.py` → `_copy_to_gdrive`)
+- Copy-paste doc now has a dedicated **THUMBNAILS (A/B Testing)** section:
+  ```
+  🖼️ THUMBNAILS (A/B Testing)
+  Variant 1 (default): {slug}_branded.jpg
+  Variant 2:            {slug}_branded_v2.jpg
+  Variant 3:            {slug}_branded_v3.jpg
+  Upload all 3 to YouTube Studio → Test & Compare
+  ```
+- Thumbnail creator already produces 3 distinct variants (different backgrounds, text positions)
+
+#### 4. Growth + Monetization Description (`youtube_uploader.py` → `_build_full_description`)
+- Enhanced description template with stronger CTAs:
+  - Added dedicated "SUBSCRIBE & GROW WITH US" section with visual separator
+  - Stronger like/comment/share prompts ("it helps us reach more Telugu people")
+  - Clear upload schedule: "🕘 New videos daily at 9:00 AM and 7:00 PM IST"
+  - Business/collab email separated from general contact
+  - Removed duplicate contact line (was appearing twice)
+
+### Files Modified
+- `modules/run_multi_agent_pipeline.py` — topic_slug computation, file naming, copy-paste doc
+- `modules/youtube_uploader.py` — description template with growth CTAs
+
+### Verification
+- VDNA122 run produced: `Pawan_Kalyan_announces_Jana_Sena_will_Main.mp4`, `_Short1.mp4`
+- Copy-paste doc shows 3 title variants + 3 thumbnail variants
+- Description includes enhanced subscribe/share/like CTAs
+
+---
+
+## [v81.0r3] — 2026-06-03 — Copy-Paste Metadata Doc for Drive Review
 
 ### Problem (VDNA121 quality failures)
 1. **Watermarked stock photos in video**: NDTV/Hindustan Times watermarked photos used in main video and shorts → copyright strike risk
