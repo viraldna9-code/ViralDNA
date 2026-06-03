@@ -27,26 +27,103 @@ REJECT_COPYRIGHT = {
     "reuters", "afp", "ani",  # news agency watermarks cause strikes
 }
 
-# Words extracted from topic titles that are NOT person names (skip words)
+# Words extracted from topic titles/scripts that are NOT person names.
+# Includes: grammar words, geography, politics, common English words that
+# appear capitalized in sentences (This, What, Did, Home, Union, etc.)
 PERSON_SKIP_WORDS = {
+    # Grammar / common English
     "and", "the", "with", "for", "from", "new", "old", "big", "small",
     "meets", "visit", "talks", "meeting", "after", "over", "under",
-    "then", "now", "today", "yesterday", "first", "last", "next",
+    "then", "now", "today", "yesterday", "tomorrow", "first", "last", "next",
     "more", "most", "some", "all", "any", "each", "every", "both",
+    "this", "that", "these", "those", "what", "when", "where", "which",
+    "who", "how", "why", "not", "but", "its", "his", "her", "our",
+    "did", "does", "done", "had", "has", "was", "were", "been", "being",
+    "will", "would", "could", "should", "can", "may", "might", "shall",
+    "get", "got", "getting", "make", "made", "making", "take", "took",
+    "come", "came", "coming", "go", "went", "going", "gone",
+    "say", "said", "saying", "tell", "told", "telling",
+    "see", "saw", "seen", "seeing", "look", "looked", "looking",
+    "give", "gave", "given", "giving", "find", "found", "finding",
+    "use", "used", "using", "put", "puts", "putting",
+    "try", "tried", "trying", "keep", "kept", "keeping",
+    "let", "lets", "letting", "begin", "began", "beginning",
+    "show", "showed", "shown", "showing", "hear", "heard", "hearing",
+    "play", "played", "playing", "run", "ran", "running",
+    "move", "moved", "moving", "live", "lived", "living",
+    "believe", "change", "happen", "include", "increase", "continue",
+    "set", "learn", "lead", "understand", "watch", "follow", "stop",
+    "create", "speak", "read", "spend", "grow", "open", "walk", "win",
+    "teach", "offer", "remember", "love", "consider", "appear", "buy",
+    "wait", "serve", "die", "send", "expect", "build", "stay", "fall",
+    "cut", "reach", "kill", "remain", "suggest", "raise", "pass", "sell",
+    "require", "report", "decide", "pull", "develop",
+    # Geography / politics
     "india", "indian", "delhi", "news", "minister", "chief", "leader",
     "president", "bjp", "congress", "tdp", "ysrcp", "mla", "mp",
     "pm", "cm", "govt", "government", "state", "central", "party",
     "telangana", "andhra", "tamil", "nadu", "telugu", "karnataka",
     "rally", "rallies", "event", "events", "press", "media",
+    "chennai", "hyderabad", "bangalore", "mumbai", "kolkata", "tirupati",
+    "visakhapatnam", "vijayawada", "guntur", "nellore", "kurnool",
+    "warangal", "karimnagar", "nizamabad", "khammam", "rajahmundry",
+    # Common nouns that appear capitalized
+    "home", "union", "national", "international", "global", "local",
+    "south", "north", "east", "west", "political", "social", "economic",
+    "public", "private", "official", "final", "main", "major", "minor",
+    "high", "low", "long", "short", "large", "late", "early",
+    "good", "bad", "great", "little", "right", "wrong", "real", "free",
+    "times", "time", "year", "years", "day", "days", "week", "month",
+    "people", "man", "men", "woman", "women", "group", "side",
+    # Weather / disasters
+    "heavy", "rain", "rains", "flood", "flooding", "storm", "cyclone",
 }
 
 
 def _extract_person_names(topic_title: str) -> list[str]:
-    """Extract likely person names (capitalized proper nouns) from a topic title."""
+    """Extract likely person names (capitalized proper nouns) from a topic title.
+    Strips news source suffixes like ' - The Hindu', ' - Times of India' etc.
+    Uses two strategies:
+    1. Consecutive capitalized word pairs (First Last) — almost always names
+    2. Single capitalized words after initials (K. Annamalai) or before/after
+       known name markers (meets, with, and, vs, etc.)
+    """
+    import re as _re
+    # Strip common news source suffixes: " - Source Name"
+    cleaned = _re.sub(
+        r'\s*[-–—]\s*(The\s+)?'
+        r'(Hindu|Times|Express|Tribune|Guardian|Independent|Post|Herald|BBC|CNN|NDTV|News|India|Deccan|Sakshi|Eenadu|Andhra|Telangana).*$',
+        '', topic_title, flags=_re.IGNORECASE
+    )
+
     names = []
-    for word in re.findall(r'\b[A-Z][a-z]{2,}\b', topic_title or ""):
-        if word.lower() not in PERSON_SKIP_WORDS:
-            names.append(word.lower())
+    words = _re.findall(r'\b[A-Z][a-z]{2,}\b', cleaned)
+
+    # Strategy 1: Consecutive capitalized pairs (First Last)
+    for i in range(len(words) - 1):
+        w1, w2 = words[i].lower(), words[i + 1].lower()
+        if w1 not in PERSON_SKIP_WORDS and w2 not in PERSON_SKIP_WORDS:
+            names.append(w2)  # Last name is the key identifier
+            names.append(w1)  # First name too
+
+    # Strategy 2: Single words near name markers or after initials
+    name_markers = {'meets', 'with', 'and', 'vs', 'visit', 'talks', 'meeting'}
+    for i, word in enumerate(words):
+        w = word.lower()
+        if w in PERSON_SKIP_WORDS or w in names:
+            continue
+        # After initial (K. Annamalai)
+        if i > 0 and len(words[i - 1]) <= 2 and words[i - 1].endswith('.'):
+            names.append(w)
+            continue
+        # Before/after name markers
+        if i > 0 and words[i - 1].lower() in name_markers:
+            names.append(w)
+            continue
+        if i < len(words) - 1 and words[i + 1].lower() in name_markers:
+            names.append(w)
+            continue
+
     return list(set(names))
 
 

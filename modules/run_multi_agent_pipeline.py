@@ -912,7 +912,8 @@ class SequentialAssemblyAgent(BaseAgent):
                 self.va.assemble_video(
                     "production_main.mp4", audio_path, background_canvas,
                     "production_main.mp4", main_seg["target_duration_s"],
-                    async_mode=False, script_text=main_seg["text"], is_short=False
+                    async_mode=False, script_text=main_seg["text"], is_short=False,
+                    topic_title=selected_topic.get("title", "")
                 )
                 main_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], "production_main.mp4")
                 if self._validate_compiled_video(main_path):
@@ -932,7 +933,8 @@ class SequentialAssemblyAgent(BaseAgent):
                     self.va.assemble_video(
                         f"production_short_{i}.mp4", short_audio, background_canvas,
                         f"production_short_{i}.mp4", short_seg["target_duration_s"],
-                        async_mode=False, script_text=short_seg["text"], is_short=True
+                        async_mode=False, script_text=short_seg["text"], is_short=True,
+                        topic_title=selected_topic.get("title", "")
                     )
                     short_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], f"production_short_{i}.mp4")
                     if self._validate_compiled_video(short_path):

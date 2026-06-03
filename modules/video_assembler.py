@@ -1054,7 +1054,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     def assemble_video(self, slot, audio_path, visual_path, output_name,
                        target_duration_s: float = 30.0, async_mode: bool = False,
-                       script_text: str = None, is_short: bool = False):
+                       script_text: str = None, is_short: bool = False,
+                       topic_title: str = ""):
         output_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], output_name)
 
         real_duration = self.get_audio_duration(audio_path)
@@ -1090,7 +1091,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             print(f"    Assembler: Preparing generative slideshow ({num_scenes} scenes) via multi-source image chain...")
             prompts = self.generate_image_prompts(script_text, num_scenes)
             slideshow_dir = os.path.join(runtime_dir, f"slideshow_{output_name.replace('.mp4', '')}")
-            image_paths = self.download_scene_images(prompts, slideshow_dir, topic_title=script_text[:100])
+            image_paths = self.download_scene_images(prompts, slideshow_dir, topic_title=topic_title or script_text[:100])
 
         if not image_paths:
             # v52.1: Try local image pack before falling back to static background
