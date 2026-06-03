@@ -178,13 +178,19 @@ class YouTubeUploader:
             target_utc = now_utc + main_delay
         return target_utc.isoformat().replace("+00:00", "Z")
 
-    # ─── Metadata Builder ───
-    def _create_metadata(self, title_raw: str, desc_raw: str, rag_context: str,
-                         topic: dict = None, is_short: bool = False,
-                         short_index: int = 0, variant_idx: int = 0) -> dict:
+    # ─── Public: Generate upload metadata (no API call) ───
+    def generate_upload_metadata(self, title_raw: str, desc_raw: str, rag_context: str,
+                                  topic: dict = None, is_short: bool = False,
+                                  short_index: int = 0) -> dict:
+        """Generate full YouTube upload metadata as a clean dict.
+
+        Does NOT call any YouTube API. Used by _copy_to_gdrive to produce
+        a copy-paste document when uploads are disabled.
+        Returns: {title, description, tags, category_id, privacy, is_short}
+        """
         topic = topic or {}
 
-        # Title — no variant suffix (only best variant uploaded)
+        # Title
         if is_short:
             title = f"{title_raw} #{self.shorts_tag}"
         else:
@@ -192,8 +198,49 @@ class YouTubeUploader:
         if len(title) > self.title_max_length:
             title = title[:self.title_max_length - 3] + "..."
 
-        # ── A2.6: SEO keyword injection ──
-        # Inject high-value topic keywords into description for YouTube search discovery
+        # Build full description (same logic as _create_metadata)
+        description = self._build_full_description(title_raw, desc_raw, rag_context,
+                                                    topic, is_short)
+
+        # Tags
+        default_tags = [
+            "Telugu news today", "Andhra Pradesh news", "Telangana news",
+            "AP news today", "Hyderabad news", "Vijayawada news", "Vizag news",
+            "Amaravati news", "Guntur news", "TheViralDNA", "The Viral DNA",
+            "Telugu breaking news", "Tenglish news", "India news today",
+            "NRI Telugu news", "Telugu current affairs", "AP Telangana updates",
+            "viral news India", "trending India 2026", "Telugu states news",
+        ]
+        topic_tags = [t.strip() for t in topic.get("tags", "").split(",") if t.strip()]
+        tags = topic_tags + [t for t in default_tags if t not in topic_tags]
+        if is_short and self.shorts_tag not in tags:
+            tags.append(self.shorts_tag)
+        tags_str = ",".join(tags)
+        if len(tags_str) > self.tags_max_length:
+            trimmed = []
+            current_len = 0
+            for tag in tags:
+                if current_len + len(tag) + 1 <= self.tags_max_length:
+                    trimmed.append(tag)
+                    current_len += len(tag) + 1
+                else:
+                    break
+            tags = trimmed
+
+        return {
+            "title": title,
+            "description": description,
+            "tags": tags,
+            "category_id": self.category_id,
+            "category_name": "News & Politics",
+            "privacy": self.privacy_status,
+            "language": "en-IN",
+            "is_short": is_short,
+        }
+
+    def _build_full_description(self, title_raw: str, desc_raw: str, rag_context: str,
+                                 topic: dict, is_short: bool) -> str:
+        """Build the full YouTube description string (shared by upload + metadata export)."""
         seo_keywords = self._extract_seo_keywords(topic, title_raw, desc_raw)
         seo_keyword_line = ""
         if seo_keywords:
@@ -203,110 +250,120 @@ class YouTubeUploader:
         if re.match(r"^https?://", sources_str):
             sources_str = "Verified Regional News Feeds"
 
-        # ── A2.8: Related links section ──
         related_links = self._build_related_links(topic)
-
-        # ── A2.9: Snippet-optimized description opening ──
-        # YouTube shows ~142 chars in search snippet. First 150 chars must
-        # contain the most searchable keywords for ranking benefit.
         snippet_prefix = self._build_snippet_prefix(title_raw, desc_raw, seo_keyword_line)
 
-        # Build rich description with channel identity + SEO
         description_lines = [
             snippet_prefix,
-            f"",
+            "",
             f"🔥 {title_raw}",
-            f"",
+            "",
             f"📰 SUMMARY:",
             f"{desc_raw}",
-            f"",
+            "",
             f"💡 BACKGROUND & CONTEXT:",
             f"{rag_context[:400]}",
-            f"",
+            "",
             f"📌 SOURCE: {sources_str}",
         ]
 
-        # A2.6: Insert SEO keyword line after source
         if seo_keyword_line:
-            description_lines.append(f"")
+            description_lines.append("")
             description_lines.append(seo_keyword_line)
 
         description_lines.extend([
-            f"",
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"📺 The Viral DNA — Real News. Real Voices. Built with AI.",
-            f"",
-            f"We cover news that matters to Telugu people everywhere:",
-            f"📍 Andhra Pradesh | Telangana | Telugu States",
-            f"🇮🇳 National India — politics, economy, policy",
-            f"🌍 Telugu people worldwide",
-            f"",
-            f"New videos daily at 9:00 AM and 7:00 PM IST",
-            f"Shorts at 12:00 PM and 9:00 PM IST",
-            f"",
-            f"🔔 Subscribe: https://www.youtube.com/@TheViralDNA",
-            f"👍 Like | 💬 Comment | 📤 Share with family",
-            f"📧 Contact: viraldna9@gmail.com",
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"",
+            "",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "📺 The Viral DNA — Real News. Real Voices. Built with AI.",
+            "",
+            "We cover news that matters to Telugu people everywhere:",
+            "📍 Andhra Pradesh | Telangana | Telugu States",
+            "🇮🇳 National India — politics, economy, policy",
+            "🌍 Telugu people worldwide",
+            "",
+            "New videos daily at 9:00 AM and 7:00 PM IST",
+            "Shorts at 12:00 PM and 9:00 PM IST",
+            "",
+            "🔔 Subscribe: https://www.youtube.com/@TheViralDNA",
+            "👍 Like | 💬 Comment | 📤 Share with family",
+            "📧 Contact: viraldna9@gmail.com",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "",
         ])
 
-        # A2.8: Related links
         if related_links:
-            description_lines.append(f"")
-            description_lines.append(f"📎 RELATED:")
+            description_lines.append("")
+            description_lines.append("📎 RELATED:")
             for link_text, link_url in related_links[:4]:
                 description_lines.append(f"  • {link_text}: {link_url}")
 
-        # E2.5: Affiliate links (topic-matched)
         affiliate_links = self._build_affiliate_links(topic, title_raw)
         if affiliate_links:
-            description_lines.append(f"")
-            description_lines.append(f"🔗 USEFUL LINKS:")
+            description_lines.append("")
+            description_lines.append("🔗 USEFUL LINKS:")
             for link_text, link_url in affiliate_links[:3]:
                 description_lines.append(f"  • {link_text}: {link_url}")
 
-        # E2.6: Crowdfunding support
         crowdfunding_line = self._build_crowdfunding_line(topic)
         if crowdfunding_line:
-            description_lines.append(f"")
+            description_lines.append("")
             description_lines.append(crowdfunding_line)
 
-        # E2.3: Merchandise shelf
         merch_line = self._build_merch_line(topic)
         if merch_line:
-            description_lines.append(f"")
+            description_lines.append("")
             description_lines.append(merch_line)
 
         description_lines.extend([
-            f"",
-            f"📧 Contact: viraldna9@gmail.com",
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"",
+            "",
+            "📧 Contact: viraldna9@gmail.com",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "",
         ])
 
-        # ── A2.7: Hashtag block ──
         hashtag_block = self._build_hashtag_block(topic, title_raw)
         description_lines.append(hashtag_block)
 
         description_lines.extend([
-            f"",
-            f"🤖 ALTERED CONTENT DISCLOSURE:",
-            f"This video was produced using AI-assisted tools: AI script generation,",
-            f"AI voice synthesis (edge-tts), algorithmic video assembly. Visuals may",
-            f"include AI-generated imagery. Labeled per YouTube synthetic media policies.",
-            f"©️ Produced by The ViralDNA Platform.",
+            "",
+            "🤖 ALTERED CONTENT DISCLOSURE:",
+            "This video was produced using AI-assisted tools: AI script generation,",
+            "AI voice synthesis (edge-tts), algorithmic video assembly. Visuals may",
+            "include AI-generated imagery. Labeled per YouTube synthetic media policies.",
+            "©️ Produced by The ViralDNA Platform.",
         ])
+
         description = "\n".join(description_lines)
 
         if len(description) > self.description_max_length:
             description = description[:self.description_max_length - 50] + "\n\n...[truncated]"
 
+        description = re.sub(r'<[^>]+>', '', description).replace("<", "").replace(">", "").strip()
+        return description
+
+    # ─── Metadata Builder (YouTube API format) ───
+    def _create_metadata(self, title_raw: str, desc_raw: str, rag_context: str,
+                         topic: dict = None, is_short: bool = False,
+                         short_index: int = 0, variant_idx: int = 0) -> dict:
+        topic = topic or {}
+
+        # Title
+        if is_short:
+            title = f"{title_raw} #{self.shorts_tag}"
+        else:
+            title = title_raw
+        if len(title) > self.title_max_length:
+            title = title[:self.title_max_length - 3] + "..."
+
+        # Description (reuse shared builder)
+        description = self._build_full_description(title_raw, desc_raw, rag_context,
+                                                    topic, is_short)
+
         # Sanitize
         title = re.sub(r'<[^>]+>', '', title).replace("<", "").replace(">", "").strip()
         description = re.sub(r'<[^>]+>', '', description).replace("<", "").replace(">", "").strip()
 
-        # Tags — channel keyword defaults for SEO (matches YouTube Studio keywords)
+        # Tags — channel keyword defaults for SEO
         default_tags = [
             "Telugu news today", "Andhra Pradesh news", "Telangana news",
             "AP news today", "Hyderabad news", "Vijayawada news", "Vizag news",
@@ -1158,6 +1215,10 @@ class YouTubeUploader:
             short_script_text = getattr(script_payload, f"{short_key}_raw", "") if script_payload else ""
             short_duration = getattr(script_payload, f"{short_key}_duration", 0) if script_payload else 0
             short_thumb = os.path.join(thumbnails_dir, f"short_{s_idx}_thumb.jpg")
+            # Also check the newer naming convention from ThumbnailCreator
+            short_thumb_v2 = os.path.join(thumbnails_dir, f"short_{s_idx}_branded.jpg")
+            if not os.path.exists(short_thumb) and os.path.exists(short_thumb_v2):
+                short_thumb = short_thumb_v2
 
             if os.path.exists(short_video_path) and short_title_variants:
                 # Pick best title (variant 0)

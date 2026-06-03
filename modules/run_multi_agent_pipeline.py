@@ -1203,24 +1203,157 @@ class ResilientUploaderAgent(BaseAgent):
             print(f"  [DriveCopy] No output files found")
             return
 
-        # Create manifest with full YouTube upload metadata
+        # ── Generate full YouTube metadata using YouTubeUploader ──
+        # This reuses the exact same metadata builder as actual uploads,
+        # ensuring the copy-paste document is always in sync.
+        uploader = YouTubeUploader.__new__(YouTubeUploader)
+        # Minimal init: only set the config attributes needed by generate_upload_metadata
+        uploader.global_config = config
+        uploader.upload_config = getattr(config, 'YOUTUBE_UPLOAD_CONFIG', {})
+        uploader.api_config = getattr(config, 'YOUTUBE_API_CONFIG', {})
+        uploader.privacy_status = uploader.upload_config.get("privacy_status", "private")
+        uploader.category_id = uploader.upload_config.get("category_id", "25")
+        uploader.default_language = uploader.upload_config.get("default_language", "en")
+        uploader.title_max_length = 100
+        uploader.description_max_length = 5000
+        uploader.tags_max_length = 500
+        uploader.shorts_tag = getattr(config, 'SHORTS_TAG', 'Shorts')
+        uploader.HIGH_VALUE_KEYWORDS = getattr(config, 'HIGH_VALUE_KEYWORDS', [])
+        uploader._used_image_hashes = set()
+
+        # Helper methods needed by generate_upload_metadata
+        uploader._build_related_links = lambda topic: []
+        uploader._build_snippet_prefix = lambda *a: ""
+        uploader._build_affiliate_links = lambda *a: []
+        uploader._build_crowdfunding_line = lambda *a: ""
+        uploader._build_merch_line = lambda *a: ""
+
+        def _build_hashtag_block(self_ref, topic_dict, title):
+            tags = set()
+            for tag_str in topic_dict.get("tags", "").split(","):
+                t = tag_str.strip()
+                if t:
+                    tags.add("#" + t.replace(" ", ""))
+            state_tags = {"TeluguNews", "AndhraPradesh", "TelanganaNews", "ViralDNA", "TeluguNewsToday", "BreakingNews", "IndiaNewsToday"}
+            tags.update(state_tags)
+            return " ".join(sorted(tags))
+        uploader._build_hashtag_block = lambda topic_dict, title: _build_hashtag_block(uploader, topic_dict, title)
+
+        # Gather titles and descriptions from state
         optimized_title = state.get("optimized_title", "") or topic.get("title", "")
         title_variants = state.get("title_variants", [])
         shorts_variants = state.get("shorts_title_variants", [])
-        # Extract tags from topic
-        topic_tags = topic.get("tags", [])
-        topic_desc = topic.get("description", "")
-        topic_category = topic.get("category", "news_politics")
-        # Get main script text for description
+
         main_script_text = ""
+        main_desc_text = ""
+        short_scripts = ["", ""]
         script_payload = state.get("script_payload")
         if script_payload:
             try:
                 main_seg = script_payload.get_segment("main")
                 if main_seg:
-                    main_script_text = main_seg.get("text", "")[:2000]
+                    full = main_seg.get("text", "")
+                    main_script_text = full[:2000]
+                    main_desc_text = full[:800]
+                for si in range(2):
+                    sseg = script_payload.get_segment(f"short_{si}")
+                    if sseg:
+                        short_scripts[si] = sseg.get("text", "")[:500]
             except Exception:
                 pass
+
+        # Main video title
+        main_title = optimized_title
+        if title_variants:
+            try:
+                main_title = title_variants[0].get("title", optimized_title) if isinstance(title_variants[0], dict) else str(title_variants[0])
+            except (IndexError, AttributeError):
+                main_title = optimized_title
+
+        # Short titles
+        short_titles = []
+        for si in range(2):
+            if si < len(shorts_variants) and shorts_variants[si]:
+                try:
+                    st = shorts_variants[si].get("title", "") if isinstance(shorts_variants[si], dict) else str(shorts_variants[si])
+                except (AttributeError, TypeError):
+                    st = f"Short {si+1}: {optimized_title[:80]}"
+                short_titles.append(st)
+            else:
+                short_titles.append(f"Short {si+1}: {optimized_title[:80]}")
+
+        # Generate metadata for each video
+        main_meta = uploader.generate_upload_metadata(
+            title_raw=main_title,
+            desc_raw=main_desc_text or topic.get("title", ""),
+            rag_context=main_script_text[:500],
+            topic=topic,
+            is_short=False,
+        )
+
+        short_metas = []
+        for si in range(2):
+            sm = uploader.generate_upload_metadata(
+                title_raw=short_titles[si],
+                desc_raw=short_scripts[si] or f"{short_titles[si]} — {topic.get('title', '')}",
+                rag_context=short_scripts[si][:400] if short_scripts[si] else main_script_text[:400],
+                topic=topic,
+                is_short=True,
+                short_index=si,
+            )
+            short_metas.append(sm)
+
+        # ── Copy-paste document (clean text for YouTube Studio) ──
+        copy_paste_lines = []
+        copy_paste_lines.append(f"{'='*60}")
+        copy_paste_lines.append(f"VDNA — YouTube Upload Metadata")
+        copy_paste_lines.append(f"Topic: {topic.get('title', '')}")
+        copy_paste_lines.append(f"{'='*60}")
+        copy_paste_lines.append("")
+
+        copy_paste_lines.append(f"{'─'*40}")
+        copy_paste_lines.append(f"📹 MAIN VIDEO")
+        copy_paste_lines.append(f"{'─'*40}")
+        copy_paste_lines.append(f"TITLE: {main_meta['title']}")
+        copy_paste_lines.append("")
+        copy_paste_lines.append(f"DESCRIPTION:\n{main_meta['description']}")
+        copy_paste_lines.append("")
+        copy_paste_lines.append(f"TAGS ({len(main_meta['tags'])}):\n{', '.join(main_meta['tags'])}")
+        copy_paste_lines.append("")
+        copy_paste_lines.append(f"Category: {main_meta['category_name']} ({main_meta['category_id']})")
+        copy_paste_lines.append(f"Privacy: {main_meta['privacy']}")
+        copy_paste_lines.append(f"Language: {main_meta['language']}")
+        copy_paste_lines.append("")
+
+        for si, sm in enumerate(short_metas):
+            copy_paste_lines.append(f"{'─'*40}")
+            copy_paste_lines.append(f"📱 SHORT {si+1}")
+            copy_paste_lines.append(f"{'─'*40}")
+            copy_paste_lines.append(f"TITLE: {sm['title']}")
+            copy_paste_lines.append("")
+            copy_paste_lines.append(f"DESCRIPTION:\n{sm['description']}")
+            copy_paste_lines.append("")
+            copy_paste_lines.append(f"TAGS ({len(sm['tags'])}):\n{', '.join(sm['tags'])}")
+            copy_paste_lines.append("")
+
+        copy_paste_lines.append(f"{'='*60}")
+        copy_paste_lines.append(f"THUMBNAILS")
+        copy_paste_lines.append(f"{'='*60}")
+        copy_paste_lines.append(f"Main: production_branded.jpg (or v1/v2/v3 for A/B)")
+        for si in range(2):
+            copy_paste_lines.append(f"Short {si+1}: short_{si+1}_branded.jpg")
+        copy_paste_lines.append("")
+        copy_paste_lines.append(f"GDrive folder: {gdrive_dest}")
+        copy_paste_lines.append(f"{'='*60}")
+
+        copy_paste_doc = "\n".join(copy_paste_lines)
+        copy_paste_path = os.path.join("/tmp", f"_copy_paste_{topic_id}.txt")
+        with open(copy_paste_path, "w") as cp:
+            cp.write(copy_paste_doc)
+        files_to_copy.append(copy_paste_path)
+        print(f"  [DriveCopy] Copy-paste doc generated: {copy_paste_path}")
+
+        # ── Manifest JSON ──
         manifest = {
             "topic": topic.get("title", ""),
             "topic_id": topic_id,
@@ -1228,27 +1361,12 @@ class ResilientUploaderAgent(BaseAgent):
             "date": ist_now.isoformat(),
             "files": [os.path.basename(f) for f in files_to_copy],
             "gdrive_folder": gdrive_dest,
-            "instructions": "Review videos, then upload to YouTube manually.",
+            "instructions": "Review videos, then upload to YouTube manually. See _copy_paste_*.txt for title/description/tags.",
             "youtube_upload_metadata": {
-                "main_video": {
-                    "title": optimized_title,
-                    "description": topic_desc,
-                    "tags": topic_tags,
-                    "category": topic_category,
-                    "title_variants": [v.get("title", "") if isinstance(v, dict) else str(v) for v in title_variants[:5]],
-                    "privacy": "private",
-                    "made_for_kids": False,
-                },
-                "shorts": [
-                    {
-                        "title": shorts_variants[i].get("title", "") if i < len(shorts_variants) and isinstance(shorts_variants[i], dict) else f"Short {i+1}: {optimized_title[:80]}",
-                        "description": f"{optimized_title}\n\n{topic_desc[:200]}",
-                        "tags": topic_tags[:10],
-                    }
-                    for i in range(2)
-                ],
-                "script_excerpt": main_script_text[:500],
-            }
+                "main_video": main_meta,
+                "shorts": short_metas,
+            },
+            "copy_paste_file": os.path.basename(copy_paste_path),
         }
         manifest_path = os.path.join("/tmp", f"_manifest_{topic_id}.json")
         with open(manifest_path, "w") as mf:
