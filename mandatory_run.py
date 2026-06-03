@@ -82,20 +82,33 @@ def check_freshness(data: dict) -> tuple[bool, str]:
         return False, f"Could not parse last_run: {e}"
 
 
+TELUGU_KEYWORDS = [
+    'telangana', 'andhra', 'telugu', 'hyderabad', 'amaravati', 'visakhapatnam',
+    'vijayawada', 'warangal', 'khammam', 'nellore', 'kurnool', 'tirupati',
+    'pawan kalyan', 'jana sena', 'tdp', 'bjp', 'congress', 'trs', 'brs',
+    'revanth reddy', 'chandrababu naidu', 'kcr', 'ktr', 'annamalai',
+    'tamil nadu', 'chennai',  # included because of cross-state Telugu relevance
+]
+
+def is_telugu_relevant(topic: dict) -> bool:
+    """Check if a topic is relevant to Telugu audience."""
+    title = (topic.get('title', '') + ' ' + topic.get('source', '')).lower()
+    return any(kw in title for kw in TELUGU_KEYWORDS)
+
+
 def find_highest_pending(data: dict) -> dict | None:
-    """Find the highest-scoring topic that hasn't been published yet."""
+    """Find the highest-scoring topic that:
+    1. Hasn't been published yet
+    2. Has score >= 20
+    3. Is Telugu-relevant"""
     topics = data.get("topics", [])
-    pending = data.get("pending_review", [])
 
-    # Get IDs of pending (not yet produced) topics
-    pending_ids = {p["id"] for p in pending}
-
-    # Filter to unpublished topics with score >= 20
+    # Filter to unpublished, Telugu-relevant topics with score >= 20
     candidates = [
         t for t in topics
-        if t.get("id") in pending_ids
+        if t.get("score", 0) >= 20
         and not t.get("published", False)
-        and t.get("score", 0) >= 20
+        and is_telugu_relevant(t)
     ]
 
     if not candidates:
@@ -119,6 +132,7 @@ def confirm_topic(topic: dict) -> bool:
     rescored_at = topic.get("rescored_at", "unknown")
     breakdown = topic.get("score_breakdown", topic.get("breakdown", []))
     breakdown_str = " | ".join(breakdown) if breakdown else "N/A"
+    telugu_rel = "YES ✅" if is_telugu_relevant(topic) else "NO ⚠️"
 
     print()
     print("=" * 60)
@@ -127,6 +141,7 @@ def confirm_topic(topic: dict) -> bool:
     print(f"  ID:         {topic_id}")
     print(f"  Title:      {title}")
     print(f"  Score:      {score}/30")
+    print(f"  Telugu Rel: {telugu_rel}")
     print(f"  Source:     {source}")
     print(f"  News Date:  {date}")
     print(f"  Rescored:   {rescored_at}")
@@ -134,12 +149,7 @@ def confirm_topic(topic: dict) -> bool:
     print("=" * 60)
     print()
 
-    # Non-interactive mode: auto-confirm
-    if not sys.stdin.isatty():
-        print("  [Non-interactive] Auto-confirming...")
-        return True
-
-    # Ask for confirmation
+    # Ask for confirmation (always interactive — mandatory runs require human approval)
     while True:
         response = input("  Execute this topic? [y/n]: ").strip().lower()
         if response in ("y", "yes"):
