@@ -576,14 +576,15 @@ class ThumbnailCreator:
                     print(f"  ⚠️ Logo watermark error: {e}")
 
             # Save variant thumbnail
-            # v81.0: Only save branded_path for v_idx==0, variants start at v1
+            # v81.0: branded.jpg IS the first variant (v_idx==0)
+            # Additional variants: branded_v2.jpg, branded_v3.jpg (different backgrounds)
             if v_idx == 0:
                 img_branded.save(branded_path, "JPEG", quality=92)
                 result["path"] = branded_path
-
-            # Always save numbered variant (v1, v2, v3...)
-            variant_path = os.path.join(thumb_output_dir, f"{sk}_branded_v{v_idx + 1}.jpg")
-            img_branded.save(variant_path, "JPEG", quality=92)
+                variant_path = branded_path  # v1 IS branded.jpg
+            else:
+                variant_path = os.path.join(thumb_output_dir, f"{sk}_branded_v{v_idx + 1}.jpg")
+                img_branded.save(variant_path, "JPEG", quality=92)
             result["variants"].append({"path": variant_path, "title": title_text, "index": v_idx + 1})
 
         return result
