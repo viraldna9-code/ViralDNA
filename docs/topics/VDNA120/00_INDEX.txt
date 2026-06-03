@@ -1,0 +1,71 @@
+================================================================
+  VIRALDNA — VDNA120 — TOPIC INDEX
+================================================================
+
+Topic:     Congress terms Pawan Kalyan's remark as disrespecting Telangana's identity
+Topic ID:  VDNA120
+Source:    The Hindu
+Score:     21/30  |  Ad-Friendly: 92/100
+Date:      2026-06-02
+Category:  News & Politics (25)
+Privacy:   private
+Language:  en-IN
+
+────────────────────────────────────────────────────────────────
+  VIDEOS IN THIS TOPIC (3 total)
+────────────────────────────────────────────────────────────────
+
+  1. MAIN VIDEO
+     File:     production_main.mp4
+     Duration: 70.58s  |  Size: 10.2 MB  |  1280x720
+     Titles:   "Telangana Identity in Question?" (CTR 65)
+               "Congress vs Pawan Kalyan: Identity Row Explained" (CTR 38)
+     Thumbs:   3 variants (branded.jpg, v2, v3) — A/B test all 3
+     Scenes:   5 real news photos (The Hindu, NDTV, Indian Express)
+     Metadata: docs/topics/VDNA120/01_MAIN_VIDEO.txt
+
+  2. SHORT 1
+     File:     production_short_1.mp4
+     Duration: 14.62s  |  Size: 4.2 MB  |  1080x1920
+     Title:    "Political Firestorm! #Shorts"
+     Thumbnail: First frame (auto — Shorts don't support custom)
+     Metadata: docs/topics/VDNA120/02_SHORT_1.txt
+
+  3. SHORT 2
+     File:     production_short_2.mp4
+     Duration: 14.62s  |  Size: 4.2 MB  |  1080x1920
+     Title:    "What it means for you #Shorts"
+     Thumbnail: First frame (auto — Shorts don't support custom)
+     Metadata: docs/topics/VDNA120/03_SHORT_2.txt
+
+────────────────────────────────────────────────────────────────
+  FILE LOCATIONS (on disk)
+────────────────────────────────────────────────────────────────
+
+  videos/production_main.mp4          (10,238 KB)
+  videos/production_short_1.mp4       (4,156 KB)
+  videos/production_short_2.mp4       (4,171 KB)
+
+  thumbnails/production_branded.jpg   (196 KB)  — Variant A
+  thumbnails/production_branded_v2.jpg (208 KB)  — Variant B
+  thumbnails/production_branded_v3.jpg (156 KB)  — Variant C
+
+  docs/topics/VDNA120/01_MAIN_VIDEO.txt
+  docs/topics/VDNA120/02_SHORT_1.txt
+  docs/topics/VDNA120/03_SHORT_2.txt
+
+────────────────────────────────────────────────────────────────
+  PIPELINE STATS
+────────────────────────────────────────────────────────────────
+
+  Total time:      525.77 seconds (8.76 minutes)
+  Phases completed: 30/31
+  Failed phases:   Content Calendar, Upload Timing Optimizer
+  Voice engine:    Edge-TTS en-IN-PrabhatNeural
+  Image source:    News RSS (The Hindu, NDTV, Indian Express)
+  Real photos:     5 (0% AI-generated)
+  ComfyUI used:    No (all real photos)
+
+================================================================
+  END — TOPIC INDEX
+================================================================

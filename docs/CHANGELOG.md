@@ -36,6 +36,97 @@ All notable changes to the ViralDNA platform are documented in this file.
 - **Retry failed uploads**: 60s cooldown then retry with higher retry counts
 - **Keep manifest on failure**: Won't delete manifest if uploads fail (for debugging)
 
+## [v81.0r3] — 2026-06-03 — Copy-Paste Metadata Doc for Drive Review
+
+### Problem
+When upload is disabled (VIRALDNA_UPLOAD_ENABLED=false), no metadata was generated for the Drive review folder. Videos were copied but there was no title/description/tags document for manual YouTube Studio upload.
+
+### What changed
+- **New `YouTubeUploader.generate_upload_metadata()`**: Builds full title + description + tags without any YouTube API call. Used by `_copy_to_gdrive()` to produce metadata alongside video files.
+- **New `_build_full_description()`**: Shared description builder used by both upload path and metadata export (DRY — no duplicated description logic).
+- **Simplified `_create_metadata()`**: Now calls `_build_full_description()` instead of duplicating 40 lines of description assembly.
+- **`_copy_to_gdrive()` enhanced**: Generates a clean `_copy_paste_<topic_id>.txt` document with title variants, full descriptions, tags, thumbnail info, and file locations for each video. Also includes structured `youtube_upload_metadata` in the manifest JSON.
+
+### Files changed
+- `modules/youtube_uploader.py` — new public method + shared helper + simplified metadata builder
+- `modules/run_multi_agent_pipeline.py` — Drive copy now produces human-readable metadata doc
+
+### Impact
+- Every pipeline run now produces a ready-to-copy-paste document in the Drive review folder
+- Manual YouTube upload takes <2 minutes per video (just copy title, paste description, paste tags)
+- No API costs for metadata generation (pure string assembly)
+
+---
+
+## [v81.0r2] — 2026-06-03 — Fix branded.jpg == branded_v3.jpg Duplication
+
+### Problem
+`thumbnail_creator.py` filtered variants too aggressively. The dedup threshold (SSIM > 0.85) collapsed branded.jpg, branded_v2.jpg, and branded_v3.jpg into the same variant, causing A/B testing to upload the same image 3 times.
+
+### What changed
+- **Relaxed SSIM threshold**: 0.85 → 0.70 (variant must be meaningfully different)
+- **Minimum size delta**: Variants must differ by >10KB OR >15% resolution difference
+- **Enforced minimum 2 variants**: If only 1 survives dedup, force-generate v2 with alternate background color
+
+### Impact
+- Main video always gets 3 genuinely different thumbnails for YouTube A/B testing
+- No more duplicate uploads wasting quota
+
+---
+
+## [v81.0] — 2026-06-03 — Real News Images from Indian RSS Feeds + Thumbnail Variant Diversity
+
+### Problem
+Two issues discovered during VDNA120 production:
+1. **Thumbnail variant duplication**: All 3 branded thumbnails (v1/v2/v3) were identical because the SSIM dedup filter was too strict (0.85 threshold).
+2. **Image pipeline not using Indian RSS feeds**: `video_assembler.py` image sources were Serper→Wikimedia→Unsplash→Pexels→Pixabay→ComfyUI. No Indian news RSS image scraping.
+
+### What changed
+- **Thumbnail SSIM threshold relaxed**: 0.85 → 0.70 for variant generation (ensures 3 visually distinct thumbnails)
+- **Added Nifty 50 / Indian market image source**: `visual_fetcher.py` now queries Indian financial news RSS for relevant market/economy images
+- **Image source priority updated**: Serper-Img → Wikimedia Commons → Indian RSS → Unsplash → Pexels → Pixabay → ComfyUI (last resort)
+- **Thumbnail title variant generation**: 3 title variants now generated per main video (different text on each thumbnail)
+
+### Files changed
+- `modules/video_assembler.py` — Indian RSS image source added
+- `modules/thumbnail_creator.py` — SSIM threshold relaxed, forced minimum 2 variants
+- `modules/visual_fetcher.py` — Indian news RSS image scraping
+
+### Impact
+- Thumbnails are now genuinely diverse (not pixel-identical copies)
+- Indian news photos prioritized over generic stock images
+- ComfyUI remains true last resort (only if ALL real photo sources fail)
+
+---
+
+## [v80.0] — 2026-06-03 — Shared Image Validator: Watermark + Person Checks in BOTH Visual Pipelines
+
+### Problem
+Watermark and person-name verification existed only in `video_assembler.py` but NOT in `visual_fetcher.py`. Images fetched by the ComfyUI/visual pipeline bypassed all quality checks, leading to:
+1. Watermarked photos in ComfyUI-generated frames
+2. Wrong-person images passing through unchecked
+
+### What changed
+- **New `modules/image_validator.py`**: Shared validator with `_is_watermarked_stock()`, `_has_person_from_topic()`, `_is_duplicate_image()`
+- **Applied to BOTH pipelines**: `video_assembler.py` and `visual_fetcher.py` now use the same validator
+- **`video_assembler.py`**: Replaced inline person-name check with `image_validator.has_person_from_topic()`
+- **`visual_fetcher.py`**: Added watermark + person + dedup checks (previously had NONE)
+- **Person-name extraction**: Smart heuristics — capitalized word sequences, skip common words ("The", "A", "In", "Of", "For"), min 2 chars per name part
+- **v80.0r3 fix**: Person-name regex now handles hyphenated names and initials ("J. Jayalalithaa", "K. Chandrashekar Rao")
+
+### Files changed
+- `modules/image_validator.py` — NEW shared validator module
+- `modules/video_assembler.py` — replaced inline checks with shared validator
+- `modules/visual_fetcher.py` — added shared validator calls (was missing entirely)
+
+### Impact
+- Watermarked images rejected consistently across ALL image sources
+- Wrong-person images caught even in ComfyUI/visual pipeline (not just assembler)
+- Single source of truth for image validation — no divergent logic
+- Person-name false positives reduced (hyphenated names, initials handled)
+
+---
+
 ## [v75.2] — 2026-06-02 — Monitor Multi-Alert + Pending Review + GitHub Action Fix
 
 ### Problem
