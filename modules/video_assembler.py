@@ -678,30 +678,12 @@ Script:
                                                     print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED wrong state (title: {img_title[:60]}...)")
                                                     continue
 
-                                    # v75.3: Person-name verification
-                                    # If topic has specific person names, the image MUST contain them
-                                    # Extract capitalized proper nouns from topic_title as person name candidates
-                                    import re as _re
-                                    _skip_words = {"and", "the", "with", "for", "from", "new", "old", "big", "small",
-                                                   "meets", "visit", "talks", "meeting", "after", "over", "under",
-                                                   "then", "now", "today", "yesterday", "first", "last", "next",
-                                                   "more", "most", "some", "all", "any", "each", "every", "both",
-                                                   "india", "indian", "delhi", "news", "minister", "chief", "leader",
-                                                   "president", "bjp", "congress", "tdp", "ysrcp", "mla", "mp",
-                                                   "pm", "cm", "govt", "government", "state", "central", "party"}
-                                    _topic_title_raw = topic_title or ""
-                                    _proper_nouns = []
-                                    for _w in _re.findall(r'\b[A-Z][a-z]{2,}\b', _topic_title_raw):
-                                        if _w.lower() not in _skip_words:
-                                            _proper_nouns.append(_w.lower())
-                                    # If the topic has a person name (like "Annamalai", "Naidu", "Reddy"),
-                                    # reject images whose title doesn't include ANY of those names
-                                    if _proper_nouns:
-                                        _img_title_lower = img_title.lower()
-                                        _any_name_found = any(_pn in _img_title_lower for _pn in _proper_nouns)
-                                        if not _any_name_found:
-                                            print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED person missing (expected: {_proper_nouns[:3]}, title: {img_title[:60]}...)")
-                                            continue
+                                    # v80.0: Person-name verification (shared validator)
+                                    from modules.image_validator import check_person_name_in_title
+                                    _person_ok, _expected = check_person_name_in_title(topic_title or "", img_title)
+                                    if not _person_ok:
+                                        print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED person missing (expected: {_expected}, title: {img_title[:60]}...)")
+                                        continue
 
                                     req2 = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
                                     with urllib.request.urlopen(req2, timeout=10) as dl:
