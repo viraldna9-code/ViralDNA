@@ -184,16 +184,36 @@ class ThumbnailCreator:
                             pass
                         if img:
                             return img
-            # 2. Check runtime viz_news images
-            candidates = sorted(
-                [f for f in os.listdir(runtime_dir) if f.startswith("viz_news_") and f.endswith(".jpg")],
-                reverse=True
-            )
-            for fname in candidates:
-                fpath = os.path.join(runtime_dir, fname)
-                img = self._try_load_image(fpath)
-                if img:
-                    return img
+            # 2. Check runtime viz_news images (from VisualFetcher)
+            if runtime_dir and os.path.isdir(runtime_dir):
+                candidates = sorted(
+                    [f for f in os.listdir(runtime_dir) if f.startswith("viz_news_") and f.endswith(".jpg")],
+                    reverse=True
+                )
+                for fname in candidates:
+                    fpath = os.path.join(runtime_dir, fname)
+                    img = self._try_load_image(fpath)
+                    if img:
+                        # v80.0: Watermark check for viz_news images too
+                        try:
+                            from PIL import Image as PILImage
+                            from PIL.ExifTags import TAGS as EXIF_TAGS
+                            im = PILImage.open(fpath)
+                            exif = im.getexif()
+                            if exif:
+                                for tid, val in exif.items():
+                                    tag = EXIF_TAGS.get(tid, tid)
+                                    if tag in ("Copyright", "Artist", "ImageDescription"):
+                                        val_lower = str(val).lower()
+                                        _bad = ["hindustan times", "getty", "shutterstock", "dreamstime", "alamy", "reuters", "afp"]
+                                        if any(b in val_lower for b in _bad):
+                                            print(f"  Thumbnail: REJECTED {fname} (copyright: {val[:60]})")
+                                            img = None
+                                            break
+                        except Exception:
+                            pass
+                        if img:
+                            return img
 
         # 3. FALLBACK: Local Image Pack (v52.1 — prevents solid-color thumbnails)
         if topic_text:

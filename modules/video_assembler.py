@@ -370,10 +370,40 @@ Script:
                 score -= (edge_density - 0.20) * 150
                 reasons.append(f"high_edges({edge_density:.2f})")
 
+            # Method C: Quadrant edge analysis — detect broadcast screenshot pattern
+            # News broadcast screenshots have: (a) high edge density in one corner (channel logo),
+            # (b) a horizontal band at the bottom (news ticker text)
+            # Real photos have relatively even edge distribution across the image
+            try:
+                qh, qw = h // 2, w // 2
+                quadrants = [
+                    edges[0:qh, 0:qw],         # top-left
+                    edges[0:qh, qw:w],         # top-right
+                    edges[qh:h, 0:qw],         # bottom-left
+                    edges[qh:h, qw:w],         # bottom-right
+                ]
+                q_densities = [np.count_nonzero(q) / (qh * qw) for q in quadrants]
+                max_q = max(q_densities)
+                min_q = min(q_densities)
+                # If one quadrant has 3x+ the edge density of the least-dense quadrant,
+                # that's likely a channel logo in a corner
+                if min_q > 0.01 and max_q / min_q > 3.0 and max_q > 0.25:
+                    # Check bottom half has high edges (ticker bar)
+                    bottom_half = edges[qh:h, :]
+                    bottom_density = np.count_nonzero(bottom_half) / (qh * w)
+                    top_half = edges[0:qh, :]
+                    top_density = np.count_nonzero(top_half) / (qh * w)
+                    if bottom_density > top_density * 1.5 and bottom_density > 0.15:
+                        return {"passed": False,
+                                "reason": f"Broadcast screenshot (corner logo q_ratio={max_q/min_q:.1f}, "
+                                           f"bottom_ticker={bottom_density:.2f})", "score": 0}
+            except Exception:
+                pass
+
             # Method B: MSER text region detection
             # DISABLED for news content — real news photos frequently have watermarks,
             # captions, and channel logos that trigger false positives.
-            # The edge density check (Method A) is sufficient to catch actual screenshots.
+            # The edge density check (Method A) + quadrant check (Method C) catch screenshots.
             # try:
             #     mser = cv2.MSER_create()
             #     regions, _ = mser.detectRegions(gray)

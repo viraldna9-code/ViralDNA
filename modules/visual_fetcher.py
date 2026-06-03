@@ -143,6 +143,24 @@ def score_image_quality(data: bytes, url: str) -> dict:
             score -= (edge_density - 0.25) * 100  # v70.0: Reduced penalty from 200
             issues.append(f"high_edges({edge_density:.2f})")
 
+        # 2b. v80.0: Quadrant edge analysis — detect broadcast screenshot pattern
+        # Same check as video_assembler.py — keep both pipelines consistent
+        try:
+            qh, qw = h // 2, w // 2
+            quadrants = [
+                edges[0:qh, 0:qw], edges[0:qh, qw:w],
+                edges[qh:h, 0:qw], edges[qh:h, qw:w],
+            ]
+            q_densities = [np.count_nonzero(q) / (qh * qw) for q in quadrants]
+            max_q, min_q = max(q_densities), min(q_densities)
+            if min_q > 0.01 and max_q / min_q > 3.0 and max_q > 0.25:
+                bottom_density = np.count_nonzero(edges[qh:h, :]) / (qh * w)
+                top_density = np.count_nonzero(edges[0:qh, :]) / (qh * w)
+                if bottom_density > top_density * 1.5 and bottom_density > 0.15:
+                    return {"score": 0, "issues": [f"Broadcast screenshot (q_ratio={max_q/min_q:.1f}, ticker={bottom_density:.2f})"]}
+        except Exception:
+            pass
+
         # 3. MSER text region detection — DISABLED v70.0
         # News screenshots legitimately have text overlays. Re-enabling this
         # would reject most real news photos from Serper.
@@ -297,7 +315,12 @@ def score_semantic_relevance(topic_title: str, image_title: str = "",
 class VisualFetcher:
     def __init__(self, pacer, config_instance):
         self.api_key = config.API_KEYS.get("SERPER_API_KEY")
-        print("  VisualFetcher (v41.0): Quality Scoring + Validation + License Tracking Active.")
+        # v80.0: shared image validator + dedup for watermark/person checks
+        from modules.image_validator import is_watermarked_stock, check_person_name_in_title
+        self._is_watermarked_stock = is_watermarked_stock
+        self._check_person_name_in_title = check_person_name_in_title
+        self._used_image_hashes = set()
+        print("  VisualFetcher (v80.0): Quality Scoring + Validation + License Tracking + Watermark/Person Check Active.")
 
     def _download_single_image(self, url: str, save_path: str, topic_title: str = "",
                                image_title: str = "", image_source: str = "",
@@ -351,6 +374,41 @@ class VisualFetcher:
             # Save to disk
             with open(save_path, "wb") as f:
                 f.write(data)
+
+            # v80.0 Layer 2.5: Watermark/copyright rejection (shared validator)
+            is_stock, stock_reason = self._is_watermarked_stock(
+                save_path, img_url=url, img_title=image_title, img_source=image_source
+            )
+            if is_stock:
+                print(f"    Image REJECTED (watermark/copyright): {stock_reason}  {url[:60]}")
+                try:
+                    os.remove(save_path)
+                except Exception:
+                    pass
+                return False
+
+            # v80.0 Layer 2.6: Person-name verification (shared validator)
+            if topic_title and image_title:
+                person_ok, expected_names = self._check_person_name_in_title(topic_title, image_title)
+                if not person_ok:
+                    print(f"    Image REJECTED (person missing): expected {expected_names}, title: {image_title[:60]}")
+                    try:
+                        os.remove(save_path)
+                    except Exception:
+                        pass
+                    return False
+
+            # v80.0 Layer 2.7: Dedup — reject if same image already used this run
+            import hashlib
+            data_hash = hashlib.md5(data).hexdigest()
+            if data_hash in self._used_image_hashes:
+                print(f"    Image REJECTED (duplicate hash {data_hash[:12]}): {url[:60]}")
+                try:
+                    os.remove(save_path)
+                except Exception:
+                    pass
+                return False
+            self._used_image_hashes.add(data_hash)
 
             # Layer 3: License tracking
             self._track_fetched_image(url, save_path, topic_title, resp.headers)
