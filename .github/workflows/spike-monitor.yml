@@ -32,12 +32,15 @@ jobs:
 
       - name: Commit topics file back to repo
         if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "ViralDNA Bot"
           git config user.email "bot@viraldna.local"
           git add logs/topics_history.json logs/audit_warnings.log 2>/dev/null || true
-          # Always commit if file changed (use --allow-empty as fallback for first run)
+          # Commit only if file actually changed
           git diff --staged --quiet && echo "No changes to commit" || git commit -m "Update topics [$(date -u '+%Y-%m-%d %H:%M UTC')]"
-          # Push with retry (shallow clone may need unshallow first)
+          # Push using token in URL (fixes shallow clone push issues)
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
           git fetch --unshallow 2>/dev/null || true
-          git push origin main 2>&1 || echo "Push failed (will retry next run)"
+          git push origin main 2>&1
