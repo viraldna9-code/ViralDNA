@@ -195,6 +195,14 @@ class YouTubeUploader:
             title = f"{title_raw} #{self.shorts_tag}"
         else:
             title = title_raw
+        # v82.3: Ensure year is in title (C2 audit — freshness signal for news)
+        import datetime as _dt
+        _year = str(_dt.datetime.now().year)
+        if _year not in title:
+            if f"#{self.shorts_tag}" in title:
+                title = title.replace(f" #{self.shorts_tag}", f" ({_year}) #{self.shorts_tag}")
+            else:
+                title = f"{title} ({_year})"
         if len(title) > self.title_max_length:
             title = title[:self.title_max_length - 3] + "..."
 
@@ -391,6 +399,13 @@ class YouTubeUploader:
             title = f"{title_raw} #{self.shorts_tag}"
         else:
             title = title_raw
+        # v82.3: Ensure year is in title (C2 audit — freshness signal for news)
+        _year_s = str(year)
+        if _year_s not in title:
+            if f"#{self.shorts_tag}" in title:
+                title = title.replace(f" #{self.shorts_tag}", f" ({_year_s}) #{self.shorts_tag}")
+            else:
+                title = f"{title} ({_year_s})"
         if len(title) > self.title_max_length:
             title = title[:self.title_max_length - 3] + "..."
 
