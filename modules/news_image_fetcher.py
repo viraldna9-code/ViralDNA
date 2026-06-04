@@ -116,6 +116,78 @@ def _validate_image_bytes(data):
     return True, "OK"
 
 
+def _visual_relevance_check(image_data, topic_title, article_title):
+    """v82.2: Use Gemini Vision API to verify downloaded image is visually related to topic.
+    
+    RSS <enclosure> images are often unrelated to the article — stock photos,
+    sidebar trending images, or generic placeholders. This gate sends the image
+    to Gemini with the topic context and gets a yes/no relevance judgment.
+    
+    Returns True if relevant (or if Gemini is unavailable — fail-open).
+    Returns False only on explicit "not relevant" judgment.
+    """
+    try:
+        import base64
+        
+        # Get API key from env or .env
+        _key = os.environ.get("GEMINI_API_KEY", "")
+        if not _key:
+            _env = os.path.expanduser("~/.env")
+            if os.path.exists(_env):
+                for line in open(_env):
+                    if line.startswith("GEMINI_API_KEY="):
+                        _key = line.strip().split("=", 1)[1].strip("\"'")
+                        break
+        if not _key:
+            return True  # fail-open
+        
+        b64 = base64.b64encode(image_data).decode("utf-8")
+        
+        prompt_text = (
+            "You are an image relevance checker for an Indian news video pipeline.\n"
+            f"TOPIC: {topic_title}\n"
+            f"ARTICLE: {article_title}\n\n"
+            "Does this image show content that is VISUALLY relevant to this topic? "
+            "Answer ONLY 'YES' or 'NO'.\n"
+            "Say NO if the image shows: buildings/demolition, entertainment/celebrities, "
+            "sports, international flags/scenes unrelated to Indian politics, "
+            "stock photos, logos, or generic landscapes.\n"
+            "Say YES only if the image clearly shows: Indian political figures, "
+            "rallies/protests, parliament/assembly, or news footage directly related to the topic."
+        )
+        
+        # Call Gemini Vision REST API directly
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={_key}"
+        payload = {
+            "contents": [{
+                "parts": [
+                    {"inline_data": {"mime_type": "image/jpeg", "data": b64}},
+                    {"text": prompt_text},
+                ]
+            }],
+            "generationConfig": {"maxOutputTokens": 10, "temperature": 0.0}
+        }
+        
+        resp = requests.post(url, json=payload, timeout=15,
+                           headers={"Content-Type": "application/json"})
+        if resp.status_code != 200:
+            return True  # fail-open on API error
+        
+        answer = ""
+        for cand in resp.json().get("candidates", []):
+            for part in cand.get("content", {}).get("parts", []):
+                answer += part.get("text", "")
+        
+        if answer.strip().lower().startswith("no"):
+            return False
+        return True  # YES or unclear → accept (fail-open)
+        
+    except Exception as e:
+        # Fail-open: if Gemini is unavailable, don't block images
+        print(f"  [NewsImg] Visual gate skip: {str(e)[:80]}")
+        return True
+
+
 def fetch_news_images(topic_title, count=5, used_hashes=None):
     """
     Fetch real news photos from Indian RSS feeds matching the topic.
@@ -256,6 +328,14 @@ def fetch_news_images(topic_title, count=5, used_hashes=None):
             valid, reason = _validate_image_bytes(data)
             if not valid:
                 print(f"  [NewsImg] Validate fail ({reason}): {article['source']}")
+                continue
+
+            # v82.2: Visual relevance gate — verify image content matches topic
+            # RSS enclosures sometimes have unrelated stock/sidebar images.
+            # Gemini checks: does this image show content related to the topic?
+            _vis_ok = _visual_relevance_check(data, topic_title, article["title"])
+            if not _vis_ok:
+                print(f"  [NewsImg] REJECTED by visual gate: {article['source']} | {article['title'][:50]}")
                 continue
 
             used_hashes.add(data_hash)
