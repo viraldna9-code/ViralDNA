@@ -73,14 +73,17 @@ class ScriptGenerator:
         # Pick top 2 Telugu context words
         telugu_tag = " | ".join(matched_telugu[:2])
 
+        import datetime
+        year = datetime.datetime.now().year
+
         variants = [
             {
-                "title": f"{clean_title} | {telugu_tag} | ViralDNA News",
-                "description": f"{clean_title} — {telugu_tag} updates from ViralDNA. News for Telugu families worldwide."
+                "title": f"{clean_title} | {telugu_tag} News {year}",
+                "description": f"{clean_title} — {telugu_tag} updates from TheViralDNA. News for Telugu families worldwide."
             },
             {
-                "title": f"{telugu_tag}: {clean_title} | ViralDNA",
-                "description": f"Latest {telugu_tag} news: {clean_title}. ViralDNA keeps you connected to home."
+                "title": f"{telugu_tag}: {clean_title} | {year}",
+                "description": f"Latest {telugu_tag} news: {clean_title}. TheViralDNA keeps you connected to home."
             },
         ]
         return variants
@@ -202,67 +205,74 @@ class ScriptGenerator:
     # ─── Enhanced Title Variant Builder (A1.4, C1.6) ───
     def _build_title_variants(self, title: str, segment_type: str,
                                topic_context: str = "") -> list:
-        """Generates distinct YouTube title variants with CTR-optimized formulas."""
+        """Generates distinct YouTube title variants with CTR-optimized formulas.
+        
+        v82.3: Keyword-first titles for new channel discovery.
+        Brand name (ViralDNA) moved to END — nobody searches "ViralDNA" yet.
+        Year injected for news freshness signal.
+        """
+        import datetime
+        year = datetime.datetime.now().year
         clean_title = title.strip()
 
         if segment_type == "main":
             raw = [
                 {
-                    "title": f"BREAKING: {clean_title} | ViralDNA News",
-                    "description": f"Full report on {clean_title}. ViralDNA brings you the complete story from our homeland."
+                    "title": f"BREAKING: {clean_title} | Telugu News {year}",
+                    "description": f"Full report on {clean_title}. TheViralDNA brings you the complete story from our homeland."
                 },
                 {
-                    "title": f"{clean_title} - What This Means For Our Families | ViralDNA",
+                    "title": f"{clean_title} — What This Means | Telugu News {year}",
                     "description": f"Understanding {clean_title} and how it impacts Telugu families worldwide."
                 },
                 {
-                    "title": f"URGENT UPDATE: {clean_title} | Telugu News | ViralDNA",
-                    "description": f"Latest developments on {clean_title}. Stay informed with ViralDNA."
+                    "title": f"URGENT: {clean_title} | Andhra Telangana News {year}",
+                    "description": f"Latest developments on {clean_title}. Stay informed with TheViralDNA."
                 },
             ]
         elif segment_type == "short_1":
             # C1.6: Shorts-specific title formula (question, curiosity gap)
             raw = [
                 {
-                    "title": f"Did You Know? {clean_title} 😮 | ViralDNA Shorts",
-                    "description": f"Quick highlights on {clean_title}. Watch the full report on ViralDNA."
+                    "title": f"Did You Know? {clean_title} 😮 | Telugu News {year}",
+                    "description": f"Quick highlights on {clean_title}. Watch the full report on TheViralDNA."
                 },
                 {
-                    "title": f"Everyone's Talking About {clean_title} | Check This! | ViralDNA",
+                    "title": f"Everyone's Talking About {clean_title} | Telugu {year}",
                     "description": f"The most important facts about {clean_title} in 60 seconds."
                 },
                 {
-                    "title": f"Just In: {clean_title} — This Changes Everything | ViralDNA",
-                    "description": f"Fast update on {clean_title}. ViralDNA keeps you connected."
+                    "title": f"Just In: {clean_title} — This Changes Everything | {year}",
+                    "description": f"Fast update on {clean_title}. TheViralDNA keeps you connected."
                 },
             ]
         elif segment_type == "short_2":
             raw = [
                 {
-                    "title": f"What {clean_title} Means For Common People | ViralDNA",
+                    "title": f"What {clean_title} Means For You | Telugu News {year}",
                     "description": f"Simple explanation of {clean_title} and its real-world impact on families."
                 },
                 {
-                    "title": f"{clean_title} Explained Simply | Telugu News",
+                    "title": f"{clean_title} Explained Simply | Telugu {year}",
                     "description": f"Breaking down {clean_title} so everyone can understand what is happening."
                 },
                 {
-                    "title": f"How {clean_title} Affects Us | ViralDNA Shorts",
+                    "title": f"How {clean_title} Affects Us | AP Telangana {year}",
                     "description": f"Understanding the real impact of {clean_title} on our communities."
                 },
             ]
         else:  # short_3 — NRI-targeted with curiosity gap + emotion
             raw = [
                 {
-                    "title": f"NRIs: You Need To Know This About {clean_title} 😰 | ViralDNA",
+                    "title": f"NRIs: You Need To Know This About {clean_title} 😰 | {year}",
                     "description": f"If you are watching from abroad, here is what you need to know about {clean_title}."
                 },
                 {
-                    "title": f"Telugu Families Abroad: {clean_title} News | Don't Miss This | ViralDNA",
+                    "title": f"Telugu Families Abroad: {clean_title} | Don't Miss | {year}",
                     "description": f"Stay connected to your homeland. Here is the latest on {clean_title}."
                 },
                 {
-                    "title": f"From USA/UK: {clean_title} — Share With Family Now | ViralDNA",
+                    "title": f"From USA/UK: {clean_title} — Share With Family | Telugu {year}",
                     "description": f"Important update about {clean_title}. Share this with your family back home."
                 },
             ]

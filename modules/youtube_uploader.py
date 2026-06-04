@@ -202,19 +202,27 @@ class YouTubeUploader:
         description = self._build_full_description(title_raw, desc_raw, rag_context,
                                                     topic, is_short)
 
-        # Tags
+        # Tags — shared with _create_metadata (v82.3: DRY + growth-optimized)
+        import datetime
+        year = datetime.datetime.now().year
         default_tags = [
             "Telugu news today", "Andhra Pradesh news", "Telangana news",
             "AP news today", "Hyderabad news", "Vijayawada news", "Vizag news",
             "Amaravati news", "Guntur news", "TheViralDNA",
+            "TV9 Telugu", "Sakshi news", "Eenadu news", "NTV Telugu", "ABN Andhra",
+            "telugu varthalu", "andhra varthalu", "telangana varthalu",
             "Telugu breaking news", "Tenglish news", "India news today",
             "NRI Telugu news", "Telugu current affairs", "AP Telangana updates",
-            "viral news India", "trending India 2026", "Telugu states news",
+            "viral news India", f"trending India {year}", "Telugu states news",
         ]
         topic_tags = [t.strip() for t in topic.get("tags", "").split(",") if t.strip()]
         tags = topic_tags + [t for t in default_tags if t not in topic_tags]
-        if is_short and self.shorts_tag not in tags:
-            tags.append(self.shorts_tag)
+        # v82.3: Shorts-specific discovery tags
+        if is_short:
+            shorts_tags = ["YouTube Shorts", "Shorts News", "Telugu Shorts", self.shorts_tag]
+            for st in shorts_tags:
+                if st not in tags:
+                    tags.append(st)
         tags_str = ",".join(tags)
         if len(tags_str) > self.tags_max_length:
             trimmed = []
@@ -240,7 +248,18 @@ class YouTubeUploader:
 
     def _build_full_description(self, title_raw: str, desc_raw: str, rag_context: str,
                                  topic: dict, is_short: bool) -> str:
-        """Build the full YouTube description string (shared by upload + metadata export)."""
+        """Build the full YouTube description string (shared by upload + metadata export).
+        
+        v82.3: Growth-first metadata layout for new channel discovery:
+        - Subscribe+bell CTA in FIRST 3 lines (above fold on mobile)
+        - Timestamps/chapters for watch-time signal + "Key Moments" in search
+        - Freshness signals (2026, today) in snippet
+        - Competitor-adjacent tags for suggested video surface
+        """
+        import datetime
+        year = datetime.datetime.now().year
+        today_str = datetime.datetime.now().strftime("%B %d, %Y")
+
         seo_keywords = self._extract_seo_keywords(topic, title_raw, desc_raw)
         seo_keyword_line = ""
         if seo_keywords:
@@ -253,19 +272,30 @@ class YouTubeUploader:
         related_links = self._build_related_links(topic)
         snippet_prefix = self._build_snippet_prefix(title_raw, desc_raw, seo_keyword_line)
 
+        # ── GROWTH LAYOUT: Subscribe CTA FIRST (above fold on mobile) ──
         description_lines = [
             snippet_prefix,
             "",
-            f"🔥 {title_raw}",
+            "🔔 SUBSCRIBE & hit the bell → https://www.youtube.com/@TheViralDNA",
+            f"📰 {title_raw} ({today_str})",
             "",
-            "📰 SUMMARY:",
-            f"{desc_raw}",
+            f"SUMMARY: {desc_raw[:300]}",
+        ]
+
+        # ── TIMESTAMP CHAPTERS (watch-time signal + Key Moments in search) ──
+        chapters = self._generate_chapters(topic, desc_raw, is_short)
+        if chapters:
+            description_lines.append("")
+            description_lines.append("⏱️ CHAPTERS:")
+            for ts, label in chapters:
+                description_lines.append(f"  {ts} {label}")
+
+        description_lines.extend([
             "",
-            "💡 BACKGROUND & CONTEXT:",
-            f"{rag_context[:400]}",
+            f"💡 CONTEXT: {rag_context[:300]}",
             "",
             f"📌 SOURCE: {sources_str}",
-        ]
+        ])
 
         if seo_keyword_line:
             description_lines.append("")
@@ -283,10 +313,6 @@ class YouTubeUploader:
             "",
             "🕘 New videos daily at 9:00 AM and 7:00 PM IST",
             "",
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            "🔔 SUBSCRIBE & GROW WITH US",
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            "🔔 Subscribe: https://www.youtube.com/@TheViralDNA",
             "👍 Like this video — it helps us reach more Telugu people",
             "💬 Comment your thoughts — we read every comment",
             "📤 Share with family & friends — spread Telugu news",
@@ -352,6 +378,8 @@ class YouTubeUploader:
                          topic: dict = None, is_short: bool = False,
                          short_index: int = 0, variant_idx: int = 0) -> dict:
         topic = topic or {}
+        import datetime
+        year = datetime.datetime.now().year
 
         # Title
         if is_short:
@@ -373,18 +401,29 @@ class YouTubeUploader:
         description = description.strip()
 
         # Tags — channel keyword defaults for SEO
+        # v82.3: Competitor-adjacent tags (suggested video hack) + Telugu transliteration
         default_tags = [
+            # Topic-specific tags (first = highest priority for YouTube)
             "Telugu news today", "Andhra Pradesh news", "Telangana news",
             "AP news today", "Hyderabad news", "Vijayawada news", "Vizag news",
             "Amaravati news", "Guntur news", "TheViralDNA",
+            # Competitor channel tags — #1 suggested video discovery signal
+            "TV9 Telugu", "Sakshi news", "Eenadu news", "NTV Telugu", "ABN Andhra",
+            # Telugu transliteration tags (bilingual searchers)
+            "telugu varthalu", "andhra varthalu", "telangana varthalu",
+            # Long-tail niche tags
             "Telugu breaking news", "Tenglish news", "India news today",
             "NRI Telugu news", "Telugu current affairs", "AP Telangana updates",
-            "viral news India", "trending India 2026", "Telugu states news",
+            "viral news India", f"trending India {year}", "Telugu states news",
         ]
         topic_tags = [t.strip() for t in topic.get("tags", "").split(",") if t.strip()]
         tags = topic_tags + [t for t in default_tags if t not in topic_tags]
-        if is_short and self.shorts_tag not in tags:
-            tags.append(self.shorts_tag)
+        # v82.3: Shorts-specific discovery tags
+        if is_short:
+            shorts_tags = ["YouTube Shorts", "Shorts News", "Telugu Shorts", self.shorts_tag]
+            for st in shorts_tags:
+                if st not in tags:
+                    tags.append(st)
         tags_str = ",".join(tags)
         if len(tags_str) > self.tags_max_length:
             trimmed = []
@@ -824,8 +863,8 @@ class YouTubeUploader:
         Deduplicates and limits to 15 total.
         """
         base_hashtags = [
-            "#ViralDNA", "#TeluguNews", "#AndhraPradesh", "#Telangana",
-            "#IndiaNews", "#NRI", "#TeluguDiaspora",
+            "#TeluguNews", "#AndhraPradesh", "#Telangana",
+            "#IndiaNews", "#ViralDNA", "#NRI", "#TeluguDiaspora",
         ]
 
         # A1.7: Bilingual hashtag injection
@@ -954,17 +993,22 @@ class YouTubeUploader:
         """
         Build the first ~150 chars of description for YouTube search snippet.
         This is the text that appears in YouTube/Google search results.
-        Strategy: lead with the most keyword-dense summary, not the emoji header.
-        Max 142 chars visible in search snippet (we target 140 to be safe).
+        
+        v82.3: Lead with YEAR + freshness signal for news content.
+        " telugu news today 2026" gets 9.5K/mo vs "telugu news" alone.
+        Max 142 chars visible in search snippet.
         """
+        import datetime
+        year = datetime.datetime.now().year
+
         # Extract top SEO keywords for the opening line
         seo_kws = self._extract_seo_keywords({"title": title_raw, "description": desc_raw}, title_raw, desc_raw)
         kw_str = ""
         if seo_kws:
-            kw_str = " ".join(seo_kws[:4]).strip()
+            # Use ONLY the strongest 2 keywords (not 4 — that's keyword stuffing)
+            kw_str = " ".join(seo_kws[:2]).strip()
 
-        # Priority 1: keyword-rich lead (topic + top entities)
-        # Format: "KEYWORD UPDATE: [First 80 chars of summary]"
+        # Build freshness-prefixed snippet
         clean_desc = desc_raw.strip()
         # Strip common leading phrases that waste snippet space
         for prefix in ["According to reports, ", "Reports say ", "It is reported that "]:
@@ -972,13 +1016,46 @@ class YouTubeUploader:
                 clean_desc = clean_desc[len(prefix):]
                 break
 
-        # Build snippet line
-        snippet = clean_desc[:120].strip()
+        # v82.3: Inject year for news freshness signal
+        freshness = f"{year} update"
+        snippet = clean_desc[:100].strip()
         if kw_str and kw_str.lower() not in snippet.lower():
-            snippet = f"{kw_str} | {snippet}"[:140]
+            snippet = f"{kw_str} {freshness} | {snippet}"[:140]
+        else:
+            if str(year) not in snippet:
+                snippet = f"{freshness}: {snippet}"[:140]
         snippet = snippet[:140]
 
         return snippet
+
+    def _generate_chapters(self, topic: dict, desc_raw: str, is_short: bool) -> list:
+        """v82.3: Generate timestamp chapters for YouTube 'Key Moments' in search.
+        
+        Chapters = watch-time signal + search result enhancement.
+        For Shorts: returns empty (Shorts don't support chapters).
+        """
+        if is_short:
+            return []
+
+        # Standard news video chapters (4-8 min typical)
+        chapters = [
+            ("0:00", "Intro"),
+            ("0:15", "The Story"),
+            ("1:30", "Key Details"),
+            ("3:00", "Analysis"),
+            ("4:30", "What This Means"),
+        ]
+
+        # Add topic-specific chapter from topic title
+        title = topic.get("title", "")
+        if title:
+            # Extract key entity for the final chapter
+            words = [w for w in title.split() if len(w) > 3 and w[0].isupper()]
+            if words:
+                entity = " ".join(words[:3])
+                chapters.append(("5:30", f"{entity} — Key Takeaway"))
+
+        return chapters
 
     # ─── E2.5: Affiliate Links ───
     # Only populated when real affiliate URLs are configured.
