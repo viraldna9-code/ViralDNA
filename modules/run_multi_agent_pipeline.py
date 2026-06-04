@@ -1198,13 +1198,19 @@ class ResilientUploaderAgent(BaseAgent):
             if os.path.exists(vpath):
                 files_to_copy.append(vpath)
 
-        # 2. Topic-named thumbnails (v82.0)
+        # 2. Topic-named thumbnails (v82.0) — with production_ fallback
         if os.path.isdir(thumbs_dir):
             for tname in (f"{topic_slug}_branded.jpg", f"{topic_slug}_clean.jpg",
                           f"{topic_slug}_branded_v2.jpg", f"{topic_slug}_branded_v3.jpg"):
                 tpath = os.path.join(thumbs_dir, tname)
                 if os.path.exists(tpath):
                     files_to_copy.append(tpath)
+                else:
+                    # Fallback: check production_ prefix (legacy from before topic-slug fix)
+                    _fallback = tname.replace(f"{topic_slug}_", "production_")
+                    _fpath = os.path.join(thumbs_dir, _fallback)
+                    if os.path.exists(_fpath):
+                        files_to_copy.append(_fpath)
             # Also copy short thumbnails if they exist
             for tname in ("short_1_branded.jpg", "short_1_clean.jpg",
                           "short_2_branded.jpg", "short_2_clean.jpg"):
@@ -2726,6 +2732,13 @@ class MultiAgentOrchestrator:
             print(f"  📋 Using injected topic (skipping discovery/weighting): '{injected_topic.get('title', 'Unknown')}'")
             self.state["sorted_topics"] = [injected_topic]
             self.state["selected_topic"] = injected_topic
+            # v82.0 fix: Compute topic slug for injected topics too
+            _raw = injected_topic.get("title", injected_topic.get("id", "topic"))
+            _words = _raw.split()[:6]
+            _slug = "_".join(w for w in _words if w).replace("/", "_").replace(":", "").replace("'", "").replace("?", "").replace("!", "")
+            if not _slug:
+                _slug = injected_topic.get("id", "topic")
+            self.state["topic_slug"] = _slug
         else:
             # Normal flow: discover and weight topics
             self._run_agent_with_learning(self.task_agents[0])  # Discovery
