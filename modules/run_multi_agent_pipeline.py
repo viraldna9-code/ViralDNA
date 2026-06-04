@@ -1397,6 +1397,35 @@ class ResilientUploaderAgent(BaseAgent):
             copy_paste_lines.append(f"TAGS ({len(sm['tags'])}):\n{', '.join(sm['tags'])}")
             copy_paste_lines.append("")
 
+        # ── v82.3: Metadata Quality Audit Report ──
+        main_audit = main_meta.get("audit", {})
+        if main_audit:
+            copy_paste_lines.append(f"{'═'*60}")
+            copy_paste_lines.append("📋 METADATA QUALITY AUDIT (v82.3)")
+            copy_paste_lines.append(f"{'═'*60}")
+            copy_paste_lines.append(f"Score: {main_audit.get('score', 'N/A')}/100")
+            copy_paste_lines.append(f"Status: {'✅ PASSED' if main_audit.get('passed') else '❌ FAILED — FIX BEFORE UPLOAD'}")
+            copy_paste_lines.append(f"Checks: {main_audit.get('summary', '')}")
+            copy_paste_lines.append("")
+            if main_audit.get("critical"):
+                copy_paste_lines.append("🚫 CRITICAL (must fix):")
+                for c in main_audit["critical"]:
+                    copy_paste_lines.append(f"   • {c}")
+                copy_paste_lines.append("")
+            if main_audit.get("warnings"):
+                copy_paste_lines.append("⚠️  WARNINGS (growth opportunities):")
+                for w in main_audit["warnings"]:
+                    copy_paste_lines.append(f"   • {w}")
+                copy_paste_lines.append("")
+            # Individual check results
+            checks = main_audit.get("checks", {})
+            if checks:
+                copy_paste_lines.append("DETAILED CHECKS:")
+                for chk, passed in checks.items():
+                    icon = "✅" if passed else "❌"
+                    copy_paste_lines.append(f"   {icon} {chk}")
+                copy_paste_lines.append("")
+
         # ── v82.0: A/B Testing thumbnails ──
         copy_paste_lines.append(f"{'='*60}")
         copy_paste_lines.append(f"🖼️ THUMBNAILS (A/B Testing)")

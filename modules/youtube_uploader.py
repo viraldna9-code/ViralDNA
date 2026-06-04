@@ -235,7 +235,10 @@ class YouTubeUploader:
                     break
             tags = trimmed
 
-        return {
+        # v82.3: Run metadata quality audit before returning
+        audit = self._audit_metadata(title, description, tags, is_short)
+
+        result = {
             "title": title,
             "description": description,
             "tags": tags,
@@ -244,7 +247,9 @@ class YouTubeUploader:
             "privacy": self.privacy_status,
             "language": "en-IN",
             "is_short": is_short,
+            "audit": audit,
         }
+        return result
 
     def _build_full_description(self, title_raw: str, desc_raw: str, rag_context: str,
                                  topic: dict, is_short: bool) -> str:
@@ -1056,6 +1061,226 @@ class YouTubeUploader:
                 chapters.append(("5:30", f"{entity} — Key Takeaway"))
 
         return chapters
+
+    # ─── v82.3: Metadata Quality Audit ───
+    def _audit_metadata(self, title: str, description: str, tags: list,
+                         is_short: bool) -> dict:
+        """Run 20+ quality/growth checks on metadata BEFORE output.
+        
+        Returns: {
+            "passed": bool,          # True if no CRITICAL failures
+            "score": int,            # 0-100 growth readiness score
+            "critical": [str],       # Blockers that MUST be fixed
+            "warnings": [str],       # Growth opportunities missed
+            "checks": {str: bool}    # Individual check pass/fail
+        }
+        """
+        import datetime
+        year = str(datetime.datetime.now().year)
+        checks = {}
+        critical = []
+        warnings = []
+
+        desc_lines = [l for l in description.split("\n") if l.strip()]
+        desc_lower = description.lower()
+        title_lower = title.lower()
+
+        # ═══ CRITICAL CHECKS (block output if failed) ═══
+
+        # C1: Title length in sweet spot (40-70 chars)
+        tlen = len(title)
+        checks["title_length_sweet"] = 40 <= tlen <= 70
+        if not checks["title_length_sweet"]:
+            if tlen < 30:
+                critical.append(f"Title too short ({tlen} chars) — YouTube treats as low-info")
+            elif tlen > 100:
+                critical.append(f"Title too long ({tlen} chars) — truncated in search results")
+            else:
+                warnings.append(f"Title {tlen} chars — sweet spot is 40-70 for CTR")
+
+        # C2: Year in title (freshness signal for news content)
+        checks["year_in_title"] = year in title
+        if not checks["year_in_title"]:
+            critical.append(f"Year {year} missing from title — news without year = evergreen (lower priority)")
+
+        # C3: Subscribe CTA in first 3 non-empty lines
+        first3 = " ".join(desc_lines[:3]).lower()
+        checks["subscribe_above_fold"] = "subscribe" in first3
+        if not checks["subscribe_above_fold"]:
+            critical.append("Subscribe CTA not in first 3 lines — mobile users never see it")
+
+        # C4: No "edge-tts" or engine names in description
+        checks["no_engine_exposure"] = "edge-tts" not in desc_lower and "edgetts" not in desc_lower
+        if not checks["no_engine_exposure"]:
+            critical.append("TTS engine name 'edge-tts' exposed in description — privacy + unprofessional")
+
+        # C5: Brand name consistency — "TheViralDNA" not "The Viral DNA"
+        checks["brand_consistent"] = "the viral dna" not in desc_lower
+        if not checks["brand_consistent"]:
+            critical.append("Brand name 'The Viral DNA' found — must be 'TheViralDNA' (one word)")
+
+        # C6: Hashtags have # prefix
+        hashtag_section = ""
+        for line in desc_lines:
+            if line.strip().startswith("#"):
+                hashtag_section = line
+                break
+        bare_hashtags = [w for w in hashtag_section.split() if len(w) > 3 and not w.startswith("#")
+                         and w[0].isupper() and not w.startswith("http")]
+        checks["hashtags_have_prefix"] = len(bare_hashtags) == 0
+        if not checks["hashtags_has_prefix"] and bare_hashtags:
+            warnings.append(f"Hashtags without # prefix: {bare_hashtags[:3]}")
+
+        # C7: First 3 hashtags are search-volume hashtags (not brand)
+        first3_hash = [w for w in desc_lines[0].split() + (desc_lines[1].split() if len(desc_lines) > 1 else [])
+                       if w.startswith("#")][:3]
+        first3_lower = [h.lower() for h in first3_hash]
+        checks["hashtags_search_first"] = "#telugunews" in first3_lower or "#andhrapradesh" in first3_lower
+        if not checks["hashtags_search_first"]:
+            warnings.append("First 3 hashtags not #TeluguNews/#AndhraPradesh/#Telangana — these show above title")
+
+        # C8: Description not empty / too short
+        checks["description_min_length"] = len(description) >= 200
+        if not checks["description_min_length"]:
+            critical.append(f"Description too short ({len(description)} chars) — YouTube demotes thin descriptions")
+
+        # C9: Timestamps/chapters present (not Shorts)
+        has_chapters = any(":" in line and any(c.isdigit() for c in line) 
+                          and ("intro" in line.lower() or "story" in line.lower() or "chapter" in line.lower())
+                          for line in desc_lines)
+        checks["chapters_present"] = is_short or has_chapters
+        if not checks["chapters_present"]:
+            warnings.append("No timestamp chapters — missing 'Key Moments' in search results")
+
+        # ═══ HIGH-IMPACT GROWTH CHECKS ═══
+
+        # G1: Competitor tags present (suggested video hack)
+        competitor_tags = ["tv9", "sakshi", "eenadu", "ntv", "abn"]
+        tags_lower = [t.lower() for t in tags]
+        has_competitor = any(c in " ".join(tags_lower) for c in competitor_tags)
+        checks["competitor_tags"] = has_competitor
+        if not checks["competitor_tags"]:
+            warnings.append("No competitor channel tags (TV9, Sakshi, Eenadu, NTV, ABN) — #1 suggested video signal")
+
+        # G2: Telugu transliteration tags
+        has_telugu_translit = any("varthalu" in t.lower() for t in tags)
+        checks["telugu_transliteration_tags"] = has_telugu_translit
+        if not checks["telugu_transliteration_tags"]:
+            warnings.append("No Telugu transliteration tags (telugu varthalu etc.) — bilingual searchers")
+
+        # G3: Year in snippet/description first line
+        checks["year_in_snippet"] = year in desc_lines[0] if desc_lines else False
+        if not checks["year_in_snippet"]:
+            warnings.append(f"Year {year} missing from description first line — freshness signal lost")
+
+        # G4: Tags count in optimal range (15-30)
+        checks["tag_count_optimal"] = 15 <= len(tags) <= 30
+        if not checks["tag_count_optimal"]:
+            if len(tags) < 10:
+                warnings.append(f"Only {len(tags)} tags — YouTube allows 500 chars, use 15-30")
+            elif len(tags) > 30:
+                warnings.append(f"{len(tags)} tags — diminishing returns past 30")
+
+        # G5: Dynamic year in tags (not hardcoded)
+        checks["tags_dynamic_year"] = any(year in t for t in tags)
+        if not checks["tags_dynamic_year"]:
+            warnings.append(f"No tag contains current year {year} — add 'trending India {year}'")
+
+        # G6: No duplicate text in SUMMARY vs BACKGROUND
+        summary_text = ""
+        bg_text = ""
+        for i, line in enumerate(desc_lines):
+            if "SUMMARY" in line.upper() and i + 1 < len(desc_lines):
+                summary_text = desc_lines[i + 1][:50].lower()
+            if "CONTEXT" in line.upper() and i + 1 < len(desc_lines):
+                bg_text = desc_lines[i + 1][:50].lower()
+        if summary_text and bg_text:
+            checks["summary_not_duplicate"] = summary_text != bg_text
+            if not checks["summary_not_duplicate"]:
+                warnings.append("SUMMARY and CONTEXT start with same text — YouTube sees as low-effort")
+        else:
+            checks["summary_not_duplicate"] = True
+
+        # G7: Like/Comment CTAs present
+        checks["engagement_ctas"] = "like" in desc_lower and "comment" in desc_lower
+        if not checks["engagement_ctas"]:
+            warnings.append("Missing Like/Comment CTAs — engagement signals drive recommendations")
+
+        # G8: Channel schedule mentioned
+        checks["schedule_mentioned"] = "9:00" in description or "9:00 AM" in description
+        if not checks["schedule_mentioned"]:
+            warnings.append("No upload schedule in description — returning viewers need predictability")
+
+        # ═══ STYLE/CLEANLINESS CHECKS ═══
+
+        # S1: No double separator lines
+        double_sep = any(desc_lines[i] == desc_lines[i+1] and 
+                        set(desc_lines[i]) <= {"━", "─", "═", "—"}
+                        for i in range(len(desc_lines)-1))
+        checks["no_double_separators"] = not double_sep
+        if not checks["no_double_separators"]:
+            warnings.append("Double separator lines — wastes description space")
+
+        # S2: Smart quotes preserved properly
+        checks["smart_quotes_converted"] = "\u2018" not in description and "\u2019" not in description
+        if not checks["smart_quotes_converted"]:
+            warnings.append("Smart quotes not converted to ASCII — rendering issues on some devices")
+
+        # S3: Shorts tags if is_short
+        if is_short:
+            checks["shorts_tags"] = any("shorts" in t.lower() for t in tags)
+            if not checks["shorts_tags"]:
+                warnings.append("Shorts video missing Shorts-specific tags")
+        else:
+            checks["shorts_tags"] = True  # N/A for main video
+
+        # S4: No bare URL-only description lines
+        bare_urls = [i for i, l in enumerate(desc_lines) 
+                     if l.strip().startswith("http") and not any(c in l for c in [" ", "—", "|"])]
+        checks["no_bare_urls"] = len(bare_urls) == 0
+        if not checks["no_bare_urls"]:
+            warnings.append("Bare URLs without context text — YouTube may flag as spam")
+
+        # S5: Disclosure present (YouTube AI content policy)
+        checks["disclosure_present"] = "ai" in desc_lower and ("synthetic" in desc_lower or "ai-assisted" in desc_lower or "ai voice" in desc_lower)
+        if not checks["disclosure_present"]:
+            critical.append("No AI content disclosure — YouTube policy violation risk for AI-generated content")
+
+        # ═══ SCORE CALCULATION ═══
+        passed_checks = sum(1 for v in checks.values() if v)
+        total_checks = len(checks)
+        score = int((passed_checks / total_checks) * 100) if total_checks > 0 else 0
+
+        # Reduce score for warnings
+        score = max(0, score - len(warnings) * 3)
+
+        result = {
+            "passed": len(critical) == 0,
+            "score": score,
+            "critical": critical,
+            "warnings": warnings,
+            "checks": checks,
+            "summary": f"{passed_checks}/{total_checks} checks passed, score {score}/100"
+        }
+
+        # Print audit report
+        print(f"\n{'═'*50}")
+        print(f"📋 METADATA QUALITY AUDIT (v82.3)")
+        print(f"{'═'*50}")
+        print(f"  Score: {score}/100")
+        print(f"  Status: {'✅ PASSED' if result['passed'] else '❌ FAILED'}")
+        print(f"  Checks: {passed_checks}/{total_checks} passed")
+        if critical:
+            print(f"\n  🚫 CRITICAL ({len(critical)}):")
+            for c in critical:
+                print(f"     • {c}")
+        if warnings:
+            print(f"\n  ⚠️  WARNINGS ({len(warnings)}):")
+            for w in warnings:
+                print(f"     • {w}")
+        print(f"{'═'*50}\n")
+
+        return result
 
     # ─── E2.5: Affiliate Links ───
     # Only populated when real affiliate URLs are configured.

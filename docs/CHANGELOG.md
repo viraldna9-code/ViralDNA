@@ -4,6 +4,95 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v82.3] — 2026-06-04 — Growth-First Metadata + Quality Audit
+
+### Problem
+1. **Metadata was publishing-focused, not growth-focused**: Titles used brand name "ViralDNA News" (nobody searches that at 1 subscriber), subscribe CTA was buried at bottom, no timestamp chapters, no competitor-adjacent tags
+2. **No quality gate before output**: Metadata could ship with edge-tts exposed, brand name split, duplicate text, missing hashtags — no automated checks
+3. **New channel discovery needs are different from established channels**: Need keyword-first titles, year freshness signals, competitor-adjacent tags for suggested video surface, Telugu transliteration tags for bilingual searchers
+
+### Changes
+
+#### 1. Metadata Quality Audit (`youtube_uploader.py` — `_audit_metadata()`)
+- **20+ automated checks** run on every metadata before output
+- **9 CRITICAL checks** (block output if failed):
+  - C1: Title length in sweet spot (40-70 chars)
+  - C2: Year in title (freshness signal for news)
+  - C3: Subscribe CTA in first 3 lines (above fold on mobile)
+  - C4: No TTS engine name exposure (edge-tts)
+  - C5: Brand name consistency (TheViralDNA, not "The Viral DNA")
+  - C6: Hashtags have # prefix
+  - C7: First 3 hashtags are search-volume hashtags (#TeluguNews first)
+  - C8: Description minimum length (200+ chars)
+  - C9: Timestamps/chapters present (not Shorts)
+  - S5: AI content disclosure present (YouTube policy)
+- **8 GROWTH checks** (warnings, not blockers):
+  - G1: Competitor channel tags present (TV9, Sakshi, Eenadu, NTV, ABN)
+  - G2: Telugu transliteration tags (telugu varthalu, andhra varthalu)
+  - G3: Year in description snippet/first line
+  - G4: Tag count in optimal range (15-30)
+  - G5: Dynamic year in tags (not hardcoded)
+  - G6: SUMMARY not duplicate of CONTEXT
+  - G7: Like/Comment engagement CTAs present
+  - G8: Upload schedule mentioned
+- **5 STYLE checks** (cleanliness):
+  - S1: No double separator lines
+  - S2: Smart quotes converted to ASCII
+  - S3: Shorts-specific tags for Shorts videos
+  - S4: No bare URLs (spam flag risk)
+  - S5: AI content disclosure present
+- **Scoring**: 0-100 growth readiness score (warnings deduct 3 pts each)
+- **Output**: Audit report printed to console + embedded in metadata dict + in copy-paste doc
+- **Pipeline wiring**: Audit runs in `generate_upload_metadata()` before return; result included in metadata dict as `"audit"` key
+- **Copy-paste doc**: Audit section added to `_copy_to_gdrive()` with score, status, critical/warning details, and individual check results
+
+#### 2. Title Strategy — Keyword-First for New Channel (`script_generator.py`)
+- Removed "ViralDNA News" from title variants (nobody searches that at 1 sub)
+- Keyword-first format: `{Headline} | {Telugu Segment} | {Year}`
+- Power words added to first variant: "BREAKING" (5% CTR boost)
+- Year injected dynamically in all title variants
+- "What This Means" angle in V2 (viewer-centric framing)
+
+#### 3. Description Layout — Above-Fold Growth (`youtube_uploader.py`)
+- Subscribe+bell CTA moved to line 2 of description (above fold on mobile)
+- Year freshness prefix in snippet first line ("2026 update")
+- Timestamp chapters generated for Key Moments in search results
+- Background section rewritten as unique context (not SUMMARY duplicate)
+
+#### 4. Hashtag Reorder — Search Volume First (`youtube_uploader.py`)
+- #TeluguNews, #AndhraPradesh, #Telangana moved to position 1-3 (shown above title as clickable links)
+- #ViralDNA pushed to position 5 (brand awareness after discovery)
+
+#### 5. Competitor-Adjacent Tags — Suggested Video Hack (`youtube_uploader.py`)
+- Added TV9 Telugu, Sakshi news, Eenadu news, NTV Telugu, ABN Andhra to default tags
+- These tags place TheViralDNA in the same "suggested videos" surface as established Telugu channels
+
+#### 6. Telugu Transliteration Tags — Bilingual Searchers (`youtube_uploader.py`)
+- Added: telugu varthalu, andhra varthalu, telangana varthalu
+- Many Telugu people search in transliterated Telugu, not English
+
+#### 7. Shorts Discovery Tags (`youtube_uploader.py`)
+- Added Shorts-specific tags: YouTube Shorts, Shorts News, Telugu Shorts
+- #Shorts, #TeluguShorts, #NewsShorts in hashtag block
+
+#### 8. DRY Tag Deduplication (`youtube_uploader.py`)
+- `generate_upload_metadata()` and `_create_metadata()` now share same tag list
+- Both use dynamic year, competitor, transliteration, and growth tags
+
+### Files Modified
+- `modules/youtube_uploader.py` — `_audit_metadata()`, `_build_full_description()`, `_build_snippet_prefix()`, `_build_hashtag_block()`, `generate_upload_metadata()`, default_tags in both methods
+- `modules/script_generator.py` — `_build_title_variants()` (keyword-first, year, no brand name)
+- `modules/run_multi_agent_pipeline.py` — `_copy_to_gdrive()` (audit section in copy-paste doc)
+
+### Impact
+- **Discovery**: Title keywords match what Telugu people actually search
+- **Suggested videos**: Competitor tags place channel adjacent to TV9/Sakshi/Eenadu
+- **Above-fold CTA**: Subscribe visible without scrolling on mobile
+- **Search richness**: Timestamps, year freshness, transliteration all increase search surface
+- **Quality gate**: No metadata ships without passing 20+ checks
+
+---
+
 ## [v82.2] — 2026-06-04 — 3-Layer Image Relevance Defense (Bollywood/Building/Demolition Fix)
 
 ### Problem

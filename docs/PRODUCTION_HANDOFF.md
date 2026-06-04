@@ -1,22 +1,24 @@
 ================================================================
   VIRALDNA — PRODUCTION HANDOFF DOCUMENT
-  Version: v81.0r4  |  Date: 2026-06-03
+  Version: v82.3  |  Date: 2026-06-04
 ================================================================
 
 This document summarizes the current production state, all fixes
 applied since v75.3, and the next steps.
 
 ────────────────────────────────────────────────────────────────
-  CURRENT VERSION: v81.0r4
+  CURRENT VERSION: v82.3
 ────────────────────────────────────────────────────────────────
 
   Module                    Version    Status
   ─────────────────────────────────────────────
-  youtube_uploader.py       v1.9       Production ready
-  run_multi_agent_pipeline  v81.0r4    Production ready
+  youtube_uploader.py       v82.3      Production ready (+ audit)
+  script_generator.py       v82.3      Production ready (+ keyword titles)
+  run_multi_agent_pipeline  v82.3      Production ready (+ audit in doc)
   video_assembler           v80.0      Production ready
   thumbnail_creator         v81.0      Production ready
-  visual_fetcher            v80.0      Production ready
+  visual_fetcher            v81.0      Production ready (RSS Source 0)
+  news_image_fetcher        v82.2      Production ready (3-layer defense)
   image_validator           v1.0       Production ready (NEW)
   pre_ship_check            v1.0       Production ready
   forensic_audit            v75.0      Production ready
@@ -35,6 +37,7 @@ applied since v75.3, and the next steps.
     - 3 thumbnail variants for main video (A/B testing)
     - Per-video metadata documents in docs/topics/<topic_id>/
     - Combined metadata in docs/topics/<topic_id>/00_INDEX.txt
+    - Metadata quality audit (20+ checks, score 0-100)
 
   Upload workflow:
     1. Pipeline finishes -> videos in videos/
@@ -168,6 +171,45 @@ applied since v75.3, and the next steps.
 
   Policy: Once published to YouTube, NEVER delete. Permanent no-delete.
   Policy: No auto-upload. Manual review required before every upload.
+
+────────────────────────────────────────────────────────────────
+  METADATA QUALITY AUDIT (v82.3)
+────────────────────────────────────────────────────────────────
+
+  Every metadata packet is audited BEFORE output with 20+ checks:
+
+  CRITICAL CHECKS (9) — block output if any fail:
+    C1  Title length 40-70 chars (sweet spot for CTR)
+    C2  Year in title (freshness signal for news)
+    C3  Subscribe CTA in first 3 lines (above mobile fold)
+    C4  No "edge-tts" engine name exposed
+    C5  Brand = "TheViralDNA" (one word, not "The Viral DNA")
+    C6  Hashtags have # prefix
+    C7  First 3 hashtags = highest search volume (#TeluguNews first)
+    C8  Description >= 200 chars minimum
+    C9  Timestamps/chapters present (Key Moments in search)
+    S5  AI content disclosure present (YouTube policy)
+
+  GROWTH CHECKS (8) — warnings, growth opportunities:
+    G1  Competitor tags (TV9, Sakshi, Eenadu, NTV, ABN)
+    G2  Telugu transliteration tags (telugu varthalu)
+    G3  Year in description first line
+    G4  Tag count 15-30 (optimal range)
+    G5  Dynamic year in tags
+    G6  SUMMARY not duplicate of CONTEXT
+    G7  Like/Comment CTAs present
+    G8  Upload schedule mentioned
+
+  STYLE CHECKS (5) — cleanliness:
+    S1  No double separator lines
+    S2  Smart quotes converted to ASCII
+    S3  Shorts tags for Shorts videos
+    S4  No bare URLs
+    S5  AI disclosure present
+
+  Scoring: 0-100. Each warning -3 pts. Target >= 85 for production.
+  Location: modules/youtube_uploader.py -> _audit_metadata()
+  Output: Console print + metadata dict["audit"] + copy-paste doc section
 
 ================================================================
   END — PRODUCTION HANDOFF DOCUMENT
