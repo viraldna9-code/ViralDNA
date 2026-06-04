@@ -561,6 +561,71 @@ Script:
             except:
                 return False
 
+        # v82.4: Ambiguous person detection + Gemini Vision verification
+        AMBIGUOUS_SURNAMES = {
+            "modi", "gandhi", "singh", "kumar", "sharma", "patel",
+            "reddy", "rao", "nair", "joshi", "gupta", "das",
+        }
+        def _has_ambiguous_person(title):
+            import re as _re
+            words = _re.findall(r'\b[A-Z][a-z]{2,}\b', title)
+            for w in words:
+                if w.lower() in AMBIGUOUS_SURNAMES:
+                    return True
+            if "PM " in title or "CM " in title:
+                return True
+            return False
+
+        def _gemini_person_verify(image_data, topic_title, image_title=""):
+            """Use Gemini Vision to verify the image shows the CORRECT person."""
+            try:
+                import base64 as _b64
+                _key = os.environ.get("GEMINI_API_KEY", "")
+                if not _key:
+                    _env = os.path.expanduser("~/.env")
+                    if os.path.exists(_env):
+                        for _line in open(_env):
+                            if _line.startswith("GEMINI_API_KEY="):
+                                _key = _line.strip().split("=", 1)[1].strip("\"'")
+                                break
+                if not _key:
+                    return True  # fail-open
+                b64 = _b64.b64encode(image_data).decode("utf-8")
+                prompt_text = (
+                    "You are verifying images for an Indian news channel. "
+                    "A CRITICAL bug is showing the WRONG person when names share surnames.\n\n"
+                    f"TOPIC: {topic_title}\n"
+                    f"IMAGE TITLE: {image_title}\n\n"
+                    "Does this image show the CORRECT person from the topic?\n"
+                    "CRITICAL examples of WRONG person:\n"
+                    "- Topic says 'PM Modi' or 'Narendra Modi' but image shows Lalit Modi (IPL figure)\n"
+                    "- Topic says 'Rahul Gandhi' but image shows Mahatma Gandhi or Indira Gandhi\n"
+                    "- Topic says 'PM Modi' but image shows any other Modi family member\n"
+                    "- Topic says 'Amit Shah' but image shows some other Shah\n\n"
+                    "Answer ONLY 'YES' (correct person) or 'NO' (wrong person)."
+                )
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={_key}"
+                payload = json.dumps({
+                    "contents": [{"parts": [
+                        {"inline_data": {"mime_type": "image/jpeg", "data": b64}},
+                        {"text": prompt_text},
+                    ]}],
+                    "generationConfig": {"maxOutputTokens": 10, "temperature": 0.0}
+                }).encode()
+                req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    result = json.loads(resp.read().decode())
+                answer = ""
+                for cand in result.get("candidates", []):
+                    for part in cand.get("content", {}).get("parts", []):
+                        answer += part.get("text", "")
+                answer = answer.strip().upper()
+                if answer.startswith("NO"):
+                    return False
+                return True
+            except Exception:
+                return True  # fail-open
+
         for i, prompt in enumerate(prompts):
             img_path = os.path.join(output_dir, f"scene_img_{i}.jpg")
             if os.path.exists(img_path):
@@ -631,6 +696,18 @@ Script:
                         # Use scene-specific prompt (from Gemini) as primary query, but
                         # replace generic "Andhra farmers" with state-correct term
                         _serper_query = prompt if prompt else topic_title
+                        # v82.4: Expand ambiguous person names for better image results
+                        _PERSON_EXPANSIONS = {
+                            "PM Modi": "PM Narendra Modi",
+                            "PM modi": "PM Narendra Modi",
+                            "CM Revanth": "CM Revanth Reddy",
+                            "CM Chandrababu": "CM Chandrababu Naidu",
+                            "CM Jagan": "CM YS Jagan Mohan Reddy",
+                            "CM KCR": "CM K Chandrashekar Rao",
+                        }
+                        for _short, _full in _PERSON_EXPANSIONS.items():
+                            if _short in _serper_query:
+                                _serper_query = _serper_query.replace(_short, _full)
                         if _serper_state:
                             # Remove wrong-state terms that Gemini may have injected
                             _swap = [("Andhra Pradesh farmers", "Telangana farmers"),
@@ -765,6 +842,16 @@ Script:
                                         except: pass
                                         continue
                                     used_image_hashes.add(_h)
+
+                                    # v82.4: Gemini Vision person verification
+                                    # Prevents wrong-person images (e.g. Lalit Modi for PM Modi)
+                                    if topic_title and _has_ambiguous_person(topic_title):
+                                        _vision_ok = _gemini_person_verify(raw, topic_title, img_info.get("title", ""))
+                                        if not _vision_ok:
+                                            print(f"      [Serper-Img] Scene {i} REJECTED (Gemini Vision: wrong person): {img_info.get('title', '')[:60]}")
+                                            try: os.remove(img_path)
+                                            except: pass
+                                            continue
 
                                     print(f"      [Serper-Img] Scene {i} saved ({sz//1024}KB, {w_img}x{h_img}, std={color_std:.1f}, edges={edge_density:.2f})")
                                     image_paths.append(img_path)
