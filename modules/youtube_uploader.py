@@ -1127,7 +1127,7 @@ class YouTubeUploader:
                 break
         bare_hashtags = [w for w in hashtag_section.split() if len(w) > 3 and not w.startswith("#")
                          and w[0].isupper() and not w.startswith("http")]
-        checks["hashtags_have_prefix"] = len(bare_hashtags) == 0
+        checks["hashtags_has_prefix"] = len(bare_hashtags) == 0
         if not checks["hashtags_has_prefix"] and bare_hashtags:
             warnings.append(f"Hashtags without # prefix: {bare_hashtags[:3]}")
 
