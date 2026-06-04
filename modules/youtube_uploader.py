@@ -206,7 +206,7 @@ class YouTubeUploader:
         default_tags = [
             "Telugu news today", "Andhra Pradesh news", "Telangana news",
             "AP news today", "Hyderabad news", "Vijayawada news", "Vizag news",
-            "Amaravati news", "Guntur news", "TheViralDNA", "The Viral DNA",
+            "Amaravati news", "Guntur news", "TheViralDNA",
             "Telugu breaking news", "Tenglish news", "India news today",
             "NRI Telugu news", "Telugu current affairs", "AP Telangana updates",
             "viral news India", "trending India 2026", "Telugu states news",
@@ -258,10 +258,10 @@ class YouTubeUploader:
             "",
             f"🔥 {title_raw}",
             "",
-            f"📰 SUMMARY:",
+            "📰 SUMMARY:",
             f"{desc_raw}",
             "",
-            f"💡 BACKGROUND & CONTEXT:",
+            "💡 BACKGROUND & CONTEXT:",
             f"{rag_context[:400]}",
             "",
             f"📌 SOURCE: {sources_str}",
@@ -274,7 +274,7 @@ class YouTubeUploader:
         description_lines.extend([
             "",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            "📺 The Viral DNA — Real News. Real Voices. Built with AI.",
+            "📺 TheViralDNA — Real News. Real Voices. Built with AI.",
             "",
             "We cover news that matters to Telugu people everywhere:",
             "📍 Andhra Pradesh | Telangana | Telugu States",
@@ -282,7 +282,6 @@ class YouTubeUploader:
             "🌍 Telugu people worldwide",
             "",
             "🕘 New videos daily at 9:00 AM and 7:00 PM IST",
-            "📱 Shorts at 12:00 PM and 9:00 PM IST",
             "",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
             "🔔 SUBSCRIBE & GROW WITH US",
@@ -294,7 +293,6 @@ class YouTubeUploader:
             "",
             "📧 Business/Collab: viraldna9@gmail.com",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            "",
         ])
 
         if related_links:
@@ -323,7 +321,6 @@ class YouTubeUploader:
         description_lines.extend([
             "",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            "",
         ])
 
         hashtag_block = self._build_hashtag_block(topic, title_raw)
@@ -333,9 +330,9 @@ class YouTubeUploader:
             "",
             "🤖 ALTERED CONTENT DISCLOSURE:",
             "This video was produced using AI-assisted tools: AI script generation,",
-            "AI voice synthesis (edge-tts), algorithmic video assembly. Visuals may",
+            "AI voice synthesis, algorithmic video assembly. Visuals may",
             "include AI-generated imagery. Labeled per YouTube synthetic media policies.",
-            "©️ Produced by The ViralDNA Platform.",
+            "©️ Produced by TheViralDNA.",
         ])
 
         description = "\n".join(description_lines)
@@ -343,7 +340,11 @@ class YouTubeUploader:
         if len(description) > self.description_max_length:
             description = description[:self.description_max_length - 50] + "\n\n...[truncated]"
 
-        description = re.sub(r'<[^>]+>', '', description).replace("<", "").replace(">", "").strip()
+        # Sanitize HTML but preserve apostrophes and smart quotes
+        description = re.sub(r'<[^>]+>', '', description)
+        description = description.replace("\u2018", "'").replace("\u2019", "'")  # smart single quotes
+        description = description.replace("\u201c", '"').replace("\u201d", '"')  # smart double quotes
+        description = description.strip()
         return description
 
     # ─── Metadata Builder (YouTube API format) ───
@@ -364,15 +365,18 @@ class YouTubeUploader:
         description = self._build_full_description(title_raw, desc_raw, rag_context,
                                                     topic, is_short)
 
-        # Sanitize
-        title = re.sub(r'<[^>]+>', '', title).replace("<", "").replace(">", "").strip()
-        description = re.sub(r'<[^>]+>', '', description).replace("<", "").replace(">", "").strip()
+        # Sanitize — strip HTML but preserve apostrophes/smart quotes
+        title = re.sub(r'<[^>]+>', '', title).strip()
+        description = re.sub(r'<[^>]+>', '', description)
+        description = description.replace("\u2018", "'").replace("\u2019", "'")
+        description = description.replace("\u201c", '"').replace("\u201d", '"')
+        description = description.strip()
 
         # Tags — channel keyword defaults for SEO
         default_tags = [
             "Telugu news today", "Andhra Pradesh news", "Telangana news",
             "AP news today", "Hyderabad news", "Vijayawada news", "Vizag news",
-            "Amaravati news", "Guntur news", "TheViralDNA", "The Viral DNA",
+            "Amaravati news", "Guntur news", "TheViralDNA",
             "Telugu breaking news", "Tenglish news", "India news today",
             "NRI Telugu news", "Telugu current affairs", "AP Telangana updates",
             "viral news India", "trending India 2026", "Telugu states news",
