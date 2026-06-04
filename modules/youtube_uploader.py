@@ -1132,8 +1132,14 @@ class YouTubeUploader:
             warnings.append(f"Hashtags without # prefix: {bare_hashtags[:3]}")
 
         # C7: First 3 hashtags are search-volume hashtags (not brand)
-        first3_hash = [w for w in desc_lines[0].split() + (desc_lines[1].split() if len(desc_lines) > 1 else [])
-                       if w.startswith("#")][:3]
+        # Find the hashtag line (first line starting with #TeluguNews, #AndhraPradesh, etc.)
+        hashtag_line = ""
+        for line in desc_lines:
+            stripped = line.strip()
+            if stripped.startswith("#") and len(stripped.split()) >= 3:
+                hashtag_line = stripped
+                break
+        first3_hash = [w for w in hashtag_line.split() if w.startswith("#")][:3]
         first3_lower = [h.lower() for h in first3_hash]
         checks["hashtags_search_first"] = "#telugunews" in first3_lower or "#andhrapradesh" in first3_lower
         if not checks["hashtags_search_first"]:

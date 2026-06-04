@@ -1253,23 +1253,20 @@ class ResilientUploaderAgent(BaseAgent):
         uploader.HIGH_VALUE_KEYWORDS = getattr(config, 'HIGH_VALUE_KEYWORDS', [])
         uploader._used_image_hashes = set()
 
-        # Helper methods needed by generate_upload_metadata
-        uploader._build_related_links = lambda topic: []
-        uploader._build_snippet_prefix = lambda *a: ""
-        uploader._build_affiliate_links = lambda *a: []
-        uploader._build_crowdfunding_line = lambda *a: ""
-        uploader._build_merch_line = lambda *a: ""
-
-        def _build_hashtag_block(self_ref, topic_dict, title):
-            tags = set()
-            for tag_str in topic_dict.get("tags", "").split(","):
-                t = tag_str.strip()
-                if t:
-                    tags.add("#" + t.replace(" ", ""))
-            state_tags = {"TeluguNews", "AndhraPradesh", "TelanganaNews", "ViralDNA", "TeluguNewsToday", "BreakingNews", "IndiaNewsToday"}
-            tags.update(state_tags)
-            return " ".join(sorted(tags))
-        uploader._build_hashtag_block = lambda topic_dict, title: _build_hashtag_block(uploader, topic_dict, title)
+        # Bind real YouTubeUploader methods so metadata output matches uploads exactly.
+        # Previously these were lambda stubs that broke audit checks (wrong brand,
+        # hashtag order, missing SEO keywords, etc).
+        _bind = lambda name: setattr(uploader, name,
+            YouTubeUploader.__dict__[name].__get__(uploader, YouTubeUploader))
+        for _m in ("_extract_seo_keywords", "_build_snippet_prefix",
+                   "_build_hashtag_block", "_fetch_trending_hashtags",
+                   "_build_related_links", "_build_affiliate_links",
+                   "_build_crowdfunding_line", "_build_merch_line",
+                   "_generate_chapters"):
+            try:
+                _bind(_m)
+            except KeyError:
+                pass  # method may not exist on this version
 
         # Gather titles and descriptions from state
         optimized_title = state.get("optimized_title", "") or topic.get("title", "")
