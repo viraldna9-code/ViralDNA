@@ -157,6 +157,21 @@ def fetch_news_images(topic_title, count=5, used_hashes=None):
                 if not overlap:
                     continue
 
+                # v82.1: Minimum relevance gate — reject weak single-word matches
+                # Common words like "meeting", "house", "congress" match everything.
+                # Require >=2 keyword overlap, OR >=1 if it's a rare proper noun.
+                RARE_NOUNS = {"trinamool", "mamata", "banerjee", "pawan", "kalyan",
+                              "jana sena", "revanth", "reddy", "chandrababu", "naidu",
+                              "kcr", "ktr", "modi", "kejriwal", "yogi", "adityanath",
+                              "rahul", "gandhi", "amaravati", "telangana", "andhra",
+                              "hyderabad", "vijayawada", "vizag", "kolkata", "bengal",
+                              "sharad", "pawar", "uddhav", "thackeray", "nitish", "kumar",
+                              "lalu", "prasad", "mamata", "tmc", "bjp", "dmk", "aiadmk"}
+                overlap_lower = {w.lower() for w in overlap}
+                has_rare = bool(overlap_lower & RARE_NOUNS)
+                if len(overlap) < 2 and not has_rare:
+                    continue
+
                 # Bonus for PTI/ANI images (professional news agency photos)
                 bonus = 0
                 if "pti" in img_url.lower() or "ani" in img_url.lower():
