@@ -398,6 +398,18 @@ class VisualFetcher:
                         pass
                     return False
 
+            # v82.4 Layer 2.8: Gemini Vision — verify CORRECT person (not just same surname)
+            # Catches: "Lalit Modi" image for "PM Modi" topic, "Rahul Dravid" for "Rahul Gandhi", etc.
+            if topic_title and self._has_ambiguous_person(topic_title):
+                vision_ok = self._gemini_person_verify(data, topic_title, image_title)
+                if not vision_ok:
+                    print(f"    Image REJECTED (Gemini Vision: wrong person): {image_title[:60] or url[:60]}")
+                    try:
+                        os.remove(save_path)
+                    except Exception:
+                        pass
+                    return False
+
             # v80.0 Layer 2.7: Dedup — reject if same image already used this run
             import hashlib
             data_hash = hashlib.md5(data).hexdigest()
@@ -602,7 +614,20 @@ class VisualFetcher:
 
         # Strategy 1: Serper (real news photos — SECONDARY)
         url = "https://google.serper.dev/images"
-        search_q = f"{topic_title} news photo"
+        # Expand ambiguous names for better image results
+        search_q = topic_title
+        PERSON_EXPANSIONS = {
+            "PM Modi": "PM Narendra Modi",
+            "PM modi": "PM Narendra Modi",
+            "CM Revanth": "CM Revanth Reddy",
+            "CM Chandrababu": "CM Chandrababu Naidu",
+            "CM Jagan": "CM YS Jagan Mohan Reddy",
+            "CM KCR": "CM K Chandrashekar Rao",
+        }
+        for short, full in PERSON_EXPANSIONS.items():
+            if short in search_q:
+                search_q = search_q.replace(short, full)
+        search_q = f"{search_q} news photo"
         payload = {"q": search_q, "num": 10}
         headers = {'X-API-KEY': self.api_key, 'Content-Type': 'application/json'}
 
@@ -639,6 +664,91 @@ class VisualFetcher:
         # Strategy 3: Local image pack fallback
         print("  ⚠️ All external sources failed, using local image pack.")
         return self._local_image_pack_fallback(topic_title, runtime_dir=config.DRIVE["RUNTIME"])
+
+    def _has_ambiguous_person(self, topic_title: str) -> bool:
+        """Check if topic mentions a person with an ambiguous/duplicable surname.
+        e.g. 'Modi' (Narendra vs Lalit), 'Gandhi' (Rahul vs Indira vs Mahatma),
+        'Singh' (many), 'Kumar' (many), etc.
+        """
+        AMBIGUOUS_SURNAMES = {
+            "modi", "gandhi", "singh", "kumar", "sharma", "patel",
+            "reddy", "rao", "nair", "joshi", "gupta", "das",
+        }
+        # Look for "PM Modi", "Rahul Gandhi" etc in topic
+        import re as _re
+        words = _re.findall(r'\b[A-Z][a-z]{2,}\b', topic_title)
+        for w in words:
+            if w.lower() in AMBIGUOUS_SURNAMES:
+                return True
+        # Also check "PM" prefix which implies a specific person
+        if "PM " in topic_title or "CM " in topic_title:
+            return True
+        return False
+
+    def _gemini_person_verify(self, image_data: bytes, topic_title: str,
+                               image_title: str = "") -> bool:
+        """Use Gemini Vision to verify the image shows the CORRECT person.
+        Returns True if correct person (or Gemini unavailable — fail-open).
+        Returns False only on explicit 'wrong person' judgment.
+        """
+        try:
+            import base64, os
+
+            _key = os.environ.get("GEMINI_API_KEY", "")
+            if not _key:
+                _env = os.path.expanduser("~/.env")
+                if os.path.exists(_env):
+                    for line in open(_env):
+                        if line.startswith("GEMINI_API_KEY="):
+                            _key = line.strip().split("=", 1)[1].strip("\"'")
+                            break
+            if not _key:
+                return True  # fail-open
+
+            b64 = base64.b64encode(image_data).decode("utf-8")
+
+            prompt_text = (
+                "You are verifying images for an Indian news channel. "
+                "A CRITICAL bug is showing the WRONG person when names share surnames.\n\n"
+                f"TOPIC: {topic_title}\n"
+                f"IMAGE TITLE: {image_title}\n\n"
+                "Does this image show the CORRECT person from the topic?\n"
+                "CRITICAL examples of WRONG person:\n"
+                "- Topic says 'PM Modi' or 'Narendra Modi' but image shows Lalit Modi (IPL figure)\n"
+                "- Topic says 'Rahul Gandhi' but image shows Mahatma Gandhi or Indira Gandhi\n"
+                "- Topic says 'PM Modi' but image shows any other Modi family member\n"
+                "- Topic says 'Amit Shah' but image shows some other Shah\n\n"
+                "Answer ONLY 'YES' (correct person) or 'NO' (wrong person)."
+            )
+
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={_key}"
+            payload = {
+                "contents": [{
+                    "parts": [
+                        {"inline_data": {"mime_type": "image/jpeg", "data": b64}},
+                        {"text": prompt_text},
+                    ]
+                }],
+                "generationConfig": {"maxOutputTokens": 10, "temperature": 0.0}
+            }
+
+            resp = requests.post(url, json=payload, timeout=15,
+                               headers={"Content-Type": "application/json"})
+            if resp.status_code != 200:
+                return True  # fail-open
+
+            answer = ""
+            for cand in resp.json().get("candidates", []):
+                for part in cand.get("content", {}).get("parts", []):
+                    answer += part.get("text", "")
+
+            answer = answer.strip().upper()
+            if answer.startswith("NO"):
+                return False
+            return True  # YES or unclear → pass
+
+        except Exception:
+            return True  # fail-open
 
     def _local_image_pack_fallback(self, topic_text: str, runtime_dir: str) -> list:
         """Pull topic-relevant images from the local image pack as fallback."""
