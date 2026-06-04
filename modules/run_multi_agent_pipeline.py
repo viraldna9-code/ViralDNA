@@ -1252,6 +1252,9 @@ class ResilientUploaderAgent(BaseAgent):
         uploader.shorts_tag = getattr(config, 'SHORTS_TAG', 'Shorts')
         uploader.HIGH_VALUE_KEYWORDS = getattr(config, 'HIGH_VALUE_KEYWORDS', [])
         uploader._used_image_hashes = set()
+        # Attributes accessed by bound methods (e.g. _build_related_links)
+        uploader.main_playlist_url = None
+        uploader.shorts_playlist_url = None
 
         # Bind real YouTubeUploader methods so metadata output matches uploads exactly.
         # Previously these were lambda stubs that broke audit checks (wrong brand,
