@@ -554,40 +554,41 @@ def main():
             cooldown_passed = False
             print(f"\n  Cooldown active: {elapsed:.1f}h since last alert (need 4h)")
 
-    # Max 3 spike alerts per day (prioritized by score)
-    daily_alert_count = history.get("daily_alert_count", 0)
-    daily_alert_date = history.get("daily_alert_date", "")
-    today_str = now.strftime("%Y-%m-%d")
-    if daily_alert_date != today_str:
-        daily_alert_count = 0  # reset on new day
-        daily_alert_date = today_str
-        history["daily_alert_count"] = 0
-        history["daily_alert_date"] = today_str
-    max_daily_alerts = 3
-    daily_cap_ok = daily_alert_count < max_daily_alerts
-    if not daily_cap_ok:
-        print(f"\n  Daily cap reached: {daily_alert_count}/{max_daily_alerts} alerts today")
-
     # ── Find best topics ──
     # Threshold >= 20: need multiple strong signals (e.g. big name + AP/TS + viral keyword)
     # Typical scores: routine news = 0-9, interesting = 10-19, truly viral = 20-30
     produce_topics = [t for t in scored if t["score"] >= 20]
+    # Burning topics: score >= 25 → ALWAYS alert, bypass cooldown (but still 4h dedup per topic)
+    burning_topics = [t for t in scored if t["score"] >= 25]
 
-    print("\nPRODUCER topics (>=20): " + str(len(produce_topics)))
+    print("\nPRODUCER topics (>=20): " + str(len(produce_topics)) +
+          ("  |  BURNING (>=25): " + str(len(burning_topics)) if burning_topics else ""))
     print("\nScore  | Edge | Final | Topic")
     print("-" * 80)
     for t in scored[:5]:
-        marker = "PRODUCE" if t["score"] >= 20 else "low"
+        marker = "BURN" if t["score"] >= 25 else ("PRODUCE" if t["score"] >= 20 else "low")
         edge = t.get("edge_score", 0)
         final = t.get("final_score", t["score"])
         print(f"  [{marker}] [{t['score']:>2}] +{edge:.1f} = {final:.1f}  {t['title'][:55]}")
 
-    # ── Alert logic: alert on ALL produce topics (up to daily cap) ──
-    # Each alert consumes 1 daily cap slot. Max 3 alerts/day.
-    if produce_topics and cooldown_passed and daily_cap_ok:
+    # ── Alert logic ──
+    # Burning topics (>=25): ALWAYS alert — no daily cap, cooldown only for dedup
+    # Regular topics (20-24): alert freely, 4h cooldown between same-score topics
+    # No daily alert cap — if it's newsworthy, you need to know NOW.
+    should_alert = False
+    if produce_topics:
+        if burning_topics:
+            should_alert = True  # Burning topic — always alert
+            print("\n🔥 BURNING topic detected — alerting immediately (no cap)")
+        elif cooldown_passed:
+            should_alert = True  # Regular topic, cooldown passed
+        else:
+            elapsed = 0.0
+            print(f"\n  Cooldown active (need 4h)")
+    
+    if should_alert:
         alerts_sent = 0
-        max_alerts = min(len(produce_topics), max_daily_alerts - daily_alert_count)
-        for alert_topic in produce_topics[:max_alerts]:
+        for alert_topic in produce_topics:
             score = alert_topic["score"]
             edge = alert_topic.get("edge_score", 0)
             final = alert_topic.get("final_score", score)
@@ -595,13 +596,16 @@ def main():
             source = alert_topic["source"]
             topic_id = alert_topic.get("id", "VDNA???")
             breakdown = " | ".join(alert_topic.get("breakdown", []))
+            is_burning = score >= 25
 
+            alert_prefix = "🔥 BURNING" if is_burning else "🎬"
             alert_text = (
-                f"🎬 <b>ViralDNA — Topic Alert</b>\n"
+                f"{alert_prefix} <b>ViralDNA — Topic Alert</b>\n"
                 f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
                 f"📅 {now_str}\n"
                 f"🆔 Topic ID: <b>{topic_id}</b>\n"
-                f"📊 Score: <b>{score}/30</b> + edge {edge:.1f} = <b>{final:.1f}</b>\n"
+                f"📊 Score: <b>{score}/30</b> + edge {edge:.1f} = <b>{final:.1f}</b>"
+                f"{' 🔥' if is_burning else ''}\n"
                 f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
                 f"📰 <b>{title[:100]}</b>\n"
                 f"📡 {source}\n"
@@ -616,21 +620,15 @@ def main():
             sent = send_telegram(alert_text)
             if sent:
                 alerts_sent += 1
-                print(f"\n✅ Alert sent: {topic_id} ({title[:50]})")
+                print(f"\n{'🔥' if is_burning else '✅'} Alert sent: {topic_id} ({title[:50]})")
             else:
                 print(f"\n❌ Alert failed: {topic_id} ({title[:50]})")
 
         if alerts_sent > 0:
             history["last_alert"] = now.isoformat()
-            history["daily_alert_count"] = daily_alert_count + alerts_sent
-            history["daily_alert_date"] = daily_alert_date
             print(f"\nTotal alerts sent this run: {alerts_sent}")
     else:
-        if not cooldown_passed:
-            print("\nNo alert sent: cooldown active")
-        elif not daily_cap_ok:
-            print("\nNo alert sent: daily cap reached")
-        elif not produce_topics:
+        if not produce_topics:
             print("\nNo alert sent: no topics >= 20")
 
     # ── Update pending review list ──
