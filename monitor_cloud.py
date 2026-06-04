@@ -457,7 +457,7 @@ def main():
     seen = set()
     deduped = []
     for t in all_topics:
-        key = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+        key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
         if key not in seen and len(key) > 10:
             seen.add(key)
             deduped.append(t)
@@ -491,7 +491,19 @@ def main():
         )
         scored.append({**t, "score": score, "breakdown": breakdown})
 
-    scored.sort(key=lambda x: x["score"], reverse=True)
+    # ── Edge scoring: break ties with growth intelligence ──
+    # Each topic gets a decimal edge (0.1-0.9) based on:
+    #   search demand, velocity, channel fit, competition gap,
+    #   engagement potential, geographic breadth, feedback analytics
+    try:
+        from modules.edge_scorer import batch_score_topics
+        scored = batch_score_topics(scored)
+        # Use final_score (base + edge) for sorting; keep base 'score' for display
+        scored.sort(key=lambda x: x.get("final_score", x.get("score", 0)), reverse=True)
+        print(f"  → Edge scoring applied: {len(scored)} topics scored with growth intelligence")
+    except Exception as e:
+        print(f"  → Edge scoring failed (falling back to base sort): {e}")
+        scored.sort(key=lambda x: x["score"], reverse=True)
 
     # ── Assign persistent VDNA topic IDs ──
     # Load existing topics to preserve IDs
@@ -500,7 +512,7 @@ def main():
     for t in existing_topics.get("topics", []):
         if "id" in t:
             # Map by normalized title for matching
-            key = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t.get("title","").lower().strip(), flags=re.IGNORECASE).strip()
+            key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t.get("title","").lower().strip(), flags=re.IGNORECASE).strip()
             existing_map[key] = t["id"]
 
     # Find next available ID number
@@ -518,7 +530,7 @@ def main():
     # Assign IDs: reuse existing for same topic, new ID for new topics
     date_prefix = now.strftime("%Y%m%d")
     for t in scored:
-        key = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+        key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
         if key in existing_map:
             t["id"] = existing_map[key]
         else:
@@ -562,11 +574,13 @@ def main():
     produce_topics = [t for t in scored if t["score"] >= 20]
 
     print("\nPRODUCER topics (>=20): " + str(len(produce_topics)))
-    print("\nScore | Topic")
-    print("-" * 60)
+    print("\nScore  | Edge | Final | Topic")
+    print("-" * 80)
     for t in scored[:5]:
         marker = "PRODUCE" if t["score"] >= 20 else "low"
-        print("  [" + marker + "] [" + str(t['score']).zfill(2) + "] " + t['title'][:60])
+        edge = t.get("edge_score", 0)
+        final = t.get("final_score", t["score"])
+        print(f"  [{marker}] [{t['score']:>2}] +{edge:.1f} = {final:.1f}  {t['title'][:55]}")
 
     # ── Alert logic: alert on ALL produce topics (up to daily cap) ──
     # Each alert consumes 1 daily cap slot. Max 3 alerts/day.
@@ -575,6 +589,8 @@ def main():
         max_alerts = min(len(produce_topics), max_daily_alerts - daily_alert_count)
         for alert_topic in produce_topics[:max_alerts]:
             score = alert_topic["score"]
+            edge = alert_topic.get("edge_score", 0)
+            final = alert_topic.get("final_score", score)
             title = alert_topic["title"]
             source = alert_topic["source"]
             topic_id = alert_topic.get("id", "VDNA???")
@@ -585,7 +601,7 @@ def main():
                 f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
                 f"📅 {now_str}\n"
                 f"🆔 Topic ID: <b>{topic_id}</b>\n"
-                f"📊 Score: <b>{score}/30</b> (PRODUCE)\n"
+                f"📊 Score: <b>{score}/30</b> + edge {edge:.1f} = <b>{final:.1f}</b>\n"
                 f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
                 f"📰 <b>{title[:100]}</b>\n"
                 f"📡 {source}\n"
@@ -628,12 +644,12 @@ def main():
     existing_map = {}
     for t in existing_topics.get("topics", []):
         if "id" in t and t.get("title"):
-            k = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+            k = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
             existing_map[k] = t
 
     # Merge: update existing scores, add new topics
     for t in scored:
-        k = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+        k = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
         if k in existing_map:
             existing_map[k]["score"] = t["score"]
             existing_map[k]["date"] = t.get("date", "")
@@ -641,13 +657,18 @@ def main():
             # Always recompute score_breakdown on each scoring run
             existing_map[k]["score_breakdown"] = t.get("breakdown", [])
             existing_map[k]["rescored_at"] = t.get("date", "")
+            # Persist edge scoring (tie-breaking intelligence)
+            if "edge_score" in t:
+                existing_map[k]["edge_score"] = t["edge_score"]
+                existing_map[k]["final_score"] = t["final_score"]
+                existing_map[k]["edge_breakdown"] = t.get("edge_breakdown", {})
             if "id" in t:
                 existing_map[k]["id"] = t["id"]
         else:
             existing_map[k] = t
 
-    # Sort by score, keep top 50
-    all_topics = sorted(existing_map.values(), key=lambda x: x.get("score", 0), reverse=True)[:50]
+    # Sort by final_score (base + edge), keep top 50
+    all_topics = sorted(existing_map.values(), key=lambda x: x.get("final_score", x.get("score", 0)), reverse=True)[:50]
     history["topics"] = all_topics
     history["last_run"] = now.isoformat()
     save_topics_history(history)
