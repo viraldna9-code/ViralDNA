@@ -11,7 +11,7 @@
 #          v65.0: Fixed sync FFmpeg pipe deadlock (capture_output=True → log file)
 #                  processing queue with progress tracking (K2.8), async upload prep.
 
-import subprocess, os, re, urllib.parse, urllib.request, json, config, time, shutil
+import subprocess, os, re, urllib.parse, urllib.request, urllib.error, json, config, time, shutil
 
 class VideoAssembler:
     def __init__(self, config_instance):
@@ -577,7 +577,10 @@ Script:
             return False
 
         def _gemini_person_verify(image_data, topic_title, image_title=""):
-            """Use Gemini Vision to verify the image shows the CORRECT person."""
+            """Use Gemini Vision to verify the image shows the CORRECT person.
+            Returns (ok, reason). On rate-limit or API error, returns (None, reason)
+            so caller can retry or reject conservatively.
+            """
             try:
                 import base64 as _b64
                 _key = os.environ.get("GEMINI_API_KEY", "")
@@ -589,7 +592,7 @@ Script:
                                 _key = _line.strip().split("=", 1)[1].strip("\"'")
                                 break
                 if not _key:
-                    return True  # fail-open
+                    return None, "no_api_key"
                 b64 = _b64.b64encode(image_data).decode("utf-8")
                 prompt_text = (
                     "You are verifying images for an Indian news channel. "
@@ -604,7 +607,7 @@ Script:
                     "- Topic says 'Amit Shah' but image shows some other Shah\n\n"
                     "Answer ONLY 'YES' (correct person) or 'NO' (wrong person)."
                 )
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={_key}"
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={_key}"
                 payload = json.dumps({
                     "contents": [{"parts": [
                         {"inline_data": {"mime_type": "image/jpeg", "data": b64}},
@@ -621,10 +624,30 @@ Script:
                         answer += part.get("text", "")
                 answer = answer.strip().upper()
                 if answer.startswith("NO"):
-                    return False
-                return True
-            except Exception:
-                return True  # fail-open
+                    return False, "wrong_person"
+                return True, "verified"
+            except urllib.error.HTTPError as e:
+                if e.code == 429:
+                    # Retry once after 5s cooldown
+                    import time as _time
+                    _time.sleep(5)
+                    try:
+                        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+                        with urllib.request.urlopen(req, timeout=15) as resp2:
+                            result = json.loads(resp2.read().decode())
+                        answer = ""
+                        for cand in result.get("candidates", []):
+                            for part in cand.get("content", {}).get("parts", []):
+                                answer += part.get("text", "")
+                        answer = answer.strip().upper()
+                        if answer.startswith("NO"):
+                            return False, "wrong_person_on_retry"
+                        return True, "verified_on_retry"
+                    except Exception:
+                        return None, "rate_limited_retry_failed"
+                return None, f"http_{e.code}"
+            except Exception as e:
+                return None, f"error:{type(e).__name__}"
 
         for i, prompt in enumerate(prompts):
             img_path = os.path.join(output_dir, f"scene_img_{i}.jpg")
@@ -654,11 +677,35 @@ Script:
                             # Validate quality
                             quality = self._validate_image_quality(img_path)
                             if quality["passed"]:
-                                used_image_hashes.add(result["hash"])
-                                image_paths.append(img_path)
-                                downloaded = True
-                                print(f"      ✅ [NewsRSS] Scene {i} — {result['source']} | "
-                                      f"{result['title'][:50]} | {result['size']//1024}KB")
+                                # v82.4: Person verification for RSS images too
+                                _rss_skip = False
+                                if _has_ambiguous_person(topic_title):
+                                    _vision_ok, _vision_reason = _gemini_person_verify(img_data, topic_title, result.get("title", ""))
+                                    if _vision_ok is False:
+                                        print(f"      [NewsRSS] Scene {i} REJECTED (Gemini Vision: wrong person)")
+                                        _rss_skip = True
+                                    elif _vision_ok is None:
+                                        print(f"      [NewsRSS] Scene {i} REJECTED (Gemini Vision unavailable: {_vision_reason}), skipping ambiguous person image")
+                                        _rss_skip = True
+                                if not _rss_skip:
+                                    # v75.3: Reject stock/watermarks from RSS too
+                                    _is_stock_rss, _stock_reason_rss = _is_watermarked_stock(
+                                        img_path, img_url=result.get("url", ""),
+                                        img_title=result.get("title", ""),
+                                        img_source=result.get("source", "")
+                                    )
+                                    if _is_stock_rss:
+                                        print(f"      [NewsRSS] Scene {i} REJECTED stock: {_stock_reason_rss}")
+                                        _rss_skip = True
+                                if not _rss_skip:
+                                    used_image_hashes.add(result["hash"])
+                                    image_paths.append(img_path)
+                                    downloaded = True
+                                    print(f"      ✅ [NewsRSS] Scene {i} — {result['source']} | "
+                                          f"{result['title'][:50]} | {result['size']//1024}KB")
+                                else:
+                                    try: os.remove(img_path)
+                                    except: pass
                             else:
                                 print(f"      ⚠️ [NewsRSS] Rejected: {quality['reason']}")
                                 os.remove(img_path)
@@ -846,9 +893,15 @@ Script:
                                     # v82.4: Gemini Vision person verification
                                     # Prevents wrong-person images (e.g. Lalit Modi for PM Modi)
                                     if topic_title and _has_ambiguous_person(topic_title):
-                                        _vision_ok = _gemini_person_verify(raw, topic_title, img_info.get("title", ""))
-                                        if not _vision_ok:
+                                        _vision_ok, _vision_reason = _gemini_person_verify(raw, topic_title, img_info.get("title", ""))
+                                        if _vision_ok is False:
                                             print(f"      [Serper-Img] Scene {i} REJECTED (Gemini Vision: wrong person): {img_info.get('title', '')[:60]}")
+                                            try: os.remove(img_path)
+                                            except: pass
+                                            continue
+                                        elif _vision_ok is None:
+                                            # Could not verify (rate limit / error) — reject to be safe
+                                            print(f"      [Serper-Img] Scene {i} REJECTED (Gemini Vision unavailable: {_vision_reason}), skipping ambiguous person image")
                                             try: os.remove(img_path)
                                             except: pass
                                             continue
@@ -915,6 +968,24 @@ Script:
                                 except: pass
                                 continue
                             used_image_hashes.add(_h)
+
+                            # v82.4: Person verification for WikiCommons too
+                            _wiki_skip = False
+                            if _has_ambiguous_person(topic_title):
+                                with open(img_path, 'rb') as _vf:
+                                    _wiki_raw = _vf.read()
+                                _vision_ok, _vision_reason = _gemini_person_verify(_wiki_raw, topic_title, "")
+                                if _vision_ok is False:
+                                    print(f"      [WikiCommons] Scene {i} REJECTED (Gemini Vision: wrong person)")
+                                    _wiki_skip = True
+                                elif _vision_ok is None:
+                                    print(f"      [WikiCommons] Scene {i} REJECTED (Gemini Vision unavailable: {_vision_reason})")
+                                    _wiki_skip = True
+                            if _wiki_skip:
+                                try: os.remove(img_path)
+                                except: pass
+                                continue
+
                             print(f"      [WikiCommons] Scene {i} saved ({sz//1024}KB, {w_img}x{h_img})")
                             downloaded = True
                             break
