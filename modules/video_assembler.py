@@ -566,6 +566,16 @@ Script:
             "modi", "gandhi", "singh", "kumar", "sharma", "patel",
             "reddy", "rao", "nair", "joshi", "gupta", "das",
         }
+        # Known wrong-person name patterns: key=expected in topic, value=wrong in image
+        PERSON_DISAMBIGUATION = {
+            "pm modi": {"narendra", "pm"},        # must have "narendra" or "pm" — reject "lalit"
+            "narendra modi": {"narendra", "pm"},
+            "rahul gandhi": {"rahul"},            # reject "mahatma", "indira", "rajiv"
+            "indira gandhi": {"indira"},
+            "rajiv gandhi": {"rajiv"},
+            "amit shah": {"amit", "home minister"},
+            "lalit modi": {"lalit", "ipl"},       # inverse: if topic IS about lalit
+        }
         def _has_ambiguous_person(title):
             import re as _re
             words = _re.findall(r'\b[A-Z][a-z]{2,}\b', title)
@@ -575,6 +585,33 @@ Script:
             if "PM " in title or "CM " in title:
                 return True
             return False
+
+        def _text_person_check(topic_title, image_title, image_source=""):
+            """Text-based person verification (no API needed).
+            Returns (ok, reason). Checks image metadata for wrong-person indicators."""
+            _img_text = (image_title + " " + image_source).lower()
+            _topic_lower = topic_title.lower()
+            # Check each disambiguation rule
+            for expected_phrase, required_words in PERSON_DISAMBIGUATION.items():
+                if expected_phrase in _topic_lower:
+                    # Topic mentions this person — image must contain a required word
+                    has_required = any(rw in _img_text for rw in required_words)
+                    if not has_required:
+                        # Image doesn't mention any required identifier word
+                        # Check for known WRONG person keywords
+                        WRONG_KEYWORDS = {
+                            "modi": ["lalit"],
+                            "gandhi": ["mahatma", "indira", "rajiv", "sonia"],
+                            "shah": [],  # no common wrong Shah
+                        }
+                        for surname, wrongs in WRONG_KEYWORDS.items():
+                            if surname in expected_phrase:
+                                for wk in wrongs:
+                                    if wk in _img_text:
+                                        return False, f"wrong_person_text:{wk}"
+                        # No required word but no explicit wrong word either — uncertain
+                        return None, "missing_required_identifier"
+            return True, "text_ok"
 
         def _gemini_person_verify(image_data, topic_title, image_title=""):
             """Use Gemini Vision to verify the image shows the CORRECT person.
@@ -680,13 +717,21 @@ Script:
                                 # v82.4: Person verification for RSS images too
                                 _rss_skip = False
                                 if _has_ambiguous_person(topic_title):
-                                    _vision_ok, _vision_reason = _gemini_person_verify(img_data, topic_title, result.get("title", ""))
-                                    if _vision_ok is False:
-                                        print(f"      [NewsRSS] Scene {i} REJECTED (Gemini Vision: wrong person)")
+                                    # v82.4: Text check FIRST (no API, no rate limit)
+                                    _txt_ok, _txt_reason = _text_person_check(
+                                        topic_title, result.get("title", ""), result.get("source", ""))
+                                    if _txt_ok is False:
+                                        print(f"      [NewsRSS] Scene {i} REJECTED (text: {_txt_reason})")
                                         _rss_skip = True
-                                    elif _vision_ok is None:
-                                        print(f"      [NewsRSS] Scene {i} REJECTED (Gemini Vision unavailable: {_vision_reason}), skipping ambiguous person image")
-                                        _rss_skip = True
+                                    elif _txt_ok is None:
+                                        # Text uncertain → try Gemini Vision
+                                        _vision_ok, _vision_reason = _gemini_person_verify(img_data, topic_title, result.get("title", ""))
+                                        if _vision_ok is False:
+                                            print(f"      [NewsRSS] Scene {i} REJECTED (Vision: wrong person)")
+                                            _rss_skip = True
+                                        elif _vision_ok is None:
+                                            print(f"      [NewsRSS] Scene {i} REJECTED (Vision unavailable: {_vision_reason})")
+                                            _rss_skip = True
                                 if not _rss_skip:
                                     # v75.3: Reject stock/watermarks from RSS too
                                     _is_stock_rss, _stock_reason_rss = _is_watermarked_stock(
@@ -890,21 +935,29 @@ Script:
                                         continue
                                     used_image_hashes.add(_h)
 
-                                    # v82.4: Gemini Vision person verification
+                                    # v82.4: Person verification — text first, then Vision
                                     # Prevents wrong-person images (e.g. Lalit Modi for PM Modi)
                                     if topic_title and _has_ambiguous_person(topic_title):
-                                        _vision_ok, _vision_reason = _gemini_person_verify(raw, topic_title, img_info.get("title", ""))
-                                        if _vision_ok is False:
-                                            print(f"      [Serper-Img] Scene {i} REJECTED (Gemini Vision: wrong person): {img_info.get('title', '')[:60]}")
+                                        _txt_ok, _txt_reason = _text_person_check(
+                                            topic_title, img_info.get("title", ""), img_info.get("source", ""))
+                                        if _txt_ok is False:
+                                            print(f"      [Serper-Img] Scene {i} REJECTED (text: {_txt_reason}): {img_info.get('title', '')[:60]}")
                                             try: os.remove(img_path)
                                             except: pass
                                             continue
-                                        elif _vision_ok is None:
-                                            # Could not verify (rate limit / error) — reject to be safe
-                                            print(f"      [Serper-Img] Scene {i} REJECTED (Gemini Vision unavailable: {_vision_reason}), skipping ambiguous person image")
-                                            try: os.remove(img_path)
-                                            except: pass
-                                            continue
+                                        elif _txt_ok is None:
+                                            # Text uncertain → try Gemini Vision
+                                            _vision_ok, _vision_reason = _gemini_person_verify(raw, topic_title, img_info.get("title", ""))
+                                            if _vision_ok is False:
+                                                print(f"      [Serper-Img] Scene {i} REJECTED (Vision: wrong person): {img_info.get('title', '')[:60]}")
+                                                try: os.remove(img_path)
+                                                except: pass
+                                                continue
+                                            elif _vision_ok is None:
+                                                print(f"      [Serper-Img] Scene {i} REJECTED (Vision unavailable: {_vision_reason})")
+                                                try: os.remove(img_path)
+                                                except: pass
+                                                continue
 
                                     print(f"      [Serper-Img] Scene {i} saved ({sz//1024}KB, {w_img}x{h_img}, std={color_std:.1f}, edges={edge_density:.2f})")
                                     image_paths.append(img_path)
@@ -969,18 +1022,24 @@ Script:
                                 continue
                             used_image_hashes.add(_h)
 
-                            # v82.4: Person verification for WikiCommons too
+                            # v82.4: Person verification for WikiCommons — text first
                             _wiki_skip = False
                             if _has_ambiguous_person(topic_title):
-                                with open(img_path, 'rb') as _vf:
-                                    _wiki_raw = _vf.read()
-                                _vision_ok, _vision_reason = _gemini_person_verify(_wiki_raw, topic_title, "")
-                                if _vision_ok is False:
-                                    print(f"      [WikiCommons] Scene {i} REJECTED (Gemini Vision: wrong person)")
+                                _txt_ok, _txt_reason = _text_person_check(topic_title, "", "")
+                                if _txt_ok is False:
+                                    print(f"      [WikiCommons] Scene {i} REJECTED (text: {_txt_reason})")
                                     _wiki_skip = True
-                                elif _vision_ok is None:
-                                    print(f"      [WikiCommons] Scene {i} REJECTED (Gemini Vision unavailable: {_vision_reason})")
-                                    _wiki_skip = True
+                                elif _txt_ok is None:
+                                    # Text uncertain → try Gemini Vision
+                                    with open(img_path, 'rb') as _vf:
+                                        _wiki_raw = _vf.read()
+                                    _vision_ok, _vision_reason = _gemini_person_verify(_wiki_raw, topic_title, "")
+                                    if _vision_ok is False:
+                                        print(f"      [WikiCommons] Scene {i} REJECTED (Vision: wrong person)")
+                                        _wiki_skip = True
+                                    elif _vision_ok is None:
+                                        print(f"      [WikiCommons] Scene {i} REJECTED (Vision unavailable: {_vision_reason})")
+                                        _wiki_skip = True
                             if _wiki_skip:
                                 try: os.remove(img_path)
                                 except: pass
