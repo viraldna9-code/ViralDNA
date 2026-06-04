@@ -4,6 +4,50 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v82.2] — 2026-06-04 — 3-Layer Image Relevance Defense (Bollywood/Building/Demolition Fix)
+
+### Problem
+1. **Irrelevant images in political videos**: VDNA120 (Trinamool Congress Crisis) video contained Bollywood actress photos (Kajol/Tanishaa Mukerji), building demolition images, and US-Iran news footage — all completely unrelated to the topic
+2. **Root cause #1 — Bridge words**: Generic words like "house", "live", "updates", "meeting", "crisis" appeared in both the topic title and unrelated RSS articles, creating false keyword matches. "US House" matched "Mamata Banerjee's House" via the word "house"
+3. **Root cause #2 — Weak threshold**: Single keyword overlap (1 word) was enough to accept an article. "Congress" alone matched US Congress articles
+4. **Root cause #3 — RSS enclosure mismatch**: Article titles matched the topic, but the RSS `<enclosure>` image was a completely different stock photo/sidebar image (e.g. Indian Express entertainment section photo for a political article)
+
+### Changes
+
+#### 1. Bridge Word Stop List (`news_image_fetcher.py` — Layer 1)
+- Added 40+ common "bridge words" to the keyword overlap stop list — words that appear in nearly every news headline and are meaningless for topic matching
+- Bridge words removed: `live, updates, crisis, meeting, house, called, backs, resolution, halt, leader, says, said, party, government, minister, chief, leaders, announces, announce, decision, move, big, major, key, top, new, latest, today, yesterday, day, days, week, month, year, first, second, last, next, time, plan, action, state, states, country, nation, people, public, support, against, also, still, even, back, down, turn, set, put, take, make, give, come, want, know, need, call, talk, hold, news, report, reports, reveal, reveals`
+- Result: Topic "Trinamool Congress **Crisis Live Updates**...**Meeting** Called At Mamata Banerjee's **House**" now extracts only meaningful keywords: `trinamool, congress, mamata, banerjee, setbacks`
+
+#### 2. Minimum 2-Keyword Overlap or Rare Proper Noun (`news_image_fetcher.py` — Layer 2)
+- Articles must match at least 2 non-bridge keywords with the topic
+- Exception: 1 keyword match is accepted if it's a rare proper noun (trinamool, mamata, banerjee, pawan, kalyan, revanth, kcr, ktr, tmc, bjp, modi) — these are specific enough that 1 word is sufficient
+- Result: Single generic word matches like "congress" alone no longer pass
+
+#### 3. Gemini Vision Visual Relevance Gate (`news_image_fetcher.py` — Layer 3)
+- After downloading each RSS image, sends it to Gemini Flash Vision API with the topic context
+- Gemini answers YES/NO: "Does this image show content visually relevant to this topic?"
+- Explicit rejection criteria: buildings/demolition, entertainment/celebrities, sports, international flags, stock photos, logos, generic landscapes
+- Acceptance criteria: Indian political figures, rallies/protests, parliament/assembly, related news footage
+- Fail-open design: if Gemini is unavailable or errors, image is accepted (doesn't block pipeline)
+- Uses `gemini-flash-latest` for cost efficiency (~$0.001/image)
+
+### Verification
+- **v82.0 run**: 82 relevant articles → Bollywood + US-Iran + building demolition images accepted ❌
+- **v82.2 run**: 23 relevant articles → ALL 5 scenes got TMC/Trinamool specific images ✅
+- **Accepted articles** (all on-topic):
+  1. The Hindu: "Loyalists rally behind Mamata, say an ousted leader cannot lead"
+  2. Indian Express: "As TMC unravels, Mamata Banerjee's band of loyalists shrinks"
+  3. News18: "'Chief Adviser And Guide': Has Mamata Lost The Trinamool Congress"
+  4. News18: "Trinamool Does A 'Shinde' On Mamata? Ritabrata Banerjee..."
+  5. News18: "TMC Rebellion News Highlights: Trinamool Rebels Ask Mamata B..."
+- **Rejected**: Bollywood (Kajol/Tanishaa), US-Iran (House/Resolution), building demolition, real estate — all blocked at Layer 1
+
+### Files Changed
+- `modules/news_image_fetcher.py` — bridge word stop list, ≥2 overlap gate, `_visual_relevance_check()` Gemini Vision gate
+
+---
+
 ## [v82.0] — 2026-06-03 — Topic-Based File Naming + 3 Title Variants + A/B Thumbnails + Growth-Focused Descriptions
 
 ### Problem
