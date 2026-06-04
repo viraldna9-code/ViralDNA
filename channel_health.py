@@ -33,6 +33,8 @@ ALERT_COOLDOWN_FILE = os.path.join(PROJECT_ROOT, "analytics", "last_alert.txt")
 
 MONETIZATION_SUBS = 1000
 MONETIZATION_WATCH_HOURS = 4000
+TARGET_DAILY_MAINS = 1
+TARGET_DAILY_SHORTS = 2
 ACTIVE_START = 6
 ACTIVE_END = 23
 
@@ -108,14 +110,40 @@ def get_channel_data(token):
     }
 
 
-def get_all_videos(token):
-    """Get all videos with full stats. Retries on empty results."""
+def get_all_videos(token, uploads_playlist_id=""):
+    """Get all video IDs via uploads playlist (1 unit/call), then batch-fetch details.
+    Falls back to search endpoint (100 units/call) if uploads playlist not available.
+    """
     all_ids = []
-    import time
-    for attempt in range(3):
+
+    # Primary: uploads playlist (cheap: 1 unit per call)
+    if uploads_playlist_id:
         page_token = ""
         while True:
-            url = f"https://www.googleapis.com/youtube/v3/search?part=id&channelId={CHANNEL_ID}&maxResults=50&order=date&type=video"
+            url = (f"https://www.googleapis.com/youtube/v3/playlistItems?"
+                   f"part=contentDetails&playlistId={uploads_playlist_id}&maxResults=50")
+            if page_token:
+                url += f"&pageToken={page_token}"
+            try:
+                data = yt_get(token, url)
+            except urllib.error.HTTPError as e:
+                if e.code == 403:
+                    break  # quota — will try fallback
+                raise
+            for item in data.get("items", []):
+                vid = item.get("contentDetails", {}).get("videoId", "")
+                if vid:
+                    all_ids.append(vid)
+            page_token = data.get("nextPageToken", "")
+            if not page_token:
+                break
+
+    # Fallback: search endpoint (100 units/call — burns quota fast)
+    if not all_ids:
+        page_token = ""
+        while True:
+            url = (f"https://www.googleapis.com/youtube/v3/search?"
+                   f"part=id&channelId={CHANNEL_ID}&maxResults=50&order=date&type=video")
             if page_token:
                 url += f"&pageToken={page_token}"
             data = yt_get(token, url)
@@ -125,15 +153,13 @@ def get_all_videos(token):
             page_token = data.get("nextPageToken", "")
             if not page_token or not data.get("items"):
                 break
-        if all_ids:
-            break
-        time.sleep(2)
-        print(f"  Retry {attempt+1}: video search returned 0")
 
+    # Batch-fetch video details (1 unit per batch of 50)
     videos = []
     for i in range(0, len(all_ids), 50):
         batch = all_ids[i:i + 50]
-        url = f"https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails,snippet,status&id={','.join(batch)}"
+        url = (f"https://www.googleapis.com/youtube/v3/videos?"
+               f"part=statistics,contentDetails,snippet,status&id={','.join(batch)}")
         data = yt_get(token, url)
         for v in data.get("items", []):
             s = v.get("statistics", {})
@@ -154,6 +180,7 @@ def get_all_videos(token):
                 "tags": sn.get("tags", []),
                 "description": sn.get("description", ""),
                 "category_id": sn.get("categoryId", ""),
+                "made_for_kids": st.get("selfDeclaredMadeForKids", None),
             })
     return videos
 
@@ -222,6 +249,151 @@ def mark_alert_sent():
         f.write(datetime.now(timezone.utc).isoformat())
 
 
+def get_channel_sections(token):
+    """Fetch channel sections (home page layout)."""
+    url = f"https://www.googleapis.com/youtube/v3/channelSections?part=snippet,contentDetails&channelId={CHANNEL_ID}"
+    try:
+        data = yt_get(token, url)
+        return data.get("items", [])
+    except Exception:
+        return []
+
+
+def check_upload_cadence(videos, now, issues):
+    """
+    Check if we're meeting the daily target of 1 main + 2 shorts.
+    Analyzes uploads in the last 24h, 48h, and 7 days.
+    """
+    if not videos:
+        issues.append(("CRITICAL", "cadence", "NO videos on channel", "Publish immediately"))
+        return
+
+    shorts = [v for v in videos if v["is_short"]]
+    mains = [v for v in videos if not v["is_short"]]
+
+    day_ago = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    mains_24h = [v for v in mains if v["published"] >= day_ago]
+    shorts_24h = [v for v in shorts if v["published"] >= day_ago]
+
+    if len(mains_24h) == 0 and len(shorts_24h) == 0:
+        issues.append(("HIGH", "cadence",
+            f"ZERO uploads in last 24h (target: {TARGET_DAILY_MAINS} main + {TARGET_DAILY_SHORTS} shorts/day)",
+            "Publish today -- consistency is the #1 growth factor"))
+    elif len(mains_24h) == 0:
+        issues.append(("MEDIUM", "cadence",
+            f"No main video in last 24h ({len(shorts_24h)} shorts ok, missing main)",
+            "Publish 1 main video today"))
+    elif len(shorts_24h) < TARGET_DAILY_SHORTS:
+        issues.append(("MEDIUM", "cadence",
+            f"Only {len(shorts_24h)}/{TARGET_DAILY_SHORTS} shorts in last 24h",
+            f"Publish {TARGET_DAILY_SHORTS - len(shorts_24h)} more short(s) today"))
+
+    week_ago = (now - timedelta(days=7)).strftime("%Y-%m-%d")
+    mains_7d = [v for v in mains if v["published"] >= week_ago]
+    shorts_7d = [v for v in shorts if v["published"] >= week_ago]
+    daily_main_rate = len(mains_7d) / 7.0
+    daily_short_rate = len(shorts_7d) / 7.0
+    if daily_main_rate < 0.5 or daily_short_rate < 1.0:
+        issues.append(("MEDIUM", "cadence",
+            f"Weekly cadence low: {daily_main_rate:.1f} mains/day, {daily_short_rate:.1f} shorts/day (target: {TARGET_DAILY_MAINS}+{TARGET_DAILY_SHORTS})",
+            "Increase output -- algorithm rewards consistent publishers"))
+    elif daily_main_rate >= 0.8 and daily_short_rate >= 1.5:
+        issues.append(("INFO", "cadence",
+            f"Cadence good: {daily_main_rate:.1f} mains/day, {daily_short_rate:.1f} shorts/day -- keep it up",
+            "Consistency drives algorithmic promotion"))
+
+    if len(shorts) + len(mains) >= 5:
+        shorts_ratio = len(shorts) / (len(shorts) + len(mains)) * 100
+        if shorts_ratio < 40:
+            issues.append(("MEDIUM", "content_mix",
+                f"Shorts only {shorts_ratio:.0f}% of content (target: 60-70%)",
+                "Shorts drive discovery -- aim for 2 shorts per 1 main"))
+
+
+def check_video_seo_details(public_videos, issues):
+    """Per-video SEO checks: title length, description keywords, comment engagement."""
+    if not public_videos:
+        return
+
+    seo_keywords = ["telugu", "news", "andhra", "telangana", "india", "breaking", "today", "update"]
+
+    long_titles = []
+    weak_descriptions = []
+    low_comments = []
+    high_views_no_comments = []
+
+    for v in public_videos:
+        title = v["title"]
+        desc = v["description"]
+        views = v["views"]
+        comments = v["comments"]
+        title_len = len(title)
+
+        if title_len > 70:
+            long_titles.append(f"'{title[:35]}...' ({title_len} chars)")
+
+        desc_snippet = desc[:160].lower()
+        has_keyword = any(kw in desc_snippet for kw in seo_keywords)
+        if not has_keyword and len(desc) > 0:
+            weak_descriptions.append(f"'{title[:35]}...'")
+
+        if views >= 50 and comments == 0:
+            low_comments.append(f"'{title[:35]}...' ({views} views, 0 comments)")
+        if views >= 200 and comments == 0:
+            high_views_no_comments.append(f"'{title[:35]}...' ({views} views, 0 comments)")
+
+    if long_titles:
+        issues.append(("MEDIUM", "seo",
+            f"{len(long_titles)} video(s) with titles >70 chars (truncated in search): {', '.join(long_titles[:3])}",
+            "Shorten titles to <70 chars -- use tags for extra keywords"))
+
+    if weak_descriptions:
+        issues.append(("LOW", "seo",
+            f"{len(weak_descriptions)} video(s) with no keywords in first 160 chars of description",
+            "Put primary keywords in first 2 lines of description"))
+
+    if high_views_no_comments:
+        issues.append(("MEDIUM", "engagement",
+            f"{len(high_views_no_comments)} video(s) with 200+ views but ZERO comments",
+            "Pin a comment asking a question -- boosts engagement signal"))
+    elif low_comments:
+        issues.append(("LOW", "engagement",
+            f"{len(low_comments)} video(s) with 50+ views but no comments",
+            "Ask viewers to comment in the video CTA"))
+
+
+def check_channel_health_status(channel_data, issues):
+    """Check channel-level health: strikes, compliance, branding completeness."""
+    status = channel_data.get("status", {})
+
+    self_declared = status.get("selfDeclaredMadeForKids", None)
+    if self_declared is None:
+        issues.append(("HIGH", "compliance",
+            "Channel 'made for kids' status NOT set -- COPPA violation risk",
+            "Set in YouTube Studio: Audience -> 'No, it\\'s not made for kids'"))
+
+    branding_ch = channel_data.get("branding", {})
+    trailer_set = bool(branding_ch.get("unsubscribedTrailer") or
+                       branding_ch.get("defaultTrailer"))
+    if not trailer_set:
+        issues.append(("MEDIUM", "branding",
+            "No channel trailer set -- new visitors see generic home page",
+            "Set trailer: YouTube Studio -> Customization -> Branding -> Trailer for non-subscribers"))
+
+    snippet = channel_data.get("snippet", {})
+    country = snippet.get("country", "")
+    if not country:
+        issues.append(("LOW", "seo",
+            "Channel country not set -- limits regional discoverability",
+            "Set channel country to IN (India) in YouTube Studio -> Settings -> Channel -> Advanced"))
+
+    default_lang = branding_ch.get("defaultLanguage", "")
+    if not default_lang:
+        issues.append(("LOW", "seo",
+            "Channel default language not set",
+            "Set default language to English in brandingSettings"))
+
+
 def auto_fix(token, channel_data, videos, playlists):
     """
     Automatically fix what we can via API.
@@ -270,8 +442,9 @@ def auto_fix(token, channel_data, videos, playlists):
             manual_needed.append("Open YouTube Studio → Customization → Basic Info → Add Topics: Entertainment, News, Education")
 
     # 3. Channel description — CRITICAL for discovery and branding
-    snippet = channel_data.get("snippet", {})
-    current_desc = snippet.get("description", "").strip()
+    branding_ch = channel_data.get("branding", {})
+    current_desc = branding_ch.get("description", "").strip()
+    current_title = branding_ch.get("title", "").strip()
     if len(current_desc) < 200:
         CHANNEL_DESCRIPTION = (
             "The ViralDNA — Real News. Real Voices. Built with AI.\n\n"
@@ -295,13 +468,16 @@ def auto_fix(token, channel_data, videos, playlists):
         )
         body = json.dumps({
             "id": CHANNEL_ID,
-            "snippet": {
-                "description": CHANNEL_DESCRIPTION,
-                "defaultLanguage": "en"
+            "brandingSettings": {
+                "channel": {
+                    "title": current_title if current_title else "The Viral DNA",
+                    "description": CHANNEL_DESCRIPTION,
+                    "defaultLanguage": "en"
+                }
             }
         }).encode()
         req = urllib.request.Request(
-            "https://www.googleapis.com/youtube/v3/channels?part=snippet",
+            "https://www.googleapis.com/youtube/v3/channels?part=brandingSettings",
             data=body,
             headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"},
             method="PUT"
@@ -314,6 +490,47 @@ def auto_fix(token, channel_data, videos, playlists):
             manual_needed.append(f"Set channel description — API error: {e}")
 
     # 3. Check for non-news-category videos and fix them
+    # 3a. Add tags to public videos with NO tags
+    for v in videos:
+        if v["privacy"] == "public" and len(v.get("tags", [])) == 0:
+            title_lower = v["title"].lower()
+            # Build relevant tags from title keywords + standard tags
+            base_tags = ["telugu news", "andhra pradesh", "telangana", "india news", "viraldna"]
+            keyword_map = [
+                (["pakistan", "terror"], ["pakistan", "terrorism", "global news", "india pakistan"]),
+                (["karnataka", "shivakumar", "rahul", "gandhi"], ["karnataka politics", "congress", "indian politics", "elections india"]),
+                (["revanth", "cm", "government"], ["telangana news", "cm revanth reddy", "telangana politics"]),
+                (["women", "entrepreneur", "rural"], ["telangana schemes", "women empowerment", "rural india"]),
+                (["pay", "hike", "employee", "salary"], ["government employees", "pay commission", "india news"]),
+                (["money", "worker", "andhra"], ["andhra pradesh news", "andhra news", "viral video"]),
+                (["trailer", "viral dna"], ["telugu news channel", "ai news", "viraldna"]),
+            ]
+            extra = []
+            for keywords, ktags in keyword_map:
+                if any(kw in title_lower for kw in keywords):
+                    extra.extend(ktags)
+                    break
+            new_tags = list(dict.fromkeys(base_tags + extra))[:15]  # dedupe, max 15
+            body = json.dumps({
+                "id": v["id"],
+                "snippet": {
+                    "categoryId": v.get("category_id", "25"),
+                    "title": v["title"],
+                    "tags": new_tags,
+                }
+            }).encode()
+            req = urllib.request.Request(
+                "https://www.googleapis.com/youtube/v3/videos?part=snippet",
+                data=body,
+                headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"},
+                method="PUT"
+            )
+            try:
+                urllib.request.urlopen(req, timeout=10)
+                auto_fixed.append(f"Added {len(new_tags)} tags to: {v['title'][:40]}")
+            except Exception as e:
+                manual_needed.append(f"Add tags to: {v['title'][:40]} (error: {e})")
+
     for v in videos:
         if v["privacy"] == "public" and v.get("category_id") != "25":
             # Update to News & Politics (25)
@@ -339,7 +556,71 @@ def auto_fix(token, channel_data, videos, playlists):
     return auto_fixed, manual_needed
 
 
-def detect_issues(channel_data, videos, playlists, health_state):
+def check_duplicate_videos(videos, issues):
+    """Flag near-duplicate videos by title similarity (Jaccard)."""
+    from datetime import datetime, timedelta
+    now_utc = datetime.utcnow()
+    for i in range(len(videos)):
+        for j in range(i + 1, len(vids2 := videos)):
+            if i == j:
+                continue
+            v1, v2 = videos[i], videos[j]
+            # Title Jaccard similarity
+            w1 = set(v1["title"].lower().split())
+            w2 = set(v2["title"].lower().split())
+            if not w1 or not w2:
+                continue
+            jaccard = len(w1 & w2) / len(w1 | w2)
+            if jaccard >= 0.6:
+                issues.append(("MEDIUM", "duplicates",
+                    f"Near-duplicate titles (similarity {jaccard:.0%}): '{v1['title'][:40]}' vs '{v2['title'][:40]}'",
+                    "Merge or remove duplicate content"))
+
+
+def check_analytics_per_video(token, videos, issues):
+    """Fetch YouTube Analytics for per-video watch time, impressions, CTR.
+    Uses youtubeAnalytics.reports.query — requires:
+      1. youtube.readonly scope (already in token) ✓
+      2. YouTube Analytics API enabled on Google Cloud project (may NOT be enabled)
+    Falls back gracefully on 403 (API not enabled) or other errors.
+    """
+    url = "https://youtubeanalytics.googleapis.com/v2/reports"
+    end_date = datetime.utcnow().strftime("%Y-%m-%d")
+    start_date = (datetime.utcnow() - timedelta(days=28)).strftime("%Y-%m-%d")
+
+    headers = {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/json",
+    }
+
+    # Quick test: try channel-level query first
+    test_url = (
+        f"{url}?ids=channel==MIME&metrics=views"
+        f"&startDate={start_date}&endDate={end_date}"
+    )
+    try:
+        req = urllib.request.Request(test_url, headers=headers)
+        urllib.request.urlopen(req, timeout=10)
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            body = e.read().decode()
+            if "youtubeanalytics" in body.lower() or "disabled" in body.lower():
+                issues.append(("INFO", "analytics",
+                    "YouTube Analytics API not enabled on GCloud project — "
+                    "cannot check watch time, impressions, CTR, per-video subs",
+                    "Enable at: https://console.developers.google.com/apis/api/"
+                    "youtubeanalytics.googleapis.com/overview?project=192793181154"))
+                return
+        # Other 403 — permission issue, stop
+        issues.append(("INFO", "analytics",
+            f"YouTube Analytics API access denied ({e.code})",
+            "Check OAuth scopes and project settings"))
+        return
+    except Exception:
+        return  # Network or other error — skip silently
+
+
+def detect_issues(token, channel_data, videos, playlists, health_state):
     issues = []
     stats = channel_data.get("stats", {})
     channel_status = channel_data.get("status", {})
@@ -374,8 +655,8 @@ def detect_issues(channel_data, videos, playlists, health_state):
             "Optional: YouTube Studio -> Customization -> Basic Info -> Topics"))
 
     # 1d. Channel description check
-    snippet = channel_data.get("snippet", {})
-    channel_desc = snippet.get("description", "").strip()
+    branding_ch = channel_data.get("branding", {})
+    channel_desc = branding_ch.get("description", "").strip()
     if not channel_desc:
         issues.append(("HIGH", "seo",
             "Channel description is EMPTY — hurts search/discovery and looks unprofessional",
@@ -491,6 +772,32 @@ def detect_issues(channel_data, videos, playlists, health_state):
         issues.append(("INFO", "monetization",
             f"Monetization: {subscribers}/{MONETIZATION_SUBS} subs ({sub_pct:.1f}%). Need {remaining} more.",
             "Sub milestone is the main blocker"))
+
+    # 7. UPLOAD CADENCE
+    check_upload_cadence(videos, now, issues)
+
+    # 8. PER-VIDEO SEO DETAILS
+    check_video_seo_details(public_videos, issues)
+
+    # 9. CHANNEL HEALTH STATUS (compliance, branding, country)
+    check_channel_health_status(channel_data, issues)
+
+    # 10. PER-VIDEO MADE-FOR-KIDS (selfDeclaredMadeForKids) CHECK
+    for v in public_videos:
+        if v.get("made_for_kids") is None:
+            issues.append(("HIGH", "compliance",
+                f"Video '{v['title'][:40]}' has no made-for-kids declaration",
+                "Set selfDeclaredMadeForKids in upload API call"))
+        elif v.get("made_for_kids") is True:
+            issues.append(("MEDIUM", "compliance",
+                f"Video '{v['title'][:40]}' marked as made-for-kids — kills comments/reach",
+                "Re-upload with selfDeclaredMadeForKids=False if content is news"))
+
+    # 11. PER-VIDEO DUPLICATE / NEAR-DUPLICATE DETECTION
+    check_duplicate_videos(public_videos, issues)
+
+    # 12. YOUTUBE ANALYTICS — watch time, impressions, CTR (per video, last 28 days)
+    check_analytics_per_video(token, public_videos, issues)
 
     return issues
 
@@ -625,7 +932,8 @@ def format_telegram_alert(issues, auto_fixed, manual_needed, channel_data):
     if not critical and not medium and not all_manual:
         alert += "  All clear. Channel healthy.\n"
 
-    alert += "\nCheck feedback.md for full report."
+    alert += f"\nUploads: DISABLED (manual review via Google Drive)"
+    alert += "\n\nCheck feedback.md for full report."
     alert += "\nReply 'fixed [#]' after doing manual tasks."
 
     return alert
@@ -679,8 +987,18 @@ def main():
 
     try:
         channel_data = get_channel_data(token)
-        videos = get_all_videos(token)
+        uploads_id = channel_data.get("playlists_id", "")
+        videos = get_all_videos(token, uploads_playlist_id=uploads_id)
         playlists = get_playlists(token)
+    except urllib.error.HTTPError as e:
+        if e.code == 403 and "quota" in e.read().decode().lower():
+            print(f"  QUOTA EXHAUSTED — YouTube Data API quota depleted. Retry after midnight PT (12:30 PM IST).")
+            state = load_health_state()
+            state["quota_exhausted_since"] = now.isoformat()
+            save_health_state(state)
+            return
+        print(f"  API error: {e}")
+        return
     except Exception as e:
         print(f"  API error: {e}")
         return
@@ -695,25 +1013,29 @@ def main():
     for m in manual_needed:
         print(f"  MANUAL: {m}")
 
-    # Re-fetch playlists after fixes (they may have been deleted)
+    # Re-fetch channel data + playlists after fixes (they may have changed)
     if auto_fixed:
+        try:
+            channel_data = get_channel_data(token)
+        except Exception:
+            pass
         try:
             playlists = get_playlists(token)
         except Exception:
             pass
 
+    # Clear stale health state — every report starts fresh from REAL current state
     health_state = load_health_state()
-    issues = detect_issues(channel_data, videos, playlists, health_state)
+    health_state["checks"] = []   # wipe old checks; only keep THIS run
+    issues = detect_issues(token, channel_data, videos, playlists, health_state)
     print(f"  Issues: {len(issues)} ({sum(1 for i in issues if i[0] in ('CRITICAL','HIGH'))} urgent)")
 
-    # Merge new manual needs with existing action log
+    # Reset action log — only keep issues from THIS run
     action_log = load_action_log()
-    existing = set(action_log.get("manual_needed", []))
+    action_log["manual_needed"] = []  # wipe stale items; re-add current ones
     for m in manual_needed:
-        if m not in existing:
+        if m not in action_log["manual_needed"]:
             action_log.setdefault("manual_needed", []).append(m)
-    # Remove resolved items (if issue no longer detected)
-    # Keep items that haven't been explicitly marked fixed
     save_action_log(action_log)
 
     update_feedback_file(issues, channel_data, videos, auto_fixed, manual_needed)
