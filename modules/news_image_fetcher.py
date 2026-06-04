@@ -49,10 +49,31 @@ def _strip_cdata(text):
 
 
 def _keyword_overlap(topic, title):
-    """Count matching keywords (>=4 chars) between topic and article title."""
+    """Count matching keywords (>=4 chars) between topic and article title.
+    
+    v82.2: Expanded stop list with common 'bridge words' that appear in 
+    nearly every news headline (live, updates, crisis, meeting, house, 
+    called, backs, resolution, halt, leader, says, etc.). These words 
+    create false matches between unrelated topics (e.g. "US House" 
+    matching "Mamata Banerjee's House").
+    """
     stop = {"this", "that", "with", "from", "have", "been", "were", "will",
             "would", "could", "should", "about", "their", "there", "these",
-            "those", "which", "while", "after", "before", "under", "over"}
+            "those", "which", "while", "after", "before", "under", "over",
+            # v82.2: Bridge words — too common in ALL news headlines to be meaningful
+            "live", "updates", "crisis", "meeting", "house", "called",
+            "backs", "resolution", "halt", "leader", "says", "said",
+            "party", "government", "minister", "chief", "leader",
+            "leaders", "announces", "announce", "decision", "move",
+            "big", "major", "key", "top", "new", "latest", "today",
+            "yesterday", "day", "days", "week", "month", "year",
+            "first", "second", "last", "next", "time", "plan",
+            "action", "state", "states", "country", "nation",
+            "people", "public", "support", "against", "also",
+            "still", "even", "back", "down", "over", "turn",
+            "set", "put", "take", "make", "give", "come",
+            "want", "know", "need", "call", "talk", "hold",
+            "news", "report", "reports", "reveal", "reveals"}
     topic_words = set(w.lower() for w in re.findall(r'[a-zA-Z]{4,}', topic)
                       if w.lower() not in stop)
     title_words = set(w.lower() for w in re.findall(r'[a-zA-Z]{4,}', title)
