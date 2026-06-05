@@ -588,29 +588,73 @@ Script:
 
         def _text_person_check(topic_title, image_title, image_source=""):
             """Text-based person verification (no API needed).
-            Returns (ok, reason). Checks image metadata for wrong-person indicators."""
+            Returns (ok, reason). Checks image metadata for wrong-person indicators.
+            Three checks:
+            1. Wrong person: image title contains name of different person with same surname
+            2. Unrelated: image title has zero keyword overlap with topic (not about topic at all)
+            3. Relevant: image mentions topic keywords but not the person (acceptable)"""
+            import re as _re
             _img_text = (image_title + " " + image_source).lower()
             _topic_lower = topic_title.lower()
-            # Check each disambiguation rule
+            # Check 1: Wrong-person disambiguation
             for expected_phrase, required_words in PERSON_DISAMBIGUATION.items():
                 if expected_phrase in _topic_lower:
-                    # Topic mentions this person — image must contain a required word
                     has_required = any(rw in _img_text for rw in required_words)
                     if not has_required:
-                        # Image doesn't mention any required identifier word
-                        # Check for known WRONG person keywords
                         WRONG_KEYWORDS = {
                             "modi": ["lalit"],
                             "gandhi": ["mahatma", "indira", "rajiv", "sonia"],
-                            "shah": [],  # no common wrong Shah
+                            "shah": [],
                         }
                         for surname, wrongs in WRONG_KEYWORDS.items():
                             if surname in expected_phrase:
                                 for wk in wrongs:
                                     if wk in _img_text:
                                         return False, f"wrong_person_text:{wk}"
-                        # No required word but no explicit wrong word either — uncertain
-                        return None, "missing_required_identifier"
+                        # Check 2: Topic keyword overlap — is this image even about the topic?
+                        # Extract meaningful keywords from topic (exclude stopwords)
+                        _stopwords = {"the", "a", "an", "is", "are", "was", "were", "be",
+                            "been", "being", "have", "has", "had", "do", "does", "did",
+                            "will", "would", "could", "should", "may", "might", "shall",
+                            "can", "need", "dare", "ought", "used", "to", "of", "in",
+                            "for", "on", "with", "at", "by", "from", "as", "into",
+                            "through", "during", "before", "after", "above", "below",
+                            "between", "out", "off", "over", "under", "again", "further",
+                            "then", "once", "here", "there", "when", "where", "why",
+                            "how", "all", "both", "each", "few", "more", "most", "other",
+                            "some", "such", "no", "nor", "not", "only", "own", "same",
+                            "so", "than", "too", "very", "just", "because", "but", "and",
+                            "or", "if", "while", "about", "up", "down", "its", "it",
+                            "s", "t", "don", "doesn", "didn", "wasn", "weren", "won",
+                            "wouldn", "couldn", "shouldn", "must", "that", "this",
+                            "these", "those", "am", "is", "are", "targets", "slams",
+                            "says", "say", "new", "first", "last", "long", "great",
+                            "little", "right", "left", "still", "also", "back",
+                            "even", "way", "take", "come", "go", "get", "make",
+                            "know", "think", "see", "look", "want", "give", "use",
+                            "find", "tell", "ask", "work", "seem", "feel", "try",
+                            "leave", "call", "keep", "let", "begin", "show", "hear",
+                            "play", "run", "move", "live", "believe", "bring",
+                            "happen", "write", "provide", "sit", "stand", "lose",
+                            "pay", "meet", "include", "continue", "set", "learn",
+                            "change", "lead", "understand", "watch", "follow", "stop",
+                            "create", "speak", "read", "allow", "add", "spend",
+                            "grow", "open", "walk", "win", "offer", "remember",
+                            "love", "consider", "appear", "buy", "wait", "serve",
+                            "die", "send", "expect", "build", "stay", "fall",
+                            "cut", "reach", "kill", "remain", "suggest", "raise",
+                            "pass", "sell", "require", "report", "decide", "pull"}
+                        topic_words = set(w for w in _re.findall(r'\b[a-z]{3,}\b', _topic_lower)
+                                          if w not in _stopwords)
+                        img_words = set(w for w in _re.findall(r'\b[a-z]{3,}\b', _img_text)
+                                         if w not in _stopwords)
+                        if topic_words:
+                            overlap = len(topic_words & img_words) / len(topic_words)
+                            if overlap < 0.1:
+                                # Less than 10% keyword overlap — completely unrelated image
+                                return False, f"unrelated_topic:overlap={overlap:.2f}"
+                        # Has sufficient topic overlap — relevant but just doesn't name the person
+                        return True, "topic_relevant_no_person"
             return True, "text_ok"
 
         def _gemini_person_verify(image_data, topic_title, image_title=""):
