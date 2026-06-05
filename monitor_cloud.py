@@ -432,28 +432,34 @@ def update_pending_review(history, produce_topics, now_str):
 
 
 def main():
-    now = datetime.now(IST)
+    run_start = datetime.now(IST)
+    now = run_start
     now_str = now.strftime("%Y-%m-%d %H:%M IST")
     print(f"ViralDNA Spike Monitor — {now_str}")
     print("=" * 50)
 
     # ── Poll all sources ──
-    print("\n[1/3] Polling RSS feeds...")
+    t0 = datetime.now(IST)
+    print(f"\n[1/3] Polling RSS feeds... ({t0.strftime('%H:%M:%S')})")
     rss_topics = poll_rss()
-    print(f"  → {len(rss_topics)} topics from RSS")
+    t1 = datetime.now(IST)
+    print(f"  → {len(rss_topics)} topics from RSS  (took {(t1-t0).seconds}s)")
 
-    print("[2/3] Polling Google Trends...")
+    print(f"[2/3] Polling Google Trends... ({t1.strftime('%H:%M:%S')})")
     gt_topics = poll_google_trends_rss()
-    print(f"  → {len(gt_topics)} topics from Google Trends")
+    t2 = datetime.now(IST)
+    print(f"  → {len(gt_topics)} topics from Google Trends  (took {(t2-t1).seconds}s)")
 
-    print("[3/3] Polling Reddit...")
+    print(f"[3/3] Polling Reddit... ({t2.strftime('%H:%M:%S')})")
     reddit_topics = poll_reddit()
-    print(f"  → {len(reddit_topics)} topics from Reddit")
+    t3 = datetime.now(IST)
+    print(f"  → {len(reddit_topics)} topics from Reddit  (took {(t3-t2).seconds}s)")
 
     all_topics = rss_topics + gt_topics + reddit_topics
-    print(f"\nTotal raw topics: {len(all_topics)}")
+    print(f"\nTotal raw topics: {len(all_topics)}  (polling took {(t3-t0).seconds}s)")
 
     # ── Dedup ──
+    t4 = datetime.now(IST)
     seen = set()
     deduped = []
     for t in all_topics:
@@ -461,9 +467,10 @@ def main():
         if key not in seen and len(key) > 10:
             seen.add(key)
             deduped.append(t)
-    print(f"After dedup: {len(deduped)}")
+    print(f"After dedup: {len(deduped)}  (took {(datetime.now(IST)-t4).seconds}s)")
 
     # ── Score ──
+    t5 = datetime.now(IST)
     source_topics = {
         "rss": [t["title"] for t in rss_topics],
         "google_trends": [t["title"] for t in gt_topics],
@@ -490,29 +497,32 @@ def main():
             reddit_velocity=vel
         )
         scored.append({**t, "score": score, "breakdown": breakdown})
+    print(f"  → Scored {len(scored)} topics  (took {(datetime.now(IST)-t5).seconds}s)")
 
     # ── Edge scoring: break ties with growth intelligence ──
     # Each topic gets a decimal edge (0.1-0.9) based on:
     #   search demand, velocity, channel fit, competition gap,
     #   engagement potential, geographic breadth, feedback analytics
+    t6 = datetime.now(IST)
     try:
         from modules.edge_scorer import batch_score_topics
         scored = batch_score_topics(scored)
         # Use final_score (base + edge) for sorting; keep base 'score' for display
         scored.sort(key=lambda x: x.get("final_score", x.get("score", 0)), reverse=True)
-        print(f"  → Edge scoring applied: {len(scored)} topics scored with growth intelligence")
+        print(f"  → Edge scoring applied: {len(scored)} topics  (took {(datetime.now(IST)-t6).seconds}s)")
     except Exception as e:
         print(f"  → Edge scoring failed (falling back to base sort): {e}")
         scored.sort(key=lambda x: x["score"], reverse=True)
 
     # ── Assign persistent VDNA topic IDs ──
+    t7 = datetime.now(IST)
     # Load existing topics to preserve IDs
     existing_topics = load_topics_history()
     existing_map = {}
     for t in existing_topics.get("topics", []):
         if "id" in t:
             # Map by normalized title for matching
-            key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t.get("title","").lower().strip(), flags=re.IGNORECASE).strip()
+            key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
             existing_map[key] = t["id"]
 
     # Find next available ID number
@@ -529,6 +539,7 @@ def main():
 
     # Assign IDs: reuse existing for same topic, new ID for new topics
     date_prefix = now.strftime("%Y%m%d")
+    new_count = 0
     for t in scored:
         key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
         if key in existing_map:
@@ -536,7 +547,9 @@ def main():
         else:
             max_id_num += 1
             t["id"] = f"VDNA{max_id_num:03d}"
+            new_count += 1
         t["date"] = date_prefix
+    print(f"  → IDs assigned: {new_count} new, {len(scored)-new_count} existing  (took {(datetime.now(IST)-t7).seconds}s)")
 
     # ── Load history, check cooldown + daily cap ──
     history = load_topics_history()
@@ -555,18 +568,18 @@ def main():
             print(f"\n  Cooldown active: {elapsed:.1f}h since last alert (need 4h)")
 
     # ── Find best topics ──
-    # Threshold >= 20: need multiple strong signals (e.g. big name + AP/TS + viral keyword)
-    # Typical scores: routine news = 0-9, interesting = 10-19, truly viral = 20-30
-    produce_topics = [t for t in scored if t["score"] >= 20]
+    # Threshold >= 15: need multiple strong signals (e.g. big name + AP/TS + viral keyword)
+    # Typical scores: routine news = 0-9, interesting = 10-14, viral-worthy = 15-30
+    produce_topics = [t for t in scored if t["score"] >= 15]
     # Burning topics: score >= 25 → ALWAYS alert, bypass cooldown (but still 4h dedup per topic)
     burning_topics = [t for t in scored if t["score"] >= 25]
 
-    print("\nPRODUCER topics (>=20): " + str(len(produce_topics)) +
+    print("\nPRODUCER topics (>=15): " + str(len(produce_topics)) +
           ("  |  BURNING (>=25): " + str(len(burning_topics)) if burning_topics else ""))
     print("\nScore  | Edge | Final | Topic")
     print("-" * 80)
     for t in scored[:5]:
-        marker = "BURN" if t["score"] >= 25 else ("PRODUCE" if t["score"] >= 20 else "low")
+        marker = "BURN" if t["score"] >= 25 else ("PRODUCE" if t["score"] >= 15 else "low")
         edge = t.get("edge_score", 0)
         final = t.get("final_score", t["score"])
         print(f"  [{marker}] [{t['score']:>2}] +{edge:.1f} = {final:.1f}  {t['title'][:55]}")
@@ -575,6 +588,7 @@ def main():
     # Burning topics (>=25): ALWAYS alert — no daily cap, cooldown only for dedup
     # Regular topics (20-24): alert freely, 4h cooldown between same-score topics
     # No daily alert cap — if it's newsworthy, you need to know NOW.
+    t8 = datetime.now(IST)
     should_alert = False
     if produce_topics:
         if burning_topics:
@@ -585,7 +599,8 @@ def main():
         else:
             elapsed = 0.0
             print(f"\n  Cooldown active (need 4h)")
-    
+
+    alerts_sent = 0
     if should_alert:
         alerts_sent = 0
         for alert_topic in produce_topics:
@@ -629,7 +644,8 @@ def main():
             print(f"\nTotal alerts sent this run: {alerts_sent}")
     else:
         if not produce_topics:
-            print("\nNo alert sent: no topics >= 20")
+            print("\nNo alert sent: no topics >= 15")
+    print(f"  → Alert stage done  (took {(datetime.now(IST)-t8).seconds}s)")
 
     # ── Update pending review list ──
     if produce_topics:
@@ -638,40 +654,68 @@ def main():
         print(f"\n📋 Pending review list: {pending_count} topic(s)")
 
     # ── Merge topics into history (persistent) ──
+    t9 = datetime.now(IST)
     # Build map of existing topics by normalized title
     existing_map = {}
     for t in existing_topics.get("topics", []):
         if "id" in t and t.get("title"):
-            k = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
-            existing_map[k] = t
+            key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+            existing_map[key] = t
 
     # Merge: update existing scores, add new topics
     for t in scored:
-        k = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
-        if k in existing_map:
-            existing_map[k]["score"] = t["score"]
-            existing_map[k]["date"] = t.get("date", "")
-            existing_map[k]["breakdown"] = t.get("breakdown", [])
+        key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+        if key in existing_map:
+            existing_map[key]["score"] = t["score"]
+            existing_map[key]["date"] = t.get("date", "")
+            existing_map[key]["breakdown"] = t.get("breakdown", [])
             # Always recompute score_breakdown on each scoring run
-            existing_map[k]["score_breakdown"] = t.get("breakdown", [])
-            existing_map[k]["rescored_at"] = t.get("date", "")
+            existing_map[key]["score_breakdown"] = t.get("breakdown", [])
+            existing_map[key]["rescored_at"] = t.get("date", "")
             # Persist edge scoring (tie-breaking intelligence)
             if "edge_score" in t:
-                existing_map[k]["edge_score"] = t["edge_score"]
-                existing_map[k]["final_score"] = t["final_score"]
-                existing_map[k]["edge_breakdown"] = t.get("edge_breakdown", {})
+                existing_map[key]["edge_score"] = t["edge_score"]
+                existing_map[key]["final_score"] = t["final_score"]
+                existing_map[key]["edge_breakdown"] = t.get("edge_breakdown", {})
             if "id" in t:
-                existing_map[k]["id"] = t["id"]
+                existing_map[key]["id"] = t["id"]
         else:
-            existing_map[k] = t
+            existing_map[key] = t
 
     # Sort by final_score (base + edge), keep top 50
     all_topics = sorted(existing_map.values(), key=lambda x: x.get("final_score", x.get("score", 0)), reverse=True)[:50]
     history["topics"] = all_topics
     history["last_run"] = now.isoformat()
     save_topics_history(history)
+    print(f"  → Merged + saved {len(all_topics)} topics  (took {(datetime.now(IST)-t9).seconds}s)")
 
-    print(f"\nDone. Next run in 30 min.")
+    # ── Run log (append-only, for debugging) ──
+    run_end = datetime.now(IST)
+    run_log = {
+        "run_start": run_start.isoformat(),
+        "run_end": run_end.isoformat(),
+        "duration_s": (run_end - run_start).seconds,
+        "sources": {
+            "rss": {"count": len(rss_topics), "time_s": (t1-t0).seconds},
+            "google_trends": {"count": len(gt_topics), "time_s": (t2-t1).seconds},
+            "reddit": {"count": len(reddit_topics), "time_s": (t3-t2).seconds},
+        },
+        "deduped": len(deduped),
+        "scored": len(scored),
+        "new_topics": new_count,
+        "produce_topics": len(produce_topics),
+        "burning_topics": len(burning_topics),
+        "alerts_sent": alerts_sent if should_alert else 0,
+        "cooldown_active": not cooldown_passed,
+        "top_score": scored[0]["score"] if scored else 0,
+        "top_title": scored[0]["title"][:60] if scored else "",
+    }
+    log_path = os.path.join(TOPICS_DIR, "run_log.jsonl")
+    with open(log_path, "a") as f:
+        f.write(json.dumps(run_log) + "\n")
+
+    print(f"\n⏱ Total run time: {(run_end-run_start).seconds}s")
+    print(f"Done. Next run in 30 min.")
 
 
 if __name__ == "__main__":
