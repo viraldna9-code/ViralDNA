@@ -279,11 +279,13 @@ def score_editorial(title, source_topics, topic_date=None, reddit_velocity=0):
         score += kw_score
         breakdown.append(f"ViralKW +{kw_score} ({matched_kws[0]})")
 
-    # ── 8. VELOCITY / VIRAL SIGNAL (max +4) — Reddit/Twitter buzz ──
-    # High Reddit activity = real-time audience interest
-    if reddit_velocity >= 5:
-        score += 4
-        breakdown.append(f"Velocity(HOT) +4 (reddit:{reddit_velocity})")
+    # ── 8. VELOCITY / VIRAL SIGNAL (max +4) ──
+    # Google Trends presence = real-time audience interest
+    gt_titles = [t.lower() for t in source_topics.get("google_trends", [])]
+    title_lower = title.lower()
+    if any(title_lower in gt or gt in title_lower for gt in gt_titles):
+        score += 3
+        breakdown.append("Velocity(GT) +3 (trending on Google)")
     elif reddit_velocity >= 3:
         score += 2
         breakdown.append(f"Velocity(WARM) +2 (reddit:{reddit_velocity})")
@@ -354,25 +356,6 @@ def poll_google_trends_rss():
     return topics
 
 
-def poll_reddit():
-    """Poll Reddit for trending topics."""
-    topics = []
-    subs = ["india", "AndhraPradesh", "telangana", "tollywood", "hyderabad"]
-    for sub in subs:
-        try:
-            url = f"https://www.reddit.com/r/{sub}/hot.json?limit=10"
-            req = urllib.request.Request(url, headers={"User-Agent": "ViralDNA-Monitor/1.0"})
-            resp = urllib.request.urlopen(req, timeout=10)
-            data = json.loads(resp.read())
-            for post in data.get("data", {}).get("children", []):
-                title = post.get("data", {}).get("title", "").strip()
-                if title and len(title) > 10:
-                    topics.append({"title": title, "source": f"Reddit/r/{sub}", "url": ""})
-        except Exception:
-            pass
-    return topics
-
-
 def send_telegram(message):
     """Send Telegram message via bot API."""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
@@ -440,22 +423,18 @@ def main():
 
     # ── Poll all sources ──
     t0 = datetime.now(IST)
-    print(f"\n[1/3] Polling RSS feeds... ({t0.strftime('%H:%M:%S')})")
+    print(f"\n[1/2] Polling RSS feeds... ({t0.strftime('%H:%M:%S')})")
     rss_topics = poll_rss()
     t1 = datetime.now(IST)
     print(f"  → {len(rss_topics)} topics from RSS  (took {(t1-t0).seconds}s)")
 
-    print(f"[2/3] Polling Google Trends... ({t1.strftime('%H:%M:%S')})")
+    print(f"[2/2] Polling Google Trends... ({t1.strftime('%H:%M:%S')})")
     gt_topics = poll_google_trends_rss()
     t2 = datetime.now(IST)
     print(f"  → {len(gt_topics)} topics from Google Trends  (took {(t2-t1).seconds}s)")
 
-    print(f"[3/3] Polling Reddit... ({t2.strftime('%H:%M:%S')})")
-    reddit_topics = poll_reddit()
+    all_topics = rss_topics + gt_topics
     t3 = datetime.now(IST)
-    print(f"  → {len(reddit_topics)} topics from Reddit  (took {(t3-t2).seconds}s)")
-
-    all_topics = rss_topics + gt_topics + reddit_topics
     print(f"\nTotal raw topics: {len(all_topics)}  (polling took {(t3-t0).seconds}s)")
 
     # ── Dedup ──
@@ -474,27 +453,15 @@ def main():
     source_topics = {
         "rss": [t["title"] for t in rss_topics],
         "google_trends": [t["title"] for t in gt_topics],
-        "reddit": [t["title"] for t in reddit_topics],
     }
 
     scored = []
-    # Build Reddit velocity map: count how many Reddit posts mention each topic
-    reddit_velocity_map = {}
-    for rt in reddit_topics:
-        rt_title = rt["title"].lower()
-        for t in deduped:
-            tl = t["title"].lower()
-            if tl in rt_title or rt_title in tl or tl == rt_title:
-                key = t["title"]
-                reddit_velocity_map[key] = reddit_velocity_map.get(key, 0) + 1
-
     date_prefix = now.strftime("%Y%m%d")
     for t in deduped:
-        vel = reddit_velocity_map.get(t["title"], 0)
         score, raw_score, breakdown = score_editorial(
             t["title"], source_topics,
             topic_date=date_prefix,
-            reddit_velocity=vel
+            reddit_velocity=0
         )
         scored.append({**t, "score": score, "breakdown": breakdown})
     print(f"  → Scored {len(scored)} topics  (took {(datetime.now(IST)-t5).seconds}s)")
@@ -698,7 +665,6 @@ def main():
         "sources": {
             "rss": {"count": len(rss_topics), "time_s": (t1-t0).seconds},
             "google_trends": {"count": len(gt_topics), "time_s": (t2-t1).seconds},
-            "reddit": {"count": len(reddit_topics), "time_s": (t3-t2).seconds},
         },
         "deduped": len(deduped),
         "scored": len(scored),
