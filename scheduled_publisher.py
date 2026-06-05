@@ -209,6 +209,25 @@ def main():
     print(f"  ───────────────────────────────────────────────")
 
     # Run the pipeline
+    # Verify topic still exists before running
+    verify = json.load(open(TOPICS_FILE))
+    vid = [t for t in verify.get('topics', []) if t.get('id') == tid]
+    if not vid:
+        print(f"\n  ❌ Topic {tid} no longer exists in topics_history.json — skipping")
+        # Update log
+        try:
+            with open(SCHEDULE_LOG) as lf:
+                slog = json.load(lf)
+            for e in reversed(slog.get('entries', [])):
+                if e.get('topic_id') == tid and e.get('status') == 'started':
+                    e['status'] = 'skipped (topic missing)'
+                    break
+            with open(SCHEDULE_LOG, 'w') as lf:
+                json.dump(slog, lf, indent=2)
+        except Exception:
+            pass
+        sys.exit(1)
+
     result = subprocess.run(
         [sys.executable, os.path.join(PROJECT_ROOT, "execute_topic.py"), tid],
         cwd=PROJECT_ROOT,
@@ -217,8 +236,24 @@ def main():
 
     if result.returncode == 0:
         print(f"\n  ✅ Pipeline completed for {tid}")
+        _log_status = "completed"
     else:
         print(f"\n  ❌ Pipeline FAILED for {tid} (exit code {result.returncode})")
+        _log_status = f"failed (exit {result.returncode})"
+
+    # Update schedule log with result
+    try:
+        with open(SCHEDULE_LOG) as lf:
+            slog = json.load(lf)
+        for e in reversed(slog.get('entries', [])):
+            if e.get('topic_id') == tid and e.get('status') == 'started':
+                e['status'] = _log_status
+                e['completed_at'] = datetime.now(IST).isoformat()
+                break
+        with open(SCHEDULE_LOG, 'w') as lf:
+            json.dump(slog, lf, indent=2)
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

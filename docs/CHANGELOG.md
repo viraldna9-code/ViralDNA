@@ -4,6 +4,63 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v82.4] — 2026-06-05 — Person-Image Verification (3-Layer Defense)
+
+### Problem
+1. **Wrong person in videos**: VDNA144 showed Lalit Modi instead of PM Narendra Modi. Root cause: image fetcher only checked last name substring ("modi" matched both). No person verification at all.
+2. **All image sources unprotected**: Person check was only in visual_fetcher.py (Phase 5), NOT in video_assembler.py (Phase 7 — the actual scene image downloader). RSS images (Source 0) had zero person verification.
+3. **Gemini Vision fail-open on rate limit**: `_gemini_person_verify` returned `True` on 429 errors, passing wrong-person images.
+4. **Serper keys dead**: All old 64-char keys returned 403. New 40-char keys from serper.dev work with both `X-API-KEY` header and `apiKey` query param.
+
+### Changes
+
+#### 1. Text-First Person Check (`video_assembler.py` — `_text_person_check()`)
+- **No API needed** — checks image metadata (title/source) for wrong-person names
+- Three-tier check: (1) wrong person name → REJECT, (2) keyword overlap <10% → REJECT (unrelated), (3) person found + overlap OK → ACCEPT
+- `AMBIGUOUS_SURNAMES` set: modi, gandhi, singh, kumar, sharma, patel, reddy, rao, nair, joshi, gupta, das
+- `PERSON_DISAMBIGUATION` dict: maps expected person → required keywords (e.g., "pm modi" needs "narendra" or "pm", rejects "lalit")
+
+#### 2. All 3 Image Sources Covered (`video_assembler.py`)
+- **Source 0 (NewsRSS)**: Person check after quality validation, before marking `downloaded = True`
+- **Source 1 (Serper)**: Text check first, then Gemini Vision fallback
+- **Source 2 (WikiCommons)**: Same text-first pattern
+
+#### 3. Fail-Closed on Rate Limit (`video_assembler.py` — `_gemini_person_verify()`)
+- Changed from `except Exception: return True` (fail-open) to return `(False, "rate_limited")` on 429
+- Added 1 retry with 5s cooldown before failing closed
+- Returns tuple `(ok, reason)` instead of bare boolean
+
+#### 4. Serper Key Rotation (`video_assembler.py`)
+- Reads `SERPER_API_KEY` and `SERPER_API_KEY_BACKUP1` from environment
+- Tries each key in sequence on 402/403 errors
+- Updated `~/.env` with 2 new 40-char keys
+
+#### 5. `_has_ambiguous_person()` Trigger
+- Checks capitalized words against `AMBIGUOUS_SURNAMES`
+- Also triggers on "PM " or "CM " prefix in title
+- Only runs person check when ambiguous person detected (optimization)
+
+### Verification
+- VDNA097 (PM Modi topic): All 5 scenes passed person check
+- Scene 0: Narendra Modi ✅ | Scene 2: Narendra Modi ✅
+- Scenes 1,3,4: Contextually relevant political images (not wrong person) ✅
+- No Lalit Modi, no "devil faces" from ComfyUI fallback
+- Assembly time: ~114s (normal, no Gemini Vision calls needed)
+
+### Known Limitations
+- Gemini Vision quota often exhausted (429) — text check is primary defense
+- RSS images may show people other than the named person (article lead image ≠ person photo)
+- Text check can only detect wrong-person by name in metadata, not by visual content
+
+### Commits
+- `fc6c4f6` — Layer 2.8 Gemini Vision person verification (visual_fetcher.py)
+- `9b8760a` — Layer 2.8 added to video_assembler.py
+- `e7f528f` — Fail-CLOSED + all 3 sources covered
+- `5e0c8a7` — Text-based person check FIRST
+- `c4beacb` — Keyword overlap check
+
+---
+
 ## [v82.3] — 2026-06-04 — Growth-First Metadata + Quality Audit
 
 ### Problem
