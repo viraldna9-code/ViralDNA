@@ -535,37 +535,36 @@ def main():
             print(f"\n  Cooldown active: {elapsed:.1f}h since last alert (need 4h)")
 
     # ── Find best topics ──
-    # Threshold >= 15: need multiple strong signals (e.g. big name + AP/TS + viral keyword)
-    # Typical scores: routine news = 0-9, interesting = 10-14, viral-worthy = 15-30
+    # Score guide: routine = 0-9, interesting = 10-14, producible = 15-22, viral = 23-30
+    # Realistic max with current RSS feeds: ~22. Score >= 23 needs near-perfect signals.
+    # Alert threshold: >= 23 (truly exceptional — expect 1-3 alerts/week, not daily noise)
+    ALERT_THRESHOLD = 23
     produce_topics = [t for t in scored if t["score"] >= 15]
-    # Burning topics: score >= 25 → ALWAYS alert, bypass cooldown (but still 4h dedup per topic)
-    burning_topics = [t for t in scored if t["score"] >= 25]
+    # Viral topics: score >= 23 → ALWAYS alert, bypass cooldown (but still 4h dedup per topic)
+    viral_topics = [t for t in scored if t["score"] >= ALERT_THRESHOLD]
 
     print("\nPRODUCER topics (>=15): " + str(len(produce_topics)) +
-          ("  |  BURNING (>=25): " + str(len(burning_topics)) if burning_topics else ""))
+          ("  |  VIRAL (>=23): " + str(len(viral_topics)) if viral_topics else ""))
     print("\nScore  | Edge | Final | Topic")
     print("-" * 80)
     for t in scored[:5]:
-        marker = "BURN" if t["score"] >= 25 else ("PRODUCE" if t["score"] >= 15 else "low")
+        marker = "VIRAL" if t["score"] >= ALERT_THRESHOLD else ("PRODUCE" if t["score"] >= 15 else "low")
         edge = t.get("edge_score", 0)
         final = t.get("final_score", t["score"])
         print(f"  [{marker}] [{t['score']:>2}] +{edge:.1f} = {final:.1f}  {t['title'][:55]}")
 
     # ── Alert logic ──
-    # Burning topics (>=25): ALWAYS alert — no daily cap, cooldown only for dedup
-    # Regular topics (20-24): alert freely, 4h cooldown between same-score topics
-    # No daily alert cap — if it's newsworthy, you need to know NOW.
+    # Viral topics (>=23): ALWAYS alert — no daily cap, cooldown only for dedup
+    # Regular topics (15-22): logged but NO Telegram alert — only visible in GitHub Actions output
+    # No daily alert cap — if it's truly viral (>=23), you need to know NOW.
     t8 = datetime.now(IST)
     should_alert = False
     if produce_topics:
-        if burning_topics:
-            should_alert = True  # Burning topic — always alert
-            print("\n🔥 BURNING topic detected — alerting immediately (no cap)")
-        elif cooldown_passed:
-            should_alert = True  # Regular topic, cooldown passed
+        if viral_topics:
+            should_alert = True  # Viral topic — always alert
+            print("\n🔥 VIRAL topic detected — alerting immediately (no cap)")
         else:
-            elapsed = 0.0
-            print(f"\n  Cooldown active (need 4h)")
+            print(f"\n  No alerts: best topic scored {produce_topics[0]['score']}/30 (need >={ALERT_THRESHOLD} for alert)")
 
     alerts_sent = 0
     if should_alert:
@@ -579,15 +578,15 @@ def main():
             topic_id = alert_topic.get("id", "VDNA???")
             breakdown = " | ".join(alert_topic.get("breakdown", []))
             is_burning = score >= 25
-
-            alert_prefix = "🔥 BURNING" if is_burning else "🎬"
+            is_viral = score >= ALERT_THRESHOLD
+            alert_prefix = "🔥 VIRAL" if is_viral else "🎬"
             alert_text = (
                 f"{alert_prefix} <b>ViralDNA — Topic Alert</b>\n"
                 f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
                 f"📅 {now_str}\n"
                 f"🆔 Topic ID: <b>{topic_id}</b>\n"
                 f"📊 Score: <b>{score}/30</b> + edge {edge:.1f} = <b>{final:.1f}</b>"
-                f"{' 🔥' if is_burning else ''}\n"
+                f"{' 🔥' if is_viral else ''}\n"
                 f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
                 f"📰 <b>{title[:100]}</b>\n"
                 f"📡 {source}\n"
@@ -602,7 +601,7 @@ def main():
             sent = send_telegram(alert_text)
             if sent:
                 alerts_sent += 1
-                print(f"\n{'🔥' if is_burning else '✅'} Alert sent: {topic_id} ({title[:50]})")
+                print(f"\n{'🔥' if is_viral else '✅'} Alert sent: {topic_id} ({title[:50]})")
             else:
                 print(f"\n❌ Alert failed: {topic_id} ({title[:50]})")
 
@@ -614,32 +613,51 @@ def main():
             print("\nNo alert sent: no topics >= 15")
     print(f"  → Alert stage done  (took {(datetime.now(IST)-t8).seconds}s)")
 
+    # ── Log skipped topics (scored but below alert threshold) ──
+    if produce_topics:
+        skipped = [t for t in produce_topics if t["score"] < ALERT_THRESHOLD]
+        if skipped:
+            skip_log_path = os.path.join(TOPICS_DIR, "skipped_topics.jsonl")
+            with open(skip_log_path, "a") as f:
+                for t in skipped:
+                    f.write(json.dumps({
+                        "date": now_str,
+                        "id": t.get("id", "VDNA???"),
+                        "title": t["title"][:80],
+                        "score": t["score"],
+                        "final_score": t.get("final_score", t["score"]),
+                        "skip_reason": f"below threshold {ALERT_THRESHOLD}",
+                        "breakdown": t.get("breakdown", [])
+                    }) + "\n")
+            print(f"  Skipped {len(skipped)} topic(s) (score <{ALERT_THRESHOLD})")
+
     # ── Update pending review list ──
     if produce_topics:
         update_pending_review(history, produce_topics, now_str)
         pending_count = len(history.get("pending_review", []))
         print(f"\n📋 Pending review list: {pending_count} topic(s)")
 
-    # ── Merge topics into history (persistent) ──
+    # ── Merge ALL scored topics into history (persistent, every run) ──
+    # Every topic that was scored gets stored, not just produce-tier topics.
+    # This ensures topics_history.json always has a complete record of what was
+    # considered and why it was skipped (score too low for alert).
     t9 = datetime.now(IST)
     # Build map of existing topics by normalized title
     existing_map = {}
     for t in existing_topics.get("topics", []):
         if "id" in t and t.get("title"):
-            key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+            key = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
             existing_map[key] = t
 
-    # Merge: update existing scores, add new topics
+    # Merge: update existing scores, add new topics (ALL scored topics, not just >=15)
     for t in scored:
-        key = re.sub(r'^(breaking|update|news|latest)[:\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
+        key = re.sub(r'^(breaking|update|news|latest)[:\\s]+', '', t["title"].lower().strip(), flags=re.IGNORECASE).strip()
         if key in existing_map:
             existing_map[key]["score"] = t["score"]
             existing_map[key]["date"] = t.get("date", "")
             existing_map[key]["breakdown"] = t.get("breakdown", [])
-            # Always recompute score_breakdown on each scoring run
             existing_map[key]["score_breakdown"] = t.get("breakdown", [])
             existing_map[key]["rescored_at"] = t.get("date", "")
-            # Persist edge scoring (tie-breaking intelligence)
             if "edge_score" in t:
                 existing_map[key]["edge_score"] = t["edge_score"]
                 existing_map[key]["final_score"] = t["final_score"]
@@ -649,8 +667,8 @@ def main():
         else:
             existing_map[key] = t
 
-    # Sort by final_score (base + edge), keep top 50
-    all_topics = sorted(existing_map.values(), key=lambda x: x.get("final_score", x.get("score", 0)), reverse=True)[:50]
+    # Sort by final_score (base + edge), keep top 60 (increased from 50 to retain more history)
+    all_topics = sorted(existing_map.values(), key=lambda x: x.get("final_score", x.get("score", 0)), reverse=True)[:60]
     history["topics"] = all_topics
     history["last_run"] = now.isoformat()
     save_topics_history(history)
@@ -670,7 +688,7 @@ def main():
         "scored": len(scored),
         "new_topics": new_count,
         "produce_topics": len(produce_topics),
-        "burning_topics": len(burning_topics),
+        "viral_topics": len(viral_topics),
         "alerts_sent": alerts_sent if should_alert else 0,
         "cooldown_active": not cooldown_passed,
         "top_score": scored[0]["score"] if scored else 0,
