@@ -206,74 +206,87 @@ class ScriptGenerator:
     def _build_title_variants(self, title: str, segment_type: str,
                                topic_context: str = "") -> list:
         """Generates distinct YouTube title variants with CTR-optimized formulas.
-        
-        v82.3: Keyword-first titles for new channel discovery.
-        Brand name (ViralDNA) moved to END — nobody searches "ViralDNA" yet.
-        Year injected for news freshness signal.
+
+        v82.5: Titles must be SPECIFIC — include names, places, numbers.
+        Generic templates like "BREAKING: {title}" are removed.
+        Each variant must have a distinct angle/focus.
         """
         import datetime
         year = datetime.datetime.now().year
         clean_title = title.strip()
 
+        # Extract key entities from title for more specific variants
+        words = clean_title.split()
+        # Find proper nouns (capitalized words that aren't common skip words)
+        skip = {"the","and","for","are","but","not","you","all","can","had","her","was","one",
+                "our","out","new","now","how","its","may","get","has","him","his","who","did",
+                "own","say","she","too","use","with","this","will","your","from","they","been",
+                "have","what","when","them","then","come","could","each","make","than","call",
+                "breaking","urgent","news","update","latest","today","just","in","on","at","to",
+                "of","by","as","is","it","be","or","an","if","so","no","up","go","do","he","we",
+                "telugu","india","andhra","telangana","ap","explained","analysis","simple",
+                "full","complete","key","facts","main","important","what","why","about"}
+        entities = [w for w in words if len(w) > 2 and w[0].isupper() and w.lower() not in skip]
+        entity_str = ' '.join(entities[:3]) if entities else clean_title[:50]
+
         if segment_type == "main":
             raw = [
                 {
-                    "title": f"BREAKING: {clean_title} | Telugu News {year}",
+                    "title": f"{clean_title[:65]} | {year}",
                     "description": f"Full report on {clean_title}. TheViralDNA brings you the complete story from our homeland."
                 },
                 {
-                    "title": f"{clean_title} — What This Means | Telugu News {year}",
-                    "description": f"Understanding {clean_title} and how it impacts Telugu families worldwide."
+                    "title": f"{entity_str[:50]} — What Happened & What's Next | {year}",
+                    "description": f"Understanding {clean_title} and what comes next for Telugu states."
                 },
                 {
-                    "title": f"URGENT: {clean_title} | Andhra Telangana News {year}",
-                    "description": f"Latest developments on {clean_title}. Stay informed with TheViralDNA."
+                    "title": f"{clean_title[:60]} | Andhra Pradesh & Telangana News {year}",
+                    "description": f"Latest on {clean_title}. Stay informed with TheViralDNA."
                 },
             ]
         elif segment_type == "short_1":
-            # C1.6: Shorts-specific title formula (question, curiosity gap)
             raw = [
                 {
-                    "title": f"Did You Know? {clean_title} 😮 | Telugu News {year}",
-                    "description": f"Quick highlights on {clean_title}. Watch the full report on TheViralDNA."
+                    "title": f"{entity_str[:45]} — Key Facts You Need to Know",
+                    "description": f"Quick facts on {clean_title}. Watch the full report on TheViralDNA."
                 },
                 {
-                    "title": f"Everyone's Talking About {clean_title} | Telugu {year}",
-                    "description": f"The most important facts about {clean_title} in 60 seconds."
+                    "title": f"What {entity_str[:40]} Means for Telugu Families",
+                    "description": f"How {clean_title} impacts families in Andhra Pradesh and Telangana."
                 },
                 {
-                    "title": f"Just In: {clean_title} — This Changes Everything | {year}",
-                    "description": f"Fast update on {clean_title}. TheViralDNA keeps you connected."
+                    "title": f"{entity_str[:50]} — The Full Story in 60 Seconds",
+                    "description": f"Everything you need to know about {clean_title} — fast."
                 },
             ]
         elif segment_type == "short_2":
             raw = [
                 {
-                    "title": f"What {clean_title} Means For You | Telugu News {year}",
-                    "description": f"Simple explanation of {clean_title} and its real-world impact on families."
+                    "title": f"Why {entity_str[:45]} Is Making Headlines",
+                    "description": f"Breaking down {clean_title} and why it matters to Telugu people."
                 },
                 {
-                    "title": f"{clean_title} Explained Simply | Telugu {year}",
-                    "description": f"Breaking down {clean_title} so everyone can understand what is happening."
+                    "title": f"{entity_str[:45]} — What You Need to Know",
+                    "description": f"Simple explanation of {clean_title} and its real-world impact."
                 },
                 {
-                    "title": f"How {clean_title} Affects Us | AP Telangana {year}",
+                    "title": f"{entity_str[:40]} — Impact on AP & Telangana",
                     "description": f"Understanding the real impact of {clean_title} on our communities."
                 },
             ]
-        else:  # short_3 — NRI-targeted with curiosity gap + emotion
+        else:  # short_3 — NRI-targeted
             raw = [
                 {
-                    "title": f"NRIs: You Need To Know This About {clean_title} 😰 | {year}",
+                    "title": f"Telugu People Abroad: {entity_str[:40]} Update",
                     "description": f"If you are watching from abroad, here is what you need to know about {clean_title}."
                 },
                 {
-                    "title": f"Telugu Families Abroad: {clean_title} | Don't Miss | {year}",
-                    "description": f"Stay connected to your homeland. Here is the latest on {clean_title}."
+                    "title": f"{entity_str[:45]} — Share With Family Back Home",
+                    "description": f"Important update about {clean_title}. Share this with your family in Telugu states."
                 },
                 {
-                    "title": f"From USA/UK: {clean_title} — Share With Family | Telugu {year}",
-                    "description": f"Important update about {clean_title}. Share this with your family back home."
+                    "title": f"From USA/UK: {entity_str[:40]} — What's Happening",
+                    "description": f"Stay connected to your homeland. Here is the latest on {clean_title}."
                 },
             ]
 
@@ -464,7 +477,7 @@ class ScriptGenerator:
 
                 prompt = (
                     f"You are the Lead Writer for ViralDNA, a premium news channel for the Telugu community worldwide.\n"
-                    f"Write an engaging, clear news package (1 Main Video Script + 3 Short Videos) for the following news item:\n\n"
+                    f"Write an engaging, story-driven news package (1 Main Video Script + 3 Short Videos) for the following news item:\n\n"
                     f"Headline/Title: {title}\n"
                     f"Description: {desc}\n"
                     f"Context: {context}\n"
@@ -475,12 +488,20 @@ class ScriptGenerator:
                     f"3. STATE ACCURACY: The news item concerns {state_hint_str}. You MUST use ONLY this state name in scripts. If the source mentions {state_hint_str}, do NOT write 'Andhra Pradesh' for a Telangana story or vice versa. DO NOT mention the other Telugu state unless the source text explicitly mentions both. When in doubt, use regional descriptors like 'our Telugu homeland' or 'our state' instead of any state name.\n"
                     f"4. Punctuation: Ensure excellent, standard punctuation with clear periods (.), commas (,), and question marks (?). These are critical cues for our speech generator to take natural pauses and not rush.\n"
                     f"5. Length requirements:\n"
-                    f"   - 'main': An informative, simple news report. It MUST be at least 150 words and at most 250 words to maintain our pacing.\n"
+                    f"   - 'main': A story-driven news report. It MUST be at least 150 words and at most 250 words to maintain our pacing.\n"
                     f"   - 'short_1': High-impact 15-20s highlights (approx 35-45 words). Start with a HOOK that creates curiosity.\n"
                     f"   - 'short_2': Simple summary of what this means for common people (approx 35-45 words).\n"
                     f"   - 'short_3': Direct, simple Call-to-Action for families watching from abroad (approx 35-45 words).\n"
-                    f"6. RETENTION HOOKS: For main video, start with a strong hook in first sentence. Mention 'subscribe' or 'follow ViralDNA' near the END of the main script (not the beginning) to keep viewers watching.\n"
-                    f"7. Format: Avoid markdown, bold text, brackets, URLs, or non-pronounceable tags. Keep the text clean, natural, and speakable.\n"
+                    f"6. STORYTELLING REQUIREMENTS (CRITICAL - follow exactly):\n"
+                    f"   - The main script MUST read like a NEWS STORY, not a Wikipedia summary or press release.\n"
+                    f"   - Start with a SPECIFIC human detail, quote, or dramatic moment - NOT a generic statement like 'A political firestorm has erupted.'\n"
+                    f"   - Include the WHO, WHAT, WHEN, WHERE, WHY - but weave them into a narrative, don't just list facts.\n"
+                    f"   - Use ACTIVE voice and VIVID language. Instead of 'X was accused by Y', write 'Y accused X of...'\n"
+                    f"   - End with what this means for VIEWERS - why should they care? What happens next?\n"
+                    f"   - AVOID generic filler phrases: 'This development has sent ripples', 'sparking intense debate', 'widely reported', 'political analysts alike'. These are DEAD WORDS that make content sound AI-generated.\n"
+                    f"   - AVOID passive constructions: 'was announced', 'has been reported', 'is being discussed'. Use active voice instead.\n"
+                    f"7. RETENTION HOOKS: For main video, start with a strong hook in first sentence. Mention 'subscribe' or 'follow ViralDNA' near the END of the main script (not the beginning) to keep viewers watching.\n"
+                    f"8. Format: Avoid markdown, bold text, brackets, URLs, or non-pronounceable tags. Keep the text clean, natural, and speakable.\n"
                     f"\nIMPORTANT: The system message defines the exact JSON schema. Follow it strictly. Each key (main, short_1, short_2, short_3) must return an object with 'script' (string) and 'title_variants' (array of 3 objects with 'title' and 'description' keys).\n"
                 )
 

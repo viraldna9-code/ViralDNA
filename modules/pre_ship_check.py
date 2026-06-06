@@ -366,14 +366,56 @@ class PreShipCheck:
                     pass  # Title may not always include state name (acceptable)
 
         # Check for generic/bare titles
-        generic_titles = [
+        # v82.5: Expanded to catch semantic generics, not just exact matches
+        generic_titles_exact = [
             "breaking news", "latest update", "today's news", "news update",
             "top news", "latest news", "news today", "just in",
         ]
-        if title_lower.strip() in generic_titles:
+        # Generic patterns: titles that could apply to ANY news story
+        generic_patterns = [
+            r"^political developments",
+            r"^congress leaders",
+            r"^leaders show",
+            r"^political storm",
+            r"^what it means$",
+            r"^latest developments",
+            r"^breaking story",
+            r"^news alert",
+            r"^important update",
+            r"^just in:",
+            r"^update:",
+            r"^news:",
+        ]
+        if title_lower.strip() in generic_titles_exact:
             issues.append(
                 f"PreShip: Title is generic template: '{optimized_title}'. "
-                f"Must be topic-specific."
+                f"Must be topic-specific with names, places, or numbers."
+            )
+        else:
+            for pattern in generic_patterns:
+                if re.search(pattern, title_lower):
+                    issues.append(
+                        f"PreShip: Title is too generic/vague: '{optimized_title}'. "
+                        f"Pattern matched: '{pattern}'. Must include specific names, places, or data."
+                    )
+                    break
+
+        # Check title has at least one proper noun (capitalized word mid-title)
+        # Titles that are ALL generic words won't have this
+        words = optimized_title.split()
+        proper_nouns = [w for w in words if len(w) > 2 and w[0].isupper() and w.lower() not in (
+            "the", "and", "for", "are", "but", "not", "you", "all", "can", "had", "her", "was",
+            "one", "our", "out", "day", "get", "has", "him", "his", "how", "its", "may", "new",
+            "now", "old", "see", "two", "way", "who", "boy", "did", "own", "say", "she", "too",
+            "use", "with", "have", "this", "will", "your", "from", "they", "been", "call", "come",
+            "could", "each", "make", "than", "them", "then", "what", "when", "word", "said",
+            "telugu", "news", "india", "andhra", "telangana", "ap", "breaking", "urgent",
+            "explained", "analysis", "full", "complete", "latest", "update", "today",
+        )]
+        if len(proper_nouns) < 2 and len(words) > 4:
+            issues.append(
+                f"PreShip: Title lacks specific proper nouns (names/places): '{optimized_title}'. "
+                f"Need at least 2 specific entities for YouTube SEO."
             )
 
         # Check title length (YouTube best practice: 60-70 chars)

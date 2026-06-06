@@ -1113,10 +1113,51 @@ class YouTubeUploader:
             else:
                 warnings.append(f"Title {tlen} chars — sweet spot is 40-70 for CTR")
 
+        # C1b: v82.5 — Title must NOT be generic/vague
+        generic_title_patterns = [
+            r"^political developments",
+            r"^congress leaders",
+            r"^leaders show",
+            r"^what it means$",
+            r"^latest developments",
+            r"^breaking news",
+            r"^news update",
+            r"^today'?s news",
+            r"^top news",
+            r"^latest news",
+            r"^news today",
+            r"^just in",
+            r"^update:",
+            r"^news:",
+        ]
+        is_generic_title = any(re.search(p, title_lower) for p in generic_title_patterns)
+        # Also check: title must have at least 2 proper nouns (names/places)
+        title_words = title.split()
+        skip_words = {
+            "the","and","for","are","but","not","you","all","can","had","her","was","one","our",
+            "out","breaking","urgent","news","telugu","india","andhra","telangana","update",
+            "latest","today","just","what","how","why","when","where","who","this","that","with",
+            "from","have","been","will","would","could","should","may","might","must","shall",
+            "explained","analysis","full","complete","simple","key","facts","main","important",
+        }
+        proper_nouns_in_title = [
+            w for w in title_words
+            if len(w) > 2 and w[0].isupper() and w.lower() not in skip_words
+        ]
+        checks["title_not_generic"] = not is_generic_title and len(proper_nouns_in_title) >= 2
+        if not checks["title_not_generic"]:
+            if is_generic_title:
+                critical.append(f"Title is too generic/vague: '{title}'. Must include specific names, places, or data — not generic news phrases.")
+            elif len(proper_nouns_in_title) < 2:
+                critical.append(f"Title lacks specific proper nouns: '{title}'. Found: {proper_nouns_in_title}. Need 2+ names/places for SEO.")
+
         # C2: Year in title (freshness signal for news content)
         checks["year_in_title"] = year in title
         if not checks["year_in_title"]:
             critical.append(f"Year {year} missing from title — news without year = evergreen (lower priority)")
+
+        # C2b: v82.5 — Short titles must be distinct from main title
+        # (Checked at pipeline level, not here — this is per-video)
 
         # C3: Subscribe CTA in first 3 non-empty lines
         first3 = " ".join(desc_lines[:3]).lower()

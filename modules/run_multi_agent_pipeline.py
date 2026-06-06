@@ -1307,12 +1307,65 @@ class ResilientUploaderAgent(BaseAgent):
         for si in range(2):
             if si < len(shorts_variants) and shorts_variants[si]:
                 try:
-                    st = shorts_variants[si].get("title", "") if isinstance(shorts_variants[si], dict) else str(shorts_variants[si])
-                except (AttributeError, TypeError):
-                    st = f"Short {si+1}: {optimized_title[:80]}"
+                    sv = shorts_variants[si]
+                    if isinstance(sv, dict):
+                        st = sv.get("title", "")
+                    else:
+                        st = str(sv)
+                    if not st:
+                        raise ValueError("empty title")
+                except (AttributeError, TypeError, ValueError):
+                    # v82.5: Fallback — derive from topic, NOT "Short N: {title}"
+                    topic_words = topic.get("title", optimized_title).split()
+                    key_phrase = ' '.join(topic_words[:5]) if len(topic_words) > 5 else topic.get("title", optimized_title)
+                    angles = ["What Happened", "Why It Matters"]
+                    st = f"{key_phrase[:55]} — {angles[si]}"
                 short_titles.append(st)
             else:
-                short_titles.append(f"Short {si+1}: {optimized_title[:80]}")
+                # v82.5: Fallback — derive from topic, NOT "Short N: {title}"
+                topic_words = topic.get("title", optimized_title).split()
+                key_phrase = ' '.join(topic_words[:5]) if len(topic_words) > 5 else topic.get("title", optimized_title)
+                angles = ["What Happened", "Why It Matters"]
+                short_titles.append(f"{key_phrase[:55]} — {angles[si]}")
+
+        # ── v82.5: Title deduplication — shorts must differ from main and each other ──
+        import re as _re
+        def _normalize_t(t):
+            """Normalize title for comparison: lowercase, strip suffixes/prefixes."""
+            t = t.lower().strip()
+            t = _re.sub(r'\s*[\|\-–—]\s*(telugu news|telugu|news|ap|telangana|andhra|viral dna|viraldna|shorts?).*$', '', t)
+            t = _re.sub(r'\s*\(?\d{4}\)?\s*$', '', t)
+            t = _re.sub(r'[^\w\s]', '', t)
+            return t.strip()
+
+        main_norm = _normalize_t(main_title)
+        for si in range(len(short_titles)):
+            short_norm = _normalize_t(short_titles[si])
+            # Check if short title is too similar to main title
+            if short_norm == main_norm or main_norm in short_norm or short_norm in main_norm:
+                # Replace with a distinctly different angle
+                topic_words = topic.get("title", main_title).split()
+                key = ' '.join(topic_words[:4]) if len(topic_words) > 4 else topic.get("title", main_title)
+                alt_angles = [
+                    f"Key Facts About {key[:45]}",
+                    f"{key[:40]} — What You Need to Know",
+                    f"Why {key[:45]} Is Making Headlines",
+                    f"{key[:45]} — The Full Story",
+                ]
+                # Pick an angle that's different from main
+                for alt in alt_angles:
+                    if _normalize_t(alt) != main_norm:
+                        short_titles[si] = alt
+                        print(f"  ⚠️ [TitleDedup] Short {si+1} title was duplicate of main. Changed to: {alt[:60]}")
+                        break
+            # Check if short titles are too similar to each other
+            if si > 0:
+                prev_norm = _normalize_t(short_titles[si - 1])
+                if short_norm == prev_norm:
+                    topic_words = topic.get("title", main_title).split()
+                    key = ' '.join(topic_words[:4]) if len(topic_words) > 4 else topic.get("title", main_title)
+                    short_titles[si] = f"{key[:45]} — What You Need to Know"
+                    print(f"  ⚠️ [TitleDedup] Short {si+1} title was duplicate of Short {si}. Changed.")
 
         # Generate metadata for each video
         main_meta = uploader.generate_upload_metadata(

@@ -36,29 +36,38 @@ class ShortsOptimizer:
 
     def generate_shorts_title_batch(self, base_title: str) -> list:
         """
-        Generate 3 Shorts title variants from a base title.
-        Uses hook words, emotion triggers, and Telugu-English mix.
+        Generate 3 distinct Shorts title variants from a base title.
+        v82.5: Each variant must be UNIQUE — different angle, different hook.
+        No two shorts should share the same base title.
         """
         clean = base_title.strip()
-        # Remove common news prefixes for Shorts
         clean = re.sub(r'^(BREAKING|JUST IN|UPDATE|NEWS)\s*:\s*', '', clean, flags=re.IGNORECASE)
+        clean = re.sub(r'\s*\|\s*Telugu News.*$', '', clean, flags=re.IGNORECASE)
+        clean = re.sub(r'\s*\(\d{4}\)\s*$', '', clean).strip()
+        # Extract key entity (first proper noun phrase) for targeted titles
+        words = clean.split()
+        entity = ' '.join(words[:4]) if len(words) > 4 else clean
 
         variants = []
 
-        # Variant 1: Hook word + short title
-        hook = self.HOOK_WORDS[hash(clean) % len(self.HOOK_WORDS)]
-        v1 = f"{hook}: {clean[:60]}"
-        variants.append(v1)
+        # Variant 1: Direct news angle — specific and factual
+        # Use the core news event, keep it punchy
+        v1 = f"{entity[:55]} — What Happened"
+        if len(v1) > 80:
+            v1 = f"{entity[:50]} — Key Facts"
+        variants.append({"title": v1, "angle": "news_facts"})
 
-        # Variant 2: Emotion trigger + question format
-        emoji = self.EMOTION_TRIGGERS[hash(clean + "emoji") % len(self.EMOTION_TRIGGERS)]
-        short_text = clean[:50] if len(clean) > 50 else clean
-        v2 = f"{emoji} {short_text}?"
-        variants.append(v2)
+        # Variant 2: Impact/question angle — why should viewers care
+        v2 = f"What {entity[:40]} Means for You"
+        if len(v2) > 80:
+            v2 = f"Why {entity[:45]} Matters"
+        variants.append({"title": v2, "angle": "impact"})
 
-        # Variant 3: Telugu-English mix (for diaspora audience)
-        v3 = f"{clean[:55]} 🔥 #TeluguNews"
-        variants.append(v3)
+        # Variant 3: Emotional/diaspora angle — for Telugu audience connection
+        v3 = f"{entity[:45]} — Telugu States React"
+        if len(v3) > 80:
+            v3 = f"{entity[:40]} — AP Telangana Update"
+        variants.append({"title": v3, "angle": "diaspora"})
 
         return variants
 
