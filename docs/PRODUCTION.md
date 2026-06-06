@@ -39,7 +39,7 @@ NO auto YouTube uploads (UPLOAD_ENABLED=false).
 ```
 /home/jay/ViralDNA/
 ├── modules/                  ← 73+ Python worker modules
-│   ├── run_multi_agent_pipeline.py  ← Main orchestrator (v82.4)
+│   ├── run_multi_agent_pipeline.py  ← Main orchestrator (v82.5)
 │   ├── video_assembler.py    ← FFmpeg video assembly + image fetching
 │   ├── youtube_uploader.py   ← YouTube Data API (SAVE_TO_DRIVE mode)
 │   ├── news_image_fetcher.py ← RSS image fetcher (primary source)
@@ -71,6 +71,7 @@ Scopes: youtube.upload, youtube.force-ssl, youtube.readonly
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v82.5 | Jun 6 2026 | Title quality overhaul: pre_ship_check (generic+proper noun), shorts_optimizer (distinct angles), pipeline (title dedup+no "Short N:"), youtube_uploader (C1b audit), script_generator (entity-first, no BREAKING templates) |
 | v82.4 | Jun 5 2026 | Person-image fix: text-first check all 3 sources, keyword overlap, Gemini fallback fail-closed |
 | v82.3 | Jun 3 2026 | Growth metadata + 20+ audit checks |
 | v82.2 | Jun 2 2026 | 3-layer image defense |

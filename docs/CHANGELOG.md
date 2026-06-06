@@ -4,6 +4,49 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v82.5] — 2026-06-06 — Title Quality Overhaul
+
+### Problem
+1. **Generic titles**: Pipeline produced titles like "Political Developments in Our State" and "Congress Leaders Show United Front" — no specific entities, no search value.
+2. **Duplicate short titles**: Both Short 1 and Short 2 had identical titles (e.g., "What it means for you #Shorts" appeared twice).
+3. **"Short N:" prefix pattern**: Fallback titles used "Short 1:" / "Short 2:" prefixes — YouTube algorithm penalizes numbered series titles.
+4. **BREAKING/URGENT templates**: Script generator fallback used clickbait templates ("BREAKING:", "URGENT:", "Did You Know?") that hurt channel credibility.
+5. **No proper noun check**: Pre-ship check only caught 7 exact-match generic phrases; missed regex-pattern generics and titles with zero specific entities.
+
+### Changes
+
+#### 1. Expanded Generic Title Detection (`modules/pre_ship_check.py`)
+- From 7 exact-match phrases to 13 regex patterns (matches partial/generic constructions)
+- Added proper noun check: requires 2+ specific names/places in title
+- Catches: "Political Developments in [State]", "Leaders Show United Front", etc.
+
+#### 2. Distinct Short Title Variants (`modules/shorts_optimizer.py`)
+- Rewrote `generate_shorts_title_batch()` to produce 3 truly distinct variants
+- Uses different angles: emotional, factual, question-based
+- No more identical or near-duplicate short titles
+
+#### 3. Title Deduplication (`modules/run_multi_agent_pipeline.py`)
+- Removed "Short 1:" / "Short 2:" fallback prefix pattern
+- Added title deduplication block ensuring short titles differ from main and from each other
+- Auto-generates alternatives when duplicates detected
+
+#### 4. Entity-First Title Variants (`modules/script_generator.py`)
+- Rewrote `_build_title_variants()` to produce entity-first, topic-aware templates
+- Removed BREAKING:/URGENT:/Did You Know?/Everyone's Talking About templates
+- Added quality gate requiring specific entities in fallback titles
+
+#### 5. Metadata Audit C1b (`modules/youtube_uploader.py`)
+- Added generic title detection to YouTube metadata audit
+- Checks against expanded generic phrase list + proper noun requirement
+- Prevents upload of low-quality titles even in SAVE_TO_DRIVE mode
+
+### Verification
+- All 5 patched files compile clean (py_compile exit 0)
+- All changes preventive for future pipeline runs
+- Existing YouTube titles fixed manually (5 videos renamed)
+
+---
+
 ## [v82.4] — 2026-06-05 — Person-Image Verification (3-Layer Defense)
 
 ### Problem
