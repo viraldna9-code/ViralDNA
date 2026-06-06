@@ -4,6 +4,38 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v82.6] — 2026-06-06 — Dynamic Topic-Specific Tags
+
+### Problem
+1. **Identical tags on every video**: All 27 tags were static — same for every topic regardless of content. A DMK boycott video had the same tags as a nuclear power video.
+2. **Topic JSON has no tags field**: `topic.get("tags", "")` always returned empty string.
+3. **No audit for topic relevance**: Metadata audit only checked tag count (15-30), never checked if tags were actually about the topic.
+
+### Changes
+
+#### 1. LLM-Based Tag Generation (`modules/youtube_uploader.py`)
+- Added `_generate_topic_tags()` method — sends topic title, source, URL, and content to Gemini LLM
+- LLM generates 8-12 topic-specific tags (names, places, organizations, events, long-tail searches)
+- Fallback NLP extraction from title proper nouns if LLM API fails
+- Tested: DMK boycott vs Nuclear power topics → **zero tag overlap**
+
+#### 2. Two-Tier Tag System
+- **Tier 1** (priority): Topic-specific tags from LLM (8-12 tags, unique per video)
+- **Tier 2**: Channel-level tags (10 static: TheViralDNA, competitor channels, transliteration, year)
+- Old 27-tag static list replaced — reduced to 10 channel-level + 8-12 dynamic per topic
+
+#### 3. Audit Check G5b: `topic_tags_present`
+- CRITICAL failure if zero topic-specific tags (all tags are generic channel tags)
+- Warning if <5 topic-specific tags
+- Prevents shipping videos with irrelevant metadata
+
+### Verification
+- VDNA158 (DMK boycott): "DMK boycott INDIA bloc meeting", "MK Stalin DMK", "Congress betrayal DMK", "Tamil Nadu politics"...
+- VDNA165 (Nuclear power): "N. Chandrababu Naidu", "Nara Lokesh", "Rosatom", "Andhra Pradesh Nuclear Power"...
+- `python3 -m py_compile modules/youtube_uploader.py` → exit 0
+
+---
+
 ## [v82.5] — 2026-06-06 — Title Quality Overhaul
 
 ### Problem

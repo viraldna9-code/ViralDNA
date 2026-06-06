@@ -78,6 +78,15 @@ Scopes: youtube.upload, youtube.force-ssl, youtube.readonly
 | v82.1 | Jun 1 2026 | Scheduled publisher (morning + evening cron) |
 | v82.0 | May 31 2026 | PostFilter redesign, word boundary re-score |
 
+## Version History
+
+| Version | Date | Key Changes |
+|---------|------|-------------|
+| v82.6 | 2026-06-06 | Dynamic topic-specific tags (LLM), two-tier tag system, audit check G5b |
+| v82.5 | 2026-06-06 | Title quality overhaul — generic detection, distinct shorts, dedup, no BREAKING templates |
+| v82.4 | 2026-06-05 | Image relevance defense — text check + keyword overlap + Gemini Vision |
+| v82.3 | 2026-06-04 | Metadata audit, competitor tags, transliteration, Shorts discovery tags |
+
 ## Known Issues & Solutions
 
 | Issue | Cause | Fix |
