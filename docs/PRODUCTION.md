@@ -101,3 +101,27 @@ Scopes: youtube.upload, youtube.force-ssl, youtube.readonly
 - NEVER delete published videos (permanent no-delete)
 - Country: IN (set via brandingSettings.channel.country)
 - Analytics: See analytics/feedback.md for current stats
+
+## Latest Production Standards (v84.3)
+
+### Script Style (YouTube Studio v84.2/v84.3)
+- **Hook-first**: ALL videos and shorts must start with the most surprising/controversial statement or question in the first 2 seconds
+- **Conversational**: No academic/formal language ("crystallization of alliances", "reshaping electoral dynamics"). Use "teaming up", "big change", "could flip the vote"
+- **You/your language**: Use "you", "your district", "your street" to make politics personal
+- **Analogies**: Include "Think of it like..." everyday comparisons for complex topics
+- **CTA**: End with specific engagement question (NOT "stay tuned"). Example: "Do you think this will work? Tell me in the comments!"
+
+### Short-Specific Standards (v84.3)
+- **Hook in first 2 seconds**: Shocking fact/question/number opener. No passive announcements
+- **Scene count**: 5-8 scenes per short (was 3) for jump-cut zoom pacing every 5-7s
+- **Jump-cut zooms**: Aggressive 10-15% zoom snap at midpoint of each clip (not slow Kenburns ramp)
+- **Ending CTA**: "What do you think? Comment below!" overlay in last 2 seconds
+- **Keyword highlighting**: Numbers, names, places pop in larger (78px) yellow font vs normal (65px) white
+- **Words per phrase**: 2 (was 5) for mobile readability
+
+### Forensic Audit Checks (v84.3)
+- Banned academic phrase detection in ALL segments
+- Short hook pattern audit (question/shock/number in first 10 words)
+- Passive announcer opener detection ("X party announced...")
+- Short scene count audit (min 4 images required)
+- Version: forensic_audit.py v84.3

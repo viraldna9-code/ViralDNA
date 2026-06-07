@@ -1355,3 +1355,71 @@ The first pipeline run tonight (15:01 IST) failed at Phase 7 (Assembly) — ALL 
 ### Impact
 - 10 existing topics had false-positive ViralKW scores from substring matches (e.g., "deadly"→"dead", "terrorists"→"terror"). Only affects new scoring going forward.
 - execute_topic.py injection now works end-to-end: alert → execute_topic.py → run_pipeline_entrypoint.py --topic-file → orchestrator.state["injected_topic"] → pipeline uses selected topic.
+
+---
+
+## [v84.3] — 2026-06-07 — YouTube Studio Shorts Overhaul
+
+### Problem
+YouTube Studio identified 4 defects in ALL shorts:
+1. **Slow hook**: Shocking fact (e.g., "700 rupees a day") comes halfway through instead of first 2 seconds
+2. **Static visuals**: Single "talking head" shot for entire duration — no zoom variety
+3. **Abrupt endings**: Videos end mid-sentence, no value-based CTA at end
+4. **Weak text overlays**: Uniform font size — numbers/names don't pop visually
+
+Top-performing shorts (2,347 / 2,140 / 1,951 views) confirmed the pattern — they had stronger hooks and more visual variety than underperformers.
+
+### Changes
+
+#### script_generator.py (v84.3)
+- Added SHORTS RULE to Gemini prompt: ALL shorts MUST start with most surprising/controversial statement in FIRST 2 SECONDS
+- short_1: Must start with SHOCKING STATEMENT or QUESTION. NOT "Andhra villagers are in the news today."
+- short_2: Must start with "What does this mean for you?" angle
+- short_3: Must start with "If you are watching from..." — emotional, personal
+- Banned "Breaking news from our homeland" as short opener
+
+#### video_assembler.py (v84.3)
+- `generate_ass_file()`: New params `is_short=False`, `cta_text=None`
+  - Shorts mode: 2 words per phrase (was 5), font 65px (was 55px)
+  - Keyword highlighting regex: numbers, Rs./crore/lakh, political figures, parties, places → 78px yellow font
+  - CTA end-card: "What do you think? Comment below!" in last 2 seconds
+- `assemble_video()`:
+  - Short scene count: 3 → max(5, min(8, duration/5)) for 5-7s pacing
+  - Jump-cut zooms: Snap from 1.15x → 1.25x at clip midpoint (was slow Kenburns ramp)
+  - Scale factor 1.4x to prevent edge artifacts
+  - Auto-passes `is_short=True` and CTA text to `generate_ass_file()`
+
+#### forensic_audit.py (v84.3)
+- Added `BANNED_ACADEMIC_PHRASES` list (10 phrases from Studio feedback)
+- Added `SHORT_HOOK_PATTERNS` regex list (question/shock/number openers)
+- `_audit_text()`: Checks all segments for banned academic phrases
+- `_audit_text()`: Short hook audit — first 10 words must match hook pattern
+- `_audit_text()`: Passive announcer opener detection ("X party announced...")
+- `_audit_images()`: Short scene count audit (min 4 images, max 10)
+
+### Version Headers Updated
+- script_generator.py: v64.0 → v84.3
+- video_assembler.py: v70.0 → v84.3
+- forensic_audit.py: v1.0 → v84.3
+
+### Git
+- Code commit: `ee0da7f` (v84.3 short generation + assembly)
+- Docs commit: (this update)
+
+---
+
+## [v84.2] — 2026-06-07 — YouTube Studio Script Style Overhaul
+
+### Problem
+YouTube Studio identified 5 patterns limiting viral growth across ALL long videos:
+1. "Fact-First" hook — passive openers ("Minister X said...")
+2. Formal/academic language ("crystallization of alliances")
+3. "Stay Tuned" exit — no engagement signal
+4. Missing analogies for complex topics
+5. Observer tone — not enough "you/your" language
+
+### Changes
+- script_generator.py: Rules 1, 6, 7 rewritten with viral YouTube style
+- All 4 fallback templates rewritten with hook-first conversational style
+- Banned academic words list added
+- Commit: `a10fdf3`

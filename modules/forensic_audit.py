@@ -3,7 +3,7 @@
 #          5 audit categories: TEXT, IMAGE, AUDIO, VIDEO, COMPLIANCE.
 #          Hard halts on any failure — no silent fallbacks, no stubs.
 #
-# VERSION: 1.0 (v79.0 pipeline)
+# VERSION: 84.3 (YouTube Studio v84.3 shorts format audit)
 
 import os
 import re
@@ -35,6 +35,27 @@ class ForensicAudit:
         "i cannot",
         "i'm unable",
         "diaspora",  # channel style guide: avoid this word
+    ]
+
+    # v84.3: Academic/formal phrases banned from all scripts (YouTube Studio style guide)
+    BANNED_ACADEMIC_PHRASES = [
+        "crystallization of alliances",
+        "redefine local political dynamics",
+        "this development has sent ripples",
+        "sparking intense debate",
+        "widely reported",
+        "political analysts alike",
+        "significant development",
+        "reshaping electoral dynamics",
+        "stay tuned to viral dna",
+        "breaking news from our homeland",
+    ]
+
+    # v84.3: Shorts must start with these hook patterns (first 10 words)
+    SHORT_HOOK_PATTERNS = [
+        r"^(?:why|what|how|when|who|which|did you|have you|are you|can you|will you|would you|could you|should you|isn't it|aren't you|don't you|won't you)",
+        r"^(?:\d+\s+(?:parties|crore|lakh|million|billion|rupees|people|villagers|workers|employees|students|voters))",
+        r"^(?:just|breaking|urgent|shocking|surprising|unexpected|incredible|unbelievable|massive|huge|biggest)",
     ]
 
     # PII patterns (emails, phone numbers, Aadhaar-like IDs)
@@ -131,6 +152,21 @@ class ForensicAudit:
                 if phrase in text_lower:
                     issues.append(f"TEXT: Forbidden phrase '{phrase}' found in {seg}")
 
+            # v84.3: Ban academic/formal phrases (YouTube Studio style guide)
+            for phrase in self.BANNED_ACADEMIC_PHRASES:
+                if phrase in text_lower:
+                    issues.append(f"TEXT: Academic/banned phrase '{phrase}' in {seg} — use conversational YouTube style")
+
+            # v84.3: Short hook audit — first 10 words must contain a hook
+            if seg.startswith("short_"):
+                first_words = " ".join(text_lower.split()[:10])
+                has_hook = any(re.match(p, first_words) for p in self.SHORT_HOOK_PATTERNS)
+                # Also check for "Breaking news from [place]" passive opener
+                if re.match(r"^(?:the\s+)?\w+\s+(?:party|government|minister|cm|pm|mla|mp)\s+(?:announced|said|declared|stated)", first_words):
+                    issues.append(f"TEXT: {seg} starts with passive announcement opener — must start with shocking fact/question in first 2 seconds (v84.3)")
+                elif not has_hook and seg == "short_1":
+                    issues.append(f"TEXT: {seg} has no question/shock/number hook in first 10 words — violates v84.3 short format. First words: '{first_words[:60]}...'")
+
             for pii_pattern in self.PII_PATTERNS:
                 matches = re.findall(pii_pattern, text)
                 if matches:
@@ -193,6 +229,19 @@ class ForensicAudit:
                     issues.append(
                         f"IMAGE: Main video has only {len(scene_images)} scene images "
                         f"(min 3 expected). Video may be mostly static/slideshow."
+                    )
+            elif slot.startswith("short_"):
+                # v84.3: Shorts need 5-8 scenes for jump-cut zooms every 5-7s
+                if len(scene_images) < 4:
+                    issues.append(
+                        f"IMAGE: {slot} has only {len(scene_images)} scene images "
+                        f"(min 4 required for jump-cut zoom pacing per v84.3). "
+                        f"Shorts need 5-7s per scene for visual variety."
+                    )
+                elif len(scene_images) > 10:
+                    issues.append(
+                        f"IMAGE: {slot} has {len(scene_images)} scene images "
+                        f"(max 10 recommended — too many scenes = flickering)."
                     )
                 # Check for suspiciously small images (likely placeholders/junk)
                 tiny_images = []
