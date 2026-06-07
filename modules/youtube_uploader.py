@@ -1432,8 +1432,9 @@ Output JSON array:"""
         if not checks["no_double_separators"]:
             warnings.append("Double separator lines — wastes description space")
 
-        # S2: Smart quotes preserved properly
-        checks["smart_quotes_converted"] = "\u2018" not in description and "\u2019" not in description
+        # S2: Smart quotes preserved properly — check ALL apostrophe-like Unicode chars
+        _smart_quote_chars = ["\u2018", "\u2019", "\u2032", "\u2035", "\u02bc", "\u02bb", "\uff07", "\u201b", "\u2039", "\u203a"]
+        checks["smart_quotes_converted"] = not any(c in description for c in _smart_quote_chars)
         if not checks["smart_quotes_converted"]:
             warnings.append("Smart quotes not converted to ASCII — rendering issues on some devices")
 

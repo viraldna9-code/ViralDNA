@@ -1,6 +1,81 @@
 {
   "topics": [
     {
+      "title": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/india-news/india-bloc-meet-tomorrow-mamata-banerjee-eyes-help-from-frenemy-congress-11603497#publisher=newsstand",
+      "score": 21,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "BIG_NAME +6 (mamata banerjee)",
+        "AP/TS +6",
+        "IndiaRel +4 (congress)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 21.2,
+      "id": "VDNA196",
+      "date": "20260607"
+    },
+    {
+      "id": "VDNA170",
+      "title": "Don't leave, we have PM Modi: BJP TN chief's appeal to cadres after mass resignations post Annamalai",
+      "source": "news.google.com",
+      "url": "https://news.google.com",
+      "score": 20,
+      "total_score": 20,
+      "breakdown": [
+        "DIRECT NATIONAL +10",
+        "PM Modi +5",
+        "BJP Tamil Nadu +3",
+        "Emotional appeal +2"
+      ],
+      "edge_score": 1.0,
+      "edge_breakdown": [
+        "PM Modi national relevance"
+      ],
+      "final_score": 20,
+      "date": "2026-06-07",
+      "status": "rejected",
+      "rejection_reason": "Factual error: video incorrectly attributes BJP TN chief Nainar Nagendran's appeal to Annamalai. Annamalai quit BJP; he is NOT the state president. Title 'Annamalai's Urgent Plea' is false.",
+      "rejected_by": "manual_review",
+      "rejected_date": "2026-06-07"
+    },
+    {
+      "title": "Kerala Nurses Jobless As Dubai Hospital Shuts, Chief Minister Seeks PM Modi's Help",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/india-news/kerala-nurses-jobless-as-dubai-hospital-shuts-chief-minister-seeks-pm-modis-help-11602877#publisher=newsstand",
+      "score": 19,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "BIG_NAME +6 (modi)",
+        "AP/TS +6",
+        "IndiaRel +4 (hospital)"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.08,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 19.3,
+      "id": "VDNA171",
+      "date": "20260607"
+    },
+    {
       "id": "VDNA155",
       "title": "Araku MP Thanuja Rani Attacks Chandrababu Naidu \u2014 Political Firestorm in Andhra",
       "source": "Google News Telugu",
@@ -33,6 +108,40 @@
       "publish_target": "2026-06-05T19:00:00+05:30",
       "published_at": "2026-06-05T17:08:01.271979+05:30",
       "status": "published"
+    },
+    {
+      "title": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "source": "The Hindu AP/TS",
+      "url": "https://www.thehindu.com/news/national/telangana/hyderabad-man-shot-dead-during-pizza-delivery-in-philadelphia/article71072670.ece",
+      "score": 16,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "ViralKW +5 (dead)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.07,
+        "feedback_analytics": 0.1
+      },
+      "final_score": 16.3,
+      "id": "VDNA172",
+      "date": "20260607",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "ViralKW +5 (dead)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "20260607",
+      "status": "rejected",
+      "rejection_reason": "factual_error_auto_correct_failed"
     },
     {
       "title": "Heavy rain lashes Karimnagar, brings temporary relief from blistering heat",
@@ -160,6 +269,174 @@
       "status": "published"
     },
     {
+      "title": "\u2018INDIA janbandhan\u2019 united, 23 parties have confirmed participation: Congress",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/india-bloc-meeting-on-june-8-2026-23-parties-confirm-participation/article71072808.ece",
+      "score": 15,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "IndiaRel +4 (congress)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 15.2,
+      "id": "VDNA173",
+      "date": "20260607",
+      "published": true,
+      "published_at": "2026-06-07T19:11:53.073951+05:30",
+      "status": "drive_ready"
+    },
+    {
+      "title": "Prime Minister Narendra Modi, Leader of the Opposition Rahul Gandhi mourn Malayalam actor Salim Kumar",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/kerala/prime-minister-narendra-modi-leader-of-the-opposition-rahul-gandhi-mourn-malayalam-actor-salim-kumar/article71072856.ece",
+      "score": 15,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "BIG_NAME +6 (modi)",
+        "AP/TS +6"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 15.2,
+      "id": "VDNA174",
+      "date": "20260607"
+    },
+    {
+      "title": "T.N. government\u2019s decision to shelve smart meters project a grave mistake: BJP",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/tamil-nadu/tn-governments-decision-to-shelve-smart-meters-project-a-grave-mistake-bjp/article71072577.ece",
+      "score": 15,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "IndiaRel +4 (bjp)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 15.2,
+      "id": "VDNA175",
+      "date": "20260607"
+    },
+    {
+      "title": "The Annamalai question: Can BJP become a force in Tamil Nadu without him?",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/india/the-annamalai-question-can-bjp-become-a-force-in-tamil-nadu-without-him/articleshow/131564822.cms",
+      "score": 15,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "IndiaRel +4 (bjp)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 15.2,
+      "id": "VDNA176",
+      "date": "20260607"
+    },
+    {
+      "title": "Weather Alert | \u0c0f\u0c2a\u0c40, \u0c24\u0c46\u0c32\u0c02\u0c17\u0c3e\u0c23\u200c\u0c32\u0c4b \u0c35\u200c\u0c30\u0c4d\u0c37\u0c3e\u0c32\u0c41 - prabhanews.com",
+      "source": "Google News Telugu",
+      "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNTE45b3BieWR6VS0yUTBaTHZKODZfeGZkVzhMWTBOLUREQ0xERnViZUc5T0d1am1aMi1yVVN4MGh1TW1qMV9QUkVDZTdKdTB0anVqUWVGR3VtbGpqU1Rxd21VS3JXOHp6aVhFaEMtX1dFOWVtT1hDb3ZyZWF1LWtyQmpncXBaT2hDR1QyVHBRMlJ2cl9VOU1PeFZnb2pEcnVBTjNhc1JNX09heW9O?oc=5",
+      "score": 15,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "IndiaRel +4 (weather)",
+        "ChannelGrowth +3",
+        "ViralKW +3 (alert)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.1,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 15.2,
+      "id": "VDNA177",
+      "date": "20260607",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "IndiaRel +4 (weather)",
+        "ChannelGrowth +3",
+        "ViralKW +3 (alert)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "20260607"
+    },
+    {
+      "title": "Congress-JMM Seat Share Plan For Rajya Sabha Polls: Here's How They Can Win",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/india-news/congress-jmm-seat-share-plan-for-rajya-sabha-polls-heres-how-they-can-win-11603099#publisher=newsstand",
+      "score": 15,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "IndiaRel +4 (congress)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 15.2,
+      "id": "VDNA178",
+      "date": "20260607",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "IndiaRel +4 (congress)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "20260607"
+    },
+    {
       "title": "BJP Core Group Meet At PM Modi's Residence Today, Rajya Sabha Polls On Agenda",
       "source": "NDTV",
       "url": "https://www.ndtv.com/india-news/bjp-core-group-meet-at-pm-modis-residence-today-rajya-sabha-polls-on-agenda-11571590#publisher=newsstand",
@@ -244,6 +521,142 @@
       "rescored_at": "2026-06-01T22:00:00+05:30"
     },
     {
+      "title": "Minister Lokesh invites Rosatom to explore nuke power, infra investments in Andhra Pradesh - The New Indian Express",
+      "source": "news.google.com",
+      "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxOdW44NVZsWmJCc01ncEI3eWF2R0F3SjIwLVlxcVVPRHNqOWhXTFRRa2hhYVlEdVFidng5N0FqWXZONWtFdS04Z2Rxb0lFVzVHSTBlck1PeVFxV0tsRUJhNm1WRk5oUVgyRGszbmdQamtRUEpMVy1aVlM3dXVQTl82S1FTc21keHZZSDNUZDlUUm5McVhVbXJKMnpBZzg0RF9Fa0t6emotRXhXZnVvc1FhTlNJUUhoWi1ncnpaVExhbDVxOVd2TXk4b1FCTUliR1lfREc3YTdtdU9yNnZXUXlMN21aT25sQUd0Z0hxetIB-gFBVV95cUxOa0hIZ3pqdDhoVl80TmtnSmpBdnJzeVF3SjcxYWlDNnktX1drOVc1VDdDUUcwbjIwS0Q5MEl0TGtySkVKMWFNSUU5VWYteU1RX3NGdXloa09TdXVzM0lJckVnTDRLRTd3NkJwdkFEVUxwczlFQlZJZkF6NHJPdzRMdFl3SEFDZFlQaGJRNUVzZVZ6V3FUeXBlV3hUVUZDX0lOYTR2d3lKYWNqb3I2eHBvRW5DeUUxamNqSjVIWDhwX0gtbXNnQl9ISk9TREpJaGNlS2tZRHRCWEtZNVZiTjdfcmJoNkpkbVF2ZnJPSXE4YUd3cm80VXM5Rzl3?oc=5",
+      "score": 15,
+      "breakdown": [
+        "DIRECT AP/TELANGANA +10",
+        "Politics +5"
+      ],
+      "edge_score": 0.0,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.0,
+        "competition_gap": 0.0,
+        "engagement_potential": 0.0,
+        "geographic_breadth": 0.0,
+        "feedback_analytics": 0.0
+      },
+      "final_score": 15.0,
+      "id": "VDNA165",
+      "date": "20260606",
+      "score_breakdown": [
+        "DIRECT AP/TELANGANA +10",
+        "Politics +5"
+      ],
+      "rescored_at": "20260606",
+      "status": "completed",
+      "published": true
+    },
+    {
+      "title": "Union Minister On Success Of J&K's Lavender Fields, Breaking Startup Myths",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/india-news/union-minister-jitendra-singh-on-success-of-j-ks-bhaderwah-lavender-fields-breaking-startup-myths-11603068#publisher=newsstand",
+      "score": 14,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "ViralKW +3 (breaking)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.12,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 14.3,
+      "id": "VDNA179",
+      "date": "20260607",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "ViralKW +3 (breaking)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "20260607"
+    },
+    {
+      "title": "1 Dead, 5 Injured In Multiple Shooting Attacks In Israel-Occupied West Bank",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/world-news/1-dead-5-injured-in-multiple-shooting-attacks-in-israel-occupied-west-bank-11603047#publisher=newsstand",
+      "score": 14,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "IndiaRel +4 (bank)",
+        "ViralKW +5 (dead)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.1,
+        "engagement_potential": 0.12,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 14.3,
+      "id": "VDNA180",
+      "date": "20260607"
+    },
+    {
+      "title": "Unidentified attackers hurl petrol bomb at car in Ludhiana, flee",
+      "source": "Indian Express",
+      "url": "https://indianexpress.com/article/cities/chandigarh/ludhiana-petrol-bomb-attack-car-set-ablaze-haibowal-cctv-investigation-10728483/",
+      "score": 14,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "IndiaRel +4 (petrol)",
+        "ViralKW +5 (bomb)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.1,
+        "engagement_potential": 0.12,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 14.3,
+      "id": "VDNA181",
+      "date": "20260607"
+    },
+    {
+      "title": "\u2018Extremist breeding ground\u2019: Attacks in Israel leave 1 dead, minister lambasts country\u2019s Arabs",
+      "source": "Indian Express",
+      "url": "https://indianexpress.com/article/world/israel-west-bank-border-shooting-attacks-kokhav-yair-casualties-10728299/",
+      "score": 14,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "ViralKW +5 (dead)"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.12,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 14.3,
+      "id": "VDNA182",
+      "date": "20260607"
+    },
+    {
       "title": "Telangana TOSS SSC, Inter results 2026 Out: How to check and download scorecards",
       "source": "Indian Express",
       "url": "https://indianexpress.com/article/education/telangana-toss-ssc-intermediate-results-2026-declared-results-scorecard-link-portal-telanganaopenschool-org-tossresultsnov22-marksheet-10715483/",
@@ -311,6 +724,61 @@
       "final_score": 13.3,
       "id": "VDNA167",
       "date": "20260605"
+    },
+    {
+      "title": "Revanth accuses Opposition of obstructing development, lays foundation for fruit market, Sub-Registrar office complex at Koheda",
+      "source": "The Hindu AP/TS",
+      "url": "https://www.thehindu.com/news/national/telangana/revanth-accuses-opposition-of-obstructing-development-lays-foundation-for-fruit-market-sub-registrar-office-complex-at-koheda/article71070709.ece",
+      "score": 13,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "BIG_NAME +6 (revanth)",
+        "IndiaRel +4 (market)"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.1,
+        "geographic_breadth": 0.07,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 13.3,
+      "id": "VDNA183",
+      "date": "20260607",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "BIG_NAME +6 (revanth)",
+        "IndiaRel +4 (market)"
+      ],
+      "rescored_at": "20260607"
+    },
+    {
+      "title": "Death At Mumbai Concert, Woman In Hospital, Cops Probe Organisers",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/india-news/worli-concert-death-man-dies-woman-in-hospital-after-having-excessive-liquor-at-mumbai-concert-11602790#publisher=newsstand",
+      "score": 13,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "IndiaRel +4 (hospital)",
+        "ViralKW +4 (death)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.08,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.07
+      },
+      "final_score": 13.3,
+      "id": "VDNA184",
+      "date": "20260607"
     },
     {
       "title": "'Don't want to burden top leadership': What Annamalai told BJP in his resignation letter",
@@ -425,6 +893,79 @@
       "final_score": 13.2,
       "id": "VDNA168",
       "date": "20260605"
+    },
+    {
+      "title": "Iran war news LIVE: Pak minister meets Iranian FM Araghchi, delivers message for Supreme Leader Mojtaba Khamenei | World News - Hindustan Times",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMijwJBVV95cUxPWGl6M2F4d3gyckNSTi1keTZiLUduak50RU82YjBuSThMTTNXUC1tYkhtYUpRa013VTYzb1BrWjlhZGd5WkNTbmFwTXZUZWxqcGVseXgzNnpDVW1yVEJ0ekRCZnBYQ2pTeWx1VUEzUWlGWXJjUEtLcUZJMzh4S3MyNVhpUE11Q1pCQ1dKU25jWlVpUHRfRmc0SWVFNmdBRVFSNU1LTXE5UDQ5SEt3bFdaVmlwbGljaWx3QVdzdTBxV1lvd3lKTERyVWJaWm9SUUdXNTRYc0x1ZmtyV0dWWWhxNjBkZW1Wc1NNNEs2NmIzaEdhWDhxdkx3U1NVQmxDV3dZUDV4V1R0amFJWXRMUnFV0gGUAkFVX3lxTE94bGRLRlZJaERuSkNqckpvZWZlc3pucmlRSjVpM2VaeUZ4VzZvdEN2aUw0UEpnLTYwX3hiZi1nQTJ4SmtjSXVrUzF1Z0ZzNzdxSThpTlh2c25UajVVdTE4RlNOdXJjMEJXakc2cUNFYUlUanBjZ2ZYcEF5LVdkQ3lfQmdVV21mRmtYR1hueXExSjhKMmJ1aEJCNTdBTjl3aGMwV3hNWWV0eHkwR09IMkp0Q2dfcElaUjNQVFJIUmxHaXQ2ZGM0WmVHVW04c2FteGFmLXFlTUdPdG9VNFQzczY0TV9seVFwcjZ6Vlo4dkZyS2R4QTNmZFJLdTNaOWxCSFNKWGlIZThDOVRPWG9LUWU0WlpJTw?oc=5",
+      "score": 13,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "ViralKW +4 (war)"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 13.2,
+      "id": "VDNA185",
+      "date": "20260607"
+    },
+    {
+      "title": "Cracks widen in INDIA bloc before meet as CPI(M), JMM call out Congress moves - The Indian Express",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxNT2FGVC1JT0tsdVZLNU5HU0VISWhhZlFfVFhwd0tZbU5Dajk2UDlSb3o3T2xfemx1ZU9ZUlZFR29rUGg0RlI1WVJRdEFsOVZUMndmWWY3ZUlRZF9nQUotd05zYUZOTTRQOG1JMlIxcG9EVURTbUUxV1hoTmRQbzJGazJMbnE1cjNob1U2SU5CdDRGN1hhdkdsVWxQS0RVNU5HZXBoZFM5MDlnVXg2V0xGS2NWQ0JuTUZfelE3anpoNDNKbllEUHhnQ25LMGJ2LVduZWx1RDVkd9IB3gFBVV95cUxNM2M4aE93dDFRdTlycTFqZy1sZVU4a2VJR09DODgtVE0xdWRmMDlZS3lOa1pQMllZRXc2aWVhTjNVSHd0VDFiel9hV0J3N19qc3pydy0zV28xY2Z1WWRZTzRySnNYVGh0TTVfX3NTa0tyYVFvZjE3QmVrZ1Z3LVlCNmZKZjg1eE1TVkN6T2xsSUlnWU9WWjQ3d2RQY3RZMW80ck4zZXFQVFkyRjZxUnBjUVFwQUo5V2lLSjhpR3pLTmpaSTY4d3BkamdBQVR0UXBtS3pBaG1FQlNUbms2X1E?oc=5",
+      "score": 13,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "IndiaRel +4 (congress)"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 13.2,
+      "id": "VDNA186",
+      "date": "20260607"
+    },
+    {
+      "title": "The rise of Mohammad Saleem Safi: Quit cricket at 16, now bags 6/140 vs India",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/sports/cricket/india-vs-afghanistan/the-rise-of-mohammad-saleem-safi-quit-cricket-at-16-impressed-pakistans-rana-naved-ul-hasan-with-pace-now-bags-6/140-vs-india/articleshow/131564228.cms",
+      "score": 12,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "IndiaRel +4 (cricket)",
+        "ChannelGrowth +3",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.5,
+      "edge_breakdown": {
+        "search_demand": 0.12,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.12,
+        "engagement_potential": 0.12,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.1
+      },
+      "final_score": 12.5,
+      "id": "VDNA187",
+      "date": "20260607"
     },
     {
       "title": "Government doctors protest across Telangana over transfer process, allege violations of GO 38",
@@ -543,6 +1084,30 @@
       "date": "20260605"
     },
     {
+      "title": "Amid TMC rebel crisis, Mamata Banerjee pins hopes on INDIA help for firefighting - The Indian Express",
+      "source": "Google News IN",
+      "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxObkl2QXNnelBkRnd2VGlwb1hPc0lKZXpMQVJTa2ExTGM3Qm1UQkU0UkJfcFUtT04yaVprZS1FaVQtYWtiaDFsQlE3X3FEeHA2N0s4ZW5NODE1SS1QYS1PRlJ1VUpBSjRWS3BVekcyZC1LQ0RoNXdOT2M4ZVplUWF0NW9jM3hPV3VvQVRrSFN3UnNWRnJEMlQybEYxdng2NXpMc3NJZm05dVZaTXpyMEZ4OWVnaVltN0tvRFpBSnFPeEh1T0pJZUxtdFdKVTJZaTBseTRoNi1n0gHcAUFVX3lxTE5NeFFEZVRJWHJEa3dkZmtPUDFIUS1PUUVIdVVZa0NKbDBiM2pPXy16eE40OVRmUUdkTC1BbWFKcWhTakhxc2JJekJpdzhBM1BGUUJ5UFEwQWdLbXdHd1A5eGI3ek5SVzhJVm43TlJmdnFyMFkwblp5RGE4QW5tcnNsT0d3SVkxZDRqSFB2blRrT3lDZGhQQmRmMU8xOTliSHY1X01MRHlJQTJVZ3paTUQ1OEttZUdfdFdMeXJEa2pPN1UyYTFHd0dHTGZyMk1faVBZMnU1cE90eFVWckQ?oc=5",
+      "score": 12,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "BIG_NAME +6 (mamata banerjee)",
+        "ViralKW +3 (crisis)"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.08,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.07
+      },
+      "final_score": 12.2,
+      "id": "VDNA197",
+      "date": "20260607"
+    },
+    {
       "title": "2 wives, domestic abuse, deadly plot: Chilling details in ex-Congress sarpanch's family murder",
       "source": "TOI",
       "url": "https://timesofindia.indiatimes.com/city/jaipur/ex-sarpanchs-wife-and-daughter-arrested-for-his-murder-minor-son-detained/articleshow/131397338.cms",
@@ -591,6 +1156,144 @@
         "TitleLen +2"
       ],
       "rescored_at": "20260605"
+    },
+    {
+      "title": "Rahul Devraj appointed NIMS Hyderabad Director for three-year term",
+      "source": "The Hindu AP/TS",
+      "url": "https://www.thehindu.com/news/cities/Hyderabad/rahul-devraj-appointed-nims-hyderabad-director-for-three-year-term/article71072659.ece",
+      "score": 11,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.07,
+        "feedback_analytics": 0.1
+      },
+      "final_score": 11.3,
+      "id": "VDNA188",
+      "date": "20260607",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "rescored_at": "20260607"
+    },
+    {
+      "title": "Pre-monsoon downpour drenches parts of Hyderabad",
+      "source": "The Hindu AP/TS",
+      "url": "https://www.thehindu.com/news/cities/Hyderabad/pre-monsoon-downpour-drenches-hyderabad-on-june-6-causes-waterlogging-in-several-areas/article71069705.ece",
+      "score": 11,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.1,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.07,
+        "feedback_analytics": 0.04
+      },
+      "final_score": 11.3,
+      "id": "VDNA189",
+      "date": "20260607",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "rescored_at": "20260607"
+    },
+    {
+      "title": "World Ikebana Day marked with avant-garde floral exhibition in Hyderabad",
+      "source": "The Hindu AP/TS",
+      "url": "https://www.thehindu.com/news/cities/Hyderabad/world-ikebana-day-marked-with-avant-garde-floral-exhibition-in-hyderabad/article71070294.ece",
+      "score": 11,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.07,
+        "feedback_analytics": 0.1
+      },
+      "final_score": 11.3,
+      "id": "VDNA190",
+      "date": "20260607",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "rescored_at": "20260607"
+    },
+    {
+      "title": "Beyond short circuit: What\u2019s behind Telangana\u2019s repeated fire accidents?",
+      "source": "The Hindu AP/TS",
+      "url": "https://www.thehindu.com/news/national/telangana/beyond-short-circuit-potential-fire-accidents-lurk-behind-old-and-overloaded-electric-wires-in-telanganas-building/article71065863.ece",
+      "score": 11,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.07,
+        "feedback_analytics": 0.1
+      },
+      "final_score": 11.3,
+      "id": "VDNA191",
+      "date": "20260607"
+    },
+    {
+      "title": "Ex-TMC MLA Sujoy Hazra arrested in extortion case; eggs hurled at convoy",
+      "source": "TOI",
+      "url": "https://timesofindia.indiatimes.com/city/kolkata/extortion-and-forgery-case-ex-tmc-mla-sujoy-hazra-taken-into-custody-residents-hurl-eggs-at-vehicle-carrying-him/articleshow/131567424.cms",
+      "score": 11,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.08,
+        "engagement_potential": 0.12,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.07
+      },
+      "final_score": 11.3,
+      "id": "VDNA198",
+      "date": "20260607"
     },
     {
       "title": "Tamil Nadu CM Vijay pays tribute to Quiad-e-Millat on birth anniversary",
@@ -701,6 +1404,30 @@
       "date": "20260605"
     },
     {
+      "title": "N Ramchander Rao : \u0c30\u0c47\u0c35\u0c02\u0c24\u0c4d\u0c15\u0c41 \u0c0e\u0c28\u0c4d. \u0c30\u0c3e\u0c02\u0c1a\u0c02\u0c26\u0c30\u0c4d \u0c30\u0c3e\u0c35\u0c41 \u0c38\u0c35\u0c3e\u0c32\u0c4d! - News18 Telugu",
+      "source": "Google News Telugu",
+      "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxPLUtyakloUWI2b2dobWdKdTgxbGhYWG5nV3J2c19LcDNlcFoxZXJJRXlQa3ZnRGlrY0k2M01STDY5eDFvQU5ZeGpOdVU2MDRJWDB2UmM4SWZxMVBpel9HS3pHRHhOZTNiVEdqTnc4bTZmaHVqY2RDS21Eek1pZTFBUXdTeWI?oc=5",
+      "score": 11,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "AP/TS +6",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.1
+      },
+      "final_score": 11.2,
+      "id": "VDNA192",
+      "date": "20260607"
+    },
+    {
       "title": "Heatwave warning issued for Telangana as temperatures set to soar above 44\u00b0C",
       "source": "The Hindu AP/TS",
       "url": "https://www.thehindu.com/news/cities/Hyderabad/heatwave-warning-issued-for-telangana-as-temperatures-set-to-soar-above-44c/article71033373.ece",
@@ -717,6 +1444,36 @@
         "TitleLen +2"
       ],
       "rescored_at": "2026-06-01T22:00:00+05:30"
+    },
+    {
+      "title": "Stabbed, Left For Dead: Bloodbath In UP's Hapur After Rival Gangs Clash",
+      "source": "NDTV",
+      "url": "https://www.ndtv.com/india-news/stabbed-left-for-dead-bloodbath-in-ups-hapur-after-rival-gangs-clash-11603161#publisher=newsstand",
+      "score": 10,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "ViralKW +5 (dead)",
+        "TitleLen +2"
+      ],
+      "edge_score": 0.3,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.12,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.1
+      },
+      "final_score": 10.3,
+      "id": "VDNA193",
+      "date": "20260607",
+      "score_breakdown": [
+        "Fresh(Y'DAY) +3",
+        "ViralKW +5 (dead)",
+        "TitleLen +2"
+      ],
+      "rescored_at": "20260607"
     },
     {
       "title": "Delhi High Court Refuses Urgent Hearing Of PIL Seeking Preventive Action Against Cockroach Janta Party's... - Live Law",
@@ -773,6 +1530,30 @@
       "date": "20260605"
     },
     {
+      "title": "535 farmers died due to unsafe pesticide use between January 2024-2026 in Rajasthan",
+      "source": "The Hindu",
+      "url": "https://www.thehindu.com/news/national/rajasthan/535-farmers-died-due-to-unsafe-pesticide-use-between-january-2024-2026-in-rajasthan/article71072894.ece",
+      "score": 10,
+      "breakdown": [
+        "Fresh(Y'DAY) +3",
+        "IndiaRel +4 (farmers)",
+        "ChannelGrowth +3"
+      ],
+      "edge_score": 0.2,
+      "edge_breakdown": {
+        "search_demand": 0.0,
+        "trending_velocity": 0.0,
+        "channel_fit": 0.05,
+        "competition_gap": 0.05,
+        "engagement_potential": 0.03,
+        "geographic_breadth": 0.02,
+        "feedback_analytics": 0.1
+      },
+      "final_score": 10.2,
+      "id": "VDNA194",
+      "date": "20260607"
+    },
+    {
       "title": "Punjab Municipal Corporation Election Results 2026 Highlights: AAP takes massive lead in Punjab local polls, Congress a distant second - The Indian Express",
       "source": "Google News IN",
       "url": "https://news.google.com/rss/articles/CBMi9AFBVV95cUxQc1dzeUJPRC1tano5TmhoaXdlc1NPZUROOVJ5dkNSNWItM09wTTZ5aEVBLVhCZ3VXMVFRaWJPYVRsSVhocE80U1hibnhMOGpZTFF5ZXdzR1JjUF9yMTVfNEVLMWRpRTJtMTRKem5PZ2ZpVXpyZDRIbDdkelJLRG1MV2xIek03aktZOFlMTmFlYUJORXdwTnBZVUZhS09LUV8tRGROUDJQWWdaSTZUbmN6SU0xeW5YN19RLU1xTERIVFQzcnh4ZjhGcE9XbjEySE4wVUp2VEFHQWl3UHJvcllmYzFPakxNa1Q5NXA5c2ZlLUxPWUhH0gH7AUFVX3lxTFBCU0w4ZkNkU0Z0bjQwd252SllTU3FQT2gxZ2d0U2JYY0JhUHBNbEJtM2F3TFZScmJvZ0xfNGpVeVJrTlRRVXpvTWVVVXJNLWxVNDFOZWxXYlZjZnE4Tzg2X3ZITnlGVG43bS13SVBwRXdodW5yX2hSNDc4NVRZb0xxVThjcW13aWE0LWRuVDBsYnZKZjA4NE9Ra1RXNkxEanFWRkJWcmJXVFJqa2xfbEE2MmtNVUxOd0JnamFhdENVSEROdXEtUUI3cTFLVlNGekhKSHZGbjRLN1VreU9ES0FyYjdBQVdrNlM4R1Y3b3Uwb1JfRnlyR1hlMDNN?oc=5",
@@ -821,582 +1602,10 @@
         "TitleLen +2"
       ],
       "rescored_at": "20260605"
-    },
-    {
-      "title": "\u2018Have been humiliated\u2019: Karnataka Minister Ramalinga Reddy quits over portfolio row - The News Minute",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOWk5OcmVEaDE1bkhkNzh2TFpUMmxCeXA2SEY4dUU3LVNxTHdoSE5KeWJfMWllZHN5Q2lJN2R5c0RzUkZUenh6MTNLbDBhZncwMjNwQjBwTkZscmFPUTlTYjNkT01kbVpnc2trWjZCSTBpaGFMVDZjTGZmazJDQUFqbGFqdDZjc0ZUOEpQZENEZ296TlRmb2tDaGxwQTJJNmhILWJXSWZtZ01BVUt3LVd5UHFZVE9rdVpZT2IzOdIBygFBVV95cUxNQnJsemY2OFlXNU1kcmdGSTdnNkZ6TUJFUlhPaUFaU1dFSmVMVEwtdE1MNUJHcUlsa2p6QzNHbXBtOGYwSFZCbjdqMldEMUlDaEZlQTNkQXlmQ0ZMVElLcDVOd2hITEpPOTFxN3FqLWhqTFhSX2pvZ0pJaDk1MXZMT2pjNW0zTTVlQ2NsS1hhSmFwTzZDSHptUXFqOGhnLWtVcVBJajQ1MlQxXzcyZDZtUnFqMmRpZ3g3Z2YxY1ZJYUpvdVZSSDFiX1l3?oc=5",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "edge_score": 0.4,
-      "edge_breakdown": {
-        "search_demand": 0.12,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.12,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.07
-      },
-      "final_score": 9.4,
-      "id": "VDNA136",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Chocolate manufacturing unit raided in Hyderabad, owner booked for food safety violations",
-      "source": "The Hindu AP/TS",
-      "url": "https://www.thehindu.com/news/national/telangana/chocolate-manufacturing-unit-raided-in-hyderabad-owner-booked-for-food-safety-violations/article71061688.ece",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "edge_score": 0.3,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.07,
-        "feedback_analytics": 0.1
-      },
-      "final_score": 9.3,
-      "id": "VDNA135",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Hezbollah Rejects Ceasefire | \u0c32\u0c46\u0c2c\u0c28\u0c3e\u0c28\u0c4d\u0c2a\u0c48 \u0c07\u0c1c\u0c4d\u0c30\u0c3e\u0c2f\u0c46\u0c32\u0c4d \u0c2d\u0c40\u0c15\u0c30 \u0c35\u0c48\u0c2e\u0c3e\u0c28\u0c3f\u0c15 \u0c26\u0c3e\u0c21\u0c41\u0c32\u0c41! - News18 Telugu",
-      "source": "Google News Telugu",
-      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPTDRRa3RWRC10QzBGU0xfR3ExS3JaRkNfd18taDZPbTR4R3U1bUVzblFxSjBqSC12U2ZwWDcxRGttb0Z5QzRLd3RjSEJiSmNFYmV0M1RKbnFhN3FJSWRxN0wtMlEyRTZNenE1cXhDa0FuMkdKWWZURUI4WUNMb0RmUkZHYjA1YmEwSG9HTzh6V3VxOUVSaFM5YXJQSjVKSVBzbnc5WGd6YzVCeDJHVTd5MFhjYkdZcUN1?oc=5",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "edge_score": 0.3,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.08,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.1
-      },
-      "final_score": 9.3,
-      "id": "VDNA154",
-      "date": "20260605"
-    },
-    {
-      "title": "Case against relegating Tamil Thai Vazhthu to third place during T.N. CM Vijay\u2019s swearing-in ceremony withdrawn",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/national/tamil-nadu/case-against-relegating-tamil-thai-vazhthu-to-third-place-during-cm-vijays-swearing-in-ceremony-withdrawn/article71064621.ece",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.1
-      },
-      "final_score": 9.2,
-      "id": "VDNA137",
-      "date": "20260605"
-    },
-    {
-      "title": "Donald Trump confident of India trade deal, calls Narendra Modi a 'great friend' - BBC",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFAzRHRCRXNaSVpNdmh0YzdsVWU5WlJfSjV6aWk4anlmQU54ZWdBNlg4UWdWbkdfSl8wQUNFd3h6SUFTYXE3d3k4TnpMVWttbmw2dHdIOWxPd3JFQQ?oc=5",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "BIG_NAME +6 (modi)"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.07
-      },
-      "final_score": 9.2,
-      "id": "VDNA138",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "BIG_NAME +6 (modi)"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "More trouble brewing for Mamata's TMC? Expelled MLA Ritabrata Banerjee makes fresh claim - The Times of India",
-      "source": "Google News IN",
-      "url": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxPVUp0ZjBSekR2Z0p3ZF8zeXcwd0t1VlBQWHJITF9HazRpbGpDYVdpcUtkVHpGd3JHdWhNSkJFT0VIdWxFMVpfNC1fVEgtTnVPaUx0WHRXWWxQRV9PT2NMM3lzQmJRbE5XdEVmeVBPR0xLUjZ5MmpvZzBsQmQzdEYtd2E5ZkktWDlVWUpWeHVqSXFoYzVUTVhISzB3bmpXMWdJcWVBVEhJTGdQWk9FR0g0S0FmeXJPeWxyUmRiOWU5WTNPOXoxLTIteVdmTFVzLTVaZm9hTG82ZTVXRGpvejlDWWVzOW9tZ1lpN0E?oc=5",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.07
-      },
-      "final_score": 9.2,
-      "id": "VDNA139",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Telugu Movie: \u2018\u0c2e\u0c3e \u0c07\u0c02\u0c1f\u0c3f \u0c2c\u0c02\u0c17\u0c3e\u0c30\u0c02\u2019 \u0c24\u0c2a\u0c4d\u0c2a\u0c15\u0c41\u0c02\u0c21\u0c3e \u0c1a\u0c42\u0c21\u0c21\u0c3e\u0c28\u0c3f\u0c15\u0c3f 5 \u0c2c\u0c32\u0c2e\u0c48\u0c28 \u0c15\u0c3e\u0c30\u0c23\u0c3e\u0c32\u0c41 \u0c07\u0c35\u0c47! \u0c05\u0c38\u0c4d\u0c38\u0c32\u0c41 \u0c2e\u0c3f\u0c38\u0c4d \u0c15\u0c3e\u0c35\u0c26\u0c4d\u0c26\u0c41 - News18 Telugu",
-      "source": "Google News Telugu",
-      "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxPV0dkQWN2MmJ5cWxQdDZXUGkwTjE0Wm1LUjdWUTk0SnF5anN0XzMtUWNfV0M2ZXYwTVgyTGpIM2JPUDFrVlRRUVNkcEFJZWdmT0xiRExIWmNNWS1wZlNCNGZpYWNXLVpKZk5uclJURDN5VkJVcjBsbnhfLUozaWNsLTNVYVdqNUVncFJXcGJNQkctVUxaUkpiNjFZaFcyVnpELUtEdWhYVUJnOTBtU1NaenFzdFZkakUtU0FydEVPb0t6SGVI?oc=5",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.1
-      },
-      "final_score": 9.2,
-      "id": "VDNA140",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "\"Furnace\": Madhya Pradesh Hospital's Burn Ward Patients Suffering In Heat",
-      "source": "NDTV",
-      "url": "https://www.ndtv.com/india-news/madhya-pradesh-hospitals-burn-ward-patients-suffering-in-heat-furnace-hamidia-hospital-11594870#publisher=newsstand",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (hospital)",
-        "TitleLen +2"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.07
-      },
-      "final_score": 9.2,
-      "id": "VDNA141",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (hospital)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Government Bond Returns Now Tax-Free For Foreign Investors",
-      "source": "NDTV",
-      "url": "https://www.ndtv.com/business-news/big-boost-government-bond-returns-now-tax-free-for-foreign-investors-11594179#publisher=newsstand",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (tax)",
-        "TitleLen +2"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.1,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.04
-      },
-      "final_score": 9.2,
-      "id": "VDNA142",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (tax)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Mumbai teen allegedly lured through online gaming app, traced in Gujarat after police search operation",
-      "source": "Indian Express",
-      "url": "https://indianexpress.com/article/cities/mumbai/mumbai-police-rescue-teen-online-ludo-game-fraud-gujarat-10725572/",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.08,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.07
-      },
-      "final_score": 9.2,
-      "id": "VDNA143",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Education minister directs \u2018immediate\u2019 drafting of law to curb arbitrary private school fee hike",
-      "source": "Indian Express",
-      "url": "https://indianexpress.com/article/cities/chandigarh/education-minister-directs-immediate-drafting-of-law-to-curb-arbitrary-private-school-fee-hike-10725517/",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.07
-      },
-      "final_score": 9.2,
-      "id": "VDNA144",
-      "date": "20260605",
-      "status": "published"
-    },
-    {
-      "title": "Jumanji actor James Handy stabbed to death by girlfriend\u2019s son",
-      "source": "Indian Express",
-      "url": "https://indianexpress.com/article/entertainment/hollywood/jumanji-actor-james-handy-stabbed-to-death-in-los-angeles-10725541/",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "ViralKW +4 (death)",
-        "TitleLen +2"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.1
-      },
-      "final_score": 9.2,
-      "id": "VDNA145",
-      "date": "20260605",
-      "status": "published"
-    },
-    {
-      "title": "Farmer trampled to death by wild elephant in Thalavadi hills",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/national/tamil-nadu/farmer-trampled-to-death-by-wild-elephant-in-thalavadi-hills/article71064730.ece",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "ViralKW +4 (death)",
-        "TitleLen +2"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.1
-      },
-      "final_score": 9.2,
-      "id": "VDNA155",
-      "date": "20260605",
-      "status": "published"
-    },
-    {
-      "title": "Will India finally get plastic banknotes? RBI's polymer currency plan explained",
-      "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/business/india-business/will-india-finally-get-plastic-banknotes-rbis-polymer-currency-plan-explained/articleshow/131528203.cms",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (rbi)",
-        "TitleLen +2"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.04
-      },
-      "final_score": 9.2,
-      "id": "VDNA156",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (rbi)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Zorawar tank: The made-in-India war machine built to dominate China on the LAC",
-      "source": "TOI",
-      "url": "https://timesofindia.indiatimes.com/defence/news/zorawar-tank-the-made-in-india-war-machine-built-to-dominate-china-on-the-lac/articleshow/131521580.cms",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "ViralKW +4 (war)",
-        "TitleLen +2"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.1
-      },
-      "final_score": 9.2,
-      "id": "VDNA157",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "ViralKW +4 (war)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Power shortage in Tamil Nadu should be resolved on war footing: Senthilbalaji",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/national/tamil-nadu/power-shortage-in-state-should-be-resolved-on-a-war-footing-senthilbalaji/article71061295.ece",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "ViralKW +4 (war)",
-        "TitleLen +2"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.1
-      },
-      "final_score": 9.2,
-      "id": "VDNA161",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "ViralKW +4 (war)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Mayor Priya sidelined me at Chennai Corporation school event, alleges TVK Thiru. Vi. Ka. Nagar MLA Pallavi",
-      "source": "The Hindu",
-      "url": "https://www.thehindu.com/news/cities/chennai/mayor-sidelined-me-at-chennai-corporation-school-event-alleges-tvk-thiru-vi-ka-nagar-legislator/article71061689.ece",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "AP/TS +6"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.07
-      },
-      "final_score": 9.2,
-      "id": "VDNA162",
-      "date": "20260605"
-    },
-    {
-      "title": "$27.6 Billion: Behind Centre's Tax Relief To Foreign Investors On G-Secs",
-      "source": "NDTV",
-      "url": "https://www.ndtv.com/business-news/27-6-billion-behind-centres-tax-relief-to-foreign-investors-on-g-secs-11595512#publisher=newsstand",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (tax)",
-        "TitleLen +2"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.04
-      },
-      "final_score": 9.2,
-      "id": "VDNA163",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (tax)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "How H-1B Curbs Are Affecting The Texas Real Estate Market",
-      "source": "NDTV",
-      "url": "https://www.ndtv.com/world-news/h-1b-visa-curbs-on-indians-slow-texas-real-estate-us-immigration-policy-11594879#publisher=newsstand",
-      "score": 9,
-      "breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (market)",
-        "TitleLen +2"
-      ],
-      "edge_score": 0.2,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.05,
-        "competition_gap": 0.05,
-        "engagement_potential": 0.03,
-        "geographic_breadth": 0.02,
-        "feedback_analytics": 0.04
-      },
-      "final_score": 9.2,
-      "id": "VDNA164",
-      "date": "20260605",
-      "score_breakdown": [
-        "Fresh(Y'DAY) +3",
-        "IndiaRel +4 (market)",
-        "TitleLen +2"
-      ],
-      "rescored_at": "20260605"
-    },
-    {
-      "title": "Minister Lokesh invites Rosatom to explore nuke power, infra investments in Andhra Pradesh - The New Indian Express",
-      "source": "news.google.com",
-      "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxOdW44NVZsWmJCc01ncEI3eWF2R0F3SjIwLVlxcVVPRHNqOWhXTFRRa2hhYVlEdVFidng5N0FqWXZONWtFdS04Z2Rxb0lFVzVHSTBlck1PeVFxV0tsRUJhNm1WRk5oUVgyRGszbmdQamtRUEpMVy1aVlM3dXVQTl82S1FTc21keHZZSDNUZDlUUm5McVhVbXJKMnpBZzg0RF9Fa0t6emotRXhXZnVvc1FhTlNJUUhoWi1ncnpaVExhbDVxOVd2TXk4b1FCTUliR1lfREc3YTdtdU9yNnZXUXlMN21aT25sQUd0Z0hxetIB-gFBVV95cUxOa0hIZ3pqdDhoVl80TmtnSmpBdnJzeVF3SjcxYWlDNnktX1drOVc1VDdDUUcwbjIwS0Q5MEl0TGtySkVKMWFNSUU5VWYteU1RX3NGdXloa09TdXVzM0lJckVnTDRLRTd3NkJwdkFEVUxwczlFQlZJZkF6NHJPdzRMdFl3SEFDZFlQaGJRNUVzZVZ6V3FUeXBlV3hUVUZDX0lOYTR2d3lKYWNqb3I2eHBvRW5DeUUxamNqSjVIWDhwX0gtbXNnQl9ISk9TREpJaGNlS2tZRHRCWEtZNVZiTjdfcmJoNkpkbVF2ZnJPSXE4YUd3cm80VXM5Rzl3?oc=5",
-      "score": 15,
-      "breakdown": [
-        "DIRECT AP/TELANGANA +10",
-        "Politics +5"
-      ],
-      "edge_score": 0.0,
-      "edge_breakdown": {
-        "search_demand": 0.0,
-        "trending_velocity": 0.0,
-        "channel_fit": 0.0,
-        "competition_gap": 0.0,
-        "engagement_potential": 0.0,
-        "geographic_breadth": 0.0,
-        "feedback_analytics": 0.0
-      },
-      "final_score": 15.0,
-      "id": "VDNA165",
-      "date": "20260606",
-      "score_breakdown": [
-        "DIRECT AP/TELANGANA +10",
-        "Politics +5"
-      ],
-      "rescored_at": "20260606",
-      "status": "completed",
-      "published": true
-    },
-    {
-      "id": "VDNA170",
-      "title": "Don't leave, we have PM Modi: BJP TN chief's appeal to cadres after mass resignations post Annamalai",
-      "source": "news.google.com",
-      "url": "https://news.google.com",
-      "score": 20,
-      "total_score": 20,
-      "breakdown": [
-        "DIRECT NATIONAL +10",
-        "PM Modi +5",
-        "BJP Tamil Nadu +3",
-        "Emotional appeal +2"
-      ],
-      "edge_score": 1.0,
-      "edge_breakdown": [
-        "PM Modi national relevance"
-      ],
-      "final_score": 20,
-      "date": "2026-06-07",
-      "status": "completed"
     }
   ],
   "last_alert": "2026-06-05T15:59:03.664944+05:30",
-  "last_run": "2026-06-05T16:39:35.607592+05:30",
+  "last_run": "2026-06-07T18:59:43.049778+05:30",
   "daily_alert_count": 0,
   "daily_alert_date": "2026-05-31",
   "rescored_all": true,
@@ -1432,6 +1641,78 @@
       "score": 15,
       "source": "NDTV",
       "date": "2026-06-05 16:36 IST",
+      "alert_sent": true
+    },
+    {
+      "id": "VDNA171",
+      "title": "Kerala Nurses Jobless As Dubai Hospital Shuts, Chief Minister Seeks PM Modi's He",
+      "score": 19,
+      "source": "NDTV",
+      "date": "2026-06-07 17:51 IST",
+      "alert_sent": true
+    },
+    {
+      "id": "VDNA172",
+      "title": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "score": 16,
+      "source": "The Hindu AP/TS",
+      "date": "2026-06-07 17:51 IST",
+      "alert_sent": true
+    },
+    {
+      "id": "VDNA173",
+      "title": "\u2018INDIA janbandhan\u2019 united, 23 parties have confirmed participation: Congress",
+      "score": 15,
+      "source": "The Hindu",
+      "date": "2026-06-07 17:51 IST",
+      "alert_sent": true
+    },
+    {
+      "id": "VDNA174",
+      "title": "Prime Minister Narendra Modi, Leader of the Opposition Rahul Gandhi mourn Malaya",
+      "score": 15,
+      "source": "The Hindu",
+      "date": "2026-06-07 17:51 IST",
+      "alert_sent": true
+    },
+    {
+      "id": "VDNA175",
+      "title": "T.N. government\u2019s decision to shelve smart meters project a grave mistake: BJP",
+      "score": 15,
+      "source": "The Hindu",
+      "date": "2026-06-07 17:51 IST",
+      "alert_sent": true
+    },
+    {
+      "id": "VDNA176",
+      "title": "The Annamalai question: Can BJP become a force in Tamil Nadu without him?",
+      "score": 15,
+      "source": "TOI",
+      "date": "2026-06-07 17:51 IST",
+      "alert_sent": true
+    },
+    {
+      "id": "VDNA177",
+      "title": "Weather Alert | \u0c0f\u0c2a\u0c40, \u0c24\u0c46\u0c32\u0c02\u0c17\u0c3e\u0c23\u200c\u0c32\u0c4b \u0c35\u200c\u0c30\u0c4d\u0c37\u0c3e\u0c32\u0c41 - prabhanews.com",
+      "score": 15,
+      "source": "Google News Telugu",
+      "date": "2026-06-07 17:51 IST",
+      "alert_sent": true
+    },
+    {
+      "id": "VDNA178",
+      "title": "Congress-JMM Seat Share Plan For Rajya Sabha Polls: Here's How They Can Win",
+      "score": 15,
+      "source": "NDTV",
+      "date": "2026-06-07 17:51 IST",
+      "alert_sent": true
+    },
+    {
+      "id": "VDNA196",
+      "title": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "score": 21,
+      "source": "NDTV",
+      "date": "2026-06-07 18:59 IST",
       "alert_sent": true
     }
   ]

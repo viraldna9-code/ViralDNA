@@ -68,8 +68,12 @@ class VoiceoverGenerator:
     def _fix_tts_text(self, text):
         """Pre-process text for TTS: fix abbreviations, possessives, apostrophes."""
         import re as _re
-        # Normalize smart quotes to straight quotes first
-        text = text.replace("’", "'").replace("‘", "'")
+        # Normalize ALL apostrophe-like Unicode characters to straight quotes first
+        text = text.replace("\u2019", "'").replace("\u2018", "'")
+        text = text.replace("\u2032", "'").replace("\u2035", "'")
+        text = text.replace("\u02bc", "'").replace("\u02bb", "'")
+        text = text.replace("\uff07", "'").replace("\u201b", "'")
+        text = text.replace("\u2039", "'").replace("\u203a", "'")
         # Abbreviations -> full words
         abbrev = [
             (r'\bDr\.', 'Doctor'), (r'\bMr\.', 'Mister'), (r'\bMs\.', 'Miss'),
@@ -252,13 +256,22 @@ class VoiceoverGenerator:
         RVC batch chunk translation, pause-concatenation, and broadcast-grade DSP mastering.
         """
         text = script_obj.get("full_script", "").strip()
+        # DEBUG: log the raw input text
+        print(f"   [TTS DEBUG] Raw input ({len(text)} chars): {repr(text[:200])}")
         # Normalize smart quotes to straight quotes BEFORE contraction expansion.
-        # Gemini/humanizer often outputs ’ (right single quote) instead of '
+        # Gemini/humanizer often outputs ' (right single quote) instead of '
         # which breaks contraction matching and causes edge-tts to read "Don't" as "Don T"
-        text = text.replace("’", "'").replace("‘", "'")
+        text = text.replace("\u2019", "'").replace("\u2018", "'")
+        # Also normalize other apostrophe-like characters
+        text = text.replace("\u2032", "'").replace("\u2035", "'")
+        text = text.replace("\u02bc", "'").replace("\u02bb", "'")
+        text = text.replace("\uff07", "'").replace("\u201b", "'")
+        print(f"   [TTS DEBUG] After smart quote norm: {repr(text[:200])}")
         text = self._expand_contractions(text)  # Fix "you're" -> "you are" etc.
+        print(f"   [TTS DEBUG] After contraction expansion: {repr(text[:200])}")
         text = self._expand_acronyms(text)  # Fix TTS pronunciation of acronyms
         text = self._fix_tts_text(text)  # Fix abbreviations, possessives, apostrophes
+        print(f"   [TTS DEBUG] After fix_tts_text: {repr(text[:200])}")
         final_path = os.path.join(self.audio_dir, f"{slot}_final.mp3")
 
         print(f"▶ [AUDIO ENGINE] Beginning generation for slot: {slot}...")

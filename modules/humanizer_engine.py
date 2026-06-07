@@ -167,8 +167,13 @@ class HumanizerEngine:
             return script_text, {'skipped': True}
 
         text = script_text
-        # Normalize smart quotes to straight quotes (Gemini output uses ’)
-        text = text.replace("’", "'").replace("‘", "'")
+        # Normalize ALL apostrophe-like Unicode characters to straight quotes
+        # Gemini outputs various smart quote characters that break TTS contraction matching
+        text = text.replace("\u2019", "'").replace("\u2018", "'")  # right/left single quote
+        text = text.replace("\u2032", "'").replace("\u2035", "'")  # prime/reversed prime
+        text = text.replace("\u02bc", "'").replace("\u02bb", "'")  # modifier letter apostrophe/turned comma
+        text = text.replace("\uff07", "'").replace("\u201b", "'")  # fullwidth apostrophe/high-reversed-9
+        text = text.replace("\u2039", "'").replace("\u203a", "'")  # single angle quotes
         stats = {'segment_type': segment_type, 'original_word_count': len(text.split())}
 
         # 1. Remove significance inflation patterns
