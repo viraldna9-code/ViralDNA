@@ -377,10 +377,13 @@ def correct_script_with_facts(
         f"Actual News Source Text:\n{article_snippet}\n\n"
         f"Original Script (with errors):\n{script_text}\n\n"
         "INSTRUCTIONS:\n"
-        "1. Fix ALL entity names, roles, and actions to match the actual news source\n"
-        "2. Keep the same tone, style, and approximate length\n"
-        "3. Do NOT add new information not in the source\n"
-        "4. Return ONLY the corrected script text, no explanations or JSON\n"
+        "1. Fix ONLY the specific entity names, roles, and actions that are wrong\n"
+        "2. Keep everything else from the original script unchanged\n"
+        "3. Do NOT add any new information, biographical details, quotes, or context not in the source text\n"
+        "4. Do NOT speculate about motivations, timelines, or background not explicitly stated\n"
+        "5. If a claim has no source backing, REMOVE it entirely rather than replacing it\n"
+        "6. Keep the same tone, style, and approximate length\n"
+        "7. Return ONLY the corrected script text, no explanations or JSON\n"
     )
 
     try:
