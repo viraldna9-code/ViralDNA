@@ -604,7 +604,7 @@ class ScriptingAgent(BaseAgent):
 class FactCheckAgent(BaseAgent):
     """Phase 3.5: Named entity fact-checking gate.
     Verifies that people, organizations, and roles in the generated script
-    match the actual news source. Blocks videos with factual errors.
+    match the actual news source. Attempts auto-correction before blocking.
     """
     def __init__(self, orchestrator):
         super().__init__("Fact-Check Agent", orchestrator)
@@ -625,31 +625,66 @@ class FactCheckAgent(BaseAgent):
             title = selected_topic.get("title", "")
             source_url = selected_topic.get("url", "")
 
-            # Import fact_check module
-            from fact_check import fact_check_script
+            from fact_check import fact_check_script, correct_script_with_facts
 
-            # Run fact-check with Gemini engine
+            # ── Step 1: Initial fact-check ──
             fc_result = fact_check_script(
                 script_text=main_text,
                 title=title,
                 source_url=source_url,
                 engine=self.orchestrator.engine,
             )
-
-            # Store result in state for downstream agents
             state["fact_check_result"] = fc_result
 
+            # ── Step 2: If FAIL, attempt auto-correction ──
             if fc_result.get("verdict") == "FAIL":
-                self.blocked_count += 1
                 errors = fc_result.get("errors", [])
                 error_summary = "; ".join(
-                    f"{e.get('entity', '?')}: {e.get('issue', str(e))}" for e in errors[:3]
+                    f"{e.get('entity', '?')}: {e.get('issue', str(e))}" if isinstance(e, dict) else str(e)
+                    for e in errors[:3]
                 )
                 self.log(f"❌ FACTUAL ERROR DETECTED — {error_summary}")
-                self.log("🛑 Video BLOCKED from upload pipeline")
-                # Mark state as blocked — downstream agents check this
-                state["fact_check_blocked"] = True
-                state["fact_check_block_reason"] = error_summary
+                self.log("🔄 Attempting auto-correction with source facts...")
+
+                # Use Gemini to rewrite the script with correct facts
+                corrected_text = correct_script_with_facts(
+                    script_text=main_text,
+                    errors=errors,
+                    title=title,
+                    source_url=source_url,
+                    engine=self.orchestrator.engine,
+                )
+
+                if corrected_text and corrected_text != main_text:
+                    # ── Step 3: Re-verify corrected script ──
+                    self.log("✅ Script corrected — re-verifying...")
+                    fc_result_2 = fact_check_script(
+                        script_text=corrected_text,
+                        title=title,
+                        source_url=source_url,
+                        engine=self.orchestrator.engine,
+                    )
+
+                    if fc_result_2.get("verdict") == "PASS":
+                        # Correction succeeded — update script and proceed
+                        self.log("✅ Correction verified — proceeding with corrected script")
+                        script_payload.update_segment("main", corrected_text)
+                        state["fact_check_result"] = fc_result_2
+                        state["fact_check_blocked"] = False
+                        state["fact_check_corrected"] = True
+                    else:
+                        # Correction also failed — block
+                        self.blocked_count += 1
+                        self.log("🛑 Correction also failed fact-check — video BLOCKED")
+                        state["fact_check_blocked"] = True
+                        state["fact_check_block_reason"] = error_summary
+                else:
+                    # No correction possible — block
+                    self.blocked_count += 1
+                    self.log("🛑 Could not correct — video BLOCKED")
+                    state["fact_check_blocked"] = True
+                    state["fact_check_block_reason"] = error_summary
+
             elif fc_result.get("verdict") == "UNCERTAIN":
                 self.log("⚠️ FactCheck: UNCERTAIN — could not fully verify. Proceeding with caution.")
                 state["fact_check_blocked"] = False
@@ -1932,6 +1967,17 @@ class ContinuousAuditorAgent(BaseAgent):
 # INTEGRATION GATES (for new checkpoints)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+class FactCheckComplianceIntegration(BaseIntegrationAgent):
+    """Gate: fact-check → compliance. Blocks pipeline if fact-check failed."""
+    def __init__(self, orchestrator):
+        super().__init__("FactCheck→Compliance Integration", orchestrator, ["fact_check_result"])
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        if state.get("fact_check_blocked"):
+            reason = state.get("fact_check_block_reason", "Unknown factual error")
+            raise ValueError(f"[{self.name}] Fact-check BLOCKED: {reason}")
+        return state
+
 class ComplianceAdFriendlyIntegration(BaseIntegrationAgent):
     """Gate: compliance → ad-friendly check."""
     def __init__(self, orchestrator):
@@ -2786,19 +2832,23 @@ class MultiAgentOrchestrator:
         ]
 
         # ── Integration agents (between main pipeline task agents) ──
+        # Task agents: 0=Discovery, 1=Weighting, 2=Scripting, 3=FactCheck,
+        #   4=Compliance, 5=AdFriendly, 6=Voice, 7=Visual, 8=Thumbnail,
+        #   9=CTR, 10=Assembly, 11=ForensicAudit, 12=Uploader
         self.integration_agents = [
             DiscoveryWeightingIntegration(self),         # After 0, before 1
             WeightingScriptingIntegration(self),          # After 1, before 2
-            ScriptingComplianceIntegration(self),         # After 2, before 3
-            ComplianceAdFriendlyIntegration(self),        # After 3 (Compliance), before AdFriendly (4)
-            ComplianceVoiceIntegration(self),             # After 4 (AdFriendly), before Voice (5)
-            VoiceVisualIntegration(self),                 # After 5 (Voice), before Visuals (6)
-            VisualThumbnailIntegration(self),             # After 6 (Visuals), before Thumbnails (7)
-            ThumbnailAssemblyIntegration(self),           # After 7 (Thumbnails), before CTR (8)
-            CTROptimizationIntegration(self),             # After 8 (CTR), before SequentialAssembly (9)
-            AssemblyUploadIntegration(self),              # After 9 (SequentialAssembly), before ForensicAuditGate (10)
-            ForensicAuditUploadIntegration(self),         # After 10 (ForensicAuditGate), before ResilientUploader (11)
-            UploadFeedbackIntegration(self),              # After 11 (ResilientUploader) — validates upload_results (index 11)
+            ScriptingComplianceIntegration(self),         # After 2 (Scripting), before 3 (FactCheck)
+            FactCheckComplianceIntegration(self),         # After 3 (FactCheck), before 4 (Compliance) — NEW
+            ComplianceAdFriendlyIntegration(self),        # After 4 (Compliance), before 5 (AdFriendly)
+            ComplianceVoiceIntegration(self),             # After 5 (AdFriendly), before 6 (Voice)
+            VoiceVisualIntegration(self),                 # After 6 (Voice), before 7 (Visuals)
+            VisualThumbnailIntegration(self),             # After 7 (Visuals), before 8 (Thumbnails)
+            ThumbnailAssemblyIntegration(self),           # After 8 (Thumbnails), before 9 (CTR)
+            CTROptimizationIntegration(self),             # After 9 (CTR), before 10 (Assembly)
+            AssemblyUploadIntegration(self),              # After 10 (Assembly), before 11 (ForensicAudit)
+            ForensicAuditUploadIntegration(self),         # After 11 (ForensicAudit), before 12 (Uploader)
+            UploadFeedbackIntegration(self),              # After 12 (Uploader) — validates upload_results
         ]
 
         # ── Post-pipeline agents ──

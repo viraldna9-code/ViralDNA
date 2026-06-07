@@ -103,3 +103,30 @@ class ScriptPayload:
         }
         text, duration, words = mapping.get(key, ("", 0, 0))
         return {"text": text, "target_duration_s": duration, "word_count": words}
+
+    def update_segment(self, key: str, new_text: str):
+        """Update a segment's script text and recalculate derived fields."""
+        if key == "main":
+            self.main["script"] = new_text
+            self.main_raw = new_text
+            self.main_clean = self._clean(new_text)
+            self.main_word_count = len(self.main_clean.split())
+            self.main_duration = self.main_word_count / self.WPM * 60
+        elif key == "short_1":
+            self.short_1["script"] = new_text
+            self.short_1_raw = new_text
+            self.short_1_clean = self._clean(new_text)
+            self.short_1_word_count = len(self.short_1_clean.split())
+            self.short_1_duration = self.short_1_word_count / self.WPM * 60
+        elif key == "short_2":
+            self.short_2["script"] = new_text
+            self.short_2_raw = new_text
+            self.short_2_clean = self._clean(new_text)
+            self.short_2_word_count = len(self.short_2_clean.split())
+            self.short_2_duration = self.short_2_word_count / self.WPM * 60
+        elif key == "short_3":
+            self.short_3["script"] = new_text
+            self.short_3_raw = new_text
+            self.short_3_clean = self._clean(new_text)
+            self.short_3_word_count = len(self.short_3_clean.split())
+            self.short_3_duration = self.short_3_word_count / self.WPM * 60

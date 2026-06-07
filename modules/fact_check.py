@@ -145,22 +145,22 @@ def _verify_entities_via_gemini(entities: list, article_text: str, title: str, e
     article_snippet = article_text[:3000] if article_text else "[No article text available — source is Google News aggregator]"
 
     prompt = (
-        f"You are a senior fact-checking editor. Verify the following named entities and their roles "
-        f"against the actual news source text.\n\n"
+        "You are a senior fact-checking editor. Verify the following named entities and their roles "
+        "against the actual news source text.\n\n"
         f"News Headline: {title}\n\n"
         f"Entities extracted from the video script:\n{entity_list}\n\n"
         f"Actual news source text:\n{article_snippet}\n\n"
-        f"For each entity, check:\n"
-        f"1. Is the person's NAME correct? (spelling, full name)\n"
-        f"2. Is their ROLE/POSITION correct? (e.g., 'BJP state president' vs 'former BJP chief')\n"
-        f"3. Is their ACTION correct? (e.g., 'made an appeal' vs 'resigned')\n\n"
-        f"Return a JSON object with:\n"
-        f'"verdict": "PASS" (all entities correct), "FAIL" (at least one critical error), or "UNCERTAIN" (cannot verify from source text)\n'
-        f'"errors": [{"entity": "name", "claimed_role": "...", "actual_role": "...", "issue": "description"}]\n'
-        f'"warnings": ["any minor concerns"]\n\n'
-        f"CRITICAL: If a person is attributed the WRONG role (e.g., calling someone 'state president' "
-        f"when they are actually a 'former chief who resigned'), that is a FAIL. "
-        f"Return ONLY the JSON object, no other text."
+        "For each entity, check:\n"
+        "1. Is the person's NAME correct? (spelling, full name)\n"
+        "2. Is their ROLE/POSITION correct? (e.g., 'BJP state president' vs 'former BJP chief')\n"
+        "3. Is their ACTION correct? (e.g., 'made an appeal' vs 'resigned')\n\n"
+        'Return a JSON object with:\n'
+        '"verdict": "PASS" (all entities correct), "FAIL" (at least one critical error), or "UNCERTAIN" (cannot verify from source text)\n'
+        '"errors": [{"entity": "name", "claimed_role": "...", "actual_role": "...", "issue": "description"}]\n'
+        '"warnings": ["any minor concerns"]\n\n'
+        "CRITICAL: If a person is attributed the WRONG role (e.g., calling someone 'state president' "
+        "when they are actually a 'former chief who resigned'), that is a FAIL. "
+        "Return ONLY the JSON object, no other text."
     )
 
     try:
@@ -309,12 +309,108 @@ def fact_check_script(script_text: str, title: str, source_url: str, engine=None
 
     if result["errors"]:
         for err in result["errors"]:
-            entity = err.get("entity", "?")
-            issue = err.get("issue", str(err))
-            print(f"     ❌ {entity}: {issue}")
+            if isinstance(err, dict):
+                entity = err.get("entity", "?")
+                issue = err.get("issue", str(err))
+                print(f"     ❌ {entity}: {issue}")
+            else:
+                print(f"     ❌ {err}")
 
     if result["warnings"]:
         for warn in result["warnings"][:5]:  # Show max 5 warnings
             print(f"     ⚠️ {warn}")
 
     return result
+
+
+def correct_script_with_facts(
+    script_text: str,
+    errors: list,
+    title: str,
+    source_url: str,
+    engine,
+) -> str:
+    """Use Gemini to rewrite the script correcting factual errors.
+
+    Fetches the actual article, identifies the correct facts, and rewrites
+    the script with accurate entity names, roles, and actions.
+
+    Returns the corrected script text, or the original if correction fails.
+    """
+    import re, json
+
+    # Fetch the actual article for correction context
+    article_text = ""
+    try:
+        import urllib.request
+        req = urllib.request.Request(source_url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            raw = resp.read().decode("utf-8", errors="replace")
+            # Strip HTML tags for clean text
+            article_text = re.sub(r"<[^>]+>", " ", raw)
+            article_text = re.sub(r"\s+", " ", article_text).strip()
+    except Exception:
+        pass
+
+    article_snippet = article_text[:3000] if article_text else "[Could not fetch article — use the error descriptions to correct]"
+
+    # Build error descriptions for the prompt
+    error_descs = []
+    for err in errors:
+        if isinstance(err, dict):
+            entity = err.get("entity", "?")
+            claimed = err.get("claimed_role", "?")
+            actual = err.get("actual_role", "?")
+            issue = err.get("issue", "")
+            error_descs.append(f"- Entity '{entity}': claimed role '{claimed}' but actual is '{actual}'. Issue: {issue}")
+        else:
+            error_descs.append(f"- {err}")
+
+    error_block = "\n".join(error_descs)
+
+    prompt = (
+        "You are a senior news editor. The following video script contains factual errors "
+        "about named entities. Rewrite the script to fix ALL the errors listed below, "
+        "using the actual news source text for reference.\n\n"
+        f"Original Headline: {title}\n\n"
+        f"Factual Errors to Fix:\n{error_block}\n\n"
+        f"Actual News Source Text:\n{article_snippet}\n\n"
+        f"Original Script (with errors):\n{script_text}\n\n"
+        "INSTRUCTIONS:\n"
+        "1. Fix ALL entity names, roles, and actions to match the actual news source\n"
+        "2. Keep the same tone, style, and approximate length\n"
+        "3. Do NOT add new information not in the source\n"
+        "4. Return ONLY the corrected script text, no explanations or JSON\n"
+    )
+
+    try:
+        response = engine.ask(prompt)
+        if not response:
+            return script_text
+
+        # Clean up the response — strip any markdown or JSON wrapping
+        corrected = response.strip()
+        # Remove markdown code blocks if present
+        if corrected.startswith("```"):
+            corrected = re.sub(r"^```[a-z]*\n?", "", corrected)
+            corrected = re.sub(r"\n?```$", "", corrected)
+        # If response is JSON with a "script" key, extract it
+        try:
+            parsed = json.loads(corrected)
+            if isinstance(parsed, dict):
+                for key in ("script", "corrected_script", "text", "content"):
+                    if key in parsed:
+                        corrected = str(parsed[key])
+                        break
+        except (json.JSONDecodeError, ValueError):
+            pass  # Not JSON, use as-is
+
+        corrected = corrected.strip()
+        if len(corrected) < 20:
+            return script_text  # Too short, probably garbage
+
+        return corrected
+
+    except Exception as e:
+        print(f"  ⚠️ correct_script_with_facts error: {e}")
+        return script_text
