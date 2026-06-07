@@ -534,7 +534,7 @@ class WeightingAgent(BaseAgent):
             _sel = state["selected_topic"]
             _raw = _sel.get("title", _sel.get("id", "topic"))
             _words = _raw.split()[:6]
-            _slug = "_".join(w for w in _words if w).replace("/", "_").replace(":", "").replace("'", "").replace("?", "").replace("!", "")
+            _slug = "_".join(w for w in _words if w).replace("/", "_").replace(":", "").replace("'", "").replace("?", "").replace("!", "").replace('"', "").replace(",", "").replace(";", "").replace("(", "").replace(")", "").replace("&", "and")
             if not _slug:
                 _slug = _sel.get("id", "topic")
             state["topic_slug"] = _slug
@@ -2817,7 +2817,7 @@ class MultiAgentOrchestrator:
             # v82.0 fix: Compute topic slug for injected topics too
             _raw = injected_topic.get("title", injected_topic.get("id", "topic"))
             _words = _raw.split()[:6]
-            _slug = "_".join(w for w in _words if w).replace("/", "_").replace(":", "").replace("'", "").replace("?", "").replace("!", "")
+            _slug = "_".join(w for w in _words if w).replace("/", "_").replace(":", "").replace("'", "").replace("?", "").replace("!", "").replace('"', "").replace(",", "").replace(";", "").replace("(", "").replace(")", "").replace("&", "and")
             if not _slug:
                 _slug = injected_topic.get("id", "topic")
             self.state["topic_slug"] = _slug
