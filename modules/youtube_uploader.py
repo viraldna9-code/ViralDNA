@@ -278,6 +278,17 @@ class YouTubeUploader:
         year = datetime.datetime.now().year
         today_str = datetime.datetime.now().strftime("%B %d, %Y")
 
+        # v82.6: Sanitize desc_raw — strip template markers that leak into public description
+        if desc_raw:
+            for _marker in [r'^TITLE:\s*\n\s*[^\n]+\n*', r'^DESCRIPTION:\s*\n',
+                            r'^\s*📰\s*SUMMARY:\s*', r'^🔥\s*[^\n]+\n+',
+                            r'💡 BACKGROUND[^:]*:', r'^🎥.*$']:
+                desc_raw = re.sub(_marker, '', desc_raw, flags=re.MULTILINE)
+            desc_raw = desc_raw.strip()
+            if not is_short:
+                desc_raw = re.sub(r'🎥 Watch the full story.*$', '', desc_raw, flags=re.MULTILINE)
+            desc_raw = desc_raw.strip()
+
         seo_keywords = self._extract_seo_keywords(topic, title_raw, desc_raw)
         seo_keyword_line = ""
         if seo_keywords:
@@ -295,10 +306,14 @@ class YouTubeUploader:
             snippet_prefix,
             "",
             "🔔 SUBSCRIBE & hit the bell → https://www.youtube.com/@TheViralDNA",
-            f"📰 {title_raw} ({today_str})",
+            f"{title_raw} ({today_str})",
             "",
-            f"SUMMARY: {desc_raw[:300]}",
         ]
+        # Add sanitized content summary (not prefixed with "SUMMARY:")
+        if desc_raw:
+            summary_text = desc_raw[:300].strip()
+            if summary_text:
+                description_lines.append(summary_text)
 
         # ── TIMESTAMP CHAPTERS (watch-time signal + Key Moments in search) ──
         chapters = self._generate_chapters(topic, desc_raw, is_short)
@@ -310,9 +325,9 @@ class YouTubeUploader:
 
         description_lines.extend([
             "",
-            f"💡 CONTEXT: {rag_context[:300]}",
+            rag_context[:300].strip(),
             "",
-            f"📌 SOURCE: {sources_str}",
+            f"SOURCE: {sources_str}",
         ])
 
         if seo_keyword_line:
