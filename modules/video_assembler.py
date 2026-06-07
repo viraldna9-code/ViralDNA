@@ -1288,6 +1288,11 @@ Script:
         return image_paths
 
     def generate_ass_file(self, script_text, total_duration, ass_path, out_w=1280, out_h=720):
+        # Normalize ALL apostrophe-like Unicode characters for clean subtitle display
+        script_text = script_text.replace("\u2019", "'").replace("\u2018", "'")
+        script_text = script_text.replace("\u2032", "'").replace("\u2035", "'")
+        script_text = script_text.replace("\u02bc", "'").replace("\u02bb", "'")
+        script_text = script_text.replace("\uff07", "'").replace("\u201b", "'")
         words = script_text.split()
         if not words:
             return False
