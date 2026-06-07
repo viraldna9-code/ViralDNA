@@ -79,6 +79,7 @@ from collaboration_tracker import CollaborationTracker
 from blog_companion import BlogCompanionGenerator
 from newsletter_generator import NewsletterGenerator
 from community_poster import CommunityPoster
+from audience_channel_manager import AudienceChannelManager
 from forensic_audit import ForensicAudit, ForensicAuditError
 from pre_ship_check import PreShipCheck, PreShipCheckError
 from humanizer_engine import HumanizerEngine
@@ -2306,6 +2307,7 @@ class CommunityEngagementAgent(BaseAgent):
     """
     Post-pipeline community engagement: generates community tab posts,
     comment responses, and engagement actions.
+    D1.6: Milestone auto-detection with celebration triggers.
     """
     def __init__(self, orchestrator):
         super().__init__("Community Engagement", orchestrator)
@@ -2343,6 +2345,46 @@ class CommunityEngagementAgent(BaseAgent):
                     )
                     state["community_post"] = {"platform": "youtube_community", "text": post_text}
                     self.log(f"📢 Community post drafted for video: {yt_id}")
+
+            # ── D1.6: Milestone Auto-Detection ──
+            self.log("Checking subscriber milestones...")
+            try:
+                milestone_result = self.community.check_milestone()
+                state["milestone_check"] = milestone_result
+
+                if milestone_result.get("celebrate"):
+                    milestone = milestone_result["milestone"]
+                    current = milestone_result["current_count"]
+                    text = milestone_result["text"]
+                    self.log(f"🎉 MILESTONE REACHED: {milestone:,} subscribers! (current: {current:,})")
+
+                    # Send Telegram alert for milestone
+                    alert_msg = (
+                        f"🎉 VIRDNA MILESTONE: {milestone:,} SUBSCRIBERS!\n"
+                        f"━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"{text}\n"
+                        f"━━━━━━━━━━━━━━━━━━━━━\n"
+                        f"Current count: {current:,}\n"
+                        f"Next milestone: {milestone_result.get('next_milestone', 'N/A')}"
+                    )
+                    sent = self.orchestrator.send_telegram_notification(alert_msg)
+                    if sent:
+                        self.log("📨 Milestone Telegram alert sent!")
+                    else:
+                        self.log("⚠️ Milestone reached but Telegram not configured — alert logged locally")
+
+                    state["milestone_celebration"] = {
+                        "milestone": milestone,
+                        "text": text,
+                        "telegram_sent": sent,
+                    }
+                else:
+                    remaining = milestone_result.get("remaining")
+                    next_m = milestone_result.get("next_milestone")
+                    if remaining and next_m:
+                        self.log(f"📊 Milestone progress: {remaining:,} away from {next_m:,}")
+            except Exception as e:
+                self.log(f"Milestone check error (non-fatal): {e}")
 
             self.orchestrator.timer.stop("Post-Pipeline", "Community Engagement")
         except Exception as e:
@@ -2698,10 +2740,12 @@ class CommunityPosterAgent(BaseAgent):
     """
     H3.2: Post-pipeline YouTube Community Tab post scheduler.
     Composes and schedules community posts via YouTube Data API v3.
+    D1.2: Real API posting via CommunityEngagement.post_to_community_tab().
     """
     def __init__(self, orchestrator):
         super().__init__("Community Poster Agent", orchestrator)
         self.poster = CommunityPoster()
+        self.community = CommunityEngagement()
 
     def learn(self, ledger: dict):
         history = ledger.get("execution_history", [])
@@ -2721,14 +2765,133 @@ class CommunityPosterAgent(BaseAgent):
                     "title": selected_topic.get("title", "ViralDNA Update"),
                     "url": upload_results["main_video_url"],
                 })
+
+            # Generate post text (for scheduling/reference)
             result = self.poster.run(topic=selected_topic, videos=videos)
             state["community_post"] = result.get("post")
             state["community_weekly_schedule"] = result.get("weekly_schedule")
-            self.orchestrator.timer.stop("Post-Pipeline", "H3.2 Community Poster")
             self.log(f"Community posts scheduled: {result.get('total_weekly_posts', 0)} for the week")
+
+            # ── D1.2: Real API Post via YouTube Service ──
+            youtube_service = state.get("youtube_service")
+            main_result = upload_results.get("main", {})
+            yt_id = main_result.get("youtube_id") if isinstance(main_result, dict) else None
+
+            if yt_id:
+                self.log(f"Attempting real community tab post via YouTube API for video: {yt_id}")
+                try:
+                    post_result = self.community.post_to_community_tab(
+                        title=selected_topic.get("title", "ViralDNA Update"),
+                        youtube_id=yt_id,
+                        youtube_service=youtube_service,
+                    )
+                    state["community_api_post_result"] = post_result
+
+                    if post_result.get("posted"):
+                        self.log(f"✅ Community tab post published! Comment ID: {post_result.get('comment_id')}")
+                    else:
+                        reason = post_result.get("reason", "unknown")
+                        self.log(f"⚠️ Community post not published via API: {reason}")
+                        if post_result.get("post_text"):
+                            self.log(f"   Post text saved for manual publishing")
+                except Exception as e:
+                    self.log(f"Community API post error (non-fatal): {e}")
+            else:
+                self.log("No YouTube ID available — skipping real API post")
+
+            self.orchestrator.timer.stop("Post-Pipeline", "H3.2 Community Poster")
         except Exception as e:
             self.orchestrator.timer.fail("Post-Pipeline", "H3.2 Community Poster")
             self.log(f"Community poster error (non-fatal): {e}")
+        return state
+
+
+class AudienceChannelManagerAgent(BaseAgent):
+    """
+    H3.6: Post-pipeline audience channel manager.
+    Sends video notifications to configured messaging channels (Telegram, WhatsApp)
+    after successful upload. Builds audience outside YouTube.
+    """
+    def __init__(self, orchestrator):
+        super().__init__("Audience Channel Manager", orchestrator)
+        self.manager = AudienceChannelManager(config)
+
+    def learn(self, ledger: dict):
+        history = ledger.get("execution_history", [])
+        acm_entries = [e for e in history if e.get("agent") == "AudienceChannelManagerAgent"]
+        if acm_entries:
+            self.log(f"Learning: {len(acm_entries)} past channel manager runs")
+
+    def execute(self, state: dict) -> dict:
+        self.log("Sending audience channel notifications...")
+        self.orchestrator.timer.start("Post-Pipeline", "H3.6 Audience Channel Manager")
+        try:
+            upload_results = state.get("upload_results", {})
+            selected_topic = state.get("selected_topic", {})
+
+            # Get video details
+            main_result = upload_results.get("main", {}) if isinstance(upload_results, dict) else {}
+            yt_id = main_result.get("youtube_id") if isinstance(main_result, dict) else None
+            video_url = main_result.get("url", "") if isinstance(main_result, dict) else ""
+            title = selected_topic.get("title", "New ViralDNA Video")
+
+            if not yt_id:
+                self.log("No video uploaded — skipping channel notifications")
+                self.orchestrator.timer.stop("Post-Pipeline", "H3.6 Audience Channel Manager")
+                return state
+
+            # Check channel status
+            channel_status = self.manager.get_channel_status()
+            state["channel_status"] = channel_status
+
+            tg_configured = channel_status.get("telegram", {}).get("configured", False)
+            tg_enabled = channel_status.get("telegram", {}).get("enabled", False)
+
+            self.log(f"Channel status — Telegram: configured={tg_configured}, enabled={tg_enabled}")
+
+            # Method 1: Use AudienceChannelManager (reads from config)
+            if tg_configured and tg_enabled:
+                try:
+                    notify_result = self.manager.send_video_notification(
+                        title=title,
+                        video_url=video_url,
+                        channels=["telegram"],
+                    )
+                    state["channel_notification_result"] = notify_result
+                    tg_result = notify_result.get("telegram", {})
+                    if tg_result.get("sent"):
+                        self.log(f"📨 Telegram notification sent via AudienceChannelManager!")
+                    else:
+                        self.log(f"⚠️ Telegram not sent: {tg_result.get('reason', 'unknown')}")
+                except Exception as e:
+                    self.log(f"AudienceChannelManager error (non-fatal): {e}")
+            else:
+                self.log("Telegram not configured/enabled in config — trying orchestrator fallback")
+
+            # Method 2: Fallback to orchestrator's built-in Telegram (uses env vars)
+            if not (tg_configured and tg_enabled):
+                try:
+                    emoji = "🎬"
+                    if any(w in title.lower() for w in ["breaking", "urgent", "alert"]):
+                        emoji = "🚨"
+                    message = (
+                        f"{emoji} New ViralDNA Video: {title}\n\n"
+                        f"▶️ {video_url}\n\n"
+                        f"#TeluguNews #ViralDNA"
+                    )
+                    sent = self.orchestrator.send_telegram_notification(message)
+                    state["telegram_fallback_sent"] = sent
+                    if sent:
+                        self.log("📨 Telegram notification sent via orchestrator fallback!")
+                    else:
+                        self.log("⚠️ Telegram fallback also failed — TELEGRAM_BOT_TOKEN/TELEGRAM_CHOT_ID not set")
+                except Exception as e:
+                    self.log(f"Telegram fallback error (non-fatal): {e}")
+
+            self.orchestrator.timer.stop("Post-Pipeline", "H3.6 Audience Channel Manager")
+        except Exception as e:
+            self.orchestrator.timer.fail("Post-Pipeline", "H3.6 Audience Channel Manager")
+            self.log(f"Audience channel manager error (non-fatal): {e}")
         return state
 
 
@@ -2855,7 +3018,7 @@ class MultiAgentOrchestrator:
         self.post_agents = [
             FeedbackAgent(self),
             YouTubeAnalyticsAgent(self),       # YouTube Analytics pull
-            CommunityEngagementAgent(self),    # Community engagement + A/B tests
+            CommunityEngagementAgent(self),    # Community engagement + A/B tests + milestones
             CompetitorIntelAgent(self),        # Competitor intelligence
             RetentionOptimizationAgent(self),  # NEW v77: Retention + CTR + series funnel
             ShortsOptimizationAgent(self),     # NEW v77: Shorts titles + CTA + branding
@@ -2864,7 +3027,8 @@ class MultiAgentOrchestrator:
             CollaborationAgent(self),          # NEW v78: D2.6 Collaboration tracker
             BlogCompanionAgent(self),          # NEW v78: H3.4 Blog companion articles
             NewsletterAgent(self),             # NEW v78: H3.5 Newsletter digest
-            CommunityPosterAgent(self),        # NEW v78: H3.2 Community tab posts
+            CommunityPosterAgent(self),        # NEW v78: H3.2 Community tab posts (D1.2 real API)
+            AudienceChannelManagerAgent(self), # H3.6: Telegram/WhatsApp notifications
             UploadTimingAgent(self),           # NEW v78: D3.6 Upload timing optimizer
             IntelligenceAgent(self),
             ContinuousAuditorAgent(self),
