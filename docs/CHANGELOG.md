@@ -4,34 +4,47 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
-## [v82.6] — 2026-06-06 — Dynamic Topic-Specific Tags
+## [v82.6] — 2026-06-07 — Dynamic Tags + Description Sanitization + YouTube Metadata Fixes
 
 ### Problem
-1. **Identical tags on every video**: All 27 tags were static — same for every topic regardless of content. A DMK boycott video had the same tags as a nuclear power video.
+1. **Identical tags on every video**: All 27 tags were static — same for every topic regardless of content.
 2. **Topic JSON has no tags field**: `topic.get("tags", "")` always returned empty string.
-3. **No audit for topic relevance**: Metadata audit only checked tag count (15-30), never checked if tags were actually about the topic.
+3. **Template artifacts in descriptions**: `_build_full_description()` injected "📰", "SUMMARY:", "💡 CONTEXT:", "📌 SOURCE:" prefixes into descriptions. `desc_raw` from script generator contained TITLE:/DESCRIPTION:/🔥 markers that leaked through.
+4. **No topic-relevance audit**: Metadata audit only checked tag count, never checked if tags were about the topic.
+5. **All 18 YouTube videos affected**: Same tags, template-artifact descriptions, 2 generic short titles, 5 zero-view videos.
 
 ### Changes
 
 #### 1. LLM-Based Tag Generation (`modules/youtube_uploader.py`)
-- Added `_generate_topic_tags()` method — sends topic title, source, URL, and content to Gemini LLM
-- LLM generates 8-12 topic-specific tags (names, places, organizations, events, long-tail searches)
-- Fallback NLP extraction from title proper nouns if LLM API fails
-- Tested: DMK boycott vs Nuclear power topics → **zero tag overlap**
+- Added `_generate_topic_tags()` — sends topic title, source, URL, content to Gemini LLM
+- LLM generates 8-12 topic-specific tags; fallback NLP extraction from title proper nouns
+- Tested: DMK boycott vs Nuclear power → **zero tag overlap**
 
 #### 2. Two-Tier Tag System
-- **Tier 1** (priority): Topic-specific tags from LLM (8-12 tags, unique per video)
-- **Tier 2**: Channel-level tags (10 static: TheViralDNA, competitor channels, transliteration, year)
-- Old 27-tag static list replaced — reduced to 10 channel-level + 8-12 dynamic per topic
+- **Tier 1**: Topic-specific tags from LLM (8-12, unique per video)
+- **Tier 2**: Channel-level tags (10 static: competitors, transliteration, year)
+- Old 27-tag static list → 10 channel + 8-12 dynamic per topic
+- Applied to both `generate_upload_metadata()` and `_create_metadata()` code paths
 
 #### 3. Audit Check G5b: `topic_tags_present`
-- CRITICAL failure if zero topic-specific tags (all tags are generic channel tags)
-- Warning if <5 topic-specific tags
-- Prevents shipping videos with irrelevant metadata
+- CRITICAL failure if zero topic-specific tags; warning if <5
+
+#### 4. Description Sanitization (`modules/youtube_uploader.py` — `_build_full_description()`)
+- Added `desc_raw` sanitization: regex strips `TITLE:`, `DESCRIPTION:`, `📰 SUMMARY:`, `🔥`, `💡 CONTEXT:`, `📌 SOURCE:`, `🎥 Watch`, `---` lines
+- Removed "📰 {title}" emoji prefix → plain title text
+- Removed "SUMMARY: {desc_raw[:300]}" label → clean description text
+- Prevents ALL template artifacts from script generator output
+
+#### 5. YouTube API Fixes (all 18 videos)
+- Tags: Every video updated with topic-specific tags via YouTube Data API
+- Descriptions: All template artifacts removed, clean text restored
+- Titles: 2 generic shorts renamed
+- Zero-view: 5 videos re-published via private→public cycle
 
 ### Verification
-- VDNA158 (DMK boycott): "DMK boycott INDIA bloc meeting", "MK Stalin DMK", "Congress betrayal DMK", "Tamil Nadu politics"...
-- VDNA165 (Nuclear power): "N. Chandrababu Naidu", "Nara Lokesh", "Rosatom", "Andhra Pradesh Nuclear Power"...
+- VDNA158 (DMK boycott): "DMK boycott INDIA bloc meeting", "MK Stalin DMK", "Tamil Nadu politics"...
+- VDNA165 (Nuclear power): "Rosatom", "Nara Lokesh", "Andhra Pradesh Nuclear Power"...
+- All 18 videos: clean descriptions, unique tags, no template artifacts
 - `python3 -m py_compile modules/youtube_uploader.py` → exit 0
 
 ---

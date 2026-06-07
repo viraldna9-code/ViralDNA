@@ -71,21 +71,13 @@ Scopes: youtube.upload, youtube.force-ssl, youtube.readonly
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
-| v82.5 | Jun 6 2026 | Title quality overhaul: pre_ship_check (generic+proper noun), shorts_optimizer (distinct angles), pipeline (title dedup+no "Short N:"), youtube_uploader (C1b audit), script_generator (entity-first, no BREAKING templates) |
-| v82.4 | Jun 5 2026 | Person-image fix: text-first check all 3 sources, keyword overlap, Gemini fallback fail-closed |
-| v82.3 | Jun 3 2026 | Growth metadata + 20+ audit checks |
-| v82.2 | Jun 2 2026 | 3-layer image defense |
-| v82.1 | Jun 1 2026 | Scheduled publisher (morning + evening cron) |
-| v82.0 | May 31 2026 | PostFilter redesign, word boundary re-score |
-
-## Version History
-
-| Version | Date | Key Changes |
-|---------|------|-------------|
-| v82.6 | 2026-06-06 | Dynamic topic-specific tags (LLM), two-tier tag system, audit check G5b |
+| v82.6 | 2026-06-07 | Dynamic topic-specific tags (LLM+Gemini), two-tier tag system, audit G5b, desc_raw sanitization (strips TITLE:/📰/🔥/💡/📌 markers), all 18 YouTube videos fixed |
 | v82.5 | 2026-06-06 | Title quality overhaul — generic detection, distinct shorts, dedup, no BREAKING templates |
 | v82.4 | 2026-06-05 | Image relevance defense — text check + keyword overlap + Gemini Vision |
 | v82.3 | 2026-06-04 | Metadata audit, competitor tags, transliteration, Shorts discovery tags |
+| v82.2 | 2026-06-04 | 3-layer image defense (bridge words, 2+ keyword overlap, Gemini Vision gate) |
+| v82.1 | 2026-06-01 | Scheduled publisher (morning + evening cron) |
+| v82.0 | 2026-05-31 | PostFilter redesign, word boundary re-score |
 
 ## Known Issues & Solutions
 
@@ -93,9 +85,9 @@ Scopes: youtube.upload, youtube.force-ssl, youtube.readonly
 |-------|-------|-----|
 | Wrong person in images | RSS picks article lead image, not person | v82.4: text check + keyword overlap + Gemini Vision |
 | Devil faces in visuals | ComfyUI fallback when all real sources fail | v82.4: 3-layer defense, fail-closed on rate limit |
-| D3.6 Upload Timing FAILED | Missing `run()` method | Non-critical, known — doesn't affect output |
-| No GitHub Actions alerts | See investigation below | TBD |
-| Cron not running | See investigation below | TBD |
+| DriveCopy hang in pipeline | rclone hangs after 2 files | Known issue — workaround: kill process, manually rclone copy |
+| Zero-view videos | YouTube doesn't index private→scheduledpremiere videos | Fix: private→public re-publish cycle (24-48h to re-index) |
+| Template artifacts in descriptions | `desc_raw` from script generator contains TITLE:/📰/🔥 markers | v82.6: desc_raw sanitization in `_build_full_description()` |
 
 ## YouTube Channel Info
 
@@ -103,4 +95,5 @@ Scopes: youtube.upload, youtube.force-ssl, youtube.readonly
 - Channel ID: UCkW7fqkJiaej2PeNcP4PejQ
 - Upload policy: NO auto uploads (UPLOAD_ENABLED=false). Videos → Google Drive review folder.
 - NEVER delete published videos (permanent no-delete)
-- H3.3: Channel translation
+- Country: IN (set via brandingSettings.channel.country)
+- Analytics: See analytics/feedback.md for current stats
