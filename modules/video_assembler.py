@@ -1287,18 +1287,23 @@ Script:
 
         return image_paths
 
-    def generate_ass_file(self, script_text, total_duration, ass_path, out_w=1280, out_h=720):
+    def generate_ass_file(self, script_text, total_duration, ass_path, out_w=1280, out_h=720,
+                          is_short=False, cta_text=None):
+        """Generate timed ASS subtitle file.
+
+        v84.3 (is_short=True):
+          - words_per_phrase: 5->2 for faster short-form pacing
+          - keyword highlighting: numbers/names render larger + different color
+          - CTA end-card: optional overlay text in last 2 seconds
+          - font_size: 55->65 for shorts readability on mobile
+        """
         # Normalize ALL apostrophe-like Unicode characters, then strip apostrophes
-        # to prevent word-splitting artifacts like "Don t" or "party s" in subtitles.
-        # Contractions are expanded in the TTS pipeline; for subtitles we just strip.
         script_text = script_text.replace("\u2019", "'").replace("\u2018", "'")
         script_text = script_text.replace("\u2032", "'").replace("\u2035", "'")
         script_text = script_text.replace("\u02bc", "'").replace("\u02bb", "'")
         script_text = script_text.replace("\uff07", "'").replace("\u201b", "'")
         script_text = script_text.replace("\u2039", "'").replace("\u203a", "'")
-        # Strip all apostrophes so "Don't" -> "Dont" (single word, no split)
         script_text = script_text.replace("'", "")
-        # Also strip hyphens that could cause mid-word splits
         script_text = script_text.replace("-", " ")
         import re
         script_text = re.sub(r'\s+', ' ', script_text).strip()
@@ -1307,16 +1312,16 @@ Script:
             return False
 
         total_words = len(words)
+
+        # v84.3: shorts use 2 words per phrase for punchier pacing
+        words_per_phrase = 2 if is_short else 5
         phrases = []
-        words_per_phrase = 5
         for i in range(0, len(words), words_per_phrase):
             phrases.append(" ".join(words[i:i + words_per_phrase]))
 
         events = []
-        # TTS engine has ~0.3-0.8s startup latency before first word is spoken.
-        # Compensate by applying a sync offset so subtitles match actual speech onset.
         current_time = 0.0
-        SYNC_OFFSET_S = 0.5   # positive = subtitles appear earlier (closer to actual speech)
+        SYNC_OFFSET_S = 0.5
 
         def format_ass_time(seconds):
             seconds = max(0.0, seconds - SYNC_OFFSET_S)
@@ -1326,22 +1331,72 @@ Script:
             centiseconds = int((seconds % 1) * 100)
             return f"{hours:01d}:{minutes:02d}:{secs:02d}.{centiseconds:02d}"
 
+        # v84.3: keyword detection for highlighting
+        import re as _re
+        _KEYWORD_PATTERN = _re.compile(
+            r'\b(\d[\d,.]*[,.]?\d*'
+            r'|Rs\.?\s*\d+'
+            r'|\d+\s*(?:rupees|crore|lakh|million|billion|thousand)'
+            r'|Pawan\s+Kalyan|Jana\s+Sena|Congress|BJP|TRS|BRS|TD[PM]|AIMIM'
+            r'|Telangana|Andra\s+Pradesh|Hyderabad|Warangal|Nizamabad|Khammam'
+            r'|Modi|Revanth|Rao|Lokesh|Chandrababu|Naidu)\b',
+            _re.IGNORECASE
+        )
+
+        def _highlight_keywords(phrase):
+            """Wrap detected keywords in larger font + highlight color."""
+            if not is_short:
+                return phrase
+            def _replace(m):
+                word = m.group(0)
+                # \fs = font size override (default 65 for shorts), \c = color (yellow highlight)
+                return f"{{\\fs78\\c&H00FFD7&}}{word}{{\\fs65\\c&H00FFFFFF&}}"
+            return _KEYWORD_PATTERN.sub(_replace, phrase)
+
         for phrase in phrases:
             phrase_word_count = len(phrase.split())
             phrase_duration = total_duration * (phrase_word_count / total_words)
+            # v84.3: reserve last 2s for CTA if provided
+            if cta_text and current_time >= total_duration - 2.5:
+                break
             end_time = current_time + phrase_duration
             start_str = format_ass_time(current_time)
             end_str = format_ass_time(end_time)
-            dialogue_line = f"Dialogue: 0,{start_str},{end_str},Default,,0,0,0,,{{\\fad(200,200)}}{phrase}"
+            display_phrase = _highlight_keywords(phrase)
+            dialogue_line = f"Dialogue: 0,{start_str},{end_str},Default,,0,0,0,,{{\\fad(200,200)}}{display_phrase}"
             events.append(dialogue_line)
             current_time = end_time
 
+        # v84.3: CTA end-card overlay (last 2 seconds)
+        if cta_text and total_duration > 3.0:
+            cta_start = total_duration - 2.1
+            cta_end = total_duration - 0.1
+            cta_start_str = format_ass_time(cta_start)
+            cta_end_str = format_ass_time(cta_end)
+            # Use a separate style row for CTA (centered, larger, highlighted)
+            cta_style = "CTA"  # declared below
+            cta_line = f"Dialogue: 1,{cta_start_str},{cta_end_str},{cta_style},,0,0,0,,{{\\fad(150,150)}}{cta_text}"
+            events.append(cta_line)
+
+        # Font sizing
         if out_h > out_w:
-            font_size = 55
+            font_size = 65 if is_short else 55
             margin_v = 120
         else:
             font_size = 45
             margin_v = 60
+
+        # Build styles: Default + optional CTA
+        style_lines = (
+            f"Style: Default,Bebas Neue,{font_size},&H00FFFFFF,&H0000D7FF,"
+            f"&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,2,2,30,30,{margin_v},1\n"
+        )
+        if cta_text:
+            cta_size = font_size + 10
+            style_lines += (
+                f"Style: CTA,Bebas Neue,{cta_size},&H00FFD7FF,&H0000D7FF,"
+                f"&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,4,2,5,30,30,{margin_v + 40},1\n"
+            )
 
         ass_content = f"""[Script Info]
 ScriptType: v4.00+
@@ -1351,15 +1406,15 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Bebas Neue,{font_size},&H00FFFFFF,&H0000D7FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,2,2,30,30,{margin_v},1
-
+{style_lines}
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """ + "\n".join(events)
 
         with open(ass_path, "w", encoding="utf-8") as f:
             f.write(ass_content)
-        print(f"    Assembler: Successfully wrote timed ASS subtitles to {ass_path}")
+        print(f"    Assembler: Successfully wrote timed ASS subtitles to {ass_path}" +
+              (" (+CTA)" if cta_text else ""))
         return True
 
     def assemble_video(self, slot, audio_path, visual_path, output_name,
@@ -1385,11 +1440,20 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
         has_subtitles = False
         if script_text:
-            has_subtitles = self.generate_ass_file(script_text, target_duration_s, ass_path, out_w, out_h)
+            # v84.3: pass is_short + CTA text for shorts
+            cta = None
+            if is_short:
+                cta = "What do you think? Comment below!"
+            has_subtitles = self.generate_ass_file(
+                script_text, target_duration_s, ass_path, out_w, out_h,
+                is_short=is_short, cta_text=cta
+            )
 
         image_paths = []
         if is_short:
-            num_scenes = 3
+            # v84.3: Studio wants jump-cuts every 5-7s. For a 30s short that's ~5-6 scenes.
+            # Use more scenes than before (was 3) to enable faster visual pacing.
+            num_scenes = max(5, min(8, int(target_duration_s / 5)))
         elif target_duration_s > 120:
             num_scenes = 7
         elif target_duration_s > 60:
@@ -1469,19 +1533,42 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             num_inputs = len(image_paths)
             clip_duration = target_duration_s / num_inputs
 
-            # Use gentler Kenburns zoom for main videos (less magnification = fewer artifacts)
-            zoom_percent = 0.03 if not is_short else 0.05
             for i, img in enumerate(image_paths):
                 cmd_inputs.extend(["-loop", "1", "-t", f"{clip_duration:.2f}", "-i", img])
                 total_frames = int(clip_duration * 25)
-                zoom_expr = f"1+{zoom_percent}*in/{total_frames}"
                 pan_x = "(iw-iw/zoom)/2"
                 pan_y = "(ih-ih/zoom)/2"
-                # Scale slightly above target to allow Kenburns pan without edge artifacts
-                scale_factor = 1.08 if not is_short else 1.2
-                kenburns = (f"scale={int(out_w * scale_factor)}:{int(out_h * scale_factor)},"
-                            f"zoompan=z='{zoom_expr}':x='{pan_x}':y='{pan_y}':d=1:"
-                            f"s={out_w}x{out_h}:fps=25,setsar=1")
+
+                if is_short:
+                    # v84.3: Aggressive jump-cut zoom for Studio recommendation.
+                    # Instead of slow Kenburns ramp (5% over full clip), use 3 quick
+                    # jump-cuts within each clip: snap to 110%% -> 120%% -> 130%%
+                    # This creates the "every 5-7s zoom" effect Studio wants.
+                    zoom_base = 1.15  # 15%% base zoom for shorts
+                    # Each clip: hold at 1.15x for first half, then jump to 1.30x
+                    # This mimics a manual editor cutting between zoom levels
+                    half_frames = total_frames // 2
+                    zoom_expr = (
+                        f"if(lte(n,{half_frames}),"
+                        f"1.15,"
+                        f"1.25)"
+                    )
+                    scale_factor = 1.4  # generous scale to allow jump without edge artifacts
+                    kenburns = (
+                        f"scale={int(out_w * scale_factor)}:{int(out_h * scale_factor)},"
+                        f"zoompan=z='{zoom_expr}':x='{pan_x}':y='{pan_y}':d=1:"
+                        f"s={out_w}x{out_h}:fps=25,setsar=1"
+                    )
+                else:
+                    # Main videos: gentle Kenburns zoom (unchanged)
+                    zoom_percent = 0.03
+                    zoom_expr = f"1+{zoom_percent}*in/{total_frames}"
+                    scale_factor = 1.08
+                    kenburns = (
+                        f"scale={int(out_w * scale_factor)}:{int(out_h * scale_factor)},"
+                        f"zoompan=z='{zoom_expr}':x='{pan_x}':y='{pan_y}':d=1:"
+                        f"s={out_w}x{out_h}:fps=25,setsar=1"
+                    )
                 fade_filter = f"fade=t=in:st=0:d=0.5,fade=t=out:st={clip_duration - 0.5:.2f}:d=0.5"
                 filter_parts.append(f"[{i}:v]{kenburns},{fade_filter}[v{i}];")
 
