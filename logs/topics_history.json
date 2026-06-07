@@ -1372,6 +1372,27 @@
       "rescored_at": "20260606",
       "status": "completed",
       "published": true
+    },
+    {
+      "id": "VDNA170",
+      "title": "Don't leave, we have PM Modi: BJP TN chief's appeal to cadres after mass resignations post Annamalai",
+      "source": "news.google.com",
+      "url": "https://news.google.com",
+      "score": 20,
+      "total_score": 20,
+      "breakdown": [
+        "DIRECT NATIONAL +10",
+        "PM Modi +5",
+        "BJP Tamil Nadu +3",
+        "Emotional appeal +2"
+      ],
+      "edge_score": 1.0,
+      "edge_breakdown": [
+        "PM Modi national relevance"
+      ],
+      "final_score": 20,
+      "date": "2026-06-07",
+      "status": "completed"
     }
   ],
   "last_alert": "2026-06-05T15:59:03.664944+05:30",

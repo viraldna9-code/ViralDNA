@@ -167,6 +167,8 @@ class HumanizerEngine:
             return script_text, {'skipped': True}
 
         text = script_text
+        # Normalize smart quotes to straight quotes (Gemini output uses ’)
+        text = text.replace("’", "'").replace("‘", "'")
         stats = {'segment_type': segment_type, 'original_word_count': len(text.split())}
 
         # 1. Remove significance inflation patterns
