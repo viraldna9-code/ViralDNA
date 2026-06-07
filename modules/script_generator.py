@@ -461,59 +461,60 @@ class ScriptGenerator:
         return hook_variants[idx if idx >= 0 else 0]
 
     def _build_main_script(self, title: str, desc: str) -> str:
-        """Build main video script with hook-first retention structure."""
-        # D4.6: Use welcome-back hook for ~30% of scripts (returning viewer retention)
-        import random
-        if random.random() < 0.3:
-            hook = self._build_welcome_back_hook(title)
-            return (
-                f"{hook} "
-                f"Today, we cover: {title}. "
-                f"According to reports, {desc}. "
-                f"For our Telugu families worldwide, this is important news from home. "
-                f"ViralDNA is here to keep you connected to your roots. "
-                f"Before you go — if this helped you stay informed, please subscribe and hit the bell icon. "
-                f"Stay safe, stay informed."
-            )
+        """Build main video script with viral YouTube hook-first structure.
+
+        v84.2: YouTube Studio feedback — conversational tone, hook-first,
+        'you/your' language, analogy, engagement question CTA.
+        """
+        # Impact-first hook: start with what changes for the viewer, not with "X announced"
         return (
-            f"Good evening. This is ViralDNA, bringing you simple and important updates from our home districts. "
-            f"Today, we cover a major welfare development directly helping local communities: {title}. "
-            f"According to regional reports, {desc}. "
-            f"For our Telugu families watching from the United States, the United Kingdom, Canada, and Australia, "
-            f"this is great news for our home towns. "
-            f"Local leaders and community members are happily discussing how this new plan will help workers, "
-            f"improve transport, and make life easier for common families. "
-            f"Supporters say this step is highly necessary to protect common citizens, give them full support, "
-            f"and keep prices stable in the market. "
-            f"Some groups have pointed out that we must make sure the benefits reach every single person without delays. "
-            f"As this plan starts on the ground, ViralDNA is here to keep you connected "
-            f"to your roots. We will watch this progress closely and bring you simple, honest updates. "
-            f"Before you go — if this helped you stay informed, please subscribe and hit the bell icon "
-            f"so you never miss an update from your homeland. Stay safe, stay informed, and support our homeland."
+            f"{title} — and it could change everything for your district. "
+            f"Here is what you need to know. "
+            f"According to reports, {desc}. "
+            f"If you live in Telangana or Andhra Pradesh, this isn't just national news — "
+            f"it's a local event that could affect your daily life. "
+            f"Local leaders and community members are already discussing what this means "
+            f"for common families, workers, and businesses in our region. "
+            f"The big question: will this actually help people on the ground, "
+            f"or is it just political promises? "
+            f"We will keep watching closely and bring you honest, simple updates. "
+            f"What do you think — will this make a real difference in your area? "
+            f"Tell me in the comments below. And if you want to stay connected to your homeland, "
+            f"hit subscribe — ViralDNA is here to keep you informed."
         )
 
     def _build_short_1(self, title: str) -> str:
-        """Short #1: High-impact hook format (curiosity gap + urgency)."""
+        """Short #1: Viral hook format — impact-first, curiosity gap, 'you' language.
+
+        v84.2: YouTube Studio feedback — no formal intros, start with conflict/benefit.
+        """
         return (
-            f"Breaking news from our homeland! {title} is officially active today. "
-            f"This direct plan will help many local families and bring steady progress. "
-            f"Watch the full story on ViralDNA now!"
+            f"Here is something that could directly affect your family in Telangana. "
+            f"{title} — and the big question is: will this actually reach people like you? "
+            f"Watch the full breakdown on ViralDNA now. Hit subscribe so you never miss an update."
         )
 
     def _build_short_2(self, title: str) -> str:
-        """Short #2: Simple explanation + community angle."""
+        """Short #2: Conversational explanation + community angle.
+
+        v84.2: YouTube Studio feedback — simple, relatable, question-driven.
+        """
         return (
-            f"Good news for workers and families in Andhra and Telangana. "
-            f"As the new policy regarding {title} starts, local networks are working together to make life easier. "
-            f"We bring you these simple, happy updates directly to your screens worldwide on ViralDNA."
+            f"What does {title} really mean for common families in Andhra and Telangana? "
+            f"It's not just politics — it could change things in your daily life. "
+            f"Do you think this will help? Tell me in the comments. Follow ViralDNA for more."
         )
 
     def _build_short_3(self, title: str) -> str:
-        """Short #3: NRI direct CTA."""
+        """Short #3: NRI direct CTA — personal, emotional, action-driven.
+
+        v84.2: YouTube Studio feedback — direct 'you' language, emotional hook.
+        """
         return (
-            f"Are you watching our home districts from overseas? "
-            f"The latest updates about {title} are bringing good news to many homes. "
-            f"Share this with your family and stay close to your roots. Follow ViralDNA for simple, reliable updates."
+            f"If you are watching from the US, UK, or Canada, this is about your home. "
+            f"{title} is happening right now in our districts. "
+            f"Share this with your family — they need to know. "
+            f"Subscribe to ViralDNA and stay connected to your roots."
         )
 
     def run(self, topic: dict, producer_brief: str = "") -> ScriptPayload:
@@ -563,7 +564,7 @@ class ScriptGenerator:
                 state_hint_str = ", ".join(state_hints) if state_hints else "the relevant Telugu state"
 
                 prompt = (
-                    f"You are the Lead Writer for ViralDNA, a premium news channel for the Telugu community worldwide.\n"
+                    f"You are the Lead Writer for ViralDNA, a YouTube news channel for the Telugu community worldwide.\n"
                     f"Write an engaging, story-driven news package (1 Main Video Script + 3 Short Videos) for the following news item:\n\n"
                     f"Headline/Title: {title}\n"
                     f"Description: {desc}\n"
@@ -571,7 +572,7 @@ class ScriptGenerator:
                     f"{rag_section}\n"
                     f"CRITICAL COMPLIANCE RULES:\n"
                     f"0. ZERO HALLUCINATION: You may ONLY use facts explicitly stated in the Headline, Description, and Context above. Do NOT invent biographical details, timelines, quotes, motivations, or background information not present in the source text. If the source doesn't say how long someone lived somewhere, don't say it. If the source doesn't quote someone, don't invent a quote. If the source doesn't state a reason or motivation, don't speculate. When in doubt, use a generic phrase like 'according to reports' rather than inventing specifics.\n"
-                    f"1. Tone and Vocabulary: Use simple, clear, layman-understandable English. Avoid any heavy English vocabulary or academic jargon (specifically, NEVER use the word 'diaspora'). It must be understandable to common people.\n"
+                    f"1. Tone and Vocabulary: Use simple, clear, conversational English — like you are explaining news to a friend. Avoid ALL academic/formal words: never use 'crystallization', 'discourse', 'dynamics', 'significant development', 'reshaping', 'immense potential', 'collaboration', 'implications', 'operational framework'. Instead use: 'teaming up', 'big change', 'what people are talking about', 'could flip the vote', 'real impact on your street'.\n"
                     f"2. Language: Write in 100% pure English. Do NOT mix any Telugu phrases, words, or regional jargon into the script because the text-to-speech voice is unable to pronounce mixed-language words properly.\n"
                     f"3. STATE ACCURACY: The news item concerns {state_hint_str}. You MUST mention the state name ({state_hint_str}) at least once in the main script. Do NOT write 'Andhra Pradesh' for a Telangana story or vice versa. DO NOT mention the other Telugu state unless the source text explicitly mentions both. The state name MUST appear explicitly — do NOT replace it with vague terms like 'our state' or 'our homeland'.\n"
                     f"4. Punctuation: Ensure excellent, standard punctuation with clear periods (.), commas (,), and question marks (?). These are critical cues for our speech generator to take natural pauses and not rush.\n"
@@ -581,14 +582,16 @@ class ScriptGenerator:
                     f"   - 'short_2': Simple summary of what this means for common people (approx 35-45 words).\n"
                     f"   - 'short_3': Direct, simple Call-to-Action for families watching from abroad (approx 35-45 words).\n"
                     f"6. STORYTELLING REQUIREMENTS (CRITICAL - follow exactly):\n"
-                    f"   - The main script MUST read like a NEWS STORY, not a Wikipedia summary or press release.\n"
-                    f"   - Start with a SPECIFIC detail FROM THE SOURCE TEXT — NOT a generic statement like 'A political firestorm has erupted.' Do NOT invent dramatic moments or quotes.\n"
+                    f"   - The main script MUST read like a YouTube creator explaining news, NOT a TV news broadcast or Wikipedia summary.\n"
+                    f"   - HOOK FIRST: Start with the IMPACT or CONFLICT — NOT with 'Minister X announced' or 'The Congress party said today'. Start with what changes for the VIEWER. Example: '23 parties just joined forces and it could change the political map of Telangana' instead of 'Congress announced today that 23 parties have confirmed participation.'\n"
+                    f"   - Use 'YOU' and 'YOUR' language to make it personal. 'If you live in Hyderabad or Warangal, this isn't just national news — it's a local earthquake.'\n"
+                    f"   - Include a RELATABLE ANALOGY for complex political events. Example: 'Think of it like 23 local sports teams forming one giant Super Team to take on the champion.' Or: 'Imagine a family gathering where suddenly half the members walk out.' Make abstract politics feel like everyday life.\n"
                     f"   - Include the WHO, WHAT, WHEN, WHERE, WHY — but ONLY as stated in the source text. Do NOT fill in gaps with assumptions.\n"
                     f"   - Use ACTIVE voice and VIVID language. Instead of 'X was accused by Y', write 'Y accused X of...'\n"
-                    f"   - End with what this means for VIEWERS — why should they care? What happens next?\n"
-                    f"   - AVOID generic filler phrases: 'This development has sent ripples', 'sparking intense debate', 'widely reported', 'political analysts alike'. These are DEAD WORDS that make content sound AI-generated.\n"
+                    f"   - End with a SPECIFIC QUESTION to the audience that drives comments. NOT 'Stay tuned to ViralDNA.' Instead: 'Do you think this 23-party deal will actually work in Telangana, or is it too many voices? Tell me in the comments.' This is critical for YouTube algorithm engagement.\n"
+                    f"   - AVOID generic filler phrases: 'This development has sent ripples', 'sparking intense debate', 'widely reported', 'political analysts alike', 'significant development', 'reshaping electoral dynamics', 'crystallization of alliances', 'immense potential for collaboration'. These are DEAD WORDS that make content sound like a press release.\n"
                     f"   - AVOID passive constructions: 'was announced', 'has been reported', 'is being discussed'. Use active voice instead.\n"
-                    f"7. RETENTION HOOKS: For main video, start with a strong hook in first sentence. Mention 'subscribe' or 'follow ViralDNA' near the END of the main script (not the beginning) to keep viewers watching.\n"
+                    f"7. RETENTION HOOKS: For main video, the first sentence MUST be the hook — the most shocking or relevant piece of info. Never start with a formal introduction. Mention 'subscribe' or 'follow ViralDNA' near the END of the main script (not the beginning) to keep viewers watching.\n"
                     f"8. Format: Avoid markdown, bold text, brackets, URLs, or non-pronounceable tags. Keep the text clean, natural, and speakable.\n"
                     f"\nIMPORTANT: The system message defines the exact JSON schema. Follow it strictly. Each key (main, short_1, short_2, short_3) must return an object with 'script' (string) and 'title_variants' (array of 3 objects with 'title' and 'description' keys).\n"
                 )
