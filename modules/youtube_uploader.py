@@ -278,6 +278,17 @@ class YouTubeUploader:
         year = datetime.datetime.now().year
         today_str = datetime.datetime.now().strftime("%B %d, %Y")
 
+        # v83.3: Normalize ALL apostrophe-like Unicode characters in title and description
+        _apostrophe_map = {
+            "\u2019": "'", "\u2018": "'", "\u2032": "'", "\u2035": "'",
+            "\u02bc": "'", "\u02bb": "'", "\uff07": "'", "\u201b": "'",
+            "\u2039": "'", "\u203a": "'",
+        }
+        for _u, _a in _apostrophe_map.items():
+            title_raw = title_raw.replace(_u, _a)
+            desc_raw = desc_raw.replace(_u, _a)
+            rag_context = rag_context.replace(_u, _a)
+
         # v82.6: Sanitize desc_raw — strip template markers that leak into public description
         if desc_raw:
             for _marker in [r'^TITLE:\s*\n\s*[^\n]+\n*', r'^DESCRIPTION:\s*\n',
