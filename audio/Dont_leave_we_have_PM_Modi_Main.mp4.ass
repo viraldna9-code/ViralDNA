@@ -1,0 +1,56 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1280
+PlayResY: 720
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Bebas Neue,45,&H00FFFFFF,&H0000D7FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,2,2,30,30,60,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:02.29,Default,,0,0,0,,{\fad(200,200)}A whisper turned into a
+Dialogue: 0,0:00:02.29,0:00:05.09,Default,,0,0,0,,{\fad(200,200)}roar across our state s
+Dialogue: 0,0:00:05.09,0:00:07.88,Default,,0,0,0,,{\fad(200,200)}BJP units this week, as
+Dialogue: 0,0:00:07.88,0:00:10.68,Default,,0,0,0,,{\fad(200,200)}news broke of widespread resignations.
+Dialogue: 0,0:00:10.68,0:00:13.47,Default,,0,0,0,,{\fad(200,200)}It wasn t a sudden
+Dialogue: 0,0:00:13.47,0:00:16.27,Default,,0,0,0,,{\fad(200,200)}storm but a steady trickle,
+Dialogue: 0,0:00:16.27,0:00:19.06,Default,,0,0,0,,{\fad(200,200)}especially after recent comments by
+Dialogue: 0,0:00:19.06,0:00:21.86,Default,,0,0,0,,{\fad(200,200)}state president K. Annamalai. Many
+Dialogue: 0,0:00:21.86,0:00:24.65,Default,,0,0,0,,{\fad(200,200)}long time party workers, some
+Dialogue: 0,0:00:24.65,0:00:27.45,Default,,0,0,0,,{\fad(200,200)}dedicating decades, felt a growing
+Dialogue: 0,0:00:27.45,0:00:30.24,Default,,0,0,0,,{\fad(200,200)}disconnect. The air was thick
+Dialogue: 0,0:00:30.24,0:00:33.04,Default,,0,0,0,,{\fad(200,200)}with uncertainty, prompting an urgent
+Dialogue: 0,0:00:33.04,0:00:35.83,Default,,0,0,0,,{\fad(200,200)}response from the party leadership.
+Dialogue: 0,0:00:35.83,0:00:38.63,Default,,0,0,0,,{\fad(200,200)}This created a palpable sense
+Dialogue: 0,0:00:38.63,0:00:41.42,Default,,0,0,0,,{\fad(200,200)}of concern among those committed
+Dialogue: 0,0:00:41.42,0:00:44.22,Default,,0,0,0,,{\fad(200,200)}to the party s growth
+Dialogue: 0,0:00:44.22,0:00:47.01,Default,,0,0,0,,{\fad(200,200)}in our homeland. Recognizing the
+Dialogue: 0,0:00:47.01,0:00:49.81,Default,,0,0,0,,{\fad(200,200)}gravity of the situation, the
+Dialogue: 0,0:00:49.81,0:00:52.60,Default,,0,0,0,,{\fad(200,200)}state President, K. Annamalai, made
+Dialogue: 0,0:00:52.60,0:00:55.40,Default,,0,0,0,,{\fad(200,200)}an impassioned plea. He urged
+Dialogue: 0,0:00:55.40,0:00:58.19,Default,,0,0,0,,{\fad(200,200)}cadres, often the backbone of
+Dialogue: 0,0:00:58.19,0:01:00.99,Default,,0,0,0,,{\fad(200,200)}any political movement, not to
+Dialogue: 0,0:01:00.99,0:01:03.79,Default,,0,0,0,,{\fad(200,200)}abandon the party. His message
+Dialogue: 0,0:01:03.79,0:01:06.58,Default,,0,0,0,,{\fad(200,200)}was clear stay for Prime
+Dialogue: 0,0:01:06.58,0:01:09.38,Default,,0,0,0,,{\fad(200,200)}Minister Modi. He emphasized the
+Dialogue: 0,0:01:09.38,0:01:12.17,Default,,0,0,0,,{\fad(200,200)}larger national vision and the
+Dialogue: 0,0:01:12.17,0:01:14.97,Default,,0,0,0,,{\fad(200,200)}transformative leadership of the Prime
+Dialogue: 0,0:01:14.97,0:01:17.76,Default,,0,0,0,,{\fad(200,200)}Minister, hoping to rekindle their
+Dialogue: 0,0:01:17.76,0:01:20.56,Default,,0,0,0,,{\fad(200,200)}sense of purpose. This appeal
+Dialogue: 0,0:01:20.56,0:01:23.35,Default,,0,0,0,,{\fad(200,200)}aims to stem the tide
+Dialogue: 0,0:01:23.35,0:01:26.15,Default,,0,0,0,,{\fad(200,200)}of departures and reassure those
+Dialogue: 0,0:01:26.15,0:01:28.94,Default,,0,0,0,,{\fad(200,200)}feeling disillusioned. It highlights a
+Dialogue: 0,0:01:28.94,0:01:31.74,Default,,0,0,0,,{\fad(200,200)}critical juncture for the BJP
+Dialogue: 0,0:01:31.74,0:01:34.53,Default,,0,0,0,,{\fad(200,200)}in our state, where unifying
+Dialogue: 0,0:01:34.53,0:01:37.33,Default,,0,0,0,,{\fad(200,200)}its base is paramount for
+Dialogue: 0,0:01:37.33,0:01:40.12,Default,,0,0,0,,{\fad(200,200)}future endeavors. The party now
+Dialogue: 0,0:01:40.12,0:01:42.92,Default,,0,0,0,,{\fad(200,200)}faces the challenge of not
+Dialogue: 0,0:01:42.92,0:01:45.71,Default,,0,0,0,,{\fad(200,200)}just holding onto its members
+Dialogue: 0,0:01:45.71,0:01:48.51,Default,,0,0,0,,{\fad(200,200)}but reinvigorating their commitment. We
+Dialogue: 0,0:01:48.51,0:01:51.30,Default,,0,0,0,,{\fad(200,200)}ll be watching closely to
+Dialogue: 0,0:01:51.30,0:01:54.10,Default,,0,0,0,,{\fad(200,200)}see how this unfolds. For
+Dialogue: 0,0:01:54.10,0:01:56.89,Default,,0,0,0,,{\fad(200,200)}more in depth analysis of
+Dialogue: 0,0:01:56.89,0:01:59.69,Default,,0,0,0,,{\fad(200,200)}these developments, remember to subscribe
+Dialogue: 0,0:01:59.69,0:02:01.37,Default,,0,0,0,,{\fad(200,200)}and follow ViralDNA.
