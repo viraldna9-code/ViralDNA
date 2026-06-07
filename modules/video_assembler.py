@@ -1288,11 +1288,20 @@ Script:
         return image_paths
 
     def generate_ass_file(self, script_text, total_duration, ass_path, out_w=1280, out_h=720):
-        # Normalize ALL apostrophe-like Unicode characters for clean subtitle display
+        # Normalize ALL apostrophe-like Unicode characters, then strip apostrophes
+        # to prevent word-splitting artifacts like "Don t" or "party s" in subtitles.
+        # Contractions are expanded in the TTS pipeline; for subtitles we just strip.
         script_text = script_text.replace("\u2019", "'").replace("\u2018", "'")
         script_text = script_text.replace("\u2032", "'").replace("\u2035", "'")
         script_text = script_text.replace("\u02bc", "'").replace("\u02bb", "'")
         script_text = script_text.replace("\uff07", "'").replace("\u201b", "'")
+        script_text = script_text.replace("\u2039", "'").replace("\u203a", "'")
+        # Strip all apostrophes so "Don't" -> "Dont" (single word, no split)
+        script_text = script_text.replace("'", "")
+        # Also strip hyphens that could cause mid-word splits
+        script_text = script_text.replace("-", " ")
+        import re
+        script_text = re.sub(r'\s+', ' ', script_text).strip()
         words = script_text.split()
         if not words:
             return False
