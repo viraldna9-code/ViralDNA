@@ -203,6 +203,54 @@ class ScriptGenerator:
         return title
 
     # ─── Enhanced Title Variant Builder (A1.4, C1.6) ───
+    # ─── YouTube Studio Title SEO Rules (v84.1) ───
+    # Rule 1: LOCALIZE — always tie national news to Telangana/Andhra Pradesh/districts
+    # Rule 2: QUESTION FORMAT — for alliances/coalitions/political restructuring,
+    #         prefer "Will [EVENT] Change [LOCAL] Politics?" to drive curiosity clicks
+    # Rule 3: EMOTIONAL HOOK PREFIX — for high-impact topics, prepend hooks like
+    #         "BIG MOVE:", "EXPLAINED:", "BREAKING:" based on topic type
+    # Rule 4: SPECIFICITY — replace vague terms ("region", "state") with specific ones
+    #         ("Telangana districts", "Andhra villages", "Hyderabad")
+    _TITLE_LOCALIZATION_TERMS = [
+        "Telangana", "Andhra Pradesh", "Telangana districts",
+        "Andhra villages", "Hyderabad", "Amaravati",
+    ]
+    _TITLE_HOOK_PREFIXES = {
+        "coalition": "BIG MOVE:",
+        "alliance": "BIG MOVE:",
+        "restructuring": "BIG MOVE:",
+        "breaking": "BREAKING:",
+        "urgent": "BREAKING:",
+        "death": "BREAKING:",
+        "attack": "BREAKING:",
+        "explainer": "EXPLAINED:",
+        "analysis": "EXPLAINED:",
+        "why": "EXPLAINED:",
+        "how": "EXPLAINED:",
+    }
+    _TITLE_VAGUE_TERMS = {
+        "region": "Telangana",
+        "state": "Telangana",
+        "area": "Telangana districts",
+        "local area": "Telangana districts",
+        "our state": "Telangana",
+        "our region": "Telangana",
+        "the state": "Telangana",
+        "the region": "Telangana",
+    }
+
+    def _apply_title_seo_rules(self, title: str, topic_context: str = "") -> str:
+        """Apply YouTube Studio title SEO rules to refine a title."""
+        refined = title.strip()
+
+        # Rule 4: Replace vague terms with specific ones
+        for vague, specific in self._TITLE_VAGUE_TERMS.items():
+            if vague.lower() in refined.lower() and specific.lower() not in refined.lower():
+                refined = re.sub(re.escape(vague), specific, refined, flags=re.IGNORECASE)
+                break  # Only replace first match to avoid over-correction
+
+        return refined
+
     def _build_title_variants(self, title: str, segment_type: str,
                                topic_context: str = "") -> list:
         """Generates distinct YouTube title variants with CTR-optimized formulas.
@@ -210,6 +258,7 @@ class ScriptGenerator:
         v82.5: Titles must be SPECIFIC — include names, places, numbers.
         Generic templates like "BREAKING: {title}" are removed.
         Each variant must have a distinct angle/focus.
+        v84.1: YouTube Studio SEO rules — localize, question format, hook prefixes, specificity.
         """
         import datetime
         year = datetime.datetime.now().year
@@ -229,21 +278,55 @@ class ScriptGenerator:
         entities = [w for w in words if len(w) > 2 and w[0].isupper() and w.lower() not in skip]
         entity_str = ' '.join(entities[:3]) if entities else clean_title[:50]
 
+        # ── v84.1: Detect topic type for hook prefix and question format ──
+        context_lower = f"{clean_title} {topic_context}".lower()
+        # Detect if this is a coalition/alliance/political restructuring topic
+        is_coalition_topic = any(w in context_lower for w in [
+            "alliance", "coalition", "bloc", "janbandhan", "unite", "united",
+            "join", "front", "combine", "merge", "parties"
+        ])
+        # Detect applicable hook prefix
+        hook_prefix = ""
+        for trigger, prefix in self._TITLE_HOOK_PREFIXES.items():
+            if trigger in context_lower:
+                hook_prefix = prefix
+                break
+        # Determine local reference for this topic
+        local_ref = ""
+        if "telangana" in context_lower or "hyderabad" in context_lower:
+            local_ref = "Telangana"
+        elif "andhra" in context_lower or "amaravati" in context_lower or "vijayawada" in context_lower or "vizag" in context_lower or "visakhapatnam" in context_lower:
+            local_ref = "Andhra Pradesh"
+        else:
+            local_ref = "Telangana"  # Default for ViralDNA's core audience
+
         if segment_type == "main":
             raw = [
                 {
-                    "title": f"{clean_title[:65]} | {year}",
+                    # Variant 1: Localized with hook prefix (YouTube Studio Option 2 style)
+                    "title": f"{hook_prefix + ' ' if hook_prefix else ''}{entity_str[:45]} — What It Means for {local_ref}".strip(),
                     "description": f"Full report on {clean_title}. TheViralDNA brings you the complete story from our homeland."
                 },
-                {
+            ]
+
+            # Variant 2: Question format for coalition/alliance topics (YouTube Studio Option 1)
+            if is_coalition_topic and local_ref:
+                raw.append({
+                    "title": f"Will {entity_str[:40]} Change {local_ref} Politics?",
+                    "description": f"Understanding how {clean_title} could reshape the political landscape in {local_ref}."
+                })
+            else:
+                raw.append({
                     "title": f"{entity_str[:50]} — What Happened & What's Next | {year}",
                     "description": f"Understanding {clean_title} and what comes next for Telugu states."
-                },
-                {
-                    "title": f"{clean_title[:60]} | Andhra Pradesh & Telangana News {year}",
-                    "description": f"Latest on {clean_title}. Stay informed with TheViralDNA."
-                },
-            ]
+                })
+
+            # Variant 3: Specific local impact (YouTube Studio Option 4 style)
+            raw.append({
+                "title": f"{clean_title[:55]} | {local_ref} News {year}",
+                "description": f"Latest on {clean_title}. Stay informed with TheViralDNA."
+            })
+
         elif segment_type == "short_1":
             raw = [
                 {
@@ -289,6 +372,10 @@ class ScriptGenerator:
                     "description": f"Stay connected to your homeland. Here is the latest on {clean_title}."
                 },
             ]
+
+        # ── v84.1: Apply SEO rule 4 (specificity) to all variants ──
+        for variant in raw:
+            variant["title"] = self._apply_title_seo_rules(variant["title"], topic_context)
 
         # Inject search keywords into top-ranked title variant
         if raw and len(raw) > 0:
