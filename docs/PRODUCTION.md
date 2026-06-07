@@ -43,6 +43,7 @@ NO auto YouTube uploads (UPLOAD_ENABLED=false).
 │   ├── video_assembler.py    ← FFmpeg video assembly + image fetching
 │   ├── youtube_uploader.py   ← YouTube Data API (SAVE_TO_DRIVE mode)
 │   ├── news_image_fetcher.py ← RSS image fetcher (primary source)
+│   ├── fact_check.py        ← Named entity fact-checking gate (v83.0)
 │   └── config.py             ← All API keys, paths, settings
 ├── audio/                    ← TTS voiceover + slideshow images
 ├── logs/                     ← Topic history, schedule log
@@ -71,6 +72,7 @@ Scopes: youtube.upload, youtube.force-ssl, youtube.readonly
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v83.0 | 2026-06-07 | Fact-checking gate (Phase 3.5), named entity verification, VDNA170 retraction, REJECTED folder for bad videos |
 | v82.6 | 2026-06-07 | Dynamic topic-specific tags (LLM+Gemini), two-tier tag system, audit G5b, desc_raw sanitization (strips TITLE:/📰/🔥/💡/📌 markers), all 18 YouTube videos fixed |
 | v82.5 | 2026-06-06 | Title quality overhaul — generic detection, distinct shorts, dedup, no BREAKING templates |
 | v82.4 | 2026-06-05 | Image relevance defense — text check + keyword overlap + Gemini Vision |
@@ -88,6 +90,8 @@ Scopes: youtube.upload, youtube.force-ssl, youtube.readonly
 | DriveCopy hang in pipeline | rclone hangs after 2 files | Known issue — workaround: kill process, manually rclone copy |
 | Zero-view videos | YouTube doesn't index private→scheduledpremiere videos | Fix: private→public re-publish cycle (24-48h to re-index) |
 | Template artifacts in descriptions | `desc_raw` from script generator contains TITLE:/📰/🔥 markers | v82.6: desc_raw sanitization in `_build_full_description()` |
+| Factual errors in scripts | Gemini hallucinates entity roles from headline only | v83.0: FactCheckAgent (Phase 3.5) verifies entities against source URL |
+| TTS "Don T" instead of "Don't" | Smart quotes (U+2019) from Gemini not matched by contraction regex | v82.6: smart quote normalization before contraction expansion |
 
 ## YouTube Channel Info
 

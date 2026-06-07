@@ -4,6 +4,46 @@ All notable changes to the ViralDNA platform are documented in this file.
 
 ---
 
+## [v83.0] — 2026-06-07 — Fact-Checking Gate + VDNA170 Retraction
+
+### Problem
+1. **VDNA170 factual error**: Video titled "Annamalai's Urgent Plea" falsely attributed BJP TN chief Nainar Nagendran's appeal to Annamalai. Annamalai QUIT BJP — he is NOT the state president. Script called him "state president K. Annamalai" — completely wrong.
+2. **Root cause**: Gemini LLM generates script from headline only (no full article text). It invents plausible-sounding but WRONG entity roles when `rag_context` is empty.
+3. **No fact-checking step**: Pipeline had no verification of named entities against source. Script generator → humanizer → voiceover → assembly → upload, with zero fact-checking.
+
+### Changes
+
+#### 1. New Module: `modules/fact_check.py`
+- Named entity extraction from generated script using Gemini
+- Entity role verification against actual news article text
+- Article fetching from source URL (HTML parsing)
+- Heuristic pre-check: detects "after X" title pattern vs script attribution
+- Returns PASS / FAIL / UNCERTAIN verdict with detailed error list
+
+#### 2. New Agent: `FactCheckAgent` (Phase 3.5)
+- Inserted between ScriptingAgent (Phase 3) and ComplianceAgent (Phase 4)
+- Runs fact-check on main script text against source URL
+- Sets `fact_check_blocked` flag on state if FAIL
+- Non-fatal: errors don't crash pipeline, just block upload
+
+#### 3. Upload Block in `ResilientUploaderAgent`
+- Checks `fact_check_blocked` flag before upload
+- If blocked: moves files to `gdrive:ViralDNA_REJECTED/` folder instead of `ViralDNA_Review/`
+- Adds rejection reason to upload results
+
+#### 4. `_copy_to_gdrive` Updated
+- New `rejected` parameter: when True, destination is `ViralDNA_REJECTED/` instead of `ViralDNA_Review/`
+
+#### 5. VDNA170 Retracted
+- Files moved from `ViralDNA_Review/20260607_VDNA170/` to `ViralDNA_REJECTED/20260607_VDNA170_FACTUAL_ERROR/`
+- `topics_history.json` updated: status="rejected" with detailed reason
+- Rejection marker file created at `logs/REJECTED_VDNA170.txt`
+
+### Key Lesson
+**Never trust Gemini entity attribution without source text.** Gemini will confidently assign wrong roles to people. Always verify WHO did WHAT against the actual news source.
+
+---
+
 ## [v82.6] — 2026-06-07 — Dynamic Tags + Description Sanitization + YouTube Metadata Fixes
 
 ### Problem

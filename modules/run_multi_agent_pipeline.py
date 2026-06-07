@@ -601,6 +601,71 @@ class ScriptingAgent(BaseAgent):
         return state
 
 
+class FactCheckAgent(BaseAgent):
+    """Phase 3.5: Named entity fact-checking gate.
+    Verifies that people, organizations, and roles in the generated script
+    match the actual news source. Blocks videos with factual errors.
+    """
+    def __init__(self, orchestrator):
+        super().__init__("Fact-Check Agent", orchestrator)
+        self.blocked_count = 0
+
+    def execute(self, state: dict) -> dict:
+        self.log("Running named entity fact-check on generated scripts...")
+        self.orchestrator.timer.start("Phase 3.5: Fact-Check", "3.5 Entity Verification")
+        try:
+            script_payload = state.get("script_payload")
+            selected_topic = state.get("selected_topic")
+            if not script_payload or not selected_topic:
+                self.log("⚠️ FactCheck: Missing script payload or topic — skipping")
+                self.orchestrator.timer.stop("Phase 3.5: Fact-Check", "3.5 Entity Verification")
+                return state
+
+            main_text = script_payload.get_segment("main")["text"]
+            title = selected_topic.get("title", "")
+            source_url = selected_topic.get("url", "")
+
+            # Import fact_check module
+            from fact_check import fact_check_script
+
+            # Run fact-check with Gemini engine
+            fc_result = fact_check_script(
+                script_text=main_text,
+                title=title,
+                source_url=source_url,
+                engine=self.orchestrator.engine,
+            )
+
+            # Store result in state for downstream agents
+            state["fact_check_result"] = fc_result
+
+            if fc_result.get("verdict") == "FAIL":
+                self.blocked_count += 1
+                errors = fc_result.get("errors", [])
+                error_summary = "; ".join(
+                    f"{e.get('entity', '?')}: {e.get('issue', str(e))}" for e in errors[:3]
+                )
+                self.log(f"❌ FACTUAL ERROR DETECTED — {error_summary}")
+                self.log("🛑 Video BLOCKED from upload pipeline")
+                # Mark state as blocked — downstream agents check this
+                state["fact_check_blocked"] = True
+                state["fact_check_block_reason"] = error_summary
+            elif fc_result.get("verdict") == "UNCERTAIN":
+                self.log("⚠️ FactCheck: UNCERTAIN — could not fully verify. Proceeding with caution.")
+                state["fact_check_blocked"] = False
+            else:
+                self.log("✅ FactCheck: All entities verified against source.")
+                state["fact_check_blocked"] = False
+
+            self.orchestrator.timer.stop("Phase 3.5: Fact-Check", "3.5 Entity Verification")
+        except Exception as e:
+            self.orchestrator.timer.fail("Phase 3.5: Fact-Check", "3.5 Entity Verification")
+            self.log(f"⚠️ FactCheck error (non-fatal, proceeding): {e}")
+            state["fact_check_blocked"] = False
+            state["fact_check_result"] = {"verdict": "UNCERTAIN", "errors": [], "warnings": [str(e)]}
+        return state
+
+
 class ComplianceAgent(BaseAgent):
     """Phase 4: Zero-tolerance compliance with self-learning false-positive reduction."""
     def __init__(self, orchestrator):
@@ -1070,6 +1135,20 @@ class ResilientUploaderAgent(BaseAgent):
             self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "SKIPPED")
             return state
 
+        # ── FACT-CHECK BLOCK: if fact-check failed, reject the video ──
+        if state.get("fact_check_blocked"):
+            block_reason = state.get("fact_check_block_reason", "Unknown factual error")
+            self.log(f"🛑 FACT-CHECK BLOCKED: {block_reason}")
+            self.log("📁 Moving files to REJECTED folder — DO NOT UPLOAD")
+            self._copy_to_gdrive(selected_topic, state, rejected=True)
+            state["upload_results"] = {
+                "overall_status": "rejected",
+                "youtube_uploaded": False,
+                "rejection_reason": block_reason,
+            }
+            self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "REJECTED")
+            return state
+
         # ── KILL SWITCH: if uploads disabled, copy to Google Drive for manual review ──
         upload_enabled = os.environ.get("VIRALDNA_UPLOAD_ENABLED", "false").lower() == "true"
         if not upload_enabled:
@@ -1154,11 +1233,12 @@ class ResilientUploaderAgent(BaseAgent):
             _json.dump(data, f, indent=2)
 
     @staticmethod
-    def _copy_to_gdrive(topic: dict, state: dict):
+    def _copy_to_gdrive(topic: dict, state: dict, rejected: bool = False):
         """Copy ALL finished pipeline artifacts to Google Drive review folder.
 
         When UPLOAD_ENABLED=false, this replaces YouTube upload.
         Files are placed in: gdrive:/ViralDNA_Review/<date>_<topic_id>_<title>/
+        When rejected=True, files go to: gdrive:/ViralDNA_REJECTED/<date>_<topic_id>/
 
         Copies:
         - Main video + all short videos (.mp4)
@@ -1179,7 +1259,10 @@ class ResilientUploaderAgent(BaseAgent):
         date_str = ist_now.strftime("%Y%m%d")
         topic_id = topic.get("id", "unknown")
         topic_title = topic.get("title", "")[:40].replace(" ", "_").replace("/", "_")
-        gdrive_base = "gdrive:ViralDNA_Review"
+        if rejected:
+            gdrive_base = "gdrive:ViralDNA_REJECTED"
+        else:
+            gdrive_base = "gdrive:ViralDNA_Review"
         topic_slug = state.get("topic_slug", topic_id)
         gdrive_dest = f"{gdrive_base}/{date_str}_{topic_id}"
 
@@ -2690,15 +2773,16 @@ class MultiAgentOrchestrator:
             DiscoveryAgent(self),          # 0
             WeightingAgent(self),          # 1
             ScriptingAgent(self),          # 2
-            ComplianceAgent(self),         # 3
-            AdFriendlyCheckAgent(self),    # NEW: Ad-friendly check (after compliance)
-            VoiceSynthesisAgent(self),     # 4 (was 4, now 5)
-            VisualHarvestingAgent(self),   # 5 (was 5, now 6)
-            ThumbnailSynthesisAgent(self), # 6 (was 6, now 7)
-            CTROptimizationAgent(self),    # NEW: CTR optimization (after thumbnails)
-            SequentialAssemblyAgent(self), # 7 (was 7, now 9)
-            ForensicAuditGateAgent(self),  # NEW v79: Pre-ship forensic audit gate (task index 10)
-            ResilientUploaderAgent(self),  # task index 11 (final task agent)
+            FactCheckAgent(self),          # 3 NEW: Named entity fact-check
+            ComplianceAgent(self),         # 4
+            AdFriendlyCheckAgent(self),    # 5 Ad-friendly check (after compliance)
+            VoiceSynthesisAgent(self),     # 6
+            VisualHarvestingAgent(self),   # 7
+            ThumbnailSynthesisAgent(self), # 8
+            CTROptimizationAgent(self),    # 9 CTR optimization
+            SequentialAssemblyAgent(self), # 10
+            ForensicAuditGateAgent(self),  # 11 Pre-ship forensic audit gate
+            ResilientUploaderAgent(self),  # 12 (final task agent)
         ]
 
         # ── Integration agents (between main pipeline task agents) ──

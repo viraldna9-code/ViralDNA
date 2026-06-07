@@ -1,0 +1,19 @@
+DO NOT UPLOAD — FACTUAL ERROR
+================================
+Topic: VDNA170
+Title: "Don't leave, we have PM Modi: BJP TN chief's appeal to cadres after mass resignations post Annamalai"
+Date: 2026-06-07
+
+REJECTION REASON:
+The video contains critical factual errors:
+1. Title says "Annamalai's Urgent Plea" — FALSE. The plea was made by Nainar Nagendran (BJP TN chief), NOT Annamalai
+2. Script calls Annamalai "state president K. Annamalai" — FALSE. Annamalai QUIT BJP; he is not the state president
+3. Description says "Annamalai is now directly appealing to cadres" — FALSE
+
+VERIFIED FACTS (Google News, June 2026):
+- Nainar Nagendran = BJP Tamil Nadu chief who made the appeal
+- K. Annamalai = former BJP TN chief who RESIGNED from BJP
+- The appeal was made AFTER Annamalai's exit to stop cadres from resigning
+- Sources: Times of India, Moneycontrol, The Federal, The Statesman, The Week
+
+ROOT CAUSE: Gemini LLM hallucinated entity roles. Script generator had no fact-checking.
