@@ -88,7 +88,14 @@ def send_approval_request(
     ]
 
     if publish_decision:
-        pd_summary = publish_decision.get("summary", "N/A") if isinstance(publish_decision, dict) else str(publish_decision)
+        try:
+            pd_summary = publish_decision.get("summary", "N/A") if isinstance(publish_decision, dict) else str(publish_decision)
+        except Exception as _e:
+            import traceback
+            print(f"  [ApprovalGate] publish_decision error: {_e}")
+            print(f"  [ApprovalGate] type={type(publish_decision)}, value={repr(publish_decision)}")
+            traceback.print_exc()
+            pd_summary = str(publish_decision)
         lines.append(f"📋 <b>Plan:</b> {pd_summary}")
 
     lines.append(f"🎥 <b>Videos:</b> {len(video_files)} file(s)")

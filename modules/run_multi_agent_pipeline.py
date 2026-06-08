@@ -1216,7 +1216,9 @@ class ResilientUploaderAgent(BaseAgent):
                 )
                 self.log(f"📨 Approval request sent: {topic_id} (token: {token})")
             except Exception as e:
+                import traceback
                 self.log(f"⚠️ Failed to send approval request: {e}")
+                traceback.print_exc()
                 # Fallback: just save to Drive
                 self.log("📁 Fallback: files saved to Google Drive for manual review.")
 
