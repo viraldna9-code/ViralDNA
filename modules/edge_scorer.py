@@ -8,18 +8,19 @@ channel growth always wins.
 
 Edge factors (each contributes 0.0–0.15, total 0.1–0.9):
 
-  1. Search Demand   — Are people searching this RIGHT NOW? (Google Trends RSS)
-  2. Trending Velocity — How fast is it gaining traction? (RSS recurrence)
-  3. Channel Fit     — Does this match our best-performing past content?
-  4. Competition Gap  — Are other Telugu channels already covering it?
+  1. Search Demand      — Is this trending on Google RIGHT NOW? (Google Trends RSS)
+  2. Trending Velocity   — How fast is it gaining traction? (RSS recurrence)
+  3. Channel Fit        — Does this match our best-performing past content?
+  4. Competition Gap    — Are other Telugu channels already covering it?
   5. Engagement Potential — Will it get comments/shares? (identity, emotion)
-  6. Geographic Breadth — AP + TS dual reach vs single-state
-  7. Feedback Analytics — CTR, retention, views from past videos in same category
+  6. Geographic Breadth  — AP + TS dual reach vs single-state
+  7. Feedback Analytics  — CTR, retention, views from past videos in same category
+  8. Search Volume (NEW) — Actual Google search volume via Serper API
 
 Design principles:
   - Edge is ALWAYS > 0.1 (every topic gets a baseline)
   - Edge is deterministic (same inputs → same output, no randomness)
-  - Top factor: feedback analytics from our OWN channel (what worked before)
+  - Top factor: search volume + feedback analytics (what people actually search + what worked before)
   - Tie-breaking: if edge is identical, use title alphabetical (stable sort)
 """
 
@@ -36,6 +37,7 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ANALYTICS_FILE = os.path.join(PROJECT_ROOT, "analytics", "metrics_history.json")
 TOPICS_FILE = os.path.join(PROJECT_ROOT, "logs", "topics_history.json")
 LEDGER_FILE = os.path.join(PROJECT_ROOT, "diagnostics", "growth_ledger.json")
+
 
 # ── CATEGORY KEYWORDS (for matching topics to past video categories) ──
 
@@ -167,6 +169,104 @@ def _get_trending_topics() -> set:
     except Exception:
         pass
     return trending
+
+
+# ═══════════════════════════════════════════════════════
+#  SEARCH VOLUME: Google Trends RSS with traffic data
+# ═══════════════════════════════════════════════════════
+
+# Namespace for Google Trends RSS traffic element
+_TRENDS_NS = "{https://trends.google.com/trending/rss}"
+
+
+def _fetch_google_trends_with_volume() -> dict:
+    """
+    Fetch Google Trends India with traffic/volume data.
+    Returns dict: {topic_title_lower: traffic_score}
+    Traffic scores from Google: "100+", "500+", "1000+", "5000+", "10000+", "50000+", "100000+"
+    """
+    trends = {}
+    try:
+        url = "https://trends.google.com/trending/rss?geo=IN"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        resp = urllib.request.urlopen(req, timeout=10)
+        root = ET.fromstring(resp.read())
+        for item in root.findall(".//item"):
+            title = item.findtext("title", "").strip().lower()
+            traffic_str = item.findtext(f"{_TRENDS_NS}approx_traffic", "").strip()
+            if title and traffic_str:
+                # Parse traffic: "100+" → 100, "1000+" → 1000, etc.
+                try:
+                    traffic = int(traffic_str.replace("+", "").replace(",", ""))
+                except ValueError:
+                    traffic = 100
+                trends[title] = traffic
+    except Exception:
+        pass
+    return trends
+
+
+def _parse_traffic_score(traffic_value: int) -> float:
+    """Convert Google Trends traffic value to normalized score."""
+    if traffic_value >= 50000:
+        return 0.15  # Massive trending
+    elif traffic_value >= 10000:
+        return 0.13  # Very high
+    elif traffic_value >= 5000:
+        return 0.11  # High
+    elif traffic_value >= 1000:
+        return 0.09  # Moderate-high
+    elif traffic_value >= 500:
+        return 0.07  # Moderate
+    elif traffic_value >= 100:
+        return 0.05  # Low-moderate
+    else:
+        return 0.03  # Minimal
+
+
+_factor_search_demand_cache = {"trends": None, "timestamp": None}
+
+
+def factor_youtube_search_demand(title: str) -> float:
+    """
+    Factor 8: YouTube Search Demand (0.0–0.15)
+    Uses Google Trends RSS with traffic data to estimate actual search volume.
+    High traffic on Google Trends = people ARE searching this = YouTube will surface it.
+    """
+    global _factor_search_demand_cache
+
+    t = title.lower().strip()
+    if not t or len(t) < 5:
+        return 0.05
+
+    # Use cached trends data (refreshed per batch in batch_score_topics)
+    trends = _factor_search_demand_cache.get("trends") or {}
+    if not trends:
+        trends = _fetch_google_trends_with_volume()
+        _factor_search_demand_cache["trends"] = trends
+
+    if not trends:
+        return 0.05  # No data — neutral
+
+    # 1. Exact match on Google Trends (highest confidence)
+    if t in trends:
+        return _parse_traffic_score(trends[t])
+
+    # 2. Partial match: check if any trending topic is a substring of our title
+    for trend_title, traffic in sorted(trends.items(), key=lambda x: -x[1]):
+        trend_words = set(trend_title.split())
+        title_words = set(t.split())
+        if not trend_words:
+            continue
+        overlap = trend_words & title_words
+        overlap_ratio = len(overlap) / len(trend_words)
+        if overlap_ratio >= 0.5:  # 50%+ of trend words appear in our title
+            return _parse_traffic_score(traffic)
+        elif len(overlap) >= 2 and len(trend_words) <= 4:
+            return _parse_traffic_score(int(traffic * 0.7))
+
+    # 3. No match — not currently trending
+    return 0.02
 
 
 # ═══════════════════════════════════════════════════════
@@ -502,6 +602,7 @@ def compute_edge_score(topic: dict, all_topics: list = None,
     factors["engagement_potential"] = factor_engagement_potential(title)
     factors["geographic_breadth"] = factor_geographic_breadth(title)
     factors["feedback_analytics"] = factor_feedback_analytics(title, analytics, ledger)
+    factors["search_volume"] = factor_youtube_search_demand(title)
 
     # Sum all factors
     raw_edge = sum(factors.values())
@@ -522,6 +623,9 @@ def batch_score_topics(topics: list) -> list:
     Returns the same list with 'edge_score' and 'edge_breakdown' added to each.
     Also sets 'final_score' = base_score + edge_score.
     """
+    # Clear cache for fresh scoring
+    _factor_search_demand_cache["trends"] = None
+
     # Fetch trending topics once (expensive)
     trending = _get_trending_topics()
 
