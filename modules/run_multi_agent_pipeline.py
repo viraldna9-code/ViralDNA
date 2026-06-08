@@ -1197,21 +1197,51 @@ class ResilientUploaderAgent(BaseAgent):
             # compiled_videos is a list of string paths (not dicts)
             compiled_videos = state.get("compiled_videos", [])
             video_files = [cv for cv in compiled_videos if isinstance(cv, str) and os.path.exists(cv)]
-            # Thumbnails: look for .jpg files alongside video files
+            # Thumbnails: search the thumbnails/ dir for topic_slug patterns
+            # (video is videos/{slug}_Main.mp4, thumbnail is thumbnails/{slug}_branded.jpg)
             thumbnail_files = []
-            for vf in video_files:
-                thumb = vf.rsplit(".", 1)[0] + ".jpg"
-                if os.path.exists(thumb):
-                    thumbnail_files.append(thumb)
+            thumbs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "thumbnails")
+            if not os.path.isdir(thumbs_dir):
+                thumbs_dir = "/home/jay/ViralDNA/thumbnails"
+            if os.path.isdir(thumbs_dir):
+                # Find the most recent branded thumbnails (matching topic slug from video filenames)
+                video_slugs = set()
+                for vf in video_files:
+                    base = os.path.splitext(os.path.basename(vf))[0]  # e.g. "topic_slug_Main"
+                    slug = base.rsplit("_", 1)[0]  # e.g. "topic_slug"
+                    video_slugs.add(slug)
+                # Search for matching thumbnails
+                for f in sorted(os.listdir(thumbs_dir), reverse=True):
+                    if not f.endswith(".jpg"):
+                        continue
+                    f_base = f.replace("_branded.jpg", "").replace("_clean.jpg", "").replace("_branded_v2.jpg", "").replace("_branded_v3.jpg", "")
+                    if f_base in video_slugs:
+                        thumbnail_files.append(os.path.join(thumbs_dir, f))
+                # Deduplicate: keep only the best branded thumbnail per slug
+                seen_slugs = set()
+                deduped = []
+                for tf in thumbnail_files:
+                    slug = os.path.basename(tf).replace("_branded.jpg", "").replace("_clean.jpg", "").replace("_branded_v2.jpg", "").replace("_branded_v3.jpg", "")
+                    if slug not in seen_slugs:
+                        seen_slugs.add(slug)
+                        deduped.append(tf)
+                thumbnail_files = deduped[:5]  # cap at 5 thumbnails
 
             # Send approval request IMMEDIATELY (don't wait for Drive copy)
             try:
                 from approval_gate import send_approval_request
                 topic_id = selected_topic.get("id", "UNKNOWN")
                 _pd = state.get("publish_decision")
-                print(f"  [DEBUG] state type={type(_pd)}, isinstance_dict={isinstance(_pd, dict)}, repr={repr(_pd)[:120]}", flush=True)
-                _pd_dict = _pd if isinstance(_pd, dict) else None
-                print(f"  [DEBUG] _pd_dict={repr(_pd_dict)[:120]}", flush=True)
+                # Convert PublishDecision dataclass to dict for approval_gate
+                if hasattr(_pd, "__dataclass_fields__"):
+                    _pd_dict = {f: getattr(_pd, f) for f in _pd.__dataclass_fields__}
+                    # Add computed summary (summary() is a method, not a field)
+                    if hasattr(_pd, "summary") and callable(_pd.summary):
+                        _pd_dict["summary"] = _pd.summary()
+                elif isinstance(_pd, dict):
+                    _pd_dict = _pd
+                else:
+                    _pd_dict = None
                 token = send_approval_request(
                     topic_id=topic_id,
                     topic_title=selected_topic.get("title", "Unknown"),

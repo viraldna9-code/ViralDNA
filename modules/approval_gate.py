@@ -40,10 +40,12 @@ def _load_queue() -> dict:
 
 
 def _save_queue(queue: dict):
-    """Save approval queue to disk."""
+    """Save approval queue to disk atomically (write temp then rename)."""
     os.makedirs(os.path.dirname(APPROVAL_QUEUE_PATH), exist_ok=True)
-    with open(APPROVAL_QUEUE_PATH, "w") as f:
+    tmp_path = APPROVAL_QUEUE_PATH + ".tmp"
+    with open(tmp_path, "w") as f:
         json.dump(queue, f, indent=2, default=str)
+    os.replace(tmp_path, APPROVAL_QUEUE_PATH)
 
 
 def _log_approval(topic_id: str, action: str, details: str = ""):
@@ -79,9 +81,14 @@ def send_approval_request(
     print(f"  [ApprovalGate] ENTRY: publish_decision type={type(publish_decision)}, repr={repr(publish_decision)[:150]}", file=sys.stderr, flush=True)
     token = hashlib.md5(f"{topic_id}{time.time()}".encode()).hexdigest()[:8]
 
-    # Build message
+    # Build message — commands FIRST so they survive Telegram's 1024-char caption limit
     lines = [
         f"🎬 <b>ViralDNA — Video Ready for Review</b>",
+        f"",
+        f"⏰ <b>Reply to approve or reject:</b>",
+        f"  ✅ <code>/approve {topic_id}</code>",
+        f"  ❌ <code>/reject {topic_id}</code>",
+        f"  ℹ️ <code>/info {topic_id}</code> — details",
         f"",
         f"📌 <b>Topic:</b> {topic_title}",
         f"📰 <b>Source:</b> {topic_source}",
@@ -91,12 +98,13 @@ def send_approval_request(
 
     if publish_decision:
         try:
-            pd_summary = publish_decision.get("summary", "N/A") if isinstance(publish_decision, dict) else str(publish_decision)
+            if isinstance(publish_decision, dict):
+                pd_summary = publish_decision.get("summary", "N/A")
+            elif hasattr(publish_decision, "summary") and callable(publish_decision.summary):
+                pd_summary = publish_decision.summary()
+            else:
+                pd_summary = str(publish_decision)
         except Exception as _e:
-            import traceback
-            print(f"  [ApprovalGate] publish_decision error: {_e}")
-            print(f"  [ApprovalGate] type={type(publish_decision)}, value={repr(publish_decision)}")
-            traceback.print_exc()
             pd_summary = str(publish_decision)
         lines.append(f"📋 <b>Plan:</b> {pd_summary}")
 
@@ -108,25 +116,18 @@ def send_approval_request(
     if drive_folder:
         lines.append(f"📁 <b>Drive:</b> {drive_folder}")
 
-    lines.extend([
-        f"",
-        f"⏰ <b>Reply to approve or reject:</b>",
-        f"  ✅ <code>/approve {topic_id}</code>",
-        f"  ❌ <code>/reject {topic_id}</code>",
-        f"  ℹ️ <code>/info {topic_id}</code> — details",
-    ])
-
     message = "\n".join(lines)
 
-    # Send thumbnail + message
+    # Send thumbnail + message (caption max 1024 chars for photo)
+    # Commands are at the top, so they survive truncation
     if thumbnail_files and os.path.exists(thumbnail_files[0]):
         try:
             send_telegram_photo(thumbnail_files[0], caption=message[:1024])
         except Exception as e:
-            # Fallback: send text only
-            send_telegram(message)
+            # Fallback: send text only (Telegram text limit = 4096)
+            send_telegram(message[:4000])
     else:
-        send_telegram(message)
+        send_telegram(message[:4000])
 
     # Save to queue
     queue = _load_queue()

@@ -191,6 +191,7 @@ def main():
         if not approved:
             print("No approved topics to upload")
             return
+        failed = []
         for topic_id, item in approved.items():
             print(f"\n🚀 Uploading {topic_id}...")
             result = upload_topic(topic_id, item)
@@ -201,9 +202,14 @@ def main():
                 queue.setdefault("uploaded", {})[topic_id] = item
             else:
                 print(f"❌ Upload failed: {result.get('message', 'Unknown error')}")
-        # Clear approved
-        queue["approved"] = {}
+                failed.append(topic_id)
+        # Only clear successfully uploaded items from approved
+        for topic_id in list(approved.keys()):
+            if topic_id not in failed:
+                del queue["approved"][topic_id]
         save_queue(queue)
+        if failed:
+            print(f"\n⚠️ {len(failed)} upload(s) failed, kept in approved queue for retry: {', '.join(failed)}")
     else:
         parser.print_help()
 
