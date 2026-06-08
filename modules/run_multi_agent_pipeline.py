@@ -1185,14 +1185,45 @@ class ResilientUploaderAgent(BaseAgent):
             self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "REJECTED")
             return state
 
-        # ── KILL SWITCH: if uploads disabled, copy to Google Drive for manual review ──
+        # ── KILL SWITCH: if uploads disabled, send approval request ──
         upload_enabled = os.environ.get("VIRALDNA_UPLOAD_ENABLED", "false").lower() == "true"
         if not upload_enabled:
-            self.log("🔒 UPLOAD DISABLED (VIRALDNA_UPLOAD_ENABLED != true). Copying to Google Drive for manual review.")
+            self.log("🔒 UPLOAD DISABLED — sending approval request via Telegram")
             self._copy_to_gdrive(selected_topic, state)
-            state["upload_results"] = {"overall_status": "saved_to_drive", "youtube_uploaded": False}
-            self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "SAVED_TO_DRIVE")
-            # Still mark topic as "built" so it's not re-picked
+
+            # Collect video and thumbnail files for approval
+            compiled_videos = state.get("compiled_videos", [])
+            video_files = [cv["path"] for cv in compiled_videos if "path" in cv]
+            thumbnail_files = []
+            for cv in compiled_videos:
+                thumb = cv.get("thumbnail_path") or cv.get("thumbnail")
+                if thumb and os.path.exists(thumb):
+                    thumbnail_files.append(thumb)
+
+            # Send approval request
+            try:
+                from approval_gate import send_approval_request
+                topic_id = selected_topic.get("id", "UNKNOWN")
+                token = send_approval_request(
+                    topic_id=topic_id,
+                    topic_title=selected_topic.get("title", "Unknown"),
+                    topic_source=selected_topic.get("source", "Unknown"),
+                    topic_url=selected_topic.get("url", ""),
+                    topic_score=selected_topic.get("final_score", selected_topic.get("score", 0)),
+                    video_files=video_files,
+                    thumbnail_files=thumbnail_files,
+                    publish_decision=state.get("publish_decision") if isinstance(state.get("publish_decision"), dict) else None,
+                    drive_folder=f"gdrive:ViralDNA_Review/{datetime.now().strftime('%Y%m%d')}_{topic_id}/",
+                )
+                self.log(f"📨 Approval request sent: {topic_id} (token: {token})")
+            except Exception as e:
+                self.log(f"⚠️ Failed to send approval request: {e}")
+                # Fallback: just save to Drive
+                self.log("📁 Fallback: files saved to Google Drive for manual review.")
+
+            state["upload_results"] = {"overall_status": "pending_approval", "youtube_uploaded": False}
+            self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "PENDING_APPROVAL")
+            # Mark topic as "built" so it's not re-picked
             try:
                 self._mark_topic_published(selected_topic)
                 self.log(f"Topic marked done: {selected_topic.get('title', '')[:60]}")
