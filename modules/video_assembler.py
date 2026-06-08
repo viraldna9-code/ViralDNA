@@ -1,4 +1,4 @@
-# VERSION: 70.0
+# VERSION: 84.3
 # MODULE: video_assembler.py
 # PURPOSE: Advanced Generative Slideshow + Kinetic Typography Captioning Engine.
 #          v69.0: Image pipeline reworked for real news photos:
@@ -1541,16 +1541,16 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
                 if is_short:
                     # v84.3: Aggressive jump-cut zoom for Studio recommendation.
-                    # Instead of slow Kenburns ramp (5% over full clip), use 3 quick
-                    # jump-cuts within each clip: snap to 110%% -> 120%% -> 130%%
-                    # This creates the "every 5-7s zoom" effect Studio wants.
-                    zoom_base = 1.15  # 15%% base zoom for shorts
-                    # Each clip: hold at 1.15x for first half, then jump to 1.30x
-                    # This mimics a manual editor cutting between zoom levels
+                    # Instead of slow Kenburns ramp (5% over full clip), use a quick
+                    # jump-cut: hold at 1.15x for first half, then jump to 1.25x.
+                    # Commas in zoom expression must be escaped for FFmpeg filter parser.
+                    zoom_base = 1.15
                     half_frames = total_frames // 2
+                    # Escape commas inside z= expression so FFmpeg doesn't split on them
+                    # Note: FFmpeg zoompan uses 'in' (not 'n') for frame number
                     zoom_expr = (
-                        f"if(lte(n,{half_frames}),"
-                        f"1.15,"
+                        f"if(lte(in\\,{half_frames})\\,"
+                        f"{zoom_base}\\,"
                         f"1.25)"
                     )
                     scale_factor = 1.4  # generous scale to allow jump without edge artifacts
