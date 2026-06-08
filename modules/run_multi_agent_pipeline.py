@@ -1189,7 +1189,6 @@ class ResilientUploaderAgent(BaseAgent):
         upload_enabled = os.environ.get("VIRALDNA_UPLOAD_ENABLED", "false").lower() == "true"
         if not upload_enabled:
             self.log("🔒 UPLOAD DISABLED — sending approval request via Telegram")
-            self._copy_to_gdrive(selected_topic, state)
 
             # Collect video and thumbnail files for approval
             compiled_videos = state.get("compiled_videos", [])
@@ -1200,7 +1199,7 @@ class ResilientUploaderAgent(BaseAgent):
                 if thumb and os.path.exists(thumb):
                     thumbnail_files.append(thumb)
 
-            # Send approval request
+            # Send approval request IMMEDIATELY (don't wait for Drive copy)
             try:
                 from approval_gate import send_approval_request
                 topic_id = selected_topic.get("id", "UNKNOWN")
@@ -1220,6 +1219,19 @@ class ResilientUploaderAgent(BaseAgent):
                 self.log(f"⚠️ Failed to send approval request: {e}")
                 # Fallback: just save to Drive
                 self.log("📁 Fallback: files saved to Google Drive for manual review.")
+
+            # Copy to Google Drive in BACKGROUND (non-blocking)
+            # rclone with 15s delays between files can take 5-10 min — don't block approval
+            import threading as _threading
+            def _drive_copy_bg():
+                try:
+                    self._copy_to_gdrive(selected_topic, state)
+                    self.log("📁 Google Drive copy completed (background)")
+                except Exception as e:
+                    self.log(f"⚠️ Google Drive background copy failed: {e}")
+            _t = _threading.Thread(target=_drive_copy_bg, daemon=True)
+            _t.start()
+            self.log("📁 Google Drive copy started in background")
 
             state["upload_results"] = {"overall_status": "pending_approval", "youtube_uploaded": False}
             self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "PENDING_APPROVAL")
