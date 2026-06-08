@@ -261,6 +261,16 @@ def _extract_person_names(topic_title: str) -> list[str]:
         "expert", "specialist", "professional", "amateur", "beginner",
         "anyone", "everyone", "someone", "nobody", "anybody", "everybody",
         "somebody", "nothing", "everything", "something", "anything",
+        # Nationality adjectives (not person names)
+        "iranian", "american", "indian", "british", "chinese", "russian",
+        "pakistani", "israeli", "palestinian", "ukrainian", "afghan",
+        "african", "european", "asian", "australian", "canadian",
+        "mexican", "brazilian", "japanese", "korean", "vietnamese",
+        "turkish", "egyptian", "syrian", "iraqi", "saudi", "yemeni",
+        "filipino", "indonesian", "malaysian", "thai", "nepali",
+        "bangladeshi", "sri", "lankan", "israel", "lebanese", "jordanian",
+        "english", "french", "german", "spanish", "italian", "portuguese",
+        "dutch", "polish", "swedish", "norwegian", "danish", "finnish",
     }
     names = [n for n in names if n not in _common_english]
 
