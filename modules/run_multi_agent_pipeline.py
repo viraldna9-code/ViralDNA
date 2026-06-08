@@ -1204,7 +1204,9 @@ class ResilientUploaderAgent(BaseAgent):
                 from approval_gate import send_approval_request
                 topic_id = selected_topic.get("id", "UNKNOWN")
                 _pd = state.get("publish_decision")
-                print(f"  [DEBUG] publish_decision type={type(_pd)}, isinstance_dict={isinstance(_pd, dict)}, repr={repr(_pd)[:100]}")
+                print(f"  [DEBUG] state type={type(_pd)}, isinstance_dict={isinstance(_pd, dict)}, repr={repr(_pd)[:120]}", flush=True)
+                _pd_dict = _pd if isinstance(_pd, dict) else None
+                print(f"  [DEBUG] _pd_dict={repr(_pd_dict)[:120]}", flush=True)
                 token = send_approval_request(
                     topic_id=topic_id,
                     topic_title=selected_topic.get("title", "Unknown"),
@@ -1213,7 +1215,7 @@ class ResilientUploaderAgent(BaseAgent):
                     topic_score=selected_topic.get("final_score", selected_topic.get("score", 0)),
                     video_files=video_files,
                     thumbnail_files=thumbnail_files,
-                    publish_decision=_pd if isinstance(_pd, dict) else None,
+                    publish_decision=_pd_dict,
                     drive_folder=f"gdrive:ViralDNA_Review/{datetime.now().strftime('%Y%m%d')}_{topic_id}/",
                 )
                 self.log(f"📨 Approval request sent: {topic_id} (token: {token})")

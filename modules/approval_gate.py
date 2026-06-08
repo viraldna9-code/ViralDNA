@@ -75,7 +75,8 @@ def send_approval_request(
     Returns the approval token.
     """
     # Generate approval token
-    print(f"  [ApprovalGate] received publish_decision type={type(publish_decision)}, value={repr(publish_decision)[:120]}")
+    import sys
+    print(f"  [ApprovalGate] ENTRY: publish_decision type={type(publish_decision)}, repr={repr(publish_decision)[:150]}", file=sys.stderr, flush=True)
     token = hashlib.md5(f"{topic_id}{time.time()}".encode()).hexdigest()[:8]
 
     # Build message
