@@ -133,6 +133,15 @@ class VoiceoverGenerator:
             # Possessive/genitive that edge-tts misreads
             "i'm": "i am",
         }
+        # Gemini sometimes outputs contractions with SPACE instead of apostrophe
+        # e.g. "isn t" instead of "isn't", "don t" instead of "don't"
+        # Add space-separated variants so these also get expanded
+        space_variants = {}
+        for k, v in contractions.items():
+            if "'" in k:
+                space_key = k.replace("'", " ")
+                space_variants[space_key] = v
+        contractions.update(space_variants)
         # Add case variants for common contractions that appear in ALL CAPS
         upper_variants = {k.upper(): v.title() for k, v in contractions.items()}
         contractions.update(upper_variants)
