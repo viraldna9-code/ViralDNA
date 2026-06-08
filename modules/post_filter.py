@@ -162,6 +162,37 @@ def _title_similarity(title1: str, title2: str) -> float:
     return intersection / union if union > 0 else 0.0
 
 
+def _dedup_similar_titles(topics: list, threshold: float = 0.55) -> list:
+    """
+    Intra-batch deduplication: remove topics with Jaccard similarity >= threshold.
+    Keeps the higher-scored topic, drops the lower-scored one.
+    This catches near-duplicates like:
+      "DMK to boycott June 8 — What Happened" vs "DMK to boycott June 8 — Why It Matters"
+    """
+    if len(topics) <= 1:
+        return topics
+
+    kept = []
+    dropped = []
+    for t in topics:
+        title = t.get("title", "")
+        is_dup = False
+        for k in kept:
+            sim = _title_similarity(title, k.get("title", ""))
+            if sim >= threshold:
+                is_dup = True
+                dropped.append(f"{title[:50]}... (sim={sim:.2f} vs {k.get('title','')[:40]}...)")
+                break
+        if not is_dup:
+            kept.append(t)
+
+    if dropped:
+        print(f"  [DEDUP] Dropped {len(dropped)} near-duplicate title(s):")
+        for d in dropped:
+            print(f"    {d}")
+    return kept
+
+
 def _is_topic_used_recently(title: str, history: list, lookback_days: int = TOPIC_DEDUP_LOOKBACK_DAYS, description: str = "") -> bool:
     """Check if a topic with overlapping categories was used in the last N days.
     Uses broad topic categories (visa_immigration, weather_disaster, etc.)
@@ -338,6 +369,13 @@ class PostFilter:
 
         # Sort topics descending by weight
         weighted_topics.sort(key=lambda x: x["cpm_weight"], reverse=True)
+
+        # ── Intra-Batch Deduplication: remove near-duplicate titles ──
+        # Catches: "DMK to boycott June 8 — What Happened" vs "DMK to boycott June 8 — Why It Matters"
+        before_count = len(weighted_topics)
+        weighted_topics = _dedup_similar_titles(weighted_topics, threshold=0.45)
+        if len(weighted_topics) < before_count:
+            print(f"  [DEDUP] Intra-batch: {before_count} → {len(weighted_topics)} topics (-{before_count - len(weighted_topics)} near-dupes)")
 
         # ── Cross-Run Deduplication: filter out recently used topics ──
         history = _load_topic_history()
