@@ -317,12 +317,17 @@ def is_watermarked_stock(img_path: str, img_url: str = "",
     return False, ""
 
 
-def check_person_name_in_title(topic_title: str, img_title: str) -> tuple[bool, list[str]]:
+def check_person_name_in_title(topic_title: str, img_title: str, is_hero: bool = False) -> tuple[bool, list[str]]:
     """
     If the topic mentions a specific person (capitalized proper noun),
     the image title MUST contain at least one of those names.
+    Only enforced for hero (first) images — fallback images skip this check
+    because stock photo sites rarely have images with specific person names.
     Returns (passed, list_of_expected_names).
     """
+    # Only check person names for hero images
+    if not is_hero:
+        return True, []
     person_names = _extract_person_names(topic_title)
     if not person_names:
         return True, []  # No person names found, skip check
