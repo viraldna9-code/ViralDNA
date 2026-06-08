@@ -1194,12 +1194,14 @@ class ResilientUploaderAgent(BaseAgent):
             self.log("🔒 UPLOAD DISABLED — sending approval request via Telegram")
 
             # Collect video and thumbnail files for approval
+            # compiled_videos is a list of string paths (not dicts)
             compiled_videos = state.get("compiled_videos", [])
-            video_files = [cv["path"] for cv in compiled_videos if "path" in cv]
+            video_files = [cv for cv in compiled_videos if isinstance(cv, str) and os.path.exists(cv)]
+            # Thumbnails: look for .jpg files alongside video files
             thumbnail_files = []
-            for cv in compiled_videos:
-                thumb = cv.get("thumbnail_path") or cv.get("thumbnail")
-                if thumb and os.path.exists(thumb):
+            for vf in video_files:
+                thumb = vf.rsplit(".", 1)[0] + ".jpg"
+                if os.path.exists(thumb):
                     thumbnail_files.append(thumb)
 
             # Send approval request IMMEDIATELY (don't wait for Drive copy)
