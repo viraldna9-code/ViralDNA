@@ -1161,9 +1161,12 @@ class ResilientUploaderAgent(BaseAgent):
     def execute(self, state: dict) -> dict:
         self.log("Initiating resilient chunked API upload...")
         self.orchestrator.timer.start("Phase 7: Upload", "7.2 API Uploading")
-        selected_topic = state.get("selected_topic")
+        _st = state.get("selected_topic", {})
+        print(f"  [DEBUG-UPLOAD] selected_topic type={type(_st)}, repr={repr(_st)[:100]}", flush=True)
+        selected_topic = _st if isinstance(_st, dict) else {"title": str(_st), "id": "UNKNOWN", "source": "Unknown", "url": "", "score": 0}
         compiled_videos = state.get("compiled_videos", [])
         publish_decision = state.get("publish_decision")
+        print(f"  [DEBUG-UPLOAD] publish_decision type={type(publish_decision)}, repr={repr(publish_decision)[:100]}", flush=True)
         if publish_decision:
             self.log(f"📋 Publish Decision: {publish_decision.summary()} — {publish_decision.reason}")
         if not selected_topic or not compiled_videos:
