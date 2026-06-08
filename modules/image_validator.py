@@ -27,6 +27,48 @@ REJECT_COPYRIGHT = {
     "reuters", "afp", "ani",  # news agency watermarks cause strikes
 }
 
+# Countries, regions, cities that appear capitalized in news headlines.
+# These are NOT person names — used to filter out false positives from
+# the person-name extraction in _extract_person_names().
+GEO_AND_COUNTRY_WORDS = {
+    "afghanistan", "africa", "african", "algeria", "america", "american",
+    "angola", "antarctica", "argentina", "armenia", "asia", "asian",
+    "australia", "austrian", "azerbaijan", "bahrain", "bangladesh",
+    "belarus", "belgium", "bhutan", "bolivia", "bosnia", "botswana",
+    "brazil", "british", "bulgaria", "burkina", "burundi", "cambodia",
+    "cameroon", "canada", "caribbean", "central", "chad", "chile",
+    "china", "chinese", "colombia", "comoros", "congo", "costa",
+    "croatia", "cuba", "cyprus", "czech", "denmark", "djibouti",
+    "dominica", "east", "ecuador", "egypt", "egyptian", "eritrea",
+    "estonia", "eswatini", "ethiopia", "europe", "european", "fiji",
+    "finland", "france", "gabon", "gambia", "georgia", "germany",
+    "ghana", "global", "greece", "grenada", "guatemala", "guinea",
+    "guyana", "haiti", "honduras", "hungary", "iceland", "india",
+    "indian", "indonesia", "iran", "iraqi", "iraq", "ireland", "israel",
+    "israeli", "italy", "ivory", "jamaica", "japan", "japanese",
+    "jordan", "kazakhstan", "kenya", "kuwait", "kyrgyzstan", "laos",
+    "latvia", "lebanon", "lesotho", "liberia", "libya", "liechtenstein",
+    "lithuania", "luxembourg", "madagascar", "malawi", "malaysia",
+    "maldives", "mali", "malta", "mauritania", "mauritius", "mexico",
+    "middle", "moldova", "monaco", "mongolia", "montenegro", "morocco",
+    "mozambique", "myanmar", "namibia", "nepal", "netherlands", "new",
+    "nicaragua", "niger", "nigeria", "north", "norway", "oman",
+    "pakistan", "pakistani", "palestine", "palestinian", "panama",
+    "papua", "paraguay", "peru", "philippines", "poland", "portugal",
+    "qatar", "romania", "russia", "russian", "rwanda", "saudi",
+    "senegal", "serbia", "seychelles", "sierra", "singapore",
+    "slovakia", "slovenia", "somalia", "south", "spain", "sri",
+    "sudan", "suriname", "sweden", "switzerland", "syria", "syrian",
+    "taiwan", "tajikistan", "tanzania", "thailand", "timor", "togo",
+    "trinidad", "tunisia", "turkey", "turkish", "turkmenistan",
+    "uganda", "ukraine", "uruguay", "uzbekistan", "vanuatu", "vatican",
+    "venezuela", "vietnam", "west", "yemen", "zambia", "zimbabwe",
+    # Regions and directional terms
+    "kashmir", "korea", "kurdistan", "balkans", "gaza", "sahara",
+    "sinai", "himalayas", "arabian", "mediterranean", "pacific",
+    "atlantic",
+}
+
 # Words extracted from topic titles/scripts that are NOT person names.
 # Includes: grammar words, geography, politics, common English words that
 # appear capitalized in sentences (This, What, Did, Home, Union, etc.)
@@ -60,7 +102,9 @@ PERSON_SKIP_WORDS = {
     "require", "report", "decide", "pull", "develop",
     # Geography / politics
     "india", "indian", "delhi", "news", "minister", "chief", "leader",
-    "president", "bjp", "congress", "tdp", "ysrcp", "mla", "mp",
+    "president", "bjp", "congress", "tdp", "ysrcp", "mla", "mp", "aap", "shiv", "sena",
+ "trinamool", "tmc", "dmk", "aiadmk", "ncp", "rjd", "jd", "bsp", "sp",
+ "cpi", "cpim", "ncp", "aitc", "npp", "mns", "ncp",
     "pm", "cm", "govt", "government", "state", "central", "party",
     "telangana", "andhra", "tamil", "nadu", "telugu", "karnataka",
     "rally", "rallies", "event", "events", "press", "media",
@@ -77,17 +121,17 @@ PERSON_SKIP_WORDS = {
     "people", "man", "men", "woman", "women", "group", "side",
     # Weather / disasters
     "heavy", "rain", "rains", "flood", "flooding", "storm", "cyclone",
-    # Months / seasons / common false positives for person extraction
+    # Months / seasons
     "january", "february", "march", "april", "may", "june",
     "july", "august", "september", "october", "november", "december",
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
     "spring", "summer", "autumn", "winter", "monsoon",
-    # Organizations / infrastructure / common capitalized nouns
+    # Organizations / infrastructure
     "railways", "airports", "schools", "colleges", "universities",
     "hospitals", "courts", "police", "army", "navy", "airforce",
     "supreme", "high", "district", "civil", "criminal",
-    "british", "american", "chinese", "russian", "pakistani",
-    "israel", "israeli", "palestine", "palestinian", "ukraine",
+    "rajya", "sabha", "lok", "vidhan", "sansad", "parliament",
+    "municipal", "corporation", "panchayat", "zilla", "mandal",
     # Technology / products
     "google", "apple", "microsoft", "amazon", "facebook", "meta",
     "twitter", "youtube", "instagram", "whatsapp", "telegram",
@@ -102,6 +146,9 @@ PERSON_SKIP_WORDS = {
     "cricket", "football", "hockey", "tennis", "olympics", "ipl",
     "match", "tournament", "championship", "league", "score", "wicket",
 }
+
+# Merge geo words into skip words for the extraction function
+_ALL_SKIP_WORDS = PERSON_SKIP_WORDS | GEO_AND_COUNTRY_WORDS
 
 
 def _extract_person_names(topic_title: str) -> list[str]:
@@ -126,7 +173,7 @@ def _extract_person_names(topic_title: str) -> list[str]:
     # Strategy 1: Consecutive capitalized pairs (First Last)
     for i in range(len(words) - 1):
         w1, w2 = words[i].lower(), words[i + 1].lower()
-        if w1 not in PERSON_SKIP_WORDS and w2 not in PERSON_SKIP_WORDS:
+        if w1 not in _ALL_SKIP_WORDS and w2 not in _ALL_SKIP_WORDS:
             names.append(w2)  # Last name is the key identifier
             names.append(w1)  # First name too
 
@@ -134,7 +181,7 @@ def _extract_person_names(topic_title: str) -> list[str]:
     name_markers = {'meets', 'with', 'and', 'vs', 'visit', 'talks', 'meeting'}
     for i, word in enumerate(words):
         w = word.lower()
-        if w in PERSON_SKIP_WORDS or w in names:
+        if w in _ALL_SKIP_WORDS or w in names:
             continue
         # After initial (K. Annamalai)
         if i > 0 and len(words[i - 1]) <= 2 and words[i - 1].endswith('.'):
