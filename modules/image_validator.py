@@ -77,6 +77,30 @@ PERSON_SKIP_WORDS = {
     "people", "man", "men", "woman", "women", "group", "side",
     # Weather / disasters
     "heavy", "rain", "rains", "flood", "flooding", "storm", "cyclone",
+    # Months / seasons / common false positives for person extraction
+    "january", "february", "march", "april", "may", "june",
+    "july", "august", "september", "october", "november", "december",
+    "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+    "spring", "summer", "autumn", "winter", "monsoon",
+    # Organizations / infrastructure / common capitalized nouns
+    "railways", "airports", "schools", "colleges", "universities",
+    "hospitals", "courts", "police", "army", "navy", "airforce",
+    "supreme", "high", "district", "civil", "criminal",
+    "british", "american", "chinese", "russian", "pakistani",
+    "israel", "israeli", "palestine", "palestinian", "ukraine",
+    # Technology / products
+    "google", "apple", "microsoft", "amazon", "facebook", "meta",
+    "twitter", "youtube", "instagram", "whatsapp", "telegram",
+    # Finance / budget / governance
+    "budget", "finance", "economic", "fiscal", "monetary", "gst", "tax",
+    "reserve", "bank", "rbi", "sebi", "stock", "market", "sensex", "nifty",
+    "inflation", "gdp", "trade", "export", "import", "rupee", "dollar",
+    # Education / health
+    "education", "health", "medical", "doctor", "patient", "hospital",
+    "school", "college", "university", "student", "teacher", "exam",
+    # Sports
+    "cricket", "football", "hockey", "tennis", "olympics", "ipl",
+    "match", "tournament", "championship", "league", "score", "wicket",
 }
 
 
