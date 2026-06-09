@@ -44,16 +44,29 @@ def load_credentials():
         creds = json.load(f)
     token = creds.get("token", "")
     expiry_str = creds.get("expiry", "")
-    if expiry_str and expiry_str != "refreshed":
+    needs_refresh = False
+    if expiry_str == "refreshed":
+        # Token file was manually refreshed but expiry not set — refresh now
+        needs_refresh = True
+    elif expiry_str:
         try:
             expiry = datetime.fromisoformat(expiry_str.replace("Z", "+00:00"))
             if datetime.now(timezone.utc) >= expiry - timedelta(minutes=5):
-                token = refresh_token(creds)
-                creds["token"] = token
-                with open(CREDENTIALS_FILE, "w") as f:
-                    json.dump(creds, f)
+                needs_refresh = True
         except Exception:
-            pass
+            needs_refresh = True
+    else:
+        needs_refresh = True
+    if needs_refresh:
+        try:
+            token = refresh_token(creds)
+            creds["token"] = token
+            new_expiry = datetime.now(timezone.utc) + timedelta(seconds=3590)
+            creds["expiry"] = new_expiry.isoformat()
+            with open(CREDENTIALS_FILE, "w") as f:
+                json.dump(creds, f)
+        except Exception:
+            pass  # fall through with whatever token we have
     return token
 
 
@@ -71,7 +84,26 @@ def yt_get(token, url):
     req = urllib.request.Request(url, headers={
         "Authorization": "Bearer " + token, "Accept": "application/json"
     })
-    return json.loads(urllib.request.urlopen(req, timeout=15).read())
+    try:
+        return json.loads(urllib.request.urlopen(req, timeout=15).read())
+    except urllib.error.HTTPError as e:
+        if e.code == 401:
+            # Token expired — refresh and retry once
+            try:
+                new_token = refresh_token(json.load(open(CREDENTIALS_FILE)))
+                creds = json.load(open(CREDENTIALS_FILE))
+                creds["token"] = new_token
+                new_expiry = datetime.now(timezone.utc) + timedelta(seconds=3590)
+                creds["expiry"] = new_expiry.isoformat()
+                with open(CREDENTIALS_FILE, "w") as f:
+                    json.dump(creds, f)
+                req2 = urllib.request.Request(url, headers={
+                    "Authorization": "Bearer " + new_token, "Accept": "application/json"
+                })
+                return json.loads(urllib.request.urlopen(req2, timeout=15).read())
+            except Exception:
+                pass
+        raise
 
 
 def yt_delete(token, url):

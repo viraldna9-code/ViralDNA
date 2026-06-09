@@ -1363,6 +1363,4494 @@
         "variant_ctr": 0.0
       },
       "winner": null
+    },
+    {
+      "id": "test_20260607_124833_62",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Family's Grief: Telangana Man's Life Ends in US Shooting"
+      },
+      "variant": {
+        "title": "Family's Grief: Telangana Man's Life Ends in US Shooting"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_0",
+      "status": "running",
+      "created_at": "2026-06-07T12:48:33.456130",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_124833_63",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Family's Grief: Telangana Man's Life Ends in US Shooting"
+      },
+      "variant": {
+        "title": "Family's Grief: Telangana Man's Life Ends in US Shooting \u2014 Explained"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_1",
+      "status": "running",
+      "created_at": "2026-06-07T12:48:33.457037",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_124833_64",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Family's Grief: Telangana Man's Life Ends in US Shooting"
+      },
+      "variant": {
+        "title": "What Happened with Family's Grief: Telangana Man's?"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_2",
+      "status": "running",
+      "created_at": "2026-06-07T12:48:33.460374",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_124833_65",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Family's Grief: Telangana Man's Life Ends in US Shooting"
+      },
+      "variant": {
+        "title": "Family's Grief: Telangana Man's Life Ends in US Shooting \u2014 Full Analysis"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_3",
+      "status": "running",
+      "created_at": "2026-06-07T12:48:33.461529",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_125437_66",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Tragedy in Philadelphia: Karthik Rajaram's Final Delivery"
+      },
+      "variant": {
+        "title": "Tragedy in Philadelphia: Karthik Rajaram's Final Delivery"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_0",
+      "status": "running",
+      "created_at": "2026-06-07T12:54:37.518289",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_125437_67",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Tragedy in Philadelphia: Karthik Rajaram's Final Delivery"
+      },
+      "variant": {
+        "title": "Tragedy in Philadelphia: Karthik Rajaram's Final Delivery \u2014 Explained"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_1",
+      "status": "running",
+      "created_at": "2026-06-07T12:54:37.519152",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_125437_68",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Tragedy in Philadelphia: Karthik Rajaram's Final Delivery"
+      },
+      "variant": {
+        "title": "What Happened with Tragedy in Philadelphia: Karthik?"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_2",
+      "status": "running",
+      "created_at": "2026-06-07T12:54:37.520187",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_125437_69",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Tragedy in Philadelphia: Karthik Rajaram's Final Delivery"
+      },
+      "variant": {
+        "title": "Tragedy in Philadelphia: Karthik Rajaram's Final Delivery \u2014 Full Analysis"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_3",
+      "status": "running",
+      "created_at": "2026-06-07T12:54:37.521152",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_125947_70",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Justice for Surya Teja: Telangana Family Mourns US Tragedy"
+      },
+      "variant": {
+        "title": "Justice for Surya Teja: Telangana Family Mourns US Tragedy"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_0",
+      "status": "running",
+      "created_at": "2026-06-07T12:59:47.612986",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_125947_71",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Justice for Surya Teja: Telangana Family Mourns US Tragedy"
+      },
+      "variant": {
+        "title": "Justice for Surya Teja: Telangana Family Mourns US Tragedy \u2014 What It Means"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_1",
+      "status": "running",
+      "created_at": "2026-06-07T12:59:47.613872",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_125947_72",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Justice for Surya Teja: Telangana Family Mourns US Tragedy"
+      },
+      "variant": {
+        "title": "What Happened with Justice for Surya Teja:?"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_2",
+      "status": "running",
+      "created_at": "2026-06-07T12:59:47.615034",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_125947_73",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Justice for Surya Teja: Telangana Family Mourns US Tragedy"
+      },
+      "variant": {
+        "title": "Justice for Surya Teja: Telangana Family Mourns US Tragedy \u2014 Full Analysis"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_3",
+      "status": "running",
+      "created_at": "2026-06-07T12:59:47.616179",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_130838_74",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Killed for a Few Dollars: The Shocking Story from Philadelphia"
+      },
+      "variant": {
+        "title": "Killed for a Few Dollars: The Shocking Story from Philadelphia"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_0",
+      "status": "running",
+      "created_at": "2026-06-07T13:08:38.664262",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_130838_75",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Killed for a Few Dollars: The Shocking Story from Philadelphia"
+      },
+      "variant": {
+        "title": "Killed for a Few Dollars: The Shocking Story from Philadelphia \u2014 What It Means"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_1",
+      "status": "running",
+      "created_at": "2026-06-07T13:08:38.665166",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_130838_76",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Killed for a Few Dollars: The Shocking Story from Philadelphia"
+      },
+      "variant": {
+        "title": "What Happened with Killed for a Few?"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_2",
+      "status": "running",
+      "created_at": "2026-06-07T13:08:38.666515",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_130838_77",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Killed for a Few Dollars: The Shocking Story from Philadelphia"
+      },
+      "variant": {
+        "title": "Killed for a Few Dollars: The Shocking Story from Philadelphia \u2014 Full Analysis"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_3",
+      "status": "running",
+      "created_at": "2026-06-07T13:08:38.667550",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_131208_78",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Hyderabad Man Shot Dead in US: A Dream Deferred"
+      },
+      "variant": {
+        "title": "Hyderabad Man Shot Dead in US: A Dream Deferred"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_0",
+      "status": "running",
+      "created_at": "2026-06-07T13:12:08.487102",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_131208_79",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Hyderabad Man Shot Dead in US: A Dream Deferred"
+      },
+      "variant": {
+        "title": "Hyderabad Man Shot Dead in US: A Dream Deferred \u2014 Explained"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_1",
+      "status": "running",
+      "created_at": "2026-06-07T13:12:08.488035",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_131208_80",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Hyderabad Man Shot Dead in US: A Dream Deferred"
+      },
+      "variant": {
+        "title": "What Happened with Hyderabad Man Shot Dead?"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_2",
+      "status": "running",
+      "created_at": "2026-06-07T13:12:08.489377",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_131208_81",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Hyderabad Man Shot Dead in US: A Dream Deferred"
+      },
+      "variant": {
+        "title": "Hyderabad Man Shot Dead in US: A Dream Deferred \u2014 Full Analysis"
+      },
+      "topic": "Hyderabad man shot dead during pizza delivery in Philadelphia",
+      "video_id": "title_test_VDNA172_3",
+      "status": "running",
+      "created_at": "2026-06-07T13:12:08.494665",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_133503_82",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "23 Parties Join 'INDIA janbandhan': Congress Announces"
+      },
+      "variant": {
+        "title": "23 Parties Join 'INDIA janbandhan': Congress Announces"
+      },
+      "topic": "\u2018INDIA janbandhan\u2019 united, 23 parties have confirmed participation: Congress",
+      "video_id": "title_test_VDNA173_0",
+      "status": "running",
+      "created_at": "2026-06-07T13:35:03.116191",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_133503_83",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "23 Parties Join 'INDIA janbandhan': Congress Announces"
+      },
+      "variant": {
+        "title": "23 Parties Join 'INDIA janbandhan': Congress Announces \u2014 Explained"
+      },
+      "topic": "\u2018INDIA janbandhan\u2019 united, 23 parties have confirmed participation: Congress",
+      "video_id": "title_test_VDNA173_1",
+      "status": "running",
+      "created_at": "2026-06-07T13:35:03.117195",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_133503_84",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "23 Parties Join 'INDIA janbandhan': Congress Announces"
+      },
+      "variant": {
+        "title": "What Happened with 23 Parties Join 'INDIA?"
+      },
+      "topic": "\u2018INDIA janbandhan\u2019 united, 23 parties have confirmed participation: Congress",
+      "video_id": "title_test_VDNA173_2",
+      "status": "running",
+      "created_at": "2026-06-07T13:35:03.119021",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_133503_85",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "23 Parties Join 'INDIA janbandhan': Congress Announces"
+      },
+      "variant": {
+        "title": "23 Parties Join 'INDIA janbandhan': Congress Announces \u2014 Complete Breakdown"
+      },
+      "topic": "\u2018INDIA janbandhan\u2019 united, 23 parties have confirmed participation: Congress",
+      "video_id": "title_test_VDNA173_3",
+      "status": "running",
+      "created_at": "2026-06-07T13:35:03.120404",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_143543_86",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Beyond Annamalai: Can BJP Thrive in Tamil Nadu?"
+      },
+      "variant": {
+        "title": "Beyond Annamalai: Can BJP Thrive in Tamil Nadu?"
+      },
+      "topic": "The Annamalai question: Can BJP become a force in Tamil Nadu without him?",
+      "video_id": "title_test_VDNA176_0",
+      "status": "running",
+      "created_at": "2026-06-07T14:35:43.211884",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_143543_87",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Beyond Annamalai: Can BJP Thrive in Tamil Nadu?"
+      },
+      "variant": {
+        "title": "Beyond Annamalai: Can BJP Thrive in Tamil Nadu? \u2014 Explained"
+      },
+      "topic": "The Annamalai question: Can BJP become a force in Tamil Nadu without him?",
+      "video_id": "title_test_VDNA176_1",
+      "status": "running",
+      "created_at": "2026-06-07T14:35:43.212909",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_143543_88",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Beyond Annamalai: Can BJP Thrive in Tamil Nadu?"
+      },
+      "variant": {
+        "title": "Analysis: Beyond Annamalai: Can BJP Thrive in Tamil Nadu?"
+      },
+      "topic": "The Annamalai question: Can BJP become a force in Tamil Nadu without him?",
+      "video_id": "title_test_VDNA176_2",
+      "status": "running",
+      "created_at": "2026-06-07T14:35:43.214840",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260607_143543_89",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Beyond Annamalai: Can BJP Thrive in Tamil Nadu?"
+      },
+      "variant": {
+        "title": "Beyond Annamalai: Can BJP Thrive in Tamil Nadu? \u2014 Full Analysis"
+      },
+      "topic": "The Annamalai question: Can BJP become a force in Tamil Nadu without him?",
+      "video_id": "title_test_VDNA176_3",
+      "status": "running",
+      "created_at": "2026-06-07T14:35:43.216277",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_063623_90",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Mamata Banerjee's Next Move: Can Congress Help?"
+      },
+      "variant": {
+        "title": "Mamata Banerjee's Next Move: Can Congress Help?"
+      },
+      "topic": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "video_id": "title_test_VDNA196_0",
+      "status": "running",
+      "created_at": "2026-06-08T06:36:23.726634",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_063623_91",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Mamata Banerjee's Next Move: Can Congress Help?"
+      },
+      "variant": {
+        "title": "Mamata Banerjee's Next Move: Can Congress Help? \u2014 Explained"
+      },
+      "topic": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "video_id": "title_test_VDNA196_1",
+      "status": "running",
+      "created_at": "2026-06-08T06:36:23.727756",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_063623_92",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Mamata Banerjee's Next Move: Can Congress Help?"
+      },
+      "variant": {
+        "title": "Analysis: Mamata Banerjee's Next Move: Can Congress Help?"
+      },
+      "topic": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "video_id": "title_test_VDNA196_2",
+      "status": "running",
+      "created_at": "2026-06-08T06:36:23.729738",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_063623_93",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Mamata Banerjee's Next Move: Can Congress Help?"
+      },
+      "variant": {
+        "title": "Mamata Banerjee's Next Move: Can Congress Help? \u2014 Full Analysis"
+      },
+      "topic": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "video_id": "title_test_VDNA196_3",
+      "status": "running",
+      "created_at": "2026-06-08T06:36:23.731313",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_064528_94",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Will Mamata & Congress Team Up? INDIA Bloc's Major Bet Tomorrow!"
+      },
+      "variant": {
+        "title": "Will Mamata & Congress Team Up? INDIA Bloc's Major Bet Tomorrow!"
+      },
+      "topic": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "video_id": "title_test_VDNA196_0",
+      "status": "running",
+      "created_at": "2026-06-08T06:45:28.114147",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_064528_95",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Will Mamata & Congress Team Up? INDIA Bloc's Major Bet Tomorrow!"
+      },
+      "variant": {
+        "title": "Will Mamata & Congress Team Up? INDIA Bloc's Major Bet Tomorrow! \u2014 Explained"
+      },
+      "topic": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "video_id": "title_test_VDNA196_1",
+      "status": "running",
+      "created_at": "2026-06-08T06:45:28.115604",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_064528_96",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Will Mamata & Congress Team Up? INDIA Bloc's Major Bet Tomorrow!"
+      },
+      "variant": {
+        "title": "Analysis: Will Mamata & Congress Team Up? INDIA Bloc's Major Bet Tomorrow!"
+      },
+      "topic": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "video_id": "title_test_VDNA196_2",
+      "status": "running",
+      "created_at": "2026-06-08T06:45:28.117135",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_064528_97",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Will Mamata & Congress Team Up? INDIA Bloc's Major Bet Tomorrow!"
+      },
+      "variant": {
+        "title": "Will Mamata & Congress Team Up? INDIA Bloc's Major Bet Tomorrow! \u2014 Full Analysis"
+      },
+      "topic": "INDIA Bloc Meet Tomorrow, Mamata Banerjee Eyes Help From 'Frenemy' Congress",
+      "video_id": "title_test_VDNA196_3",
+      "status": "running",
+      "created_at": "2026-06-08T06:45:28.118650",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_073057_98",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Free Power for Farmers: A Congress 'Patent'?"
+      },
+      "variant": {
+        "title": "Free Power for Farmers: A Congress 'Patent'?"
+      },
+      "topic": "Free power for farmers is the Congress party\u2019s \u2018patent right\u2019: Bhatti Vikramarka",
+      "video_id": "title_test_VDNA199_0",
+      "status": "running",
+      "created_at": "2026-06-08T07:30:57.703197",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_073057_99",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Free Power for Farmers: A Congress 'Patent'?"
+      },
+      "variant": {
+        "title": "Free Power for Farmers: A Congress 'Patent'? \u2014 Explained"
+      },
+      "topic": "Free power for farmers is the Congress party\u2019s \u2018patent right\u2019: Bhatti Vikramarka",
+      "video_id": "title_test_VDNA199_1",
+      "status": "running",
+      "created_at": "2026-06-08T07:30:57.704434",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_073057_100",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Free Power for Farmers: A Congress 'Patent'?"
+      },
+      "variant": {
+        "title": "Analysis: Free Power for Farmers: A Congress 'Patent'?"
+      },
+      "topic": "Free power for farmers is the Congress party\u2019s \u2018patent right\u2019: Bhatti Vikramarka",
+      "video_id": "title_test_VDNA199_2",
+      "status": "running",
+      "created_at": "2026-06-08T07:30:57.708544",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_073057_101",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Free Power for Farmers: A Congress 'Patent'?"
+      },
+      "variant": {
+        "title": "Free Power for Farmers: A Congress 'Patent'? \u2014 Full Analysis"
+      },
+      "topic": "Free power for farmers is the Congress party\u2019s \u2018patent right\u2019: Bhatti Vikramarka",
+      "video_id": "title_test_VDNA199_3",
+      "status": "running",
+      "created_at": "2026-06-08T07:30:57.710003",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_113109_102",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Trump's Bold Move: Averting Iran Conflict for Peace?"
+      },
+      "variant": {
+        "title": "Trump's Bold Move: Averting Iran Conflict for Peace?"
+      },
+      "topic": "Trump asks Netanyahu not to strike Iran; says \u201cvery close\u201d to peace deal - The Hindu",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T11:31:09.777796",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_113109_103",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Trump's Bold Move: Averting Iran Conflict for Peace?"
+      },
+      "variant": {
+        "title": "Trump's Bold Move: Averting Iran Conflict for Peace? \u2014 Explained"
+      },
+      "topic": "Trump asks Netanyahu not to strike Iran; says \u201cvery close\u201d to peace deal - The Hindu",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T11:31:09.779115",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_113109_104",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Trump's Bold Move: Averting Iran Conflict for Peace?"
+      },
+      "variant": {
+        "title": "Analysis: Trump's Bold Move: Averting Iran Conflict for Peace?"
+      },
+      "topic": "Trump asks Netanyahu not to strike Iran; says \u201cvery close\u201d to peace deal - The Hindu",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T11:31:09.783228",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_113109_105",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Trump's Bold Move: Averting Iran Conflict for Peace?"
+      },
+      "variant": {
+        "title": "Trump's Bold Move: Averting Iran Conflict for Peace? \u2014 Full Analysis"
+      },
+      "topic": "Trump asks Netanyahu not to strike Iran; says \u201cvery close\u201d to peace deal - The Hindu",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T11:31:09.784632",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_114802_106",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Andhra Pradesh Watches Closely"
+      },
+      "variant": {
+        "title": "Andhra Pradesh Watches Closely"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T11:48:02.531955",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_114802_107",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Andhra Pradesh Watches Closely"
+      },
+      "variant": {
+        "title": "Andhra Pradesh Watches Closely \u2014 Explained"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T11:48:02.533266",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_114802_108",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Andhra Pradesh Watches Closely"
+      },
+      "variant": {
+        "title": "What Happened with Andhra Pradesh Watches Closely?"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T11:48:02.537135",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_114802_109",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Andhra Pradesh Watches Closely"
+      },
+      "variant": {
+        "title": "Andhra Pradesh Watches Closely \u2014 Full Analysis"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T11:48:02.539185",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115042_110",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Massive Railway Booking Change! What You NEED to Know"
+      },
+      "variant": {
+        "title": "Massive Railway Booking Change! What You NEED to Know"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T11:50:42.133081",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115042_111",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Massive Railway Booking Change! What You NEED to Know"
+      },
+      "variant": {
+        "title": "Massive Railway Booking Change! What You NEED to Know \u2014 What It Means"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T11:50:42.134382",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115042_112",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Massive Railway Booking Change! What You NEED to Know"
+      },
+      "variant": {
+        "title": "What Happened with Massive Railway Booking Change!?"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T11:50:42.136236",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115042_113",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Massive Railway Booking Change! What You NEED to Know"
+      },
+      "variant": {
+        "title": "Massive Railway Booking Change! What You NEED to Know \u2014 Full Analysis"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T11:50:42.137856",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115330_114",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Heartbreaking: 15 Lives Lost in Philippines Quake"
+      },
+      "variant": {
+        "title": "Heartbreaking: 15 Lives Lost in Philippines Quake"
+      },
+      "topic": "Powerful earthquake hits Philippines, killing at least 15 - Al Jazeera",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T11:53:30.872222",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115330_115",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Heartbreaking: 15 Lives Lost in Philippines Quake"
+      },
+      "variant": {
+        "title": "Heartbreaking: 15 Lives Lost in Philippines Quake \u2014 What It Means"
+      },
+      "topic": "Powerful earthquake hits Philippines, killing at least 15 - Al Jazeera",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T11:53:30.873635",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115330_116",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Heartbreaking: 15 Lives Lost in Philippines Quake"
+      },
+      "variant": {
+        "title": "What Happened with Heartbreaking: 15 Lives Lost?"
+      },
+      "topic": "Powerful earthquake hits Philippines, killing at least 15 - Al Jazeera",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T11:53:30.875466",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115330_117",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Heartbreaking: 15 Lives Lost in Philippines Quake"
+      },
+      "variant": {
+        "title": "Heartbreaking: 15 Lives Lost in Philippines Quake \u2014 Complete Breakdown"
+      },
+      "topic": "Powerful earthquake hits Philippines, killing at least 15 - Al Jazeera",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T11:53:30.877225",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115652_118",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Andhra Pradesh: Monsoon Arrives with Heatwave Warnings!?"
+      },
+      "variant": {
+        "title": "Andhra Pradesh: Monsoon Arrives with Heatwave Warnings!?"
+      },
+      "topic": "Monsoon Advances Over Andhra Pradesh; Heavy Rains, Heat Wave Alerts Issued - Deccan Chronicle",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T11:56:52.949718",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115652_119",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Andhra Pradesh: Monsoon Arrives with Heatwave Warnings!?"
+      },
+      "variant": {
+        "title": "Andhra Pradesh: Monsoon Arrives with Heatwave Warnings!? \u2014 What It Means"
+      },
+      "topic": "Monsoon Advances Over Andhra Pradesh; Heavy Rains, Heat Wave Alerts Issued - Deccan Chronicle",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T11:56:52.951156",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115652_120",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Andhra Pradesh: Monsoon Arrives with Heatwave Warnings!?"
+      },
+      "variant": {
+        "title": "Analysis: Andhra Pradesh: Monsoon Arrives with Heatwave Warnings!?"
+      },
+      "topic": "Monsoon Advances Over Andhra Pradesh; Heavy Rains, Heat Wave Alerts Issued - Deccan Chronicle",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T11:56:52.952933",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115652_121",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Andhra Pradesh: Monsoon Arrives with Heatwave Warnings!?"
+      },
+      "variant": {
+        "title": "Andhra Pradesh: Monsoon Arrives with Heatwave Warnings!? \u2014 Full Analysis"
+      },
+      "topic": "Monsoon Advances Over Andhra Pradesh; Heavy Rains, Heat Wave Alerts Issued - Deccan Chronicle",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T11:56:52.954690",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115954_122",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Big Politician Walks Out: What it Means!"
+      },
+      "variant": {
+        "title": "Big Politician Walks Out: What it Means!"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T11:59:54.953427",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115954_123",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Big Politician Walks Out: What it Means!"
+      },
+      "variant": {
+        "title": "Big Politician Walks Out: What it Means! \u2014 What It Means"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T11:59:54.955248",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115954_124",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Big Politician Walks Out: What it Means!"
+      },
+      "variant": {
+        "title": "What Happened with Big Politician Walks Out:?"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T11:59:54.957507",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_115954_125",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Big Politician Walks Out: What it Means!"
+      },
+      "variant": {
+        "title": "Big Politician Walks Out: What it Means! \u2014 Full Analysis"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T11:59:54.959169",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_120755_126",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Train Tickets EASIER Now? Indian Railways Upgrading System Next Month!"
+      },
+      "variant": {
+        "title": "Train Tickets EASIER Now? Indian Railways Upgrading System Next Month!"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:07:55.708373",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_120755_127",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Train Tickets EASIER Now? Indian Railways Upgrading System Next Month!"
+      },
+      "variant": {
+        "title": "Train Tickets EASIER Now? Indian Railways Upgrading System Next Month! \u2014 Explained"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:07:55.709967",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_120755_128",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Train Tickets EASIER Now? Indian Railways Upgrading System Next Month!"
+      },
+      "variant": {
+        "title": "Analysis: Train Tickets EASIER Now? Indian Railways Upgrading System Next Month!"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:07:55.721598",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_120755_129",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Train Tickets EASIER Now? Indian Railways Upgrading System Next Month!"
+      },
+      "variant": {
+        "title": "Train Tickets EASIER Now? Indian Railways Upgrading System Next Month! \u2014 Full Analysis"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:07:55.733735",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_120903_130",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "August Alert: Indian Railways Announces Reservation System Overhaul!"
+      },
+      "variant": {
+        "title": "August Alert: Indian Railways Announces Reservation System Overhaul!"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:09:03.576134",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_120903_131",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "August Alert: Indian Railways Announces Reservation System Overhaul!"
+      },
+      "variant": {
+        "title": "August Alert: Indian Railways Announces Reservation System Overhaul! \u2014 What It Means"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:09:03.578079",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_120903_132",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "August Alert: Indian Railways Announces Reservation System Overhaul!"
+      },
+      "variant": {
+        "title": "What Happened with August Alert: Indian Railways?"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:09:03.624375",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_120903_133",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "August Alert: Indian Railways Announces Reservation System Overhaul!"
+      },
+      "variant": {
+        "title": "August Alert: Indian Railways Announces Reservation System Overhaul! \u2014 Full Analysis"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:09:03.626747",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_121509_134",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Andhra Pradesh Amps Up Ambulance Services: Is Help On The Way Faster?"
+      },
+      "variant": {
+        "title": "Andhra Pradesh Amps Up Ambulance Services: Is Help On The Way Faster?"
+      },
+      "topic": "Andhra Pradesh Modernises 108 Ambulance Emergency Services - NDTV",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:15:09.714775",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_121509_135",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Andhra Pradesh Amps Up Ambulance Services: Is Help On The Way Faster?"
+      },
+      "variant": {
+        "title": "Andhra Pradesh Amps Up Ambulance Services: Is Help On The Way Faster? \u2014 Explained"
+      },
+      "topic": "Andhra Pradesh Modernises 108 Ambulance Emergency Services - NDTV",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:15:09.716660",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_121509_136",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Andhra Pradesh Amps Up Ambulance Services: Is Help On The Way Faster?"
+      },
+      "variant": {
+        "title": "Analysis: Andhra Pradesh Amps Up Ambulance Services: Is Help On The Way Faster?"
+      },
+      "topic": "Andhra Pradesh Modernises 108 Ambulance Emergency Services - NDTV",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:15:09.718677",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_121509_137",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Andhra Pradesh Amps Up Ambulance Services: Is Help On The Way Faster?"
+      },
+      "variant": {
+        "title": "Andhra Pradesh Amps Up Ambulance Services: Is Help On The Way Faster? \u2014 Full Analysis"
+      },
+      "topic": "Andhra Pradesh Modernises 108 Ambulance Emergency Services - NDTV",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:15:09.720788",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122211_138",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Nara's New Power: TDP's Next Chapter"
+      },
+      "variant": {
+        "title": "Nara's New Power: TDP's Next Chapter"
+      },
+      "topic": "Telugu Desam Party | Now, Nara shakti",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:22:11.217334",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122211_139",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Nara's New Power: TDP's Next Chapter"
+      },
+      "variant": {
+        "title": "Nara's New Power: TDP's Next Chapter \u2014 What It Means"
+      },
+      "topic": "Telugu Desam Party | Now, Nara shakti",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:22:11.219095",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122211_140",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Nara's New Power: TDP's Next Chapter"
+      },
+      "variant": {
+        "title": "What Happened with Nara's New Power: TDP's?"
+      },
+      "topic": "Telugu Desam Party | Now, Nara shakti",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:22:11.221207",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122211_141",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Nara's New Power: TDP's Next Chapter"
+      },
+      "variant": {
+        "title": "Nara's New Power: TDP's Next Chapter \u2014 Full Analysis"
+      },
+      "topic": "Telugu Desam Party | Now, Nara shakti",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:22:11.223198",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122430_142",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Big Politician Walks Out: What It Means for India!"
+      },
+      "variant": {
+        "title": "Big Politician Walks Out: What It Means for India!"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:24:30.676660",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122430_143",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Big Politician Walks Out: What It Means for India!"
+      },
+      "variant": {
+        "title": "Big Politician Walks Out: What It Means for India! \u2014 What It Means"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:24:30.678440",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122430_144",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Big Politician Walks Out: What It Means for India!"
+      },
+      "variant": {
+        "title": "What Happened with Big Politician Walks Out:?"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:24:30.682980",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122430_145",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Big Politician Walks Out: What It Means for India!"
+      },
+      "variant": {
+        "title": "Big Politician Walks Out: What It Means for India! \u2014 Full Analysis"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:24:30.685920",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122734_146",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "TMC Split? MPs Meet BJP Leader in Delhi!"
+      },
+      "variant": {
+        "title": "TMC Split? MPs Meet BJP Leader in Delhi!"
+      },
+      "topic": "Big TMC Split Brewing? Sukhendu Sekhar Roy, Several Other MPs Meet BJP Leader Bhupender Yadav In Delhi - News18",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:27:34.199119",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122734_147",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "TMC Split? MPs Meet BJP Leader in Delhi!"
+      },
+      "variant": {
+        "title": "TMC Split? MPs Meet BJP Leader in Delhi! \u2014 Explained"
+      },
+      "topic": "Big TMC Split Brewing? Sukhendu Sekhar Roy, Several Other MPs Meet BJP Leader Bhupender Yadav In Delhi - News18",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:27:34.201242",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122734_148",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "TMC Split? MPs Meet BJP Leader in Delhi!"
+      },
+      "variant": {
+        "title": "Analysis: TMC Split? MPs Meet BJP Leader in Delhi!"
+      },
+      "topic": "Big TMC Split Brewing? Sukhendu Sekhar Roy, Several Other MPs Meet BJP Leader Bhupender Yadav In Delhi - News18",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:27:34.203524",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122734_149",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "TMC Split? MPs Meet BJP Leader in Delhi!"
+      },
+      "variant": {
+        "title": "TMC Split? MPs Meet BJP Leader in Delhi! \u2014 Full Analysis"
+      },
+      "topic": "Big TMC Split Brewing? Sukhendu Sekhar Roy, Several Other MPs Meet BJP Leader Bhupender Yadav In Delhi - News18",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:27:34.205642",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122835_150",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Prakasam District Discovery: Missing Hyderabad Student's Tragic End?"
+      },
+      "variant": {
+        "title": "Prakasam District Discovery: Missing Hyderabad Student's Tragic End?"
+      },
+      "topic": "Missing B.Tech student from Hyderabad presumed dead after body recovered in Prakasam district well",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:28:35.387303",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122835_151",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Prakasam District Discovery: Missing Hyderabad Student's Tragic End?"
+      },
+      "variant": {
+        "title": "Prakasam District Discovery: Missing Hyderabad Student's Tragic End? \u2014 Explained"
+      },
+      "topic": "Missing B.Tech student from Hyderabad presumed dead after body recovered in Prakasam district well",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:28:35.389285",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122835_152",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Prakasam District Discovery: Missing Hyderabad Student's Tragic End?"
+      },
+      "variant": {
+        "title": "Analysis: Prakasam District Discovery: Missing Hyderabad Student's Tragic End?"
+      },
+      "topic": "Missing B.Tech student from Hyderabad presumed dead after body recovered in Prakasam district well",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:28:35.391468",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122835_153",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Prakasam District Discovery: Missing Hyderabad Student's Tragic End?"
+      },
+      "variant": {
+        "title": "Prakasam District Discovery: Missing Hyderabad Student's Tragic End? \u2014 Full Analysis"
+      },
+      "topic": "Missing B.Tech student from Hyderabad presumed dead after body recovered in Prakasam district well",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:28:35.393542",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122956_154",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Train Travel in Telangana Just Changed! New Booking System Coming!"
+      },
+      "variant": {
+        "title": "Train Travel in Telangana Just Changed! New Booking System Coming!"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:29:56.137764",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122956_155",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Train Travel in Telangana Just Changed! New Booking System Coming!"
+      },
+      "variant": {
+        "title": "Train Travel in Telangana Just Changed! New Booking System Coming! \u2014 What It Means"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:29:56.140412",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122956_156",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Train Travel in Telangana Just Changed! New Booking System Coming!"
+      },
+      "variant": {
+        "title": "What Happened with Train Travel in Telangana?"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:29:56.142526",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_122956_157",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Train Travel in Telangana Just Changed! New Booking System Coming!"
+      },
+      "variant": {
+        "title": "Train Travel in Telangana Just Changed! New Booking System Coming! \u2014 Full Analysis"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:29:56.144587",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123134_158",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Iran Stops Attacks, But What's Next?"
+      },
+      "variant": {
+        "title": "Iran Stops Attacks, But What's Next?"
+      },
+      "topic": "West Asia war LIVE: Iran ends military operations against Israel, warns of harsher attacks if strikes on Lebanon persist - The Hindu",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:31:34.881905",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123134_159",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Iran Stops Attacks, But What's Next?"
+      },
+      "variant": {
+        "title": "Iran Stops Attacks, But What's Next? \u2014 What It Means"
+      },
+      "topic": "West Asia war LIVE: Iran ends military operations against Israel, warns of harsher attacks if strikes on Lebanon persist - The Hindu",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:31:34.883790",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123134_160",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Iran Stops Attacks, But What's Next?"
+      },
+      "variant": {
+        "title": "Analysis: Iran Stops Attacks, But What's Next?"
+      },
+      "topic": "West Asia war LIVE: Iran ends military operations against Israel, warns of harsher attacks if strikes on Lebanon persist - The Hindu",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:31:34.886037",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123134_161",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Iran Stops Attacks, But What's Next?"
+      },
+      "variant": {
+        "title": "Iran Stops Attacks, But What's Next? \u2014 Full Analysis"
+      },
+      "topic": "West Asia war LIVE: Iran ends military operations against Israel, warns of harsher attacks if strikes on Lebanon persist - The Hindu",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:31:34.888204",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123414_162",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Trinamool MP Quits: What Does This Mean?"
+      },
+      "variant": {
+        "title": "Trinamool MP Quits: What Does This Mean?"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:34:14.747603",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123414_163",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Trinamool MP Quits: What Does This Mean?"
+      },
+      "variant": {
+        "title": "Trinamool MP Quits: What Does This Mean? \u2014 What It Means"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:34:14.749417",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123414_164",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Trinamool MP Quits: What Does This Mean?"
+      },
+      "variant": {
+        "title": "Analysis: Trinamool MP Quits: What Does This Mean?"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:34:14.751534",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123414_165",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Trinamool MP Quits: What Does This Mean?"
+      },
+      "variant": {
+        "title": "Trinamool MP Quits: What Does This Mean? \u2014 Full Analysis"
+      },
+      "topic": "Trinamool Rajya Sabha MP Sukhendu Sekhar Ray Quits Amid Spiralling Crisis - NDTV",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:34:14.753944",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123626_166",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Major Upgrade for Indian Railways: What You Need to Know About the New System"
+      },
+      "variant": {
+        "title": "Major Upgrade for Indian Railways: What You Need to Know About the New System"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:36:26.301398",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123626_167",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Major Upgrade for Indian Railways: What You Need to Know About the New System"
+      },
+      "variant": {
+        "title": "Major Upgrade for Indian Railways: What You Need to Know About the New System \u2014 What It Means"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:36:26.303338",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123626_168",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Major Upgrade for Indian Railways: What You Need to Know About the New System"
+      },
+      "variant": {
+        "title": "What Happened with Major Upgrade for Indian?"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:36:26.305633",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_123626_169",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Major Upgrade for Indian Railways: What You Need to Know About the New System"
+      },
+      "variant": {
+        "title": "Major Upgrade for Indian Railways: What You Need to Know About the New System \u2014 Full Analysis"
+      },
+      "topic": "Indian Railways to roll out upgraded reservation system from August - India Today",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:36:26.307922",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124005_170",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "NDA's Andhra Pradesh Rajya Sabha Move: What it Means"
+      },
+      "variant": {
+        "title": "NDA's Andhra Pradesh Rajya Sabha Move: What it Means"
+      },
+      "topic": "NDA finalises Rajya Sabha seat sharing in Andhra Pradesh; TDP gets 3 seats, Jana Sena 1 - The Economic Times",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:40:05.494960",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124005_171",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "NDA's Andhra Pradesh Rajya Sabha Move: What it Means"
+      },
+      "variant": {
+        "title": "NDA's Andhra Pradesh Rajya Sabha Move: What it Means \u2014 What It Means"
+      },
+      "topic": "NDA finalises Rajya Sabha seat sharing in Andhra Pradesh; TDP gets 3 seats, Jana Sena 1 - The Economic Times",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:40:05.496937",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124005_172",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "NDA's Andhra Pradesh Rajya Sabha Move: What it Means"
+      },
+      "variant": {
+        "title": "What Happened with NDA's Andhra Pradesh Rajya?"
+      },
+      "topic": "NDA finalises Rajya Sabha seat sharing in Andhra Pradesh; TDP gets 3 seats, Jana Sena 1 - The Economic Times",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:40:05.499494",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124005_173",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "NDA's Andhra Pradesh Rajya Sabha Move: What it Means"
+      },
+      "variant": {
+        "title": "NDA's Andhra Pradesh Rajya Sabha Move: What it Means \u2014 Full Analysis"
+      },
+      "topic": "NDA finalises Rajya Sabha seat sharing in Andhra Pradesh; TDP gets 3 seats, Jana Sena 1 - The Economic Times",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:40:05.501964",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124153_174",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Are You Worthy? Gad Saad's Blunt Truth!"
+      },
+      "variant": {
+        "title": "Are You Worthy? Gad Saad's Blunt Truth!"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:41:53.538364",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124153_175",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Are You Worthy? Gad Saad's Blunt Truth!"
+      },
+      "variant": {
+        "title": "Are You Worthy? Gad Saad's Blunt Truth! \u2014 What It Means"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:41:53.540365",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124153_176",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Are You Worthy? Gad Saad's Blunt Truth!"
+      },
+      "variant": {
+        "title": "Analysis: Are You Worthy? Gad Saad's Blunt Truth!"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:41:53.545051",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124153_177",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Are You Worthy? Gad Saad's Blunt Truth!"
+      },
+      "variant": {
+        "title": "Are You Worthy? Gad Saad's Blunt Truth! \u2014 Full Analysis"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:41:53.547364",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124411_178",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Iran Stops Attacks on Israel: What Happens Next?"
+      },
+      "variant": {
+        "title": "Iran Stops Attacks on Israel: What Happens Next?"
+      },
+      "topic": "US Iran War Live: Iranian Military Announces 'Cessation' Of Offensives On Israel",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:44:11.980949",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124411_179",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Iran Stops Attacks on Israel: What Happens Next?"
+      },
+      "variant": {
+        "title": "Iran Stops Attacks on Israel: What Happens Next? \u2014 What It Means"
+      },
+      "topic": "US Iran War Live: Iranian Military Announces 'Cessation' Of Offensives On Israel",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:44:11.983369",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124411_180",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Iran Stops Attacks on Israel: What Happens Next?"
+      },
+      "variant": {
+        "title": "Analysis: Iran Stops Attacks on Israel: What Happens Next?"
+      },
+      "topic": "US Iran War Live: Iranian Military Announces 'Cessation' Of Offensives On Israel",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:44:11.986010",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124411_181",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Iran Stops Attacks on Israel: What Happens Next?"
+      },
+      "variant": {
+        "title": "Iran Stops Attacks on Israel: What Happens Next? \u2014 Full Analysis"
+      },
+      "topic": "US Iran War Live: Iranian Military Announces 'Cessation' Of Offensives On Israel",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:44:11.988394",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124637_182",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Samrat Gets Going: A New Chapter in Bihar Politics?"
+      },
+      "variant": {
+        "title": "Samrat Gets Going: A New Chapter in Bihar Politics?"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:46:37.641349",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124637_183",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Samrat Gets Going: A New Chapter in Bihar Politics?"
+      },
+      "variant": {
+        "title": "Samrat Gets Going: A New Chapter in Bihar Politics? \u2014 What It Means"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:46:37.643552",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124637_184",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Samrat Gets Going: A New Chapter in Bihar Politics?"
+      },
+      "variant": {
+        "title": "Analysis: Samrat Gets Going: A New Chapter in Bihar Politics?"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:46:37.645925",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_124637_185",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Samrat Gets Going: A New Chapter in Bihar Politics?"
+      },
+      "variant": {
+        "title": "Samrat Gets Going: A New Chapter in Bihar Politics? \u2014 Full Analysis"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:46:37.648152",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_125044_186",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Your Relationships: Gad Saad's Golden Rule!"
+      },
+      "variant": {
+        "title": "Your Relationships: Gad Saad's Golden Rule!"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:50:44.494369",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_125044_187",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Your Relationships: Gad Saad's Golden Rule!"
+      },
+      "variant": {
+        "title": "Your Relationships: Gad Saad's Golden Rule! \u2014 Explained"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:50:44.496671",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_125044_188",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Your Relationships: Gad Saad's Golden Rule!"
+      },
+      "variant": {
+        "title": "What Happened with Your Relationships: Gad Saad's?"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:50:44.501749",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_125044_189",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Your Relationships: Gad Saad's Golden Rule!"
+      },
+      "variant": {
+        "title": "Your Relationships: Gad Saad's Golden Rule! \u2014 Full Analysis"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:50:44.504808",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_125247_190",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Fire On Oil Tanker: 24 Indians Trapped Off Oman!"
+      },
+      "variant": {
+        "title": "Fire On Oil Tanker: 24 Indians Trapped Off Oman!"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T12:52:47.453837",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_125247_191",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Fire On Oil Tanker: 24 Indians Trapped Off Oman!"
+      },
+      "variant": {
+        "title": "Fire On Oil Tanker: 24 Indians Trapped Off Oman! \u2014 Explained"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T12:52:47.456216",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_125247_192",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Fire On Oil Tanker: 24 Indians Trapped Off Oman!"
+      },
+      "variant": {
+        "title": "What Happened with Fire On Oil Tanker:?"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T12:52:47.458871",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_125247_193",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Fire On Oil Tanker: 24 Indians Trapped Off Oman!"
+      },
+      "variant": {
+        "title": "Fire On Oil Tanker: 24 Indians Trapped Off Oman! \u2014 Complete Breakdown"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T12:52:47.461255",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130120_194",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Shocking Ladakh Trip: Majority of MPs Needed Oxygen for Altitude Sickness"
+      },
+      "variant": {
+        "title": "Shocking Ladakh Trip: Majority of MPs Needed Oxygen for Altitude Sickness"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:01:20.667839",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130120_195",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Shocking Ladakh Trip: Majority of MPs Needed Oxygen for Altitude Sickness"
+      },
+      "variant": {
+        "title": "Shocking Ladakh Trip: Majority of MPs Needed Oxygen for Altitude Sickness \u2014 What It Means"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:01:20.670142",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130120_196",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Shocking Ladakh Trip: Majority of MPs Needed Oxygen for Altitude Sickness"
+      },
+      "variant": {
+        "title": "What Happened with Shocking Ladakh Trip: Majority?"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:01:20.672877",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130120_197",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Shocking Ladakh Trip: Majority of MPs Needed Oxygen for Altitude Sickness"
+      },
+      "variant": {
+        "title": "Shocking Ladakh Trip: Majority of MPs Needed Oxygen for Altitude Sickness \u2014 Full Analysis"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:01:20.675471",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130423_198",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "The End of Friendship Over Disagreement? Gad Saad Speaks Out"
+      },
+      "variant": {
+        "title": "The End of Friendship Over Disagreement? Gad Saad Speaks Out"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:04:23.034507",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130423_199",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "The End of Friendship Over Disagreement? Gad Saad Speaks Out"
+      },
+      "variant": {
+        "title": "The End of Friendship Over Disagreement? Gad Saad Speaks Out \u2014 Explained"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:04:23.036721",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130423_200",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "The End of Friendship Over Disagreement? Gad Saad Speaks Out"
+      },
+      "variant": {
+        "title": "Analysis: The End of Friendship Over Disagreement? Gad Saad Speaks Out"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:04:23.039252",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130423_201",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "The End of Friendship Over Disagreement? Gad Saad Speaks Out"
+      },
+      "variant": {
+        "title": "The End of Friendship Over Disagreement? Gad Saad Speaks Out \u2014 Full Analysis"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:04:23.041863",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130841_202",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Urgent: Oil Tanker Fire Puts 24 Indian Crew at Risk near Oman!"
+      },
+      "variant": {
+        "title": "Urgent: Oil Tanker Fire Puts 24 Indian Crew at Risk near Oman!"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:08:41.918915",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130841_203",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Urgent: Oil Tanker Fire Puts 24 Indian Crew at Risk near Oman!"
+      },
+      "variant": {
+        "title": "Urgent: Oil Tanker Fire Puts 24 Indian Crew at Risk near Oman! \u2014 What It Means"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:08:41.921168",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130841_204",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Urgent: Oil Tanker Fire Puts 24 Indian Crew at Risk near Oman!"
+      },
+      "variant": {
+        "title": "What Happened with Urgent: Oil Tanker Fire?"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:08:41.923896",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_130841_205",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Urgent: Oil Tanker Fire Puts 24 Indian Crew at Risk near Oman!"
+      },
+      "variant": {
+        "title": "Urgent: Oil Tanker Fire Puts 24 Indian Crew at Risk near Oman! \u2014 Complete Breakdown"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:08:41.926635",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131221_206",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Shocking Ladakh Trip: Most MPs Need Oxygen Support"
+      },
+      "variant": {
+        "title": "Shocking Ladakh Trip: Most MPs Need Oxygen Support"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:12:21.670330",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131221_207",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Shocking Ladakh Trip: Most MPs Need Oxygen Support"
+      },
+      "variant": {
+        "title": "Shocking Ladakh Trip: Most MPs Need Oxygen Support \u2014 What It Means"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:12:21.673078",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131221_208",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Shocking Ladakh Trip: Most MPs Need Oxygen Support"
+      },
+      "variant": {
+        "title": "What Happened with Shocking Ladakh Trip: Most?"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:12:21.675820",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131221_209",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Shocking Ladakh Trip: Most MPs Need Oxygen Support"
+      },
+      "variant": {
+        "title": "Shocking Ladakh Trip: Most MPs Need Oxygen Support \u2014 Full Analysis"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:12:21.678438",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131457_210",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Big Move: 20 Trinamool MPs to Support NDA?"
+      },
+      "variant": {
+        "title": "Big Move: 20 Trinamool MPs to Support NDA?"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:14:57.185317",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131457_211",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Big Move: 20 Trinamool MPs to Support NDA?"
+      },
+      "variant": {
+        "title": "Big Move: 20 Trinamool MPs to Support NDA? \u2014 Explained"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:14:57.187748",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131457_212",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Big Move: 20 Trinamool MPs to Support NDA?"
+      },
+      "variant": {
+        "title": "Analysis: Big Move: 20 Trinamool MPs to Support NDA?"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:14:57.190535",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131457_213",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Big Move: 20 Trinamool MPs to Support NDA?"
+      },
+      "variant": {
+        "title": "Big Move: 20 Trinamool MPs to Support NDA? \u2014 Complete Breakdown"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:14:57.193955",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131701_214",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Samrat Gets Going: A New Era in Bihar?"
+      },
+      "variant": {
+        "title": "Samrat Gets Going: A New Era in Bihar?"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:17:01.351463",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131701_215",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Samrat Gets Going: A New Era in Bihar?"
+      },
+      "variant": {
+        "title": "Samrat Gets Going: A New Era in Bihar? \u2014 What It Means"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:17:01.353999",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131701_216",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Samrat Gets Going: A New Era in Bihar?"
+      },
+      "variant": {
+        "title": "Analysis: Samrat Gets Going: A New Era in Bihar?"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:17:01.356722",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_131701_217",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Samrat Gets Going: A New Era in Bihar?"
+      },
+      "variant": {
+        "title": "Samrat Gets Going: A New Era in Bihar? \u2014 Full Analysis"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:17:01.359503",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_132346_218",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Why a Simple Disagreement Can End a Relationship: Gad Saad Explains"
+      },
+      "variant": {
+        "title": "Why a Simple Disagreement Can End a Relationship: Gad Saad Explains"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:23:46.521936",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_132346_219",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Why a Simple Disagreement Can End a Relationship: Gad Saad Explains"
+      },
+      "variant": {
+        "title": "Why a Simple Disagreement Can End a Relationship: Gad Saad Explains \u2014 What It Means"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:23:46.524856",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_132346_220",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Why a Simple Disagreement Can End a Relationship: Gad Saad Explains"
+      },
+      "variant": {
+        "title": "What Happened with Why a Simple Disagreement?"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:23:46.527836",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_132346_221",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Why a Simple Disagreement Can End a Relationship: Gad Saad Explains"
+      },
+      "variant": {
+        "title": "Why a Simple Disagreement Can End a Relationship: Gad Saad Explains \u2014 Full Analysis"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:23:46.531148",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_132717_222",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Mystery Fire: Oil Tanker Blaze Endangers 24 Indians"
+      },
+      "variant": {
+        "title": "Mystery Fire: Oil Tanker Blaze Endangers 24 Indians"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:27:17.763719",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_132717_223",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Mystery Fire: Oil Tanker Blaze Endangers 24 Indians"
+      },
+      "variant": {
+        "title": "Mystery Fire: Oil Tanker Blaze Endangers 24 Indians \u2014 Explained"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:27:17.766795",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_132717_224",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Mystery Fire: Oil Tanker Blaze Endangers 24 Indians"
+      },
+      "variant": {
+        "title": "What Happened with Mystery Fire: Oil Tanker?"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:27:17.769808",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_132717_225",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Mystery Fire: Oil Tanker Blaze Endangers 24 Indians"
+      },
+      "variant": {
+        "title": "Mystery Fire: Oil Tanker Blaze Endangers 24 Indians \u2014 Complete Breakdown"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:27:17.773141",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133005_226",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Why Did Indian MPs Need Oxygen in Ladakh?"
+      },
+      "variant": {
+        "title": "Why Did Indian MPs Need Oxygen in Ladakh?"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:30:05.759215",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133005_227",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Why Did Indian MPs Need Oxygen in Ladakh?"
+      },
+      "variant": {
+        "title": "Why Did Indian MPs Need Oxygen in Ladakh? \u2014 What It Means"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:30:05.762197",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133005_228",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Why Did Indian MPs Need Oxygen in Ladakh?"
+      },
+      "variant": {
+        "title": "Analysis: Why Did Indian MPs Need Oxygen in Ladakh?"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:30:05.765656",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133005_229",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Why Did Indian MPs Need Oxygen in Ladakh?"
+      },
+      "variant": {
+        "title": "Why Did Indian MPs Need Oxygen in Ladakh? \u2014 Full Analysis"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:30:05.769000",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133244_230",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "20 Trinamool MPs to NDA?! Big Twist!"
+      },
+      "variant": {
+        "title": "20 Trinamool MPs to NDA?! Big Twist!"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:32:44.742223",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133244_231",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "20 Trinamool MPs to NDA?! Big Twist!"
+      },
+      "variant": {
+        "title": "20 Trinamool MPs to NDA?! Big Twist! \u2014 Explained"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:32:44.745301",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133244_232",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "20 Trinamool MPs to NDA?! Big Twist!"
+      },
+      "variant": {
+        "title": "Analysis: 20 Trinamool MPs to NDA?! Big Twist!"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:32:44.748748",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133244_233",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "20 Trinamool MPs to NDA?! Big Twist!"
+      },
+      "variant": {
+        "title": "20 Trinamool MPs to NDA?! Big Twist! \u2014 Complete Breakdown"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:32:44.751964",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133450_234",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Bihar's Samrat Choudhary: What's the Big Plan?"
+      },
+      "variant": {
+        "title": "Bihar's Samrat Choudhary: What's the Big Plan?"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:34:50.347584",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133450_235",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Bihar's Samrat Choudhary: What's the Big Plan?"
+      },
+      "variant": {
+        "title": "Bihar's Samrat Choudhary: What's the Big Plan? \u2014 What It Means"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:34:50.350635",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133450_236",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Bihar's Samrat Choudhary: What's the Big Plan?"
+      },
+      "variant": {
+        "title": "Analysis: Bihar's Samrat Choudhary: What's the Big Plan?"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:34:50.353855",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_133450_237",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Bihar's Samrat Choudhary: What's the Big Plan?"
+      },
+      "variant": {
+        "title": "Bihar's Samrat Choudhary: What's the Big Plan? \u2014 Full Analysis"
+      },
+      "topic": "Bihar | Samrat gets going",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:34:50.357228",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134230_238",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Molten Steel Mayhem at Vizag Plant: Horrific Blast Kills 8?"
+      },
+      "variant": {
+        "title": "Molten Steel Mayhem at Vizag Plant: Horrific Blast Kills 8?"
+      },
+      "topic": "Visakhapatnam Steel Plant accident: eight feared dead in ladle blast, fire at SMS-1",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:42:30.864873",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134230_239",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Molten Steel Mayhem at Vizag Plant: Horrific Blast Kills 8?"
+      },
+      "variant": {
+        "title": "Molten Steel Mayhem at Vizag Plant: Horrific Blast Kills 8? \u2014 Explained"
+      },
+      "topic": "Visakhapatnam Steel Plant accident: eight feared dead in ladle blast, fire at SMS-1",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:42:30.867573",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134230_240",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Molten Steel Mayhem at Vizag Plant: Horrific Blast Kills 8?"
+      },
+      "variant": {
+        "title": "Analysis: Molten Steel Mayhem at Vizag Plant: Horrific Blast Kills 8?"
+      },
+      "topic": "Visakhapatnam Steel Plant accident: eight feared dead in ladle blast, fire at SMS-1",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:42:30.871279",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134230_241",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Molten Steel Mayhem at Vizag Plant: Horrific Blast Kills 8?"
+      },
+      "variant": {
+        "title": "Molten Steel Mayhem at Vizag Plant: Horrific Blast Kills 8? \u2014 Complete Breakdown"
+      },
+      "topic": "Visakhapatnam Steel Plant accident: eight feared dead in ladle blast, fire at SMS-1",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:42:30.874400",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134357_242",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Gad Saad's Truth Bomb: What Ends Relationships?"
+      },
+      "variant": {
+        "title": "Gad Saad's Truth Bomb: What Ends Relationships?"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:43:57.087755",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134357_243",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Gad Saad's Truth Bomb: What Ends Relationships?"
+      },
+      "variant": {
+        "title": "Gad Saad's Truth Bomb: What Ends Relationships? \u2014 What It Means"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:43:57.090842",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134357_244",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Gad Saad's Truth Bomb: What Ends Relationships?"
+      },
+      "variant": {
+        "title": "Analysis: Gad Saad's Truth Bomb: What Ends Relationships?"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:43:57.093857",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134357_245",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Gad Saad's Truth Bomb: What Ends Relationships?"
+      },
+      "variant": {
+        "title": "Gad Saad's Truth Bomb: What Ends Relationships? \u2014 Full Analysis"
+      },
+      "topic": "Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship because of a reasoned difference of opinion is not worthy of\u2026\u201d",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:43:57.097047",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134627_246",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "24 Indians Trapped? Fire Strikes Oil Tanker!"
+      },
+      "variant": {
+        "title": "24 Indians Trapped? Fire Strikes Oil Tanker!"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:46:27.922882",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134627_247",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "24 Indians Trapped? Fire Strikes Oil Tanker!"
+      },
+      "variant": {
+        "title": "24 Indians Trapped? Fire Strikes Oil Tanker! \u2014 Explained"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:46:27.925538",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134627_248",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "24 Indians Trapped? Fire Strikes Oil Tanker!"
+      },
+      "variant": {
+        "title": "Analysis: 24 Indians Trapped? Fire Strikes Oil Tanker!"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:46:27.928617",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134627_249",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "24 Indians Trapped? Fire Strikes Oil Tanker!"
+      },
+      "variant": {
+        "title": "24 Indians Trapped? Fire Strikes Oil Tanker! \u2014 Complete Breakdown"
+      },
+      "topic": "Fire On Oil Tanker Carrying 24 Indians Off Coast Of Oman",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:46:27.932137",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134905_250",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Official Tour Turns Tough: MPs Hit by High-Altitude Sickness"
+      },
+      "variant": {
+        "title": "Official Tour Turns Tough: MPs Hit by High-Altitude Sickness"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:49:05.620123",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134905_251",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Official Tour Turns Tough: MPs Hit by High-Altitude Sickness"
+      },
+      "variant": {
+        "title": "Official Tour Turns Tough: MPs Hit by High-Altitude Sickness \u2014 What It Means"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:49:05.622765",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134905_252",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Official Tour Turns Tough: MPs Hit by High-Altitude Sickness"
+      },
+      "variant": {
+        "title": "What Happened with Official Tour Turns Tough:?"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:49:05.625914",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_134905_253",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Official Tour Turns Tough: MPs Hit by High-Altitude Sickness"
+      },
+      "variant": {
+        "title": "Official Tour Turns Tough: MPs Hit by High-Altitude Sickness \u2014 Full Analysis"
+      },
+      "topic": "Several MPs Suffer High-Altitude Sickness During Official Ladakh Tour",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:49:05.628872",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_135207_254",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "20 Trinamool MPs to NDA? Kakoli Dastidar's Shocking Claim!"
+      },
+      "variant": {
+        "title": "20 Trinamool MPs to NDA? Kakoli Dastidar's Shocking Claim!"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-08T13:52:07.174174",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_135207_255",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "20 Trinamool MPs to NDA? Kakoli Dastidar's Shocking Claim!"
+      },
+      "variant": {
+        "title": "20 Trinamool MPs to NDA? Kakoli Dastidar's Shocking Claim! \u2014 What It Means"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-08T13:52:07.176958",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_135207_256",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "20 Trinamool MPs to NDA? Kakoli Dastidar's Shocking Claim!"
+      },
+      "variant": {
+        "title": "Analysis: 20 Trinamool MPs to NDA? Kakoli Dastidar's Shocking Claim!"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-08T13:52:07.180582",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260608_135207_257",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "20 Trinamool MPs to NDA? Kakoli Dastidar's Shocking Claim!"
+      },
+      "variant": {
+        "title": "20 Trinamool MPs to NDA? Kakoli Dastidar's Shocking Claim! \u2014 Complete Breakdown"
+      },
+      "topic": "Trinamool's Kakoli Dastidar Says 20 MPs Will Support NDA: \"Written To Speaker\"",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-08T13:52:07.183913",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_022509_258",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Did 10 Trinamool MPs Just Betray Mamata?"
+      },
+      "variant": {
+        "title": "Did 10 Trinamool MPs Just Betray Mamata?"
+      },
+      "topic": "Trinamool Rebel, 10 MPs Meet BJP Leaders As Mamata Banerjee Attends INDIA Meet",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-09T02:25:09.518490",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_022509_259",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Did 10 Trinamool MPs Just Betray Mamata?"
+      },
+      "variant": {
+        "title": "Did 10 Trinamool MPs Just Betray Mamata? \u2014 What It Means"
+      },
+      "topic": "Trinamool Rebel, 10 MPs Meet BJP Leaders As Mamata Banerjee Attends INDIA Meet",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-09T02:25:09.522088",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_022509_260",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Did 10 Trinamool MPs Just Betray Mamata?"
+      },
+      "variant": {
+        "title": "Analysis: Did 10 Trinamool MPs Just Betray Mamata?"
+      },
+      "topic": "Trinamool Rebel, 10 MPs Meet BJP Leaders As Mamata Banerjee Attends INDIA Meet",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-09T02:25:09.525278",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_022509_261",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Did 10 Trinamool MPs Just Betray Mamata?"
+      },
+      "variant": {
+        "title": "Did 10 Trinamool MPs Just Betray Mamata? \u2014 Complete Breakdown"
+      },
+      "topic": "Trinamool Rebel, 10 MPs Meet BJP Leaders As Mamata Banerjee Attends INDIA Meet",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-09T02:25:09.528597",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_065205_262",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "BRICS Meeting LIVE: Global Farming on the Table!"
+      },
+      "variant": {
+        "title": "BRICS Meeting LIVE: Global Farming on the Table!"
+      },
+      "topic": "Five-day BRICS meeting begins in Indore to discuss global issues in agriculture sector",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-09T06:52:05.983200",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_065205_263",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "BRICS Meeting LIVE: Global Farming on the Table!"
+      },
+      "variant": {
+        "title": "BRICS Meeting LIVE: Global Farming on the Table! \u2014 Explained"
+      },
+      "topic": "Five-day BRICS meeting begins in Indore to discuss global issues in agriculture sector",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-09T06:52:05.986133",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_065205_264",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "BRICS Meeting LIVE: Global Farming on the Table!"
+      },
+      "variant": {
+        "title": "What Happened with BRICS Meeting LIVE: Global?"
+      },
+      "topic": "Five-day BRICS meeting begins in Indore to discuss global issues in agriculture sector",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-09T06:52:05.990840",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_065205_265",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "BRICS Meeting LIVE: Global Farming on the Table!"
+      },
+      "variant": {
+        "title": "BRICS Meeting LIVE: Global Farming on the Table! \u2014 Full Analysis"
+      },
+      "topic": "Five-day BRICS meeting begins in Indore to discuss global issues in agriculture sector",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-09T06:52:05.994004",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
     }
   ],
   "stats": {

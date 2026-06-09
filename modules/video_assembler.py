@@ -812,7 +812,8 @@ Script:
                 try:
                     print(f"    Assembler: [Serper-Img] Fetching scene {i}...")
                     serper_key = config.API_KEYS.get("SERPER_API_KEY", "")
-                    if serper_key:
+                    serper_key_backup = config.API_KEYS.get("SERPER_APIKEY_BACKUP1", "")
+                    if serper_key or serper_key_backup:
                         headers = {'X-API-KEY': serper_key, 'Content-Type': 'application/json'}
 
                         # Build state-specific Serper query to avoid wrong-state images
@@ -864,11 +865,25 @@ Script:
 
                         payload = {"q": _serper_query, "num": 10}
                         req_data = json.dumps(payload).encode('utf-8')
-                        req = urllib.request.Request("https://google.serper.dev/images", data=req_data, headers=headers)
-                        with urllib.request.urlopen(req, timeout=10) as resp:
-                            data = json.loads(resp.read().decode())
-                            images = data.get("images", [])
-                            for attempt_idx, img_info in enumerate(images[:10]):
+
+                        # v85.1: Try primary key first, then backup key on failure
+                        serper_resp = None
+                        for _sk, _sk_name in [(serper_key, "primary"), (serper_key_backup, "backup")]:
+                            if not _sk:
+                                continue
+                            try:
+                                _headers = {'X-API-KEY': _sk, 'Content-Type': 'application/json'}
+                                req = urllib.request.Request("https://google.serper.dev/images", data=req_data, headers=_headers)
+                                with urllib.request.urlopen(req, timeout=10) as resp:
+                                    serper_resp = json.loads(resp.read().decode())
+                                print(f"      [Serper-Img] Scene {i} OK ({_sk_name} key)")
+                                break
+                            except Exception as _serper_err:
+                                print(f"      [Serper-Img] Scene {i} {_sk_name} key failed: {_serper_err}")
+                                continue
+
+                        images = (serper_resp or {}).get("images", [])
+                        for attempt_idx, img_info in enumerate(images[:10]):
                                 try:
                                     url = img_info.get("imageUrl", "")
                                     if not url: continue

@@ -62,6 +62,7 @@ def upload_topic(topic_id: str, item: dict, schedule_slot: str | None = None) ->
         "https://www.googleapis.com/auth/youtube.upload",
         "https://www.googleapis.com/auth/youtube.force-ssl",
         "https://www.googleapis.com/auth/youtube.readonly",
+        "https://www.googleapis.com/auth/youtube.commentThreads",  # pin comments, reply management (v85.1)
     ]
     creds = Credentials.from_authorized_user_file(token_path, YOUTUBE_SCOPES)
     if creds and creds.expired and creds.refresh_token:

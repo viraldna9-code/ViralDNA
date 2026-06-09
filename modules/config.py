@@ -7,6 +7,11 @@
 #                  API quota monitoring (K3.3), topic playlist IDs (H2.3),
 #                  adaptive growth config keys (J2.x)
 #          v50.2: Initial config
+#
+# PIPELINE_VERSION: v85.1 (unified across all modules as of June 9, 2026)
+#   Previously each module had its own random version (v1.0-v84.3).
+#   From v85.1 onward, all changes increment this single version.
+PIPELINE_VERSION = "v85.1"
 import os
 from dotenv import load_dotenv
 
@@ -127,7 +132,7 @@ NOTIFICATION_CONFIG = {
     "enabled": True,
     "channels": {
         "telegram": {
-            "enabled": False,
+            "enabled": True,  # v85.1: enabled — Telegram is primary notification channel
             "bot_token": os.getenv("TELEGRAM_BOT_TOKEN", ""),
             "chat_id": os.getenv("TELEGRAM_CHAT_ID", ""),
         },

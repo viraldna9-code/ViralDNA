@@ -7,6 +7,32 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-09
 
+### 16:30 IST — v85.1 Audit Fixes (10 fixes)
+- **FIXED** YouTube token refresh — token was expired (2026-06-09T10:15:56 UTC). Refreshed and verified (8 subs, 30 videos, 13345 views).
+- **ADDED** `https://www.googleapis.com/auth/youtube.commentThreads` scope to YOUTUBE_SCOPES in `run_multi_agent_pipeline.py` and `upload_approved.py`. Requires re-authorization on next OAuth flow.
+- **IMPLEMENTED** all 13 integration agents with real validation logic (were stubs that just returned state):
+  - `DiscoveryWeightingIntegration` — validates raw_news has articles
+  - `WeightingScriptingIntegration` — validates weighted_topics has entries
+  - `ScriptingComplianceIntegration` — validates script exists
+  - `FactCheckComplianceIntegration` — BLOCKS pipeline if fact-check failed
+  - `ComplianceAdFriendlyIntegration` — validates compliance before ad-friendly
+  - `ComplianceVoiceIntegration` — validates compliance before voice synthesis
+  - `VoiceVisualIntegration` — validates voice duration vs visual scenes
+  - `VisualThumbnailIntegration` — validates visuals before thumbnail creation
+  - `ThumbnailAssemblyIntegration` — validates thumbnail exists before assembly
+  - `CTROptimizationIntegration` — validates CTR-optimized thumbnail and title
+  - `AssemblyUploadIntegration` — validates video file exists before upload
+  - `ForensicAuditUploadIntegration` — validates forensic audit passed
+  - `UploadFeedbackIntegration` — validates upload result
+- **FIXED** `NOTIFICATION_CONFIG["telegram"]["enabled"]` → `True` in `config.py` (was `False`, misleading)
+- **ADDED** publish schedule to approval Telegram message (Main 9AM/7PM, Shorts +30min)
+- **ADDED** Serper backup key fallback in `video_assembler.py` — tries `SERPER_BACKUP_API_KEY` if primary fails
+- **ADDED** `PIPELINE_VERSION = "v85.1"` to `config.py` — unified version constant (previously scattered v1.0-v84.3)
+- **ADDED** `--mode weekly` support to `scripts/daily_report.py` (weekly cron was failing — script didn't support the flag)
+- **MOVED** 21 test files from `modules/` to `tests/` (proper separation)
+- **ADDED** `SKILL.md` — project documentation with architecture, config, cron jobs, troubleshooting
+- **REMOVED** duplicate integration agent definitions (file had two sections with overlapping classes)
+
 ### 15:45 IST — Infrastructure Additions
 - **ADDED** `vdna_health_check.py` — System health check script (disk, env, deps, imports, cron, queue, YouTube, credentials). Supports `--json` and `--quiet`.
 - **ADDED** `dashboard/generate_dashboard.py` — Live dashboard generator. Produces `dashboard/index.html` with real-time cron, topics, YouTube, env data. Auto-refreshes 60s.

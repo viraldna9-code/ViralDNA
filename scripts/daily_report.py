@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 """
-ViralDNA Daily Analytics Report — sends daily summary to Telegram.
-Called by Hermes cron at 00:30 IST.
+ViralDNA Daily/Weekly Analytics Report — sends summary to Telegram.
+Called by Hermes cron: daily at 6AM IST, weekly on Sunday 6AM IST.
+Usage: python3 scripts/daily_report.py [--mode daily|weekly]
 """
-import os, sys, json, urllib.request, subprocess
+import os, sys, json, urllib.request, subprocess, argparse
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 IST = timezone(timedelta(hours=5, minutes=30))
 PROJECT_ROOT = Path(__file__).parent.parent  # scripts/ -> ViralDNA/
+
+# ── Args ──
+parser = argparse.ArgumentParser()
+parser.add_argument("--mode", choices=["daily", "weekly"], default="daily",
+                    help="Report mode: daily (today) or weekly (last 7 days)")
+args = parser.parse_args()
 
 # Load env
 from dotenv import load_dotenv
@@ -16,6 +23,8 @@ load_dotenv(Path.home() / ".env")
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CHAT = os.getenv("TELEGRAM_CHAT_ID")
+
+WEEKDAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 def run(cmd, timeout=30):
     try:
@@ -35,14 +44,27 @@ if topics_file.exists():
     with open(topics_file) as f:
         d = json.load(f)
     topics = d.get("topics", [])
-    today = datetime.now(IST).strftime("%Y-%m-%d")
-    today_t = [t for t in topics if t.get("date", "") == today]
+    now_ist = datetime.now(IST)
+
+    if args.mode == "weekly":
+        # Last 7 days
+        week_ago = (now_ist - timedelta(days=7)).strftime("%Y-%m-%d")
+        today_str = now_ist.strftime("%Y-%m-%d")
+        period_topics = [t for t in topics if week_ago <= t.get("date", "") <= today_str]
+        period_label = f"Last 7 days ({week_ago} → {today_str})"
+    else:
+        # Today only
+        today_str = now_ist.strftime("%Y-%m-%d")
+        period_topics = [t for t in topics if t.get("date", "") == today_str]
+        period_label = today_str
+
     pub = [t for t in topics if t.get("published")]
     top5 = sorted(topics, key=lambda x: x.get("score", 0), reverse=True)[:5]
     top5_lines = [f'  [{t["score"]:2d}] {t["id"]} {t["title"][:60]}' for t in top5]
     last_run = d.get("last_run", "?")
 else:
-    topics, today_t, pub, top5_lines, last_run = [], [], [], [], "no file"
+    topics, period_topics, pub, top5_lines, last_run = [], [], [], [], "no file"
+    period_label = "no data"
 
 # ── Channel health ──
 health_file = PROJECT_ROOT / "logs" / "channel_health_last_run.txt"
@@ -50,11 +72,13 @@ health_data = health_file.read_text().strip() if health_file.exists() else "No r
 
 # ── Format ──
 now_str = datetime.now(IST).strftime("%Y-%m-%d %H:%M IST")
+emoji = "📊" if args.mode == "daily" else "📅"
+label = "Daily" if args.mode == "daily" else "Weekly"
 lines = [
-    f"📊 <b>ViralDNA Daily Report — {now_str}</b>",
+    f"{emoji} <b>ViralDNA {label} Report — {now_str}</b>",
     "",
-    "📈 <b>Topics</b>",
-    f"Total: {len(topics)}  |  Today new: {len(today_t)}  |  Published: {len(pub)}",
+    f"📈 <b>Topics — {period_label}</b>",
+    f"Total: {len(topics)}  |  Period new: {len(period_topics)}  |  Published: {len(pub)}",
     f"Monitor last run: {last_run[:19] if last_run else '?'}",
     "",
     "<b>Top 5 by score:</b>",

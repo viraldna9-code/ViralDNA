@@ -92,6 +92,19 @@ def send_approval_request(
         f"⭐ <b>Score:</b> {topic_score}  |  🆔 <b>ID:</b> <code>{topic_id}</code>",
     ]
 
+    # Add publish schedule info if available (v85.1)
+    if publish_decision:
+        slot = publish_decision.get("slot", "")
+        main_time = publish_decision.get("main_publish_time_ist", "")
+        shorts_time = publish_decision.get("shorts_publish_time_ist", "")
+        if slot:
+            lines.append(f"")
+            lines.append(f"📅 <b>Schedule:</b> {slot.upper()}")
+            if main_time:
+                lines.append(f"  🎥 Main: {main_time} IST")
+            if shorts_time:
+                lines.append(f"  📱 Shorts: {shorts_time} IST")
+
     message = "\n".join(lines)
 
     # Send thumbnail + message (caption max 1024 chars for photo)

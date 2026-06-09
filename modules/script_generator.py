@@ -1,4 +1,4 @@
-# VERSION: 64.0
+# VERSION: 84.3
 # MODULE: script_generator.py
 # PURPOSE: Hybrid Synthesis Script Engine (Dynamic Gemini API with Heuristic Fallback)
 #          v64.0: Integrated HumanizerEngine post-processing pass to strip AI-isms

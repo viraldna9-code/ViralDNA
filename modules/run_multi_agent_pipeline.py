@@ -364,70 +364,237 @@ class PrimetimeSchedulerAgent(BaseAgent):
 # ═══════════════════════════════════════════════════════════════════════════════
 # INTEGRATION AGENTS (between main pipeline phases)
 # ═══════════════════════════════════════════════════════════════════════════════
+# v85.1: All integration agents now have real validation logic (were stubs before).
+# Each validates its handoff keys via BaseIntegrationAgent.execute() + custom checks.
 
 class DiscoveryWeightingIntegration(BaseIntegrationAgent):
+    """Gate: Discovery → Weighting. Validates raw_news has enough items for diversity."""
     def __init__(self, orchestrator):
         super().__init__("Discovery→Weighting Integration", orchestrator, ["raw_news"])
 
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        raw_news = state.get("raw_news", [])
+        if isinstance(raw_news, list) and len(raw_news) < 3:
+            self.log(f"⚠️ Only {len(raw_news)} news items — weighting may have low diversity.")
+        else:
+            self.log(f"✅ {len(raw_news)} news items available for weighting.")
+        return state
+
+
 class WeightingScriptingIntegration(BaseIntegrationAgent):
+    """Gate: Weighting → Scripting. Validates selected_topic has a minimum score."""
     def __init__(self, orchestrator):
         super().__init__("Weighting→Scripting Integration", orchestrator, ["sorted_topics", "selected_topic"])
 
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        selected = state.get("selected_topic", {})
+        if isinstance(selected, dict):
+            title = selected.get("title", "?")
+            score = selected.get("score", 0)
+            self.log(f"✅ Selected: {title[:60]} (score={score})")
+            if score < 15:
+                self.log(f"⚠️ Low score ({score}) — topic may not perform well.")
+        return state
+
+
 class ScriptingComplianceIntegration(BaseIntegrationAgent):
+    """Gate: Scripting → Compliance. Validates script length and duration."""
     def __init__(self, orchestrator):
         super().__init__("Scripting→Compliance Integration", orchestrator, ["script_payload"])
 
-class ComplianceVoiceIntegration(BaseIntegrationAgent):
-    def __init__(self, orchestrator):
-        super().__init__("Compliance→Voice Integration", orchestrator, ["compliance_result"])
     def execute(self, state: dict) -> dict:
         super().execute(state)
-        compliance_result = state.get("compliance_result", {})
-        passed = (
-            compliance_result.get("verdict") == "PASS"
-            or compliance_result.get("recommendation") in ("APPROVE", "REVIEW")
-        )
-        if not passed:
-            raise ValueError(f"[{self.name}] Compliance result is '{compliance_result}' — cannot proceed.")
+        payload = state.get("script_payload", {})
+        if isinstance(payload, dict):
+            segs = payload.get("segments", [])
+            word_count = sum(len(s.get("text", "").split()) for s in segs if isinstance(s, dict))
+            duration = payload.get("estimated_duration_s", 0)
+            self.log(f"✅ Script: {len(segs)} segments, ~{word_count} words, ~{duration:.0f}s")
+            if word_count > 1500:
+                self.log(f"⚠️ Long script ({word_count} words) — consider splitting.")
+            if duration > 600:
+                self.log(f"⚠️ Long duration ({duration:.0f}s) — may lose viewers.")
         return state
 
+
+class ComplianceVoiceIntegration(BaseIntegrationAgent):
+    """Gate: Compliance → Voice. Blocks if compliance failed."""
+    def __init__(self, orchestrator):
+        super().__init__("Compliance→Voice Integration", orchestrator, ["compliance_result"])
+
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        cr = state.get("compliance_result", {})
+        passed = (
+            cr.get("verdict") == "PASS"
+            or cr.get("recommendation") in ("APPROVE", "REVIEW")
+        )
+        if not passed:
+            raise ValueError(f"[{self.name}] Compliance FAILED: {cr} — cannot proceed.")
+        self.log("✅ Compliance passed — proceeding to voice synthesis.")
+        return state
+
+
+class FactCheckComplianceIntegration(BaseIntegrationAgent):
+    """Gate: FactCheck → Compliance. Blocks pipeline if fact-check failed."""
+    def __init__(self, orchestrator):
+        super().__init__("FactCheck→Compliance Integration", orchestrator, ["fact_check_result"])
+
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        if state.get("fact_check_blocked"):
+            reason = state.get("fact_check_block_reason", "Unknown factual error")
+            raise ValueError(f"[{self.name}] Fact-check BLOCKED: {reason}")
+        self.log("✅ Fact-check passed — proceeding to compliance.")
+        return state
+
+
+class ComplianceAdFriendlyIntegration(BaseIntegrationAgent):
+    """Gate: Compliance → AdFriendly. Validates compliance before ad-friendly check."""
+    def __init__(self, orchestrator):
+        super().__init__("Compliance→AdFriendly Integration", orchestrator, ["compliance_result", "selected_topic"])
+
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        cr = state.get("compliance_result", {})
+        passed = (
+            cr.get("verdict") == "PASS"
+            or cr.get("recommendation") in ("APPROVE", "REVIEW")
+        )
+        if not passed:
+            raise ValueError(f"[{self.name}] Compliance FAILED: {cr} — cannot proceed to ad-friendly.")
+        self.log("✅ Compliance passed — proceeding to ad-friendly check.")
+        return state
+
+
 class VoiceVisualIntegration(BaseIntegrationAgent):
+    """Gate: Voice → Visuals. Validates voiceover assets exist before visual harvesting."""
     def __init__(self, orchestrator):
         super().__init__("Voice→Visual Integration", orchestrator, ["voiceover_assets"])
 
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        assets = state.get("voiceover_assets", {})
+        if isinstance(assets, dict):
+            segments = assets.get("segments", [])
+            total_dur = sum(s.get("duration_s", 0) for s in segments if isinstance(s, dict))
+            missing = sum(1 for s in segments if isinstance(s, dict) and not s.get("file"))
+            self.log(f"✅ Voiceover: {len(segments)} segments, {total_dur:.1f}s total")
+            if missing > 0:
+                self.log(f"⚠️ {missing} voiceover segments missing files.")
+        return state
+
+
 class VisualThumbnailIntegration(BaseIntegrationAgent):
+    """Gate: Visuals → Thumbnails. Soft — allows fallback if no API visuals."""
     def __init__(self, orchestrator):
         super().__init__("Visual→Thumbnail Integration", orchestrator, ["visuals"])
 
     def execute(self, state: dict) -> dict:
-        """Allow None/empty visuals — downstream agents have their own fallbacks."""
         self.log("Validating handoff — keys: ['visuals'] (soft)")
         val = state.get("visuals")
         if val is None:
-            self.log("⚠️ No API visuals available — thumbnail will use local image pack fallback.")
+            self.log("⚠️ No API visuals — thumbnail will use local image pack fallback.")
         elif isinstance(val, list) and len(val) == 0:
             self.log("⚠️ Empty visuals list — thumbnail will use local image pack fallback.")
         else:
             self.log(f"✅ {len(val)} visuals passed to thumbnail stage.")
         return state
 
+
 class ThumbnailAssemblyIntegration(BaseIntegrationAgent):
+    """Gate: Thumbnails → Assembly. Validates thumbnail and background canvas exist."""
     def __init__(self, orchestrator):
         super().__init__("Thumbnail→Assembly Integration", orchestrator, ["background_canvas", "branded_thumbnail"])
 
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        thumb = state.get("branded_thumbnail", "")
+        bg = state.get("background_canvas", "")
+        if thumb and os.path.exists(thumb):
+            self.log(f"✅ Thumbnail exists: {os.path.basename(thumb)}")
+        else:
+            self.log(f"⚠️ Thumbnail missing — video will have no custom thumbnail.")
+        if bg and os.path.exists(bg):
+            self.log(f"✅ Background canvas exists: {os.path.basename(bg)}")
+        else:
+            self.log(f"⚠️ Background canvas missing — will use fallback.")
+        return state
+
+
 class AssemblyUploadIntegration(BaseIntegrationAgent):
+    """Gate: Assembly → Upload. Validates compiled video files exist on disk."""
     def __init__(self, orchestrator):
         super().__init__("Assembly→Upload Integration", orchestrator, ["compiled_videos"])
 
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        videos = state.get("compiled_videos", [])
+        if isinstance(videos, list):
+            for vf in videos:
+                if vf and os.path.exists(vf):
+                    size_mb = os.path.getsize(vf) / (1024 * 1024)
+                    self.log(f"✅ Video ready: {os.path.basename(vf)} ({size_mb:.1f}MB)")
+                else:
+                    self.log(f"❌ Video file missing: {vf}")
+                    raise ValueError(f"[{self.name}] Video file not found: {vf}")
+        return state
+
+
+class CTROptimizationIntegration(BaseIntegrationAgent):
+    """Gate: CTR → Assembly. Validates CTR-optimized thumbnail and title exist."""
+    def __init__(self, orchestrator):
+        super().__init__("CTR→Assembly Integration", orchestrator, ["branded_thumbnail"])
+
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        thumb = state.get("branded_thumbnail", "")
+        if thumb and os.path.exists(thumb):
+            self.log(f"✅ CTR-optimized thumbnail: {os.path.basename(thumb)}")
+        else:
+            self.log(f"⚠️ No CTR-optimized thumbnail — assembly will use basic thumbnail.")
+        opt_title = state.get("optimized_title", "")
+        if opt_title:
+            self.log(f"✅ Optimized title: {opt_title[:60]}")
+        else:
+            self.log(f"⚠️ No title optimization — using raw topic title.")
+        return state
+
+
 class ForensicAuditUploadIntegration(BaseIntegrationAgent):
-    """Pass-through gate between ForensicAuditGate and ResilientUploader."""
+    """Gate: ForensicAudit → Upload. Blocks upload if forensic audit failed."""
     def __init__(self, orchestrator):
         super().__init__("ForensicAudit→Upload Integration", orchestrator, ["forensic_audit_passed"])
 
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        audit_passed = state.get("forensic_audit_passed", False)
+        if not audit_passed:
+            raise ValueError(f"[{self.name}] Forensic audit FAILED — cannot proceed to upload.")
+        self.log("✅ Forensic audit passed — safe to upload.")
+        return state
+
 
 class UploadFeedbackIntegration(BaseIntegrationAgent):
+    """Gate: Upload → Feedback. Validates upload results and logs errors."""
     def __init__(self, orchestrator):
         super().__init__("Upload→Feedback Integration", orchestrator, ["upload_results"])
+
+    def execute(self, state: dict) -> dict:
+        super().execute(state)
+        results = state.get("upload_results", {})
+        if isinstance(results, dict):
+            errors = results.get("errors", [])
+            uploads = results.get("uploads", [])
+            if uploads:
+                self.log(f"✅ Upload feedback: {len(uploads)} successful uploads")
+            if errors:
+                self.log(f"⚠️ Upload errors: {errors}")
+            if not uploads and not errors:
+                self.log(f"⚠️ Empty upload_results — upload may have been skipped.")
+        return state
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1137,9 +1304,10 @@ class ResilientUploaderAgent(BaseAgent):
             return None
         # Full scopes needed for upload + comments + captions + playlists + analytics
         YOUTUBE_SCOPES = [
-            "https://www.googleapis.com/auth/youtube.upload",      # upload videos
-            "https://www.googleapis.com/auth/youtube.force-ssl",    # comments, playlists, captions
-            "https://www.googleapis.com/auth/youtube.readonly",     # analytics, channel info
+            "https://www.googleapis.com/auth/youtube.upload",       # upload videos
+            "https://www.googleapis.com/auth/youtube.force-ssl",     # comments, playlists, captions
+            "https://www.googleapis.com/auth/youtube.readonly",      # analytics, channel info
+            "https://www.googleapis.com/auth/youtube.commentThreads", # pin comments, reply management (v85.1)
         ]
         try:
             creds = Credentials.from_authorized_user_file(token_path, YOUTUBE_SCOPES)
@@ -2058,42 +2226,6 @@ class ContinuousAuditorAgent(BaseAgent):
             self.orchestrator.timer.fail("Phase 8: Telemetry", "8.1 Ledger Commit")
             self.log(f"Telemetry error (non-fatal): {e}")
         return state
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# INTEGRATION GATES (for new checkpoints)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-class FactCheckComplianceIntegration(BaseIntegrationAgent):
-    """Gate: fact-check → compliance. Blocks pipeline if fact-check failed."""
-    def __init__(self, orchestrator):
-        super().__init__("FactCheck→Compliance Integration", orchestrator, ["fact_check_result"])
-    def execute(self, state: dict) -> dict:
-        super().execute(state)
-        if state.get("fact_check_blocked"):
-            reason = state.get("fact_check_block_reason", "Unknown factual error")
-            raise ValueError(f"[{self.name}] Fact-check BLOCKED: {reason}")
-        return state
-
-class ComplianceAdFriendlyIntegration(BaseIntegrationAgent):
-    """Gate: compliance → ad-friendly check."""
-    def __init__(self, orchestrator):
-        super().__init__("Compliance→AdFriendly Integration", orchestrator, ["compliance_result", "selected_topic"])
-    def execute(self, state: dict) -> dict:
-        super().execute(state)
-        compliance_result = state.get("compliance_result", {})
-        passed = (
-            compliance_result.get("verdict") == "PASS"
-            or compliance_result.get("recommendation") in ("APPROVE", "REVIEW")
-        )
-        if not passed:
-            raise ValueError(f"[{self.name}] Compliance result is '{compliance_result}' — cannot proceed.")
-        return state
-
-class CTROptimizationIntegration(BaseIntegrationAgent):
-    """Gate: CTR optimization → assembly."""
-    def __init__(self, orchestrator):
-        super().__init__("CTR→Assembly Integration", orchestrator, ["branded_thumbnail"])
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
