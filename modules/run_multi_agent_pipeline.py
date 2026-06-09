@@ -3137,6 +3137,8 @@ class MultiAgentOrchestrator:
 
     def send_telegram_notification(self, message: str) -> bool:
         import requests
+        from dotenv import load_dotenv as _ld
+        _ld(os.path.expanduser("~/.env"))
         token = os.getenv("TELEGRAM_BOT_TOKEN")
         chat_id = os.getenv("TELEGRAM_CHAT_ID")
         if not token or not chat_id:
