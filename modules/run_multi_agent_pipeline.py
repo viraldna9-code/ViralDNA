@@ -670,6 +670,32 @@ class WeightingAgent(BaseAgent):
                 raise ValueError("PostFilter returned empty topic list.")
             state["sorted_topics"] = sorted_topics
 
+            # ── Assign VDNA IDs to topics that don't have one ──
+            # Topics from monitor_cloud.py already have IDs; topics from
+            # inline discovery (cron runs) need them generated here.
+            try:
+                from pathlib import Path as _Path
+                _topics_file = _Path("/home/jay/ViralDNA/logs/topics_history.json")
+                _max_id_num = 0
+                if _topics_file.exists():
+                    _th = json.load(_topics_file.open())
+                    for _t in _th.get("topics", []):
+                        _tid = _t.get("id", "")
+                        if _tid.startswith("VDNA"):
+                            try:
+                                _n = int(_tid[4:])
+                                if _n > _max_id_num:
+                                    _max_id_num = _n
+                            except ValueError:
+                                pass
+                for _t in sorted_topics:
+                    if not _t.get("id"):
+                        _max_id_num += 1
+                        _t["id"] = f"VDNA{_max_id_num:03d}"
+                self.log(f"  [ID] Assigned VDNA IDs up to VDNA{_max_id_num:03d}")
+            except Exception as _e:
+                self.log(f"  [ID] Warning: could not assign IDs: {_e}")
+
             # ── CRITICAL: Record topic IMMEDIATELY at selection time ──
             # This must happen BEFORE any later phase can crash.
             if not state.get("selected_topic"):
@@ -1400,19 +1426,11 @@ class ResilientUploaderAgent(BaseAgent):
                 for f in sorted(os.listdir(thumbs_dir), reverse=True):
                     if not f.endswith(".jpg"):
                         continue
-                    f_base = f.replace("_branded.jpg", "").replace("_clean.jpg", "").replace("_branded_v2.jpg", "").replace("_branded_v3.jpg", "")
+                    f_base = f.replace("_branded.jpg", "").replace("_clean.jpg", "").replace("_branded_v2.jpg", "").replace("_branded_v3.jpg", "").replace("_normalized.jpg", "")
                     if f_base in video_slugs:
                         thumbnail_files.append(os.path.join(thumbs_dir, f))
                 # Deduplicate: keep only the best branded thumbnail per slug
                 # Prefer branded_v3 > branded_v2 > branded > clean
-                seen_slugs = set()
-                deduped = []
-                for tf in thumbnail_files:
-                    slug = os.path.basename(tf).replace("_branded.jpg", "").replace("_clean.jpg", "").replace("_branded_v2.jpg", "").replace("_branded_v3.jpg", "")
-                    if slug not in seen_slugs:
-                        seen_slugs.add(slug)
-                        deduped.append(tf)
-                # Reorder: put branded versions first (v3 > v2 > v1 > clean)
                 def _brand_priority(path):
                     b = os.path.basename(path)
                     if "_branded_v3" in b: return 0
@@ -1420,7 +1438,15 @@ class ResilientUploaderAgent(BaseAgent):
                     if "_branded." in b: return 2
                     if "_clean" in b: return 3
                     return 4
-                deduped.sort(key=_brand_priority)
+                # Group by slug, then pick highest priority
+                slug_best = {}
+                for tf in thumbnail_files:
+                    bname = os.path.basename(tf)
+                    slug = bname.replace("_branded.jpg", "").replace("_clean.jpg", "").replace("_branded_v2.jpg", "").replace("_branded_v3.jpg", "").replace("_normalized.jpg", "")
+                    priority = _brand_priority(tf)
+                    if slug not in slug_best or priority < slug_best[slug][0]:
+                        slug_best[slug] = (priority, tf)
+                deduped = [tf for _, tf in sorted(slug_best.values())]
                 thumbnail_files = deduped[:5]  # cap at 5 thumbnails
 
             # Send approval request IMMEDIATELY (don't wait for Drive copy)

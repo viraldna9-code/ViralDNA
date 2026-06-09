@@ -109,13 +109,20 @@ def send_approval_request(
 
     # Send thumbnail + message (caption max 1024 chars for photo)
     # Commands are at the top, so they survive truncation
+    import sys
+    print(f"  [ApprovalGate] Photo check: thumbnail_files={thumbnail_files}, exists={os.path.exists(thumbnail_files[0]) if thumbnail_files else 'N/A'}", file=sys.stderr, flush=True)
+    sent_photo = False
     if thumbnail_files and os.path.exists(thumbnail_files[0]):
         try:
-            send_telegram_photo(thumbnail_files[0], caption=message[:1024])
+            result = send_telegram_photo(thumbnail_files[0], caption=message[:1024])
+            sent_photo = result.get("ok", False)
+            print(f"  [ApprovalGate] Photo sent: {sent_photo}", file=sys.stderr, flush=True)
         except Exception as e:
+            print(f"  [ApprovalGate] Photo FAILED: {e}", file=sys.stderr, flush=True)
             # Fallback: send text only (Telegram text limit = 4096)
             send_telegram(message[:4000])
     else:
+        print(f"  [ApprovalGate] No thumbnail, sending text only", file=sys.stderr, flush=True)
         send_telegram(message[:4000])
 
     # Save to queue

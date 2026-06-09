@@ -104,6 +104,7 @@ class VideoAssembler:
         try:
             cmd = [
                 "ffprobe", "-v", "error",
+                "-select_streams", "v:0",
                 "-show_entries", "format=duration,size,bit_rate:stream=width,height,codec_name,bit_rate",
                 "-of", "json",
                 output_path
@@ -112,8 +113,8 @@ class VideoAssembler:
             probe = json.loads(result.stdout)
 
             fmt = probe.get("format", {})
-            streams = probe.get("streams", [{}])
-            video_stream = next((s for s in streams if s.get("codec_type") == "video"), {})
+            streams = probe.get("streams", [])
+            video_stream = streams[0] if streams else {}
 
             report["duration_s"] = float(fmt.get("duration", 0))
             report["bitrate_kbps"] = int(fmt.get("bit_rate", 0)) // 1000
@@ -1616,6 +1617,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         ])
         if video_encoder == "libx264":
             cmd.extend(["-preset", preset])
+            # Ensure minimum quality bitrate
+            if is_short:
+                cmd.extend(["-b:v", "2M", "-maxrate", "3M", "-bufsize", "4M"])
+            else:
+                cmd.extend(["-b:v", "4M", "-maxrate", "6M", "-bufsize", "8M"])
         cmd.extend([
             "-r", "25", "-g", "25",
             "-c:a", "aac", "-b:a", "192k",
