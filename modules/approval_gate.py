@@ -81,40 +81,17 @@ def send_approval_request(
     print(f"  [ApprovalGate] ENTRY: publish_decision type={type(publish_decision)}, repr={repr(publish_decision)[:150]}", file=sys.stderr, flush=True)
     token = hashlib.md5(f"{topic_id}{time.time()}".encode()).hexdigest()[:8]
 
-    # Build message — commands FIRST so they survive Telegram's 1024-char caption limit
+    # Build message — short and scannable
     lines = [
-        f"🎬 <b>ViralDNA — Video Ready for Review</b>",
+        f"🎬 <b>ViralDNA — Video Ready</b>",
         f"",
-        f"⏰ <b>Reply to approve or reject:</b>",
+        f"⏰ <b>Reply:</b>",
         f"  ✅ <code>/approve {topic_id}</code>",
         f"  ❌ <code>/reject {topic_id}</code>",
-        f"  ℹ️ <code>/info {topic_id}</code> — details",
         f"",
         f"📌 <b>Topic:</b> {topic_title}",
-        f"📰 <b>Source:</b> {topic_source}",
-        f"⭐ <b>Score:</b> {topic_score}",
-        f"🆔 <b>ID:</b> <code>{topic_id}</code>",
+        f"⭐ <b>Score:</b> {topic_score}  |  🆔 <b>ID:</b> <code>{topic_id}</code>",
     ]
-
-    if publish_decision:
-        try:
-            if isinstance(publish_decision, dict):
-                pd_summary = publish_decision.get("summary", "N/A")
-            elif hasattr(publish_decision, "summary") and callable(publish_decision.summary):
-                pd_summary = publish_decision.summary()
-            else:
-                pd_summary = str(publish_decision)
-        except Exception as _e:
-            pd_summary = str(publish_decision)
-        lines.append(f"📋 <b>Plan:</b> {pd_summary}")
-
-    lines.append(f"🎥 <b>Videos:</b> {len(video_files)} file(s)")
-    for vf in video_files:
-        size_mb = os.path.getsize(vf) / (1024 * 1024) if os.path.exists(vf) else 0
-        lines.append(f"  • {os.path.basename(vf)} ({size_mb:.1f} MB)")
-
-    if drive_folder:
-        lines.append(f"📁 <b>Drive:</b> {drive_folder}")
 
     message = "\n".join(lines)
 
