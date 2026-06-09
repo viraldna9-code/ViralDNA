@@ -207,11 +207,29 @@ class CleanupAgent(BaseAgent):
         ("/home/jay/ViralDNA/audio", "*.wav"),
         ("/home/jay/ViralDNA/audio", "*.ass"),
         ("/home/jay/ViralDNA/audio", "*.srt"),
+        # Audio slideshow dirs (one per video slot per run)
+        ("/home/jay/ViralDNA/audio", "slideshow_*"),
         # Thumbnails — ALL topic thumbnails (not just production_*)
         ("/home/jay/ViralDNA/thumbnails", "*.jpg"),
         ("/home/jay/ViralDNA/thumbnails", "*.png"),
         ("/home/jay/ViralDNA/thumbnails", "*.jpeg"),
-        # Temp/runtime
+        # Runtime — viz images, debug files, temp workspaces
+        ("/home/jay/ViralDNA/output/runtime", "viz_*"),
+        ("/home/jay/ViralDNA/output/runtime", "work_*"),
+        ("/home/jay/ViralDNA/output/runtime", "phase*_debug.json"),
+        ("/home/jay/ViralDNA/output/runtime", "dry_run_*.log"),
+        ("/home/jay/ViralDNA/output/runtime", "fix4_*.log"),
+        ("/home/jay/ViralDNA/output/runtime", "vfix_*.log"),
+        ("/home/jay/ViralDNA/output/runtime", "relevance_*.log"),
+        ("/home/jay/ViralDNA/output/runtime", "production_run_*.log"),
+        ("/home/jay/ViralDNA/output/runtime", "pipeline_run_*.log"),
+        ("/home/jay/ViralDNA/output/runtime", "validation_run_*.log"),
+        ("/home/jay/ViralDNA/output/runtime", "*.log"),
+        ("/home/jay/ViralDNA/output/runtime", "silence_*.mp3"),
+        ("/home/jay/ViralDNA/output/runtime", "trailer"),
+        ("/home/jay/ViralDNA/output/runtime", "algorithm_weights.json"),
+        ("/home/jay/ViralDNA/output/runtime", "discovery_memory.json"),
+        # Old non-output runtime dir (legacy path, harmless if missing)
         ("/home/jay/ViralDNA/runtime", "*"),
     ]
 
