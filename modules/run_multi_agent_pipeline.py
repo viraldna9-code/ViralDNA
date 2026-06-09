@@ -200,19 +200,19 @@ class CleanupAgent(BaseAgent):
     """
     # File patterns to clean (stale outputs from previous runs)
     CLEANUP_PATHS = [
-        # Video outputs
-        ("/home/jay/ViralDNA/videos", "production_*.mp4"),
+        # Video outputs — ALL topic videos (not just production_*)
+        ("/home/jay/ViralDNA/videos", "*.mp4"),
         # Audio outputs
         ("/home/jay/ViralDNA/audio", "*.mp3"),
         ("/home/jay/ViralDNA/audio", "*.wav"),
         ("/home/jay/ViralDNA/audio", "*.ass"),
-        # Thumbnails
-        ("/home/jay/ViralDNA/thumbnails", "production_*.jpg"),
-        ("/home/jay/ViralDNA/thumbnails", "production_*.png"),
+        ("/home/jay/ViralDNA/audio", "*.srt"),
+        # Thumbnails — ALL topic thumbnails (not just production_*)
+        ("/home/jay/ViralDNA/thumbnails", "*.jpg"),
+        ("/home/jay/ViralDNA/thumbnails", "*.png"),
+        ("/home/jay/ViralDNA/thumbnails", "*.jpeg"),
         # Temp/runtime
         ("/home/jay/ViralDNA/runtime", "*"),
-        # Subtitle files
-        ("/home/jay/ViralDNA/audio", "*.srt"),
     ]
 
     def __init__(self, orchestrator):
