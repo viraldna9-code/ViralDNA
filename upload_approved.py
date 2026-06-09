@@ -35,8 +35,10 @@ def save_queue(queue):
         json.dump(queue, f, indent=2, default=str)
 
 
-def upload_topic(topic_id: str, item: dict) -> dict:
-    """Upload a single approved topic to YouTube."""
+def upload_topic(topic_id: str, item: dict, schedule_slot: str | None = None) -> dict:
+    """Upload a single approved topic to YouTube.
+    schedule_slot: 'morning' (main=09:00, shorts=09:30) or 'evening' (main=19:00, shorts=19:30) IST
+    """
     from google.oauth2.credentials import Credentials
     from google.auth.transport.requests import Request
     from googleapiclient.discovery import build
@@ -68,7 +70,17 @@ def upload_topic(topic_id: str, item: dict) -> dict:
             f.write(creds.to_json())
 
     service = build("youtube", "v3", credentials=creds)
-    uploader = YouTubeUploader(service, config)
+
+    # Configure schedule based on slot
+    schedule_config = dict(config.YOUTUBE_UPLOAD_CONFIG)
+    if schedule_slot == "morning":
+        schedule_config["main_publish_time_ist"] = "09:00"
+        schedule_config["shorts_publish_time_ist"] = "09:30"
+    elif schedule_slot == "evening":
+        schedule_config["main_publish_time_ist"] = "19:00"
+        schedule_config["shorts_publish_time_ist"] = "19:30"
+
+    uploader = YouTubeUploader(service, schedule_config)
 
     # Build selected_topic from item
     selected_topic = {
@@ -124,6 +136,8 @@ def main():
     parser.add_argument("--approve", metavar="ID", help="Approve a pending topic")
     parser.add_argument("--reject", metavar="ID", help="Reject a pending topic")
     parser.add_argument("--upload-all", action="store_true", help="Upload all approved topics")
+    parser.add_argument("--schedule", metavar="SLOT", choices=["morning", "evening"],
+                        help="Set publish schedule: morning (main=9AM, shorts=9:30AM) or evening (main=7PM, shorts=7:30PM)")
     args = parser.parse_args()
 
     if args.list:
@@ -174,7 +188,7 @@ def main():
             return
 
         print(f"🚀 Uploading {topic_id}...")
-        result = upload_topic(topic_id, item)
+        result = upload_topic(topic_id, item, schedule_slot=args.schedule)
         if result["status"] == "success":
             print(f"✅ Upload complete: {topic_id}")
             # Move to uploaded
@@ -194,7 +208,7 @@ def main():
         failed = []
         for topic_id, item in approved.items():
             print(f"\n🚀 Uploading {topic_id}...")
-            result = upload_topic(topic_id, item)
+            result = upload_topic(topic_id, item, schedule_slot=args.schedule)
             if result["status"] == "success":
                 print(f"✅ Upload complete: {topic_id}")
                 item["uploaded_at"] = datetime.now(IST).isoformat()

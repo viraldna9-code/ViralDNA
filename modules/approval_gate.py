@@ -70,7 +70,6 @@ def send_approval_request(
     video_files: list,
     thumbnail_files: list,
     publish_decision: dict | None = None,
-    drive_folder: str = "",
 ) -> str:
     """
     Send a Telegram approval request for a completed video set.
@@ -118,7 +117,6 @@ def send_approval_request(
         "video_files": video_files,
         "thumbnail_files": thumbnail_files,
         "publish_decision": publish_decision,
-        "drive_folder": drive_folder,
         "requested_at": datetime.now(IST).isoformat(),
         "status": "pending",
     }

@@ -51,6 +51,10 @@ class YouTubeUploader:
         self.schedule_premiere = self.upload_config.get("schedule_premiere", True)
         self.main_publish_delay_minutes = self.upload_config.get("main_publish_delay_minutes", 60)
         self.shorts_publish_gap_minutes = self.upload_config.get("shorts_publish_gap_minutes", 30)
+        # Absolute publish times (IST) — e.g. "09:00" for 9AM, "19:00" for 7PM
+        # When set, overrides relative delay. Format: "HH:MM" in IST.
+        self.main_publish_time_ist = self.upload_config.get("main_publish_time_ist", None)
+        self.shorts_publish_time_ist = self.upload_config.get("shorts_publish_time_ist", None)
         self.title_max_length = self.upload_config.get("title_max_length", 100)
         self.description_max_length = self.upload_config.get("description_max_length", 5000)
         self.tags_max_length = self.upload_config.get("tags_max_length", 500)
@@ -169,14 +173,48 @@ class YouTubeUploader:
 
     # ─── Scheduled Publish Time ───
     def _get_scheduled_publish_time(self, is_short: bool = False, short_index: int = 0) -> str:
-        now_utc = datetime.now(self.utc)
-        main_delay = timedelta(minutes=self.main_publish_delay_minutes)
-        gap = timedelta(minutes=self.shorts_publish_gap_minutes)
+        """Return ISO-8601 UTC publish time for YouTube API.
+
+        If main_publish_time_ist / shorts_publish_time_ist is set (e.g. "09:00"),
+        schedules for the next occurrence of that IST time (tomorrow if already passed).
+        Otherwise falls back to relative delay from now.
+        """
+        from datetime import datetime, timedelta, timezone
+        IST = timezone(timedelta(hours=5, minutes=30))
+        now_ist = datetime.now(IST)
+
+        def _next_occurrence(time_str: str, extra_minutes: int = 0) -> str:
+            """Compute next occurrence of HH:MM IST, optionally offset by extra_minutes."""
+            h, m = map(int, time_str.split(":"))
+            target = now_ist.replace(hour=h, minute=m, second=0, microsecond=0)
+            if extra_minutes:
+                target += timedelta(minutes=extra_minutes)
+            # If this time already passed today, schedule for tomorrow
+            if target <= now_ist:
+                target += timedelta(days=1)
+            # Convert to UTC ISO format for YouTube API
+            utc = target.astimezone(timezone.utc)
+            return utc.isoformat().replace("+00:00", "Z")
+
         if is_short:
-            target_utc = now_utc + main_delay + (gap * short_index)
+            if self.shorts_publish_time_ist:
+                # Each short gets an additional gap after the main publish time
+                gap = self.shorts_publish_gap_minutes
+                return _next_occurrence(self.shorts_publish_time_ist, extra_minutes=gap * short_index)
+            # Fallback: relative
+            now_utc = datetime.now(self.utc)
+            main_delay = timedelta(minutes=self.main_publish_delay_minutes)
+            gap = timedelta(minutes=self.shorts_publish_gap_minutes)
+            target = now_utc + main_delay + (gap * short_index)
         else:
-            target_utc = now_utc + main_delay
-        return target_utc.isoformat().replace("+00:00", "Z")
+            if self.main_publish_time_ist:
+                return _next_occurrence(self.main_publish_time_ist)
+            # Fallback: relative
+            now_utc = datetime.now(self.utc)
+            main_delay = timedelta(minutes=self.main_publish_delay_minutes)
+            target = now_utc + main_delay
+
+        return target.isoformat().replace("+00:00", "Z")
 
     # ─── Public: Generate upload metadata (no API call) ───
     def generate_upload_metadata(self, title_raw: str, desc_raw: str, rag_context: str,

@@ -1251,28 +1251,12 @@ class ResilientUploaderAgent(BaseAgent):
                     video_files=video_files,
                     thumbnail_files=thumbnail_files,
                     publish_decision=_pd_dict,
-                    drive_folder=f"gdrive:ViralDNA_Review/{datetime.now().strftime('%Y%m%d')}_{topic_id}/",
                 )
                 self.log(f"📨 Approval request sent: {topic_id} (token: {token})")
             except Exception as e:
                 import traceback
                 self.log(f"⚠️ Failed to send approval request: {e}")
                 traceback.print_exc()
-                # Fallback: just save to Drive
-                self.log("📁 Fallback: files saved to Google Drive for manual review.")
-
-            # Copy to Google Drive in BACKGROUND (non-blocking)
-            # rclone with 15s delays between files can take 5-10 min — don't block approval
-            import threading as _threading
-            def _drive_copy_bg():
-                try:
-                    self._copy_to_gdrive(selected_topic, state)
-                    self.log("📁 Google Drive copy completed (background)")
-                except Exception as e:
-                    self.log(f"⚠️ Google Drive background copy failed: {e}")
-            _t = _threading.Thread(target=_drive_copy_bg, daemon=True)
-            _t.start()
-            self.log("📁 Google Drive copy started in background")
 
             state["upload_results"] = {"overall_status": "pending_approval", "youtube_uploaded": False}
             self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "PENDING_APPROVAL")
