@@ -36,4 +36,4 @@ aiohttp
 certifi
 
 # TTS (for primetime production on GitHub Actions)
-edge-tts
+gtts

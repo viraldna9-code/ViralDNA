@@ -26,12 +26,13 @@ class VoiceoverGenerator:
         self.use_rvc = False
         self.rvc_model = None
         
-        # Prestige news-optimized voice profiles
-        self.eng_voice = "en-IN-PrabhatNeural"      # Warm, authoritative Indian English news anchor style
+        # Voice profiles (used for reference; gTTS uses default voices)
+        # gTTS doesn't support rate/pitch — uses natural speech cadence
+        self.eng_voice = "en-IN"      # Indian English (gTTS default)
         self.eng_rate = "-6%"
         self.eng_pitch = "-5Hz"
         
-        self.tel_voice = "te-IN-MohanNeural"        # High-fidelity natural Telugu male (ideal news anchor)
+        self.tel_voice = "te-IN"      # Telugu (gTTS default)
         self.tel_rate = "-3%"
         self.tel_pitch = "-4Hz"
         
@@ -212,46 +213,34 @@ class VoiceoverGenerator:
 
     async def _synthesize_segment_async(self, text: str, lang: str, out_path: str) -> bool:
         """
-        Synthesizes a single text segment using the correct voice profile via Edge-TTS.
-        Includes defensive directory creation and post-synthesis verification to handle
-        edge-tts 7.2.8 UnboundLocalError bug where open(write_media) fails silently.
+        Synthesizes a single text segment using gTTS (Google Text-to-Speech).
+        Falls back from edge-tts which is currently broken (NoAudioReceived).
         """
-        # Ensure output directory exists (defensive: handle race conditions / edge-tts 7.2.8 bug)
+        import asyncio
         out_dir = os.path.dirname(out_path)
         if out_dir:
             os.makedirs(out_dir, exist_ok=True)
-        voice = self.eng_voice if lang == "en" else self.tel_voice
-        rate = self.eng_rate if lang == "en" else self.tel_rate
-        pitch = self.eng_pitch if lang == "en" else self.tel_pitch
-        cmd = [
-            self.edge_tts_bin,
-            "--text", text,
-            "--voice", voice,
-            f"--rate={rate}",
-            f"--pitch={pitch}",
-            "--write-media", out_path
-        ]
+
+        # Map internal lang codes to gTTS language codes
+        gtts_lang = "en" if lang == "en" else "te"
 
         try:
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.PIPE
-            )
-            _, stderr = await proc.communicate()
+            # gTTS is synchronous — run in thread pool to not block the event loop
+            loop = asyncio.get_event_loop()
+
+            def _do_tts():
+                from gtts import gTTS
+                tts = gTTS(text=text, lang=gtts_lang, slow=False)
+                tts.save(out_path)
+
+            await loop.run_in_executor(None, _do_tts)
         except Exception as e:
-            print(f"   ❌ Synthesis Exception for '{text[:30]}...': {type(e).__name__}: {e}")
+            print(f"   ❌ gTTS Synthesis Error for '{text[:30]}...' (lang={gtts_lang}): {e}")
             return False
 
-        if proc.returncode != 0:
-            err_msg = stderr.decode().strip() if stderr else "Unknown error"
-            print(f"   ❌ Synthesis Error for '{text[:30]}...': {err_msg}")
-            return False
-
-        # Post-synthesis verification: edge-tts 7.2.8 may exit 0 but leave no file
-        # if UnboundLocalError occurred in finally block
+        # Post-synthesis verification
         if not os.path.exists(out_path):
-            print(f"   ❌ Synthesis produced no output file for '{text[:30]}...' (edge-tts bug?)")
+            print(f"   ❌ Synthesis produced no output file for '{text[:30]}...'")
             return False
         if os.path.getsize(out_path) == 0:
             print(f"   ❌ Synthesis produced empty file for '{text[:30]}...'")
