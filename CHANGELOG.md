@@ -7,6 +7,17 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-09
 
+### 17:55 IST — v85.2 Health Check Enhanced with YouTube Analytics
+- **ADDED** `check_youtube_channel_stats()` — runs every 2h, ~3 quota units
+  → subscriber count, view count, video count, delta since last check
+- **ADDED** `check_youtube_recent_videos()` — runs every 6h (cached), ~5 quota units
+  → last 5 videos: views, likes, comments, privacy status
+- **ADDED** `check_upload_quota_estimate()` — tracks daily API usage vs 10K limit
+- **QUOTA BUDGET**: ~56 units/day total (0.56% of 10,000 daily limit)
+- **FIXED** `check_recent_runs()` — restored missing `def` keyword from v85.1 patch
+- **FIXED** `format_report()` — handles cached video data (int vs list)
+- **COMMIT** f546b13
+
 ### 16:30 IST — v85.1 Audit Fixes (10 fixes)
 - **FIXED** YouTube token refresh — token was expired (2026-06-09T10:15:56 UTC). Refreshed and verified (8 subs, 30 videos, 13345 views).
 - **ADDED** `https://www.googleapis.com/auth/youtube.commentThreads` scope to YOUTUBE_SCOPES in `run_multi_agent_pipeline.py` and `upload_approved.py`. Requires re-authorization on next OAuth flow.
