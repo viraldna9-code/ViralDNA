@@ -128,7 +128,7 @@ def _extract_entities_via_gemini(script_text: str, engine) -> list:
         return []
 
 
-def _verify_entities_via_gemini(entities: list, article_text: str, title: str, engine) -> dict:
+def _verify_entities_via_gemini(entities: list, article_text: str, title: str, engine, topic_desc: str = "") -> dict:
     """Use Gemini to verify entity roles against the actual news source.
 
     Returns: {"verdict": "PASS" | "FAIL" | "UNCERTAIN", "errors": [...], "warnings": [...]}
@@ -142,20 +142,28 @@ def _verify_entities_via_gemini(entities: list, article_text: str, title: str, e
     )
 
     # Truncate article text for prompt
-    article_snippet = article_text[:3000] if article_text else "[No article text available — source is Google News aggregator]"
+    if article_text:
+        source_section = f"Actual news source text:\n{article_text[:3000]}"
+        source_note = "Verify entities against the source text above."
+    elif topic_desc and topic_desc != title:
+        source_section = f"News headline: {title}\n\nNews description/summary:\n{topic_desc[:2000]}"
+        source_note = "No full article available. Verify entities against the headline and description below. Mark as UNCERTAIN any entity that cannot be confirmed from this limited context."
+    else:
+        source_section = f"News headline: {title}\n\n[No article text or description available — source is Google News aggregator]"
+        source_note = "No source text available. Verify based on the headline alone. Mark as UNCERTAIN any entity that cannot be confirmed from the headline."
 
     prompt = (
         "You are a senior fact-checking editor. Verify the following named entities and their roles "
-        "against the actual news source text.\n\n"
-        f"News Headline: {title}\n\n"
+        f"against the available news source.\n\n"
+        f"{source_section}\n\n"
         f"Entities extracted from the video script:\n{entity_list}\n\n"
-        f"Actual news source text:\n{article_snippet}\n\n"
+        f"{source_note}\n\n"
         "For each entity, check:\n"
         "1. Is the person's NAME correct? (spelling, full name)\n"
         "2. Is their ROLE/POSITION correct? (e.g., 'BJP state president' vs 'former BJP chief')\n"
         "3. Is their ACTION correct? (e.g., 'made an appeal' vs 'resigned')\n\n"
         'Return a JSON object with:\n'
-        '"verdict": "PASS" (all entities correct), "FAIL" (at least one critical error), or "UNCERTAIN" (cannot verify from source text)\n'
+        '"verdict": "PASS" (all entities correct), "FAIL" (at least one critical error), or "UNCERTAIN" (cannot verify from available source)\n'
         '"errors": [{"entity": "name", "claimed_role": "...", "actual_role": "...", "issue": "description"}]\n'
         '"warnings": ["any minor concerns"]\n\n'
         "CRITICAL: If a person is attributed the WRONG role (e.g., calling someone 'state president' "
@@ -231,7 +239,7 @@ def _heuristic_entity_check(script_text: str, title: str) -> dict:
     return {"verdict": "UNCERTAIN", "errors": errors, "warnings": warnings}
 
 
-def fact_check_script(script_text: str, title: str, source_url: str, engine=None) -> dict:
+def fact_check_script(script_text: str, title: str, source_url: str, engine=None, topic_desc: str = "") -> dict:
     """Main fact-check entry point.
 
     Args:
@@ -239,6 +247,7 @@ def fact_check_script(script_text: str, title: str, source_url: str, engine=None
         title: The news headline/title
         source_url: URL of the news source
         engine: Gemini engine instance (optional — heuristic check runs without it)
+        topic_desc: Topic description/summary from RSS (used as fallback source when article fetch fails)
 
     Returns:
         {
@@ -280,7 +289,7 @@ def fact_check_script(script_text: str, title: str, source_url: str, engine=None
         print(f"  🔍 FactCheck: Extracted {len(entities)} named entities from script")
 
         if entities:
-            verification = _verify_entities_via_gemini(entities, article_text, title, engine)
+            verification = _verify_entities_via_gemini(entities, article_text, title, engine, topic_desc=topic_desc)
             result["errors"].extend(verification.get("errors", []))
             result["warnings"].extend(verification.get("warnings", []))
 

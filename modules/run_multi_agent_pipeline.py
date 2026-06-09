@@ -836,6 +836,7 @@ class FactCheckAgent(BaseAgent):
             main_text = script_payload.get_segment("main")["text"]
             title = selected_topic.get("title", "")
             source_url = selected_topic.get("url", "")
+            topic_desc = selected_topic.get("description", "")
 
             from fact_check import fact_check_script, correct_script_with_facts
 
@@ -845,6 +846,7 @@ class FactCheckAgent(BaseAgent):
                 title=title,
                 source_url=source_url,
                 engine=self.orchestrator.engine,
+                topic_desc=topic_desc,
             )
             state["fact_check_result"] = fc_result
 
@@ -1475,6 +1477,7 @@ class ResilientUploaderAgent(BaseAgent):
                     publish_decision=_pd_dict,
                 )
                 self.log(f"📨 Approval request sent: {topic_id} (token: {token})")
+                self.log(f"   Topic: '{selected_topic.get('title', 'N/A')[:60]}' | Slug: {state.get('topic_slug', 'N/A')}")
             except Exception as e:
                 import traceback
                 self.log(f"⚠️ Failed to send approval request: {e}")
@@ -2360,7 +2363,7 @@ class ContentCalendarAgent(BaseAgent):
             state["content_calendar_schedule"] = schedule
 
             # Run competitor analysis on current topic if available
-            gap_result = self.intel.analyze_content_gaps()
+            gap_result = self.intel.get_content_gap_result()
             state["content_gaps"] = gap_result
             state["competitor_summary"] = self.intel.get_competitor_summary()
 
@@ -2667,6 +2670,8 @@ class CompetitorIntelAgent(BaseAgent):
             self.intel.push_to_ledger(self.orchestrator.ledger)
 
             summary = self.intel.get_competitor_summary()
+            state["competitor_summary"] = summary
+            state["content_gaps"] = self.intel.get_content_gap_result()
             self.log(f"🔍 Competitors tracked: {summary['total_tracked']}, "
                      f"High threats: {summary['high_threats']}, "
                      f"Content gaps: {summary['content_gaps']}")
@@ -3168,11 +3173,20 @@ class UploadTimingAgent(BaseAgent):
         self.log("Computing optimal upload timing...")
         self.orchestrator.timer.start("Post-Pipeline", "D3.6 Upload Timing Optimizer")
         try:
-            result = self.optimizer.run()
+            schedule = self.optimizer.get_optimal_upload_time()
+            shorts_schedule = self.optimizer.get_shorts_schedule(
+                schedule.get("recommended_time_ist", "18:00")
+            )
+            result = {
+                "optimal_slot": {
+                    "recommendation": f"{schedule.get('recommended_time_ist', 'N/A')} IST ({schedule.get('window_name', 'N/A')})",
+                    "score": schedule.get("final_score", 0),
+                },
+                "shorts_schedule": shorts_schedule,
+            }
             state["upload_timing"] = result
-            optimal = result.get("optimal_slot", {})
             self.orchestrator.timer.stop("Post-Pipeline", "D3.6 Upload Timing Optimizer")
-            self.log(f"Optimal upload: {optimal.get('recommendation', 'N/A')}")
+            self.log(f"Optimal upload: {result['optimal_slot']['recommendation']}")
         except Exception as e:
             self.orchestrator.timer.fail("Post-Pipeline", "D3.6 Upload Timing Optimizer")
             self.log(f"Upload timing error (non-fatal): {e}")
