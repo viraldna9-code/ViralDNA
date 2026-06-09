@@ -1218,6 +1218,7 @@ class ResilientUploaderAgent(BaseAgent):
                     if f_base in video_slugs:
                         thumbnail_files.append(os.path.join(thumbs_dir, f))
                 # Deduplicate: keep only the best branded thumbnail per slug
+                # Prefer branded_v3 > branded_v2 > branded > clean
                 seen_slugs = set()
                 deduped = []
                 for tf in thumbnail_files:
@@ -1225,6 +1226,15 @@ class ResilientUploaderAgent(BaseAgent):
                     if slug not in seen_slugs:
                         seen_slugs.add(slug)
                         deduped.append(tf)
+                # Reorder: put branded versions first (v3 > v2 > v1 > clean)
+                def _brand_priority(path):
+                    b = os.path.basename(path)
+                    if "_branded_v3" in b: return 0
+                    if "_branded_v2" in b: return 1
+                    if "_branded." in b: return 2
+                    if "_clean" in b: return 3
+                    return 4
+                deduped.sort(key=_brand_priority)
                 thumbnail_files = deduped[:5]  # cap at 5 thumbnails
 
             # Send approval request IMMEDIATELY (don't wait for Drive copy)
