@@ -7,6 +7,17 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-09
 
+### 18:30 IST — v85.3 Critical Fixes
+- **FIXED** Topic IDs always showing "UNKNOWN" — Pipeline PostFilter never assigned VDNA IDs.
+  Now reads topics_history.json max ID and auto-assigns VDNA218+ to new topics.
+- **FIXED** Main video low bitrate (1422kbps) — No ffmpeg bitrate target was set.
+  Added `-b:v 4M -maxrate 6M` for main, `-b:v 2M -maxrate 3M` for shorts.
+- **FIXED** Shorts dimension probe returning 0x0 — ffprobe was probing wrong stream.
+  Added `-select_streams v:0` to force video stream selection.
+- **FIXED** Approval photo silent failure — Added debug logging to approval_gate.py
+  to trace photo vs text-only fallback at runtime.
+- Commit: d3c8957
+
 ### 17:55 IST — v85.2 Health Check Enhanced with YouTube Analytics
 - **ADDED** `check_youtube_channel_stats()` — runs every 2h, ~3 quota units
   → subscriber count, view count, video count, delta since last check
