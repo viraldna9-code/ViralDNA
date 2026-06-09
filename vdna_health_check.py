@@ -284,6 +284,198 @@ def check_credentials():
     }
 
 
+def check_youtube_channel_stats():
+    """Check YouTube channel-level stats via Data API.
+    Quota cost: ~3 units (channels.list + subscriptions.list).
+    Safe to run every 2h (12 runs/day = ~36 units).
+    """
+    tf = BASE_DIR / "credentials" / "youtube_token.json"
+    if not tf.exists():
+        return {"name": "YouTube Channel Stats", "status": "crit", "detail": "Token file missing"}
+    try:
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+        d = json.load(tf.open())
+        creds = Credentials(
+            token=d.get("token", d.get("access_token", "")),
+            refresh_token=d.get("refresh_token"),
+            token_uri=d.get("token_uri", "https://oauth2.googleapis.com/token"),
+            client_id=d.get("client_id"),
+            client_secret=d.get("client_secret"),
+            scopes=d.get("scopes")
+        )
+        yt = build("youtube", "v3", credentials=creds, cache_discovery=False)
+        # channels.list — ~1 quota unit
+        ch = yt.channels().list(part="snippet,statistics,contentDetails", mine=True).execute()
+        if not ch.get("items"):
+            return {"name": "YouTube Channel Stats", "status": "warn", "detail": "No channel data returned"}
+        ch_item = ch["items"][0]
+        stats = ch_item.get("statistics", {})
+        snippet = ch_item.get("snippet", {})
+        subs = int(stats.get("subscriberCount", 0))
+        views = int(stats.get("viewCount", 0))
+        videos = int(stats.get("videoCount", 0))
+        title = snippet.get("title", "?")
+        # Cache the stats for the daily detailed check
+        cache_file = ANALYTICS_DIR / "channel_stats_cache.json"
+        cache_file.parent.mkdir(exist_ok=True)
+        prev = {}
+        if cache_file.exists():
+            try:
+                prev = json.load(cache_file.open())
+            except:
+                pass
+        prev_subs = int(prev.get("subscriberCount", 0))
+        prev_views = int(prev.get("viewCount", 0))
+        new_subs = subs - prev_subs
+        new_views = views - prev_views
+        cache_file.write_text(json.dumps({
+            "timestamp": datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat(),
+            "subscriberCount": subs,
+            "viewCount": views,
+            "videoCount": videos,
+            "title": title
+        }))
+        sub_trend = f" (+{new_subs})" if new_subs > 0 else f" ({new_subs})" if new_subs < 0 else ""
+        view_trend = f" (+{new_views})" if new_views > 0 else ""
+        return {
+            "name": "YouTube Channel Stats",
+            "status": "ok",
+            "subs": subs,
+            "views": views,
+            "videos": videos,
+            "title": title,
+            "new_subs_since_last": new_subs,
+            "new_views_since_last": new_views,
+            "detail": f"{title} | {subs:,} subs{sub_trend} | {views:,} views{view_trend} | {videos} videos"
+        }
+    except Exception as e:
+        return {"name": "YouTube Channel Stats", "status": "warn", "detail": f"API error: {str(e)[:100]}"}
+
+
+def check_youtube_recent_videos():
+    """Check recent video performance via Data API.
+    Quota cost: ~5 units (search.list + videos.list).
+    Only runs if last check was >6 hours ago to save quota.
+    """
+    # Rate-limit: only run every 6 hours
+    cache_file = ANALYTICS_DIR / "recent_videos_cache.json"
+    if cache_file.exists():
+        try:
+            cache = json.load(cache_file.open())
+            last_check = cache.get("last_check", "")
+            if last_check:
+                t = datetime.fromisoformat(last_check)
+                now = datetime.now(tz=t.tzinfo)
+                hours_since = (now - t).total_seconds() / 3600
+                if hours_since < 6:
+                    return {
+                        "name": "YouTube Recent Videos",
+                        "status": "ok",
+                        "cached": True,
+                        "detail": cache.get("detail", "Cached") + f" ({hours_since:.1f}h old)"
+                    }
+        except Exception:
+            pass
+    tf = BASE_DIR / "credentials" / "youtube_token.json"
+    if not tf.exists():
+        return {"name": "YouTube Recent Videos", "status": "crit", "detail": "Token file missing"}
+    try:
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+        d = json.load(tf.open())
+        creds = Credentials(
+            token=d.get("token", d.get("access_token", "")),
+            refresh_token=d.get("refresh_token"),
+            token_uri=d.get("token_uri", "https://oauth2.googleapis.com/token"),
+            client_id=d.get("client_id"),
+            client_secret=d.get("client_secret"),
+            scopes=d.get("scopes")
+        )
+        yt = build("youtube", "v3", credentials=creds, cache_discovery=False)
+        # search.list — ~100 quota units (expensive!)
+        # Use uploads playlist instead — ~1 unit
+        ch = yt.channels().list(part="contentDetails", mine=True).execute()
+        uploads_id = ch["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        pl = yt.playlistItems().list(playlistId=uploads_id, part="snippet", maxResults=5).execute()
+        items = pl.get("items", [])
+        if not items:
+            return {"name": "YouTube Recent Videos", "status": "warn", "detail": "No videos found"}
+        video_ids = [item["snippet"]["resourceId"]["videoId"] for item in items]
+        # videos.list — ~1 unit per call (batch up to 50)
+        vids = yt.videos().list(part="snippet,statistics,status", id=",".join(video_ids)).execute()
+        video_lines = []
+        total_views = 0
+        total_likes = 0
+        total_comments = 0
+        for v in vids.get("items", []):
+            s = v.get("statistics", {})
+            title = v.get("snippet", {}).get("title", "?")[:50]
+            views = int(s.get("viewCount", 0))
+            likes = int(s.get("likeCount", 0))
+            comments = int(s.get("commentCount", 0))
+            privacy = v.get("status", {}).get("privacyStatus", "?")
+            total_views += views
+            total_likes += likes
+            total_comments += comments
+            video_lines.append(f"  {title}: {views:,} views, {likes:,} likes [{privacy}]")
+        result = {
+            "name": "YouTube Recent Videos",
+            "status": "ok",
+            "cached": False,
+            "video_count": len(video_lines),
+            "total_views": total_views,
+            "total_likes": total_likes,
+            "total_comments": total_comments,
+            "videos": video_lines,
+            "detail": f"Last {len(video_lines)} videos: {total_views:,} views, {total_likes:,} likes, {total_comments:,} comments"
+        }
+        # Cache the result
+        cache_file.parent.mkdir(exist_ok=True)
+        cache_file.write_text(json.dumps({
+            "last_check": datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat(),
+            **result
+        }, default=str))
+        return result
+    except Exception as e:
+        return {"name": "YouTube Recent Videos", "status": "warn", "detail": f"API error: {str(e)[:100]}"}
+
+
+def check_upload_quota_estimate():
+    """Estimate remaining YouTube API upload quota.
+    YouTube allows ~1600 units/day for uploads.
+    This is a rough estimate based on today's usage.
+    """
+    tf = BASE_DIR / "credentials" / "youtube_token.json"
+    if not tf.exists():
+        return {"name": "Upload Quota", "status": "warn", "detail": "Token file missing"}
+    try:
+        # Check today's upload log
+        today = datetime.now(timezone(timedelta(hours=5, minutes=30))).strftime("%Y-%m-%d")
+        upload_log = ANALYTICS_DIR / "upload_quota_log.json"
+        usage = {}
+        if upload_log.exists():
+            usage = json.load(upload_log.open())
+        today_usage = usage.get(today, 0)
+        # Each upload costs ~1600 units (video insert)
+        # Channel API calls cost ~1-5 units each
+        daily_limit = 10000  # YouTube Data API daily quota
+        remaining = daily_limit - today_usage
+        pct_used = (today_usage / daily_limit) * 100
+        status = "ok" if pct_used < 50 else ("warn" if pct_used < 80 else "crit")
+        return {
+            "name": "API Quota Estimate",
+            "status": status,
+            "used_today": today_usage,
+            "daily_limit": daily_limit,
+            "remaining": remaining,
+            "pct_used": f"{pct_used:.1f}%",
+            "detail": f"~{today_usage:,}/{daily_limit:,} units today ({pct_used:.1f}% used)"
+        }
+    except Exception as e:
+        return {"name": "Upload Quota", "status": "warn", "detail": str(e)[:100]}
+
+
 def check_recent_runs():
     """Check recent pipeline run logs."""
     lf = LOGS_DIR / "run_log.jsonl"
@@ -334,6 +526,10 @@ def run_all_checks():
     all_checks.append(check_credentials())
     all_checks.append(check_output_files())
     all_checks.append(check_recent_runs())
+    # YouTube API checks (quota-aware)
+    all_checks.append(check_youtube_channel_stats())
+    all_checks.append(check_youtube_recent_videos())
+    all_checks.append(check_upload_quota_estimate())
 
     # Env vars (returns list)
     env_results = check_env_vars()
@@ -378,6 +574,11 @@ def format_report(data):
             for j in check["jobs"]:
                 jicon = {"ok": "  ✅", "error": "  ❌", "never": "  ○"}.get(j["status"], "  ?")
                 lines.append(f"    {jicon} {j['name']} → next {j['next']}")
+
+        # Sub-items for recent videos
+        if "videos" in check and isinstance(check["videos"], list):
+            for v in check["videos"]:
+                lines.append(f"    {v}")
 
     lines.append("=" * 60)
     return "\n".join(lines)
