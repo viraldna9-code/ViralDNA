@@ -7,6 +7,13 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-09
 
+### 19:00 IST — v85.4 Agent & Fact-Check Fixes
+- **FIXED** Fact-check UNCERTAIN on empty RSS descriptions — now passes topic_desc as fallback source to Gemini
+- **FIXED** CompetitorIntel missing `analyze_content_gaps()` → corrected to `get_content_gap_result()`
+- **FIXED** CompetitorIntelAgent not storing results in state — now stores summary + content_gaps
+- **FIXED** UploadTimingAgent calling non-existent `run()` → now calls `get_optimal_upload_time()` + `get_shorts_schedule()`
+- **ADDED** Topic-slug consistency log at approval gate (debug for topic-title mismatch)
+
 ### 18:30 IST — v85.3 Critical Fixes
 - **FIXED** Topic IDs always showing "UNKNOWN" — Pipeline PostFilter never assigned VDNA IDs.
   Now reads topics_history.json max ID and auto-assigns VDNA218+ to new topics.
