@@ -459,3 +459,31 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 - **REMOVED** what — detail
 - **COMMIT** hash — description
 ```
+
+## 2026-06-14 (continued)
+
+### 03:00 IST — VDNA218 Uploaded (Papikondalu Boat Rescue)
+
+- **UPLOADED** VDNA218 — "89 tourists rescued after boat develops snag en route to Papikondalu"
+  - Main: `OlVYqYUQlyk` (92s, 1280x720, 47MB)
+  - Short 1: `4rZUtoiQP1A` ✅
+  - Short 2: `amC2IRSA3EQ` ✅
+  - Thumbnail, captions, playlists all uploaded
+
+### 03:00 IST — v87.10 Bug Fixes (CRITICAL)
+
+- **FIXED** `upload_approved.py` module path — added `modules/` to `sys.path` so `import config` works
+- **FIXED** stale symlink crash — `production_main.mp4` symlink from old VDNA218 (UNSC/Iran) caused `FileExistsError`; now removes old symlinks before creating new ones
+- **FIXED** short dedup false-positive — shorts were being deduped against main video titles; now shorts only dedup against other shorts and main only against other mains (`is_short` flag in `existing_videos`)
+- **FIXED** short title collision — Short 2 uploaded with unique title to avoid self-dedup
+- **ISSUE** Pinned comment API returns 403 (insufficient permissions for commentThreads) — needs OAuth scope fix
+- **ISSUE** Gemini flash-lite and 2.0-flash quota exceeded; pipeline falls back to gemini-2.5-flash
+
+### 02:00 IST — Fresh Pipeline Run (v87.9, Papikondalu topic re-selected)
+
+- Pipeline ran end-to-end in ~8.2 minutes
+- Main video assembled with .ass subtitles (v87.9 fix confirmed working)
+- Visual generation via SD/RSS/Serper with fallback backgrounds
+- Approval gate sent to Telegram; approved via direct script
+- Upload disabled (VIRALDNA_UPLOAD_ENABLED=false) for pipeline run; upload done separately
+- **COMMIT** pending — working tree has uncommitted changes

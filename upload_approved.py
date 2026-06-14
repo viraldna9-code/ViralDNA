@@ -13,6 +13,14 @@ Usage:
 import os
 import sys
 import json
+
+# Add project root to path so `import config` works when run from any directory
+_PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+_MODULES_DIR = os.path.join(_PROJECT_ROOT, "modules")
+if _MODULES_DIR not in sys.path:
+    sys.path.insert(0, _MODULES_DIR)
 import argparse
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -56,21 +64,38 @@ def upload_topic(topic_id: str, item: dict, schedule_slot: str | None = None) ->
         if not os.path.exists(vf):
             return {"status": "error", "message": f"Video file not found: {vf}"}
 
-    # Build YouTube service
+    # Build YouTube service with auto-refresh
     token_path = os.path.join(config.DRIVE["CREDENTIALS"], "youtube_token.json")
     YOUTUBE_SCOPES = [
         "https://www.googleapis.com/auth/youtube.upload",
         "https://www.googleapis.com/auth/youtube.force-ssl",
         "https://www.googleapis.com/auth/youtube.readonly",
-        "https://www.googleapis.com/auth/youtube.commentThreads",  # pin comments, reply management (v85.1)
     ]
-    creds = Credentials.from_authorized_user_file(token_path, YOUTUBE_SCOPES)
-    if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-        with open(token_path, "w") as f:
-            f.write(creds.to_json())
 
-    service = build("youtube", "v3", credentials=creds)
+    def _build_fresh_service():
+        """Build YouTube service, refreshing token if expired or about to expire."""
+        creds = Credentials.from_authorized_user_file(token_path, YOUTUBE_SCOPES)
+        if creds and creds.refresh_token:
+            # Refresh if expired OR if token expires within 10 minutes
+            from datetime import datetime, timezone, timedelta
+            needs_refresh = creds.expired
+            if not needs_refresh and hasattr(creds, 'expiry') and creds.expiry:
+                from datetime import datetime, timezone, timedelta
+                now_utc = datetime.now(timezone.utc)
+                # Handle both offset-aware and offset-naive expiry
+                expiry = creds.expiry
+                if expiry.tzinfo is None:
+                    expiry = expiry.replace(tzinfo=timezone.utc)
+                needs_refresh = expiry < now_utc + timedelta(minutes=10)
+            if needs_refresh:
+                print("  🔄 Refreshing YouTube token...")
+                creds.refresh(Request())
+                with open(token_path, "w") as f:
+                    f.write(creds.to_json())
+                print("  ✅ Token refreshed")
+        return build("youtube", "v3", credentials=creds)
+
+    service = _build_fresh_service()
 
     # Configure schedule based on slot
     schedule_config = dict(config.YOUTUBE_UPLOAD_CONFIG)
@@ -93,11 +118,84 @@ def upload_topic(topic_id: str, item: dict, schedule_slot: str | None = None) ->
     }
 
     # Upload
+    publish_decision = item.get("publish_decision")
+
+    # The YouTubeUploader expects generic filenames (production_main.mp4, production_branded.jpg)
+    # but our pipeline uses topic-slug-based names. Create symlinks with expected names.
+    import tempfile, shutil
+    videos_dir = os.path.dirname(video_files[0])
+    thumbnails_dir = os.path.dirname(thumbnail_files[0]) if thumbnail_files else ""
+
+    # Create symlinks: production_main.mp4 -> actual Main video
+    main_video = next((vf for vf in video_files if "_Main.mp4" in os.path.basename(vf)), video_files[0])
+    short_videos = sorted([vf for vf in video_files if "_Short" in os.path.basename(vf)])
+
+    # Remove stale symlinks from previous uploads
+    for stale in ["production_main.mp4", "production_short_1.mp4", "production_short_2.mp4", "production_short_3.mp4"]:
+        stale_path = os.path.join(videos_dir, stale)
+        if os.path.islink(stale_path):
+            os.remove(stale_path)
+
+    prod_main_link = os.path.join(videos_dir, "production_main.mp4")
+    os.symlink(os.path.abspath(main_video), prod_main_link)
+
+    # Symlink shorts: production_short_1.mp4, production_short_2.mp4, ...
+    for i, sv in enumerate(short_videos, 1):
+        link_path = os.path.join(videos_dir, f"production_short_{i}.mp4")
+        os.symlink(os.path.abspath(sv), link_path)
+
+    # Symlink thumbnail: production_branded.jpg -> best branded thumbnail
+    if thumbnail_files:
+        # Prefer branded_v3 > branded_v2 > branded
+        def _brand_priority(p):
+            b = os.path.basename(p)
+            if "_branded_v3" in b: return 0
+            if "_branded_v2" in b: return 1
+            if "_branded." in b: return 2
+            return 3
+        best_thumb = min(thumbnail_files, key=_brand_priority)
+        prod_thumb_link = os.path.join(thumbnails_dir, "production_branded.jpg")
+        if os.path.islink(prod_thumb_link):
+            os.remove(prod_thumb_link)
+        os.symlink(os.path.abspath(best_thumb), prod_thumb_link)
+
+    # Build a minimal script_payload for the uploader
+    # The uploader needs main_title_variants (non-empty) to proceed
+    from types import SimpleNamespace
+    topic_title_short = selected_topic["title"][:100] if selected_topic.get("title") else "BREAKING NEWS"
+    # Strip source names (e.g., " - The Hindu", " | NDTV")
+    import re as _re
+    topic_title_short = _re.sub(r'\s*[-|]\s*(The Hindu|NDTV|Times of India|India Today|Firstpost|Scroll\.in|The Wire|News18|CNBC|BBC|CNN|Al Jazeera|Reuters|AP|AFP|PTI|ANI|Google News|RSS).*$', '', topic_title_short, flags=_re.IGNORECASE).strip()
+    short_title = topic_title_short[:60] + " #Shorts"
+    sp_kwargs = dict(
+        main_clean=selected_topic.get("title", ""),
+        main_duration=0,
+        main_title_variants=[{"title": topic_title_short, "description": "A detailed news report from ViralDNA."}],
+    )
+    # Convert publish_decision dict to SimpleNamespace for attribute access
+    if isinstance(publish_decision, dict):
+        publish_decision = SimpleNamespace(**publish_decision)
+
+    # Add per-short attributes expected by uploader
+    num_shorts = getattr(publish_decision, "num_shorts", 1) if publish_decision else 1
+    for i in range(1, num_shorts + 1):
+        short_key = f"short_{i}"
+        sp_kwargs[f"{short_key}_title_variants"] = [{"title": short_title}]
+        sp_kwargs[f"{short_key}_raw"] = selected_topic.get("title", "")
+        sp_kwargs[f"{short_key}_duration"] = 0
+    script_payload = SimpleNamespace(**sp_kwargs)
+
+    # Convert publish_decision dict to SimpleNamespace for attribute access
+    if isinstance(publish_decision, dict):
+        publish_decision = SimpleNamespace(**publish_decision)
+
     try:
         results = uploader.upload_production_slot(
             selected_topic,
-            os.path.dirname(video_files[0]),
-            os.path.dirname(thumbnail_files[0]) if thumbnail_files else "",
+            videos_dir,
+            thumbnails_dir,
+            script_payload=script_payload,
+            publish_decision=publish_decision,
         )
         return {"status": "success", "results": results}
     except Exception as e:

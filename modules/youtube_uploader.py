@@ -1732,8 +1732,9 @@ Output JSON array:"""
             best_variant = main_title_variants[0]
             title_raw = best_variant.get("title", "BREAKING NEWS")
 
-            # ── Dedup check for main video ──
-            is_dup, matched = self._is_duplicate_title(title_raw, existing_videos)
+            # ── Dedup check for main video — only against other main videos, not shorts ──
+            main_existing = [v for v in existing_videos if not v.get("is_short", False)]
+            is_dup, matched = self._is_duplicate_title(title_raw, main_existing)
             if is_dup:
                 print(f"  ⏭️ SKIPPING main video — duplicate title detected!")
                 print(f"     New:      \"{title_raw[:80]}\"")
@@ -1775,7 +1776,7 @@ Output JSON array:"""
 
                 # Add newly uploaded video to existing_videos list so shorts dedup works
                 if res.get("status") == "success":
-                    existing_videos.append({"title": title_raw, "video_id": vid})
+                    existing_videos.append({"title": title_raw, "video_id": vid, "is_short": False})
 
             # Log other variants for reference (manual A/B testing in Studio)
             if len(main_title_variants) > 1:
@@ -1814,8 +1815,9 @@ Output JSON array:"""
                 best_variant = short_title_variants[0]
                 title_raw = best_variant.get("title", f"Short {s_idx}")
 
-                # ── Dedup check for short ──
-                is_dup, matched = self._is_duplicate_title(title_raw, existing_videos)
+                # ── Dedup check for short — only against other shorts, not main videos ──
+                short_existing = [v for v in existing_videos if v.get("is_short", False)]
+                is_dup, matched = self._is_duplicate_title(title_raw, short_existing)
                 if is_dup:
                     print(f"  ⏭️ SKIPPING {short_key} — duplicate title detected!")
                     print(f"     New:      \"{title_raw[:80]}\"")
@@ -1854,7 +1856,7 @@ Output JSON array:"""
 
                     # Add newly uploaded short to existing_videos so next short dedup works
                     if res.get("status") == "success":
-                        existing_videos.append({"title": title_raw, "video_id": vid})
+                        existing_videos.append({"title": title_raw, "video_id": vid, "is_short": True})
 
                     time.sleep(self.upload_delay_seconds)
             else:
