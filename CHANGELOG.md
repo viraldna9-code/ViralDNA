@@ -486,4 +486,6 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 - Visual generation via SD/RSS/Serper with fallback backgrounds
 - Approval gate sent to Telegram; approved via direct script
 - Upload disabled (VIRALDNA_UPLOAD_ENABLED=false) for pipeline run; upload done separately
-- **COMMIT** pending — working tree has uncommitted changes
+- **COMMIT** 21503ce — v87.10 short dedup fix, upload_approved path fix, CHANGELOG update
+- **COMMIT** a0139b5 — approval_gate metadata fix
+- **COMMIT** 0feaedc — voice models, test scripts, SD scenes, gitignore
