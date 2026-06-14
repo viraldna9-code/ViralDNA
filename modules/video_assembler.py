@@ -1617,9 +1617,16 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         audio_input_idx = num_inputs
         cmd_inputs.extend(["-i", audio_path])
 
-        if has_subtitles:
-            escaped_ass = ass_path.replace(":", "\\:").replace("\\", "/")
+        if has_subtitles and os.path.isfile(ass_path):
+            # Properly escape for FFmpeg filter syntax: wrap in single quotes
+            # to protect / . and other special chars in the path.
+            escaped_ass = "'" + ass_path.replace("'", "'\\''") + "'"
             filter_parts.append(f"[bgv]subtitles={escaped_ass}[outv]")
+        elif has_subtitles and not os.path.isfile(ass_path):
+            # .ass file was lost between write and FFmpeg execution — skip subtitles
+            print(f"    ⚠️  Assembler: .ass file missing at FFmpeg time: {ass_path}")
+            print(f"    ⚠️  Assembler: Proceeding without subtitles for {output_name}")
+            filter_parts.append(f"[bgv]copy[outv]")
         else:
             filter_parts.append(f"[bgv]copy[outv]")
 
