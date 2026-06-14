@@ -5,6 +5,52 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ---
 
+## 2026-06-14
+
+### 09:00 IST — v87.8 Visual Fetch Overhaul (CRITICAL — Stable Diffusion + Image Relevance)
+
+**Problem:** Two visual issues:
+1. `news_image_fetcher.py` `_visual_relevance_check` always returned True (ignored Gemini Vision's NO) — irrelevant images passed through
+2. Serper image search returned generic stock photos (forest, ship) for news topics
+
+**Solution (two-pronged):**
+
+**A) Stable Diffusion local generation (replaces Serper as primary):**
+- `local_visual_generator.py` v87.8 rewritten (490 lines)
+- Primary: Stable Diffusion 1.5 via diffusers (`runwayml/stable-diffusion-v1-5`, ~3.4GB saved locally)
+- Fallback: PIL gradient with text overlay if SD fails
+- Functions: `generate_scene_image()`, `generate_scene_images()` — scene_index for prompt diversity
+- RTX 3050 6GB: load ~9s, generate 512x512 ~8s/image
+
+**B) news_image_fetcher.py visual gate fix (v87.1 → v87.8):**
+- Fixed `_visual_relevance_check`: now respects Gemini NO (`answer.strip().upper().startswith("NO")`)
+- Added `_text_only_relevance_check()`: fallback when Gemini API unavailable (quota/timeout)
+- Keyword overlap threshold raised from >=2 to >=3 non-generic words
+- Three-tier gate: (1) text filter >=2 words, (2) strong match >=3 words → accept without Gemini, (3) borderline → Gemini Vision
+- Added 80+ word GENERIC_NEWS_WORDS stop list ("India","US","news","live","update", etc.)
+
+**C) Director integration:**
+- `vdna2_director.py` Phase 5 (Visuals): SD primary → VisualFetcher (RSS/Serper) fallback
+- `visual_forensic_gate.py` added: forensic audit for visual relevance
+
+**Also in this commit:**
+- approval_gate.py: `_cleanup_stale_queue_entries()`, `_validate_video_files()`
+- config.py: Added `SERPER_API_KEY_BACKUP1`
+- Multiple module fixes across voiceover, youtube_uploader, video_assembler, telegram_alert
+
+**Files changed:**
+- `modules/local_visual_generator.py` — NEW (SD image generation)
+- `modules/vdna2_director.py` — NEW (VDNA 2.0 Director + Factory)
+- `modules/news_image_fetcher.py` — v81.0 → v87.8
+- `modules/visual_forensic_gate.py` — NEW
+- Plus: approval_gate, voiceover, youtube_uploader, video_assembler, telegram_alert, config, run_multi_agent_pipeline
+
+**Test results:**
+- SD GPU test: loaded 9s, generated image in 7.8s on RTX 3050 6GB ✅
+- All model files present: unet, vae, text_encoder, safety_checker safetensors
+
+---
+
 ## 2026-06-13
 
 ### 10:00 IST — v63.0 Fish Speech Voice Cloning (CRITICAL — RVC Replacement)
