@@ -39,8 +39,8 @@ class YouTubeUploader:
     def __init__(self, youtube_service, config_instance: dict):
         self.service = youtube_service
         self.global_config = config_instance
-        self.upload_config = self.global_config.YOUTUBE_UPLOAD_CONFIG
-        self.api_config = self.global_config.YOUTUBE_API_CONFIG
+        self.upload_config = config_instance
+        self.api_config = config.YOUTUBE_API_CONFIG
 
         self.credentials_dir = config.DRIVE["CREDENTIALS"]
 
@@ -228,19 +228,45 @@ class YouTubeUploader:
         """
         topic = topic or {}
 
-        # Title
-        if is_short:
-            title = f"{title_raw} #{self.shorts_tag}"
-        else:
-            title = title_raw
-        # v82.3: Ensure year is in title (C2 audit — freshness signal for news)
+        # Title — clean and optimize for CTR
         import datetime as _dt
         _year = str(_dt.datetime.now().year)
-        if _year not in title:
-            if f"#{self.shorts_tag}" in title:
-                title = title.replace(f" #{self.shorts_tag}", f" ({_year}) #{self.shorts_tag}")
+
+        # Strip source names from title (e.g., " - The Hindu", " | NDTV")
+        import re as _re
+        clean_title = _re.sub(r'\s*[-|]\s*(The Hindu|NDTV|Times of India|India Today|Firstpost|Scroll\.in|The Wire|News18|CNBC|BBC|CNN|Al Jazeera|Reuters|AP|AFP|PTI|ANI).*$', '', title_raw, flags=_re.IGNORECASE).strip()
+        # Also strip " - Google News RSS" etc.
+        clean_title = _re.sub(r'\s*[-|]\s*(Google News|RSS|India Top).*$', '', clean_title, flags=_re.IGNORECASE).strip()
+
+        if is_short:
+            # Short title: concise, under 60 chars, single #Shorts at end
+            # Remove any existing #Shorts or year suffixes first
+            base = _re.sub(r'\s*#Shorts.*$', '', clean_title, flags=_re.IGNORECASE).strip()
+            base = _re.sub(r'\s*\(\d{4}\)\s*$', '', base).strip()
+            # Truncate base so that "base ({year}) #Shorts" fits in 60 chars
+            # " ({year}) #Shorts" = 13 chars
+            max_base_len = 60 - len(f" ({_year}) #Shorts")
+            if len(base) > max_base_len:
+                base = base[:max_base_len - 3].rstrip() + "..."
+            title = f"{base} ({_year}) #Shorts"
+        else:
+            # Main title: under 70 chars, include year
+            base = _re.sub(r'\s*\(\d{4}\)\s*$', '', clean_title).strip()
+            if _year not in base:
+                candidate = f"{base} ({_year})"
             else:
-                title = f"{title} ({_year})"
+                candidate = base
+            if len(candidate) > 70:
+                # Truncate base to fit
+                overflow = len(candidate) - 70
+                base = base[:len(base) - overflow - 3].rstrip()
+                # Don't cut mid-word
+                last_space = base.rfind(' ')
+                if last_space > 20:
+                    base = base[:last_space]
+                candidate = f"{base} ({_year})" if _year not in base else base
+            title = candidate
+
         if len(title) > self.title_max_length:
             title = title[:self.title_max_length - 3] + "..."
 
@@ -256,9 +282,10 @@ class YouTubeUploader:
         topic_tags = self._generate_topic_tags(topic, title_raw, rag_context)
 
         # Tier 2: Channel-level tags (always included for brand/SEO consistency)
+        # NOTE: Competitor channel names (TV9, Sakshi, Eenadu, NTV, ABN) are
+        # intentionally excluded — they help competitors' SEO, not ours.
         channel_tags = [
             "TheViralDNA",
-            "TV9 Telugu", "Sakshi news", "Eenadu news", "NTV Telugu", "ABN Andhra",
             "telugu varthalu", "andhra varthalu", "telangana varthalu",
             f"trending India {year}",
         ]
@@ -387,44 +414,14 @@ class YouTubeUploader:
             "",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
             "📺 TheViralDNA — Real News. Real Voices. Built with AI.",
-            "",
-            "We cover news that matters to Telugu people everywhere:",
-            "📍 Andhra Pradesh | Telangana | Telugu States",
-            "🇮🇳 National India — politics, economy, policy",
-            "🌍 Telugu people worldwide",
-            "",
-            "🕘 New videos daily at 9:00 AM and 7:00 PM IST",
-            "",
-            "👍 Like this video — it helps us reach more Telugu people",
-            "💬 Comment your thoughts — we read every comment",
-            "📤 Share with family & friends — spread Telugu news",
-            "",
-            "📧 Business/Collab: viraldna9@gmail.com",
+            "🕘 New videos daily at 9:00 AM & 7:00 PM IST",
+            "👍 Like • 💬 Comment • 📤 Share",
+            "📧 viraldna9@gmail.com",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
         ])
 
-        if related_links:
-            description_lines.append("")
-            description_lines.append("📎 RELATED:")
-            for link_text, link_url in related_links[:4]:
-                description_lines.append(f"  • {link_text}: {link_url}")
-
-        affiliate_links = self._build_affiliate_links(topic, title_raw)
-        if affiliate_links:
-            description_lines.append("")
-            description_lines.append("🔗 USEFUL LINKS:")
-            for link_text, link_url in affiliate_links[:3]:
-                description_lines.append(f"  • {link_text}: {link_url}")
-
-        crowdfunding_line = self._build_crowdfunding_line(topic)
-        if crowdfunding_line:
-            description_lines.append("")
-            description_lines.append(crowdfunding_line)
-
-        merch_line = self._build_merch_line(topic)
-        if merch_line:
-            description_lines.append("")
-            description_lines.append(merch_line)
+        # Affiliate/crowdfunding/merch sections removed — they add description bloat
+        # without meaningful CTR benefit for a news channel at this stage.
 
         description_lines.extend([
             "",
@@ -494,9 +491,10 @@ class YouTubeUploader:
         topic_tags = self._generate_topic_tags(topic, title_raw, rag_context)
 
         # Tier 2: Channel-level tags (always included for brand/SEO consistency)
+        # NOTE: Competitor channel names (TV9, Sakshi, Eenadu, NTV, ABN) are
+        # intentionally excluded — they help competitors' SEO, not ours.
         channel_tags = [
             "TheViralDNA",
-            "TV9 Telugu", "Sakshi news", "Eenadu news", "NTV Telugu", "ABN Andhra",
             "telugu varthalu", "andhra varthalu", "telangana varthalu",
             f"trending India {year}",
         ]
@@ -881,18 +879,27 @@ class YouTubeUploader:
         "visakhapatnam", "vijayawada", "amaravati", "guntur", "nri",
         "h1b visa", "green card", "visa update", "immigration", "india news",
         "breaking news", "cricket", "tollywood", "cinema", "economy",
-        "budget", "policy", "election", "technology", "ai", "health",
+        "budget", "policy", "election", "technology", "health",
         "us news", "uk news", "canada", "australia", "germany",
     ]
 
     def _extract_seo_keywords(self, topic: dict, title_raw: str,
                                desc_raw: str) -> list:
-        """Extract SEO keywords from topic metadata for description injection."""
+        """Extract SEO keywords from topic metadata for description injection.
+        Uses word-boundary matching to avoid false positives (e.g., 'ai' in 'details')."""
+        import re as _re
         text = f"{title_raw} {desc_raw}".lower()
         found = []
         for kw in self.HIGH_VALUE_KEYWORDS:
-            if kw.lower() in text and kw not in found:
-                found.append(kw)
+            kw_lower = kw.lower()
+            # Use word-boundary regex for short keywords (<=3 chars), substring for longer
+            if len(kw_lower) <= 3:
+                pattern = r'\b' + _re.escape(kw_lower) + r'\b'
+                if _re.search(pattern, text) and kw not in found:
+                    found.append(kw)
+            else:
+                if kw_lower in text and kw not in found:
+                    found.append(kw)
         # Also add topic tags if available
         topic_tags = topic.get("tags", "")
         if topic_tags:
@@ -1088,7 +1095,7 @@ Output JSON array:"""
             "budget": "#Budget", "economy": "#Economy", "election": "#Election",
             "usa": "#USA", "uk": "#UK", "canada": "#Canada", "australia": "#Australia",
             "breaking": "#BreakingNews", "urgent": "#Urgent", "health": "#Health",
-            "tech": "#Tech", "ai": "#AI", "job": "#Jobs", "career": "#Career",
+            "tech": "#Tech", "job": "#Jobs", "career": "#Career",
         }
         for keyword, hashtag in tag_map.items():
             if keyword in text and hashtag not in base_hashtags:
@@ -1235,23 +1242,32 @@ Output JSON array:"""
         if is_short:
             return []
 
-        # Standard news video chapters (4-8 min typical)
-        chapters = [
-            ("0:00", "Intro"),
-            ("0:15", "The Story"),
-            ("1:30", "Key Details"),
-            ("3:00", "Analysis"),
-            ("4:30", "What This Means"),
-        ]
-
-        # Add topic-specific chapter from topic title
+        # Build keyword-rich chapters from topic title
         title = topic.get("title", "")
-        if title:
-            # Extract key entity for the final chapter
-            words = [w for w in title.split() if len(w) > 3 and w[0].isupper()]
-            if words:
-                entity = " ".join(words[:3])
-                chapters.append(("5:30", f"{entity} — Key Takeaway"))
+        # Extract key entities (proper nouns) from title
+        words = title.split()
+        entities = [w for w in words if len(w) > 2 and w[0].isupper()]
+        
+        # Generate topic-specific chapters
+        chapters = [("0:00", "Breaking")]
+        
+        if len(entities) >= 2:
+            chapters.append(("0:15", f"{entities[0]} {entities[1]}"))
+        elif len(entities) == 1:
+            chapters.append(("0:15", entities[0]))
+        else:
+            chapters.append(("0:15", "The Story"))
+        
+        chapters.append(("1:30", "Key Details"))
+        chapters.append(("3:00", "What Happens Next"))
+        chapters.append(("4:30", "Impact on India"))
+        
+        # Final chapter from topic
+        if entities:
+            key = " ".join(entities[:2])
+            chapters.append(("5:30", f"{key} — Key Takeaway"))
+        else:
+            chapters.append(("5:30", "Key Takeaway"))
 
         return chapters
 
@@ -1394,13 +1410,14 @@ Output JSON array:"""
 
         # ═══ HIGH-IMPACT GROWTH CHECKS ═══
 
-        # G1: Competitor tags present (suggested video hack)
+        # G1: Competitor tags check — competitor channel names should NOT be in tags
+        # Tagging "TV9 Telugu" or "Sakshi" helps YouTube suggest THEIR videos, not ours.
         competitor_tags = ["tv9", "sakshi", "eenadu", "ntv", "abn"]
         tags_lower = [t.lower() for t in tags]
         has_competitor = any(c in " ".join(tags_lower) for c in competitor_tags)
-        checks["competitor_tags"] = has_competitor
-        if not checks["competitor_tags"]:
-            warnings.append("No competitor channel tags (TV9, Sakshi, Eenadu, NTV, ABN) — #1 suggested video signal")
+        checks["no_competitor_tags"] = not has_competitor
+        if has_competitor:
+            warnings.append("Competitor channel tags found (TV9/Sakshi/Eenadu/NTV/ABN) — these help competitors' suggested videos, not ours")
 
         # G2: Telugu transliteration tags
         has_telugu_translit = any("varthalu" in t.lower() for t in tags)

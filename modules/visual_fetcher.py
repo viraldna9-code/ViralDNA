@@ -663,7 +663,49 @@ class VisualFetcher:
 
         # Strategy 3: Local image pack fallback
         print("  ⚠️ All external sources failed, using local image pack.")
-        return self._local_image_pack_fallback(topic_title, runtime_dir=config.DRIVE["RUNTIME"])
+        pack_paths = self._local_image_pack_fallback(topic_title, runtime_dir=config.DRIVE["RUNTIME"])
+        if pack_paths:
+            return pack_paths
+
+        # Strategy 4: Local visual generator (PIL-based, 100% offline, always works)
+        # v87.7: Generate professional news-style scene images when all APIs fail
+        try:
+            from modules.local_visual_generator import generate_scene_images
+            print("  ⚠️ Local pack empty/missing — generating local visuals with PIL.")
+            local_paths = generate_scene_images(
+                topic_title,
+                output_dir=config.DRIVE["RUNTIME"],
+                count=3,
+                width=1600,
+                height=900
+            )
+            # Rename to viz_news_ prefix for downstream consumption
+            viz_paths = []
+            for i, lp in enumerate(local_paths):
+                dest = os.path.join(config.DRIVE["RUNTIME"], f"viz_news_{i}.jpg")
+                if lp != dest:
+                    import shutil
+                    shutil.move(lp, dest)
+                viz_paths.append(dest)
+            if viz_paths:
+                print(f"  VisualFetcher: Using {len(viz_paths)} locally-generated scene images.")
+                return viz_paths
+        except Exception as e:
+            print(f"  ⚠️ Local visual generator failed: {e}")
+
+        # Strategy 5: Absolute last resort — generate a single minimal image
+        try:
+            from modules.local_visual_generator import generate_scene_image
+            dest = os.path.join(config.DRIVE["RUNTIME"], "viz_news_0.jpg")
+            generate_scene_image(topic_title, dest, width=1600, height=900, scene_index=0)
+            if os.path.exists(dest) and os.path.getsize(dest) > 1024:
+                print(f"  VisualFetcher: Using 1 emergency local visual.")
+                return [dest]
+        except Exception as e:
+            print(f"  ⚠️ Emergency visual generation failed: {e}")
+
+        print("  ✗ ALL visual sources failed — no images available.")
+        return []
 
     def _has_ambiguous_person(self, topic_title: str) -> bool:
         """Check if topic mentions a person with an ambiguous/duplicable surname.

@@ -48,31 +48,33 @@ def _telegram_request(req, max_retries=3, base_delay=2):
     raise last_err
 
 
-def send_telegram(message: str, parse_mode: str = "HTML") -> dict:
+def send_telegram(message: str, parse_mode: str = "HTML", reply_markup: dict = None) -> dict:
     """Send a message to the configured Telegram chat."""
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         raise RuntimeError("Telegram credentials not configured")
     url = f"{BASE_URL}/sendMessage"
-    data = json.dumps({
+    payload = {
         "chat_id": TELEGRAM_CHAT_ID,
         "text": message,
         "parse_mode": parse_mode,
         "disable_web_page_preview": False,
-    }).encode()
+    }
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+    data = json.dumps(payload).encode()
     req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
     resp = _telegram_request(req)
     return json.loads(resp.read())
 
 
-def send_telegram_photo(photo_path: str, caption: str = "") -> dict:
+def send_telegram_photo(photo_path: str, caption: str = "", reply_markup: dict = None) -> dict:
     """Send a photo to the configured Telegram chat."""
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         raise RuntimeError("Telegram credentials not configured")
     if not os.path.exists(photo_path):
         raise FileNotFoundError(f"Thumbnail not found: {photo_path}")
     url = f"{BASE_URL}/sendPhoto"
-    with open(photo_path, "rb") as f:
-        photo_data = f.read()
+    # Build multipart form data
     boundary = b"----ViralDNA"
     body = (
         b"--" + boundary + b"\r\n"
@@ -84,9 +86,18 @@ def send_telegram_photo(photo_path: str, caption: str = "") -> dict:
         b"--" + boundary + b"\r\n"
         b'Content-Disposition: form-data; name="photo"; filename="thumb.jpg"\r\n'
         b"Content-Type: image/jpeg\r\n\r\n"
-        + photo_data + b"\r\n"
-        b"--" + boundary + b"--\r\n"
     )
+    with open(photo_path, "rb") as f:
+        photo_data = f.read()
+    body += photo_data + b"\r\n"
+    # Add reply_markup as JSON field if provided
+    if reply_markup:
+        body += (
+            b"--" + boundary + b"\r\n"
+            b'Content-Disposition: form-data; name="reply_markup"\r\n\r\n'
+            + json.dumps(reply_markup).encode() + b"\r\n"
+        )
+    body += b"--" + boundary + b"--\r\n"
     req = urllib.request.Request(
         url, data=body,
         headers={"Content-Type": f"multipart/form-data; boundary={boundary.decode()}"},

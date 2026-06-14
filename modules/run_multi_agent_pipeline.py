@@ -1451,6 +1451,30 @@ class ResilientUploaderAgent(BaseAgent):
                 deduped = [tf for _, tf in sorted(slug_best.values())]
                 thumbnail_files = deduped[:5]  # cap at 5 thumbnails
 
+            # Collect scene visuals (viz_*.jpg) from output/runtime/
+            scene_visuals = []
+            runtime_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "output", "runtime")
+            if os.path.isdir(runtime_dir):
+                scene_visuals = sorted(
+                    os.path.join(runtime_dir, f)
+                    for f in os.listdir(runtime_dir)
+                    if f.startswith("viz_") and f.endswith(".jpg") and os.path.isfile(os.path.join(runtime_dir, f))
+                )
+
+            # ── Consistency check: verify video slug matches selected topic title ──
+            _expected_slug = state.get("topic_slug", "")
+            if video_files and _expected_slug:
+                _mismatched = [vf for vf in video_files if _expected_slug not in os.path.basename(vf)]
+                if _mismatched:
+                    self.log(f"⚠️ SLUG MISMATCH: topic_slug='{_expected_slug}' not found in video filenames:")
+                    for _mm in _mismatched:
+                        self.log(f"   → {os.path.basename(_mm)}")
+                    self.log(f"   Selected topic: '{selected_topic.get('title', 'N/A')[:60]}'")
+                    # Don't send approval — this prevents the title/video mismatch bug
+                    state["upload_results"] = {"overall_status": "slug_mismatch_error"}
+                    self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading", "SLUG_MISMATCH")
+                    return state
+
             # Send approval request IMMEDIATELY (don't wait for Drive copy)
             try:
                 from approval_gate import send_approval_request
@@ -1475,6 +1499,7 @@ class ResilientUploaderAgent(BaseAgent):
                     video_files=video_files,
                     thumbnail_files=thumbnail_files,
                     publish_decision=_pd_dict,
+                    scene_visuals=scene_visuals,
                 )
                 self.log(f"📨 Approval request sent: {topic_id} (token: {token})")
                 self.log(f"   Topic: '{selected_topic.get('title', 'N/A')[:60]}' | Slug: {state.get('topic_slug', 'N/A')}")
@@ -3368,6 +3393,24 @@ class MultiAgentOrchestrator:
 
         MAX_TOPIC_RETRIES = 5
 
+        # ── WORKSPACE CLEANUP: Remove stale artifacts from previous runs ──
+        # Prevents cross-contamination of thumbnails/videos between runs
+        try:
+            import glob as _glob
+            _thumb_dir = config.DRIVE.get("THUMBNAILS", "")
+            _video_dir = config.DRIVE.get("VIDEO_OUTPUT", "")
+            _cleaned = 0
+            for _dir in (_thumb_dir, _video_dir):
+                if _dir and os.path.isdir(_dir):
+                    for _f in _glob.glob(os.path.join(_dir, "*")):
+                        if os.path.isfile(_f):
+                            os.remove(_f)
+                            _cleaned += 1
+            if _cleaned:
+                print(f"  🧹 Workspace cleanup: removed {_cleaned} stale file(s) from previous run")
+        except Exception as _cleanup_err:
+            print(f"  ⚠️ Workspace cleanup warning: {_cleanup_err}")
+
         # ── PRE-PIPELINE ──
         print("━"*40 + " PRE-PIPELINE " + "━"*40)
         for agent in self.pre_agents:
@@ -3410,8 +3453,16 @@ class MultiAgentOrchestrator:
 
         for topic_idx in range(min(MAX_TOPIC_RETRIES, len(sorted_topics))):
             self.state["selected_topic"] = sorted_topics[topic_idx]
+            # Recompute topic_slug for every new topic attempt (fixes title→video mismatch bug)
+            _sel = sorted_topics[topic_idx]
+            _raw = _sel.get("title", _sel.get("id", "topic"))
+            _words = _raw.split()[:6]
+            _slug = "_".join(w for w in _words if w).replace("/", "_").replace(":", "").replace("'", "").replace("?", "").replace("!", "").replace('"', "").replace(",", "").replace(";", "").replace("(", "").replace(")", "").replace("&", "and")
+            if not _slug:
+                _slug = _sel.get("id", "topic")
+            self.state["topic_slug"] = _slug
             print(f"\n📋 Topic Attempt {topic_idx + 1}/{min(MAX_TOPIC_RETRIES, len(sorted_topics))}: "
-                  f"'{sorted_topics[topic_idx].get('title', 'Unknown')}'")
+                  f"'{sorted_topics[topic_idx].get('title', 'Unknown')}'  slug='{_slug}'")
 
             topic_failed = False
             for task_idx, task_agent in enumerate(remaining_task_agents):

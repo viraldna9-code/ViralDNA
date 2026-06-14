@@ -57,6 +57,7 @@ DRIVE = {
 API_KEYS = {
     "GEMINI_API_KEY": os.getenv("GEMINI_API_KEY", ""),
     "SERPER_API_KEY": os.getenv("SERPER_API_KEY", ""),
+    "SERPER_API_KEY_BACKUP1": os.getenv("SERPER_API_KEY_BACKUP1", ""),
 }
 
 GEMINI_CONFIG = {"text_model": "gemini-flash-latest"}

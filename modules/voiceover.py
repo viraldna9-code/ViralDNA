@@ -1,8 +1,7 @@
-# VERSION: 62.0
+# VERSION: 63.0
 # MODULE: voiceover.py
-# PURPOSE: Advanced bilingual newsroom audio engine. Performs high-fidelity Telugu-English splitting,
-#          sequential synthesis to prevent MS rate limits, RVC batch directory voice cloning
-#          of spoken chunks to ensure zero drift/hallucination, precision silent pause stitching,
+# PURPOSE: Bilingual newsroom audio engine with Fish Speech voice cloning (English) + gTTS (Telugu).
+#          Performs Telugu-English splitting, sequential synthesis, precision silent pause stitching,
 #          and broadcast-grade DSP mastering (Highpass, Compressor, Limiter).
 
 import os
@@ -13,6 +12,30 @@ import subprocess
 import asyncio
 import config
 
+# Fish Speech voice cloning (English only — Telugu not in model vocab)
+FISH_SPEECH_AVAILABLE = False
+_fish_cloner = None
+
+def _get_fish_cloner():
+    """Lazy-load Fish Speech cloner singleton."""
+    global _fish_cloner, FISH_SPEECH_AVAILABLE
+    if _fish_cloner is not None:
+        return _fish_cloner
+    try:
+        sys_path = "/home/jay/ViralDNA/modules"
+        if sys_path not in __import__("sys").path:
+            __import__("sys").path.insert(0, sys_path)
+        from fish_voice_cloner import FishVoiceCloner
+        _fish_cloner = FishVoiceCloner()
+        _fish_cloner.load_all()
+        FISH_SPEECH_AVAILABLE = True
+        print("🐟 [Fish Speech] Voice cloner loaded and ready.")
+        return _fish_cloner
+    except Exception as e:
+        print(f"⚠️  [Fish Speech] Failed to load: {e}. English will use gTTS fallback.")
+        return None
+
+
 class VoiceoverGenerator:
     def __init__(self, engine=None, config_obj=None):
         """
@@ -20,35 +43,36 @@ class VoiceoverGenerator:
         :param engine: Database client or auxiliary client (unused, kept for signature compatibility)
         :param config_obj: Configuration module (unused, uses global config for standard mappings)
         """
-        # edge-tts binary: use system path or env var override (GitHub Actions installs globally)
-        self.edge_tts_bin = os.getenv("EDGE_TTS_BIN", "edge-tts")
-        # RVC removed — model file and rvc_python not available
+        # TTS engine selection
+        self.use_fish_speech = os.environ.get("FISH_SPEECH_ENABLED", "1") == "1"
+        self.fish_cloner = None  # Lazy-loaded on first English segment
+        self.ref_audio = os.environ.get("FISH_REF_AUDIO", "/home/jay/voice_sample.wav")
+        self.ref_text = os.environ.get("FISH_REF_TEXT", "This is a reference voice sample.")
+
+        # RVC removed — model file not available
         self.use_rvc = False
         self.rvc_model = None
-        
-        # Voice profiles (used for reference; gTTS uses default voices)
-        # gTTS doesn't support rate/pitch — uses natural speech cadence
-        self.eng_voice = "en-IN"      # Indian English (gTTS default)
+
+        # Fallback TTS settings
+        self.edge_tts_bin = os.getenv("EDGE_TTS_BIN", "edge-tts")
+        self.eng_voice = "en-IN"
         self.eng_rate = "-6%"
         self.eng_pitch = "-5Hz"
-        
-        self.tel_voice = "te-IN"      # Telugu (gTTS default)
+        self.tel_voice = "te-IN"
         self.tel_rate = "-3%"
         self.tel_pitch = "-4Hz"
-        
+
         # Configure output paths dynamically based on config DRIVE mappings
         self.audio_dir = config.DRIVE.get("AUDIO_OUTPUT", "/home/jay/ViralDNA/audio")
         self.runtime_dir = config.DRIVE.get("RUNTIME", "/home/jay/ViralDNA/output/runtime")
-        
+
         os.makedirs(self.audio_dir, exist_ok=True)
         os.makedirs(self.runtime_dir, exist_ok=True)
-        
-        print("⚡ [AUDIO ENGINE] Advanced Bilingual Master-Stitching Engine (v62.0) Initialized.")
-        if self.use_rvc:
-            print(f"   🎙️  RVC Neural Voice Twin Active: {os.path.basename(self.rvc_model)}")
-            print(f"   📢  Vocal Profiles: English -> {self.eng_voice} | Telugu -> {self.tel_voice}")
-        else:
-            print("   📢  Direct Edge-TTS Mode Active (RVC Neural Voice Twin Bypassed).")
+
+        fish_status = "Fish Speech Voice Cloning (English) + gTTS (Telugu)" if self.use_fish_speech else "gTTS (Telugu + English fallback)"
+        print(f"⚡ [AUDIO ENGINE] Bilingual Master-Stitching Engine (v63.0) Initialized.")
+        print(f"   🎙️  TTS Engine: {fish_status}")
+        print(f"   📢  RVC Neural Voice Twin: Bypassed (model unavailable)")
 
     def _get_silence_file(self, duration: float) -> str:
         """
@@ -213,19 +237,40 @@ class VoiceoverGenerator:
 
     async def _synthesize_segment_async(self, text: str, lang: str, out_path: str) -> bool:
         """
-        Synthesizes a single text segment using gTTS (Google Text-to-Speech).
-        Falls back from edge-tts which is currently broken (NoAudioReceived).
+        Synthesizes a single text segment.
+        English: Fish Speech voice cloning (Jay's voice) with gTTS fallback.
+        Telugu: gTTS (Telugu not supported by Fish Speech vocab).
         """
-        import asyncio
         out_dir = os.path.dirname(out_path)
         if out_dir:
             os.makedirs(out_dir, exist_ok=True)
 
-        # Map internal lang codes to gTTS language codes
-        gtts_lang = "en" if lang == "en" else "te"
+        if lang == "en" and self.use_fish_speech:
+            # --- Fish Speech voice cloning for English ---
+            cloner = _get_fish_cloner()
+            if cloner is not None:
+                try:
+                    loop = asyncio.get_event_loop()
 
+                    def _do_fish():
+                        cloner.clone_voice(
+                            text=text,
+                            reference_audio=self.ref_audio,
+                            reference_text=self.ref_text,
+                            output_path=out_path,
+                        )
+
+                    await loop.run_in_executor(None, _do_fish)
+
+                    if os.path.exists(out_path) and os.path.getsize(out_path) > 0:
+                        return True
+                    print(f"   ⚠️  Fish Speech produced empty output, falling back to gTTS...")
+                except Exception as e:
+                    print(f"   ⚠️  Fish Speech error: {e}. Falling back to gTTS...")
+
+        # --- gTTS fallback (Telugu, or English if Fish Speech failed) ---
+        gtts_lang = "en" if lang == "en" else "te"
         try:
-            # gTTS is synchronous — run in thread pool to not block the event loop
             loop = asyncio.get_event_loop()
 
             def _do_tts():
@@ -238,7 +283,6 @@ class VoiceoverGenerator:
             print(f"   ❌ gTTS Synthesis Error for '{text[:30]}...' (lang={gtts_lang}): {e}")
             return False
 
-        # Post-synthesis verification
         if not os.path.exists(out_path):
             print(f"   ❌ Synthesis produced no output file for '{text[:30]}...'")
             return False

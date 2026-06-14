@@ -813,7 +813,7 @@ Script:
                 try:
                     print(f"    Assembler: [Serper-Img] Fetching scene {i}...")
                     serper_key = config.API_KEYS.get("SERPER_API_KEY", "")
-                    serper_key_backup = config.API_KEYS.get("SERPER_APIKEY_BACKUP1", "")
+                    serper_key_backup = config.API_KEYS.get("SERPER_API_KEY_BACKUP1", "")
                     if serper_key or serper_key_backup:
                         headers = {'X-API-KEY': serper_key, 'Content-Type': 'application/json'}
 
@@ -1460,6 +1460,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             cta = None
             if is_short:
                 cta = "What do you think? Comment below!"
+            else:
+                # Main video CTA: subscribe prompt in last 3 seconds
+                cta = "Subscribe for more breaking news!"
             has_subtitles = self.generate_ass_file(
                 script_text, target_duration_s, ass_path, out_w, out_h,
                 is_short=is_short, cta_text=cta
@@ -1481,7 +1484,26 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             print(f"    Assembler: Preparing generative slideshow ({num_scenes} scenes) via multi-source image chain...")
             prompts = self.generate_image_prompts(script_text, num_scenes)
             slideshow_dir = os.path.join(runtime_dir, f"slideshow_{output_name.replace('.mp4', '')}")
-            image_paths = self.download_scene_images(prompts, slideshow_dir, topic_title=topic_title or script_text[:100])
+            image_paths = self.download_scene_images(prompts, slideshow_dir, topic_title=topic_title)
+
+        if not image_paths:
+            # v87.7: Generate local visuals with PIL before falling back to static background
+            print("    Assembler: All API sources failed — generating local visuals with PIL...")
+            try:
+                from modules.local_visual_generator import generate_scene_images
+                slideshow_dir = os.path.join(runtime_dir, f"slideshow_{output_name.replace('.mp4', '')}")
+                local_paths = generate_scene_images(
+                    topic_title or script_text or "News",
+                    output_dir=slideshow_dir,
+                    count=num_scenes,
+                    width=1600,
+                    height=900
+                )
+                if local_paths:
+                    image_paths = local_paths
+                    print(f"    Assembler: ✓ Local visual generator: {len(image_paths)} images")
+            except Exception as e:
+                print(f"    Assembler: Local visual generator failed: {e}")
 
         if not image_paths:
             # v52.1: Try local image pack before falling back to static background

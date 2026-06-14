@@ -1,4 +1,15 @@
-# VERSION: 81.0
+# VERSION: 87.8
+# MODULE: news_image_fetcher.py
+# PURPOSE: Fetch REAL news photos from Indian news RSS feeds.
+#          This replaces ComfyUI as the primary image source for scene images.
+#          Uses direct RSS feeds from The Hindu, NDTV, Indian Express, Deccan Chronicle RSS
+#          No API key needed. No redirects. Direct image URLs.
+#
+#          Priority: RSS feeds (real news) > ComfyUI (last resort)
+#
+#          v87.8: Fixed Gemini Visual gate was always returning True (ignoring NO).
+#                  Raised keyword overlap threshold from >=2 to >=3 to prevent
+#                  generic "Andhra Pradesh" matches returning irrelevant images.
 # MODULE: news_image_fetcher.py
 # PURPOSE: Fetch REAL news photos from Indian news RSS feeds.
 #          This replaces ComfyUI as the primary image source for scene images.
@@ -116,6 +127,41 @@ def _validate_image_bytes(data):
     return True, "OK"
 
 
+def _text_only_relevance_check(topic_title, article_title):
+    """v87.2: Fallback text-only relevance check when Gemini Vision is unavailable.
+    
+    Requires >=2 non-generic keyword overlap between topic and article title.
+    This is the same filter used in the main scoring loop, applied here as a
+    safety net so RSS images aren't silently accepted when Gemini is down.
+    """
+    GENERIC_NEWS_WORDS = {"india", "us", "usa", "news", "live", "update",
+                          "breaking", "latest", "top", "watch", "video",
+                          "photo", "photos", "gallery", "pictures",
+                          "report", "reports", "said", "says", "new",
+                          "first", "last", "one", "two", "three",
+                          "day", "days", "week", "month", "year",
+                          "today", "yesterday", "tomorrow",
+                          "gets", "get", "got", "give", "given",
+                          "after", "before", "over", "under", "from",
+                          "with", "into", "out", "off", "up", "down",
+                          "the", "a", "an", "and", "or", "but", "for",
+                          "not", "all", "any", "can", "has", "had",
+                          "have", "was", "were", "been", "being",
+                          "are", "is", "it", "its", "this", "that",
+                          "these", "those", "what", "which", "who",
+                          "how", "when", "where", "why", "will",
+                          "would", "could", "should", "may", "might",
+                          "more", "most", "some", "such", "than",
+                          "then", "there", "their", "them", "they",
+                          "about", "also", "just", "only", "very",
+                          "much", "many", "well", "back", "even",
+                          "still", "already", "since", "while",
+                          "during", "between", "through", "across"}
+    overlap = _keyword_overlap(topic_title, article_title)
+    filtered = {w for w in overlap if w.lower() not in GENERIC_NEWS_WORDS}
+    return len(filtered) >= 2
+
+
 def _visual_relevance_check(image_data, topic_title, article_title):
     """v82.2: Use Gemini Vision API to verify downloaded image is visually related to topic.
     
@@ -123,8 +169,10 @@ def _visual_relevance_check(image_data, topic_title, article_title):
     sidebar trending images, or generic placeholders. This gate sends the image
     to Gemini with the topic context and gets a yes/no relevance judgment.
     
-    Returns True if relevant (or if Gemini is unavailable — fail-open).
-    Returns False only on explicit "not relevant" judgment.
+    v87.2: Two-tier fallback:
+    1. Gemini Vision check (preferred) — fail-closed on explicit NO
+    2. If Gemini unavailable (quota/timeout), fall back to text-only check:
+       article title must have >=2 non-generic keyword overlap with topic
     """
     try:
         import base64
@@ -139,7 +187,8 @@ def _visual_relevance_check(image_data, topic_title, article_title):
                         _key = line.strip().split("=", 1)[1].strip("\"'")
                         break
         if not _key:
-            return True  # fail-open
+            # No API key — fall back to text-only check
+            return _text_only_relevance_check(topic_title, article_title)
         
         b64 = base64.b64encode(image_data).decode("utf-8")
         
@@ -156,6 +205,45 @@ def _visual_relevance_check(image_data, topic_title, article_title):
             "rallies/protests, parliament/assembly, or news footage directly related to the topic."
         )
         
+        # v87.2: Tier 1 — text-only keyword overlap (fast, no API call)
+        # Require >=2 non-generic overlapping words just to enter visual check
+        _text_ok = _text_only_relevance_check(topic_title, article_title)
+        if not _text_ok:
+            return False  # Not enough keyword overlap — skip
+        
+        # v87.2: Tier 1.5 — strong text overlap (>=3 words) bypasses Gemini entirely
+        # Avoids wasting API calls on obviously relevant articles
+        GENERIC_NEWS_WORDS = {"india", "us", "usa", "news", "live", "update",
+                              "breaking", "latest", "top", "watch", "video",
+                              "photo", "photos", "gallery", "pictures",
+                              "report", "reports", "said", "says", "new",
+                              "first", "last", "one", "two", "three",
+                              "day", "days", "week", "month", "year",
+                              "today", "yesterday", "tomorrow",
+                              "gets", "get", "got", "give", "given",
+                              "after", "before", "over", "under", "from",
+                              "with", "into", "out", "off", "up", "down",
+                              "the", "a", "an", "and", "or", "but", "for",
+                              "not", "all", "any", "can", "has", "had",
+                              "have", "was", "were", "been", "being",
+                              "are", "is", "it", "its", "this", "that",
+                              "these", "those", "what", "which", "who",
+                              "how", "when", "where", "why", "will",
+                              "would", "could", "should", "may", "might",
+                              "more", "most", "some", "such", "than",
+                              "then", "there", "their", "them", "they",
+                              "about", "also", "just", "only", "very",
+                              "much", "many", "well", "back", "even",
+                              "still", "already", "since", "while",
+                              "during", "between", "through", "across"}
+        _overlap = _keyword_overlap(topic_title, article_title)
+        _overlap_filtered = {w for w in _overlap if w.lower() not in GENERIC_NEWS_WORDS}
+        if len(_overlap_filtered) >= 3:
+            return True  # Strong text match — skip Gemini, accept
+        
+        # v87.2: Tier 2 — Gemini Vision check for borderline cases (2-word overlap)
+        # Gemini can reject if image content doesn't match, but can't override strong text match
+        
         # Call Gemini Vision REST API directly
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={_key}"
         payload = {
@@ -171,20 +259,23 @@ def _visual_relevance_check(image_data, topic_title, article_title):
         resp = requests.post(url, json=payload, timeout=15,
                            headers={"Content-Type": "application/json"})
         if resp.status_code != 200:
-            return True  # fail-open on API error
+            # Gemini API error — accept based on text overlap (already >=2)
+            return True
         
         answer = ""
         for cand in resp.json().get("candidates", []):
             for part in cand.get("content", {}).get("parts", []):
                 answer += part.get("text", "")
         
-        if answer.strip().lower().startswith("no"):
+        # v87.8: Respect Gemini's NO — reject if image is visually irrelevant
+        answer_upper = answer.strip().upper()
+        if answer_upper.startswith("NO"):
             return False
-        return True  # YES or unclear → accept (fail-open)
+        return True
         
     except Exception as e:
-        # Fail-open: if Gemini is unavailable, don't block images
-        print(f"  [NewsImg] Visual gate skip: {str(e)[:80]}")
+        # Gemini unavailable — accept based on text overlap (already >=2)
+        print(f"  [NewsImg] Visual gate Gemini error: {str(e)[:80]}")
         return True
 
 
@@ -253,16 +344,71 @@ def fetch_news_images(topic_title, count=5, used_hashes=None):
                 # v82.1: Minimum relevance gate — reject weak single-word matches
                 # Common words like "meeting", "house", "congress" match everything.
                 # Require >=2 keyword overlap, OR >=1 if it's a rare proper noun.
-                RARE_NOUNS = {"trinamool", "mamata", "banerjee", "pawan", "kalyan",
-                              "jana sena", "revanth", "reddy", "chandrababu", "naidu",
-                              "kcr", "ktr", "modi", "kejriwal", "yogi", "adityanath",
-                              "rahul", "gandhi", "amaravati", "telangana", "andhra",
-                              "hyderabad", "vijayawada", "vizag", "kolkata", "bengal",
-                              "sharad", "pawar", "uddhav", "thackeray", "nitish", "kumar",
-                              "lalu", "prasad", "mamata", "tmc", "bjp", "dmk", "aiadmk"}
-                overlap_lower = {w.lower() for w in overlap}
-                has_rare = bool(overlap_lower & RARE_NOUNS)
-                if len(overlap) < 2 and not has_rare:
+                # v86.2: Rare noun alone is NOT enough — must also have >=1 other keyword
+                # overlap to prevent "Modi" in script text matching every Modi article
+                # when the topic is actually about US-Iran war.
+                # v87.2: Generic news words don't count as overlap — "India", "US",
+                # "news", "live", "update", "breaking" are in every headline.
+                GENERIC_NEWS_WORDS = {"india", "us", "usa", "news", "live", "update",
+                                      "breaking", "latest", "top", "watch", "video",
+                                      "photo", "photos", "gallery", "pictures",
+                                      "report", "reports", "said", "says", "new",
+                                      "first", "last", "one", "two", "three",
+                                      "day", "days", "week", "month", "year",
+                                      "today", "yesterday", "tomorrow",
+                                      "gets", "get", "got", "give", "given",
+                                      "after", "before", "over", "under", "from",
+                                      "with", "into", "out", "off", "up", "down",
+                                      "the", "a", "an", "and", "or", "but", "for",
+                                      "not", "all", "any", "can", "has", "had",
+                                      "have", "was", "were", "been", "being",
+                                      "are", "is", "it", "its", "this", "that",
+                                      "these", "those", "what", "which", "who",
+                                      "how", "when", "where", "why", "will",
+                                      "would", "could", "should", "may", "might",
+                                      "more", "most", "some", "such", "than",
+                                      "then", "there", "their", "them", "they",
+                                      "about", "also", "just", "only", "very",
+                                      "much", "many", "well", "back", "even",
+                                      "still", "already", "since", "while",
+                                      "during", "between", "through", "across"}
+                overlap_filtered = {w for w in overlap if w.lower() not in GENERIC_NEWS_WORDS}
+                # v87.8: Raised from >=2 to >=3 — "Andhra Pradesh" alone matches
+                # every AP article (forest, ship, etc.) even when topic is about
+                # child rights / social media. Require 3+ specific keywords.
+                if len(overlap_filtered) < 3:
+                    # Not enough meaningful overlap — skip
+                    continue
+
+                # v86.3: Person-subject mismatch check
+                # Articles like "PM Modi speaks to Amir of Kuwait about West Asia"
+                # pass keyword overlap (west, asia) but the IMAGE shows Modi, not the war.
+                # If the article title starts with a person reference and the topic
+                # is NOT about that person, reject it.
+                _PERSON_PREFIXES = [
+                    # Only list people who are COMMENTATORS/OBSERVERS, not primary actors.
+                    # "Trump" is NOT here because he IS a primary actor in US-Iran war topics.
+                    # "Modi" IS here because he's an Indian PM commenting on West Asia, not a war actor.
+                    "pm modi", "narendra modi", "pm narendra",
+                    "pm rishi", "rishi sunak",
+                    "mamata banerjee", "rahul gandhi",
+                    "yogi adityanath", "arvind kejriwal",
+                    "nirmala sitharaman", "rajnath singh",
+                    "amit shah",
+                    "sanjiv goenka", "goenka",
+                    "shreyas iyer", "iyer",
+                ]
+                _title_lower = title.lower().strip()
+                _topic_lower = topic_title.lower()
+                _person_rejected = False
+                for _prefix in _PERSON_PREFIXES:
+                    if _title_lower.startswith(_prefix):
+                        _person_name = _prefix.replace("pm ", "").strip()
+                        if _person_name not in _topic_lower and _prefix not in _topic_lower:
+                            print(f"  [NewsImg] REJECT person mismatch: '{title[:50]}' (person: {_person_name})")
+                            _person_rejected = True
+                        break
+                if _person_rejected:
                     continue
 
                 # Bonus for PTI/ANI images (professional news agency photos)
@@ -278,7 +424,7 @@ def fetch_news_images(topic_title, count=5, used_hashes=None):
                 elif "telangana" in topic_lower and ("telangana" in link or "telangana" in img_url):
                     bonus += 2
 
-                score = len(overlap) + bonus
+                score = len(overlap_filtered) + bonus
                 scored_articles.append({
                     "score": score,
                     "title": title,

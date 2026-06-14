@@ -61,6 +61,25 @@ def _log_approval(topic_id: str, action: str, details: str = ""):
         f.write(json.dumps(entry, default=str) + "\n")
 
 
+def _cleanup_stale_queue_entries(queue: dict) -> dict:
+    """Remove queue entries whose video files no longer exist on disk.
+    Prevents stale entries from previous runs accumulating in the queue."""
+    for status in ("pending", "approved", "rejected"):
+        stale_ids = []
+        for tid, item in queue.get(status, {}).items():
+            video_files = item.get("video_files", [])
+            if video_files and not any(os.path.exists(vf) for vf in video_files):
+                stale_ids.append(tid)
+        for tid in stale_ids:
+            del queue[status][tid]
+    return queue
+
+
+def _validate_video_files(video_files: list) -> list:
+    """Filter video_files to only those that exist on disk. Returns valid files."""
+    return [vf for vf in video_files if os.path.exists(vf)]
+
+
 def send_approval_request(
     topic_id: str,
     topic_title: str,
@@ -70,6 +89,7 @@ def send_approval_request(
     video_files: list,
     thumbnail_files: list,
     publish_decision: dict | None = None,
+    scene_visuals: list | None = None,
 ) -> str:
     """
     Send a Telegram approval request for a completed video set.
@@ -79,6 +99,14 @@ def send_approval_request(
     import sys
     print(f"  [ApprovalGate] ENTRY: publish_decision type={type(publish_decision)}, repr={repr(publish_decision)[:150]}", file=sys.stderr, flush=True)
     token = hashlib.md5(f"{topic_id}{time.time()}".encode()).hexdigest()[:8]
+
+    # ── Validate video files exist on disk ──
+    valid_videos = _validate_video_files(video_files)
+    if not valid_videos:
+        print(f"  [ApprovalGate] ⚠️ No valid video files for {topic_id}. Skipping queue entry.", file=sys.stderr, flush=True)
+        return token  # Return token but don't queue — prevents ghost entries
+    if len(valid_videos) < len(video_files):
+        print(f"  [ApprovalGate] ⚠️ {len(video_files) - len(valid_videos)} missing video(s) for {topic_id}. Using {len(valid_videos)} valid.", file=sys.stderr, flush=True)
 
     # Build message — short and scannable
     lines = [
@@ -107,6 +135,16 @@ def send_approval_request(
 
     message = "\n".join(lines)
 
+    # Build inline keyboard with Approve/Reject buttons
+    inline_keyboard = {
+        "inline_keyboard": [
+            [
+                {"text": "✅ Approve", "callback_data": f"approve:{topic_id}"},
+                {"text": "❌ Reject", "callback_data": f"reject:{topic_id}"},
+            ]
+        ]
+    }
+
     # Send thumbnail + message (caption max 1024 chars for photo)
     # Commands are at the top, so they survive truncation
     import sys
@@ -114,19 +152,32 @@ def send_approval_request(
     sent_photo = False
     if thumbnail_files and os.path.exists(thumbnail_files[0]):
         try:
-            result = send_telegram_photo(thumbnail_files[0], caption=message[:1024])
+            result = send_telegram_photo(thumbnail_files[0], caption=message[:1024], reply_markup=inline_keyboard)
             sent_photo = result.get("ok", False)
             print(f"  [ApprovalGate] Photo sent: {sent_photo}", file=sys.stderr, flush=True)
         except Exception as e:
             print(f"  [ApprovalGate] Photo FAILED: {e}", file=sys.stderr, flush=True)
             # Fallback: send text only (Telegram text limit = 4096)
-            send_telegram(message[:4000])
+            send_telegram(message[:4000], reply_markup=inline_keyboard)
     else:
         print(f"  [ApprovalGate] No thumbnail, sending text only", file=sys.stderr, flush=True)
-        send_telegram(message[:4000])
+        send_telegram(message[:4000], reply_markup=inline_keyboard)
 
-    # Save to queue
+    # Send all scene visuals (viz_*.jpg) as individual photos
+    _scene_visuals = [v for v in (scene_visuals or []) if os.path.exists(v)]
+    if _scene_visuals:
+        print(f"  [ApprovalGate] Sending {len(_scene_visuals)} scene visual(s)...", file=sys.stderr, flush=True)
+        for _i, _viz in enumerate(_scene_visuals):
+            try:
+                _viz_name = os.path.basename(_viz)
+                send_telegram_photo(_viz, caption=f"📸 Scene {_i + 1}/{len(_scene_visuals)}: {_viz_name}")
+                print(f"  [ApprovalGate] Scene visual {_i + 1} sent: {_viz_name}", file=sys.stderr, flush=True)
+            except Exception as _viz_err:
+                print(f"  [ApprovalGate] Scene visual {_i + 1} FAILED: {_viz_err}", file=sys.stderr, flush=True)
+
+    # Save to queue — cleanup stale entries first, then add with validated videos
     queue = _load_queue()
+    queue = _cleanup_stale_queue_entries(queue)
     queue["pending"][topic_id] = {
         "token": token,
         "topic_id": topic_id,
@@ -134,8 +185,9 @@ def send_approval_request(
         "topic_source": topic_source,
         "topic_url": topic_url,
         "topic_score": topic_score,
-        "video_files": video_files,
+        "video_files": valid_videos,
         "thumbnail_files": thumbnail_files,
+        "scene_visuals": _scene_visuals,
         "publish_decision": publish_decision,
         "requested_at": datetime.now(IST).isoformat(),
         "status": "pending",
@@ -171,6 +223,18 @@ def process_approval_command(command: str, topic_id: str) -> dict:
         del queue["pending"][topic_id]
         _save_queue(queue)
         _log_approval(topic_id, "approved")
+
+        # Trigger upload via upload_approved.py (pass topic_id only — it reads from approved queue)
+        import subprocess
+        try:
+            result = subprocess.run(
+                ["/home/jay/venv/bin/python3", "/home/jay/ViralDNA/upload_approved.py", topic_id],
+                capture_output=True, text=True, timeout=600
+            )
+            _log_approval(topic_id, "upload_triggered", f"exit={result.returncode} stdout={result.stdout[-200:]}")
+        except Exception as e:
+            _log_approval(topic_id, "upload_failed", str(e))
+
         return {
             "status": "approved",
             "topic_id": topic_id,
@@ -217,6 +281,144 @@ def get_approval_status(topic_id: str) -> dict:
         if topic_id in queue.get(status, {}):
             return {"status": status, "item": queue[status][topic_id]}
     return {"status": "not_found"}
+
+
+def poll_callback_queries(timeout: int = 30) -> list:
+    """
+    Poll Telegram for callback queries from inline keyboard buttons.
+    Returns list of handled callbacks.
+    Requires TELEGRAM_BOT_TOKEN to be set in environment.
+    """
+    import urllib.request as _ur
+    import json as _json
+    import os as _os
+    import time as _time
+
+    token = _os.getenv("TELEGRAM_BOT_TOKEN", "")
+    if not token:
+        return []
+
+    base = f"https://api.telegram.org/bot{token}"
+    handled = []
+    offset = None
+
+    # Get updates with short polling — listen for both callback queries AND text commands
+    url = f"{base}/getUpdates?timeout={timeout}&allowed_updates=[\"callback_query\",\"message\"]"
+    if offset:
+        url += f"&offset={offset}"
+
+    resp_data = None
+    for attempt in range(10):
+        try:
+            resp = _ur.urlopen(url, timeout=timeout + 5)
+            resp_data = resp.read()
+            break
+        except Exception as e:
+            if "409" in str(e):
+                _time.sleep(0.5)
+                continue
+            else:
+                print(f"  [ApprovalGate] Callback poll error: {e}")
+                return []
+
+    if resp_data is None:
+        print("  [ApprovalGate] Callback poll error: Persistent HTTP 409 Conflict")
+        return []
+
+    try:
+        data = _json.loads(resp_data)
+    except Exception as e:
+        print(f"  [ApprovalGate] JSON parse error: {e}")
+        return []
+
+    for update in data.get("result", []):
+        update_id = update.get("update_id")
+
+        # Handle inline keyboard button clicks (callback_query)
+        cq = update.get("callback_query", {})
+        if cq:
+            callback_id = cq.get("id")
+            callback_data = cq.get("data", "")
+            chat_id = cq.get("message", {}).get("chat", {}).get("id")
+
+            if ":" in callback_data:
+                action, topic_id = callback_data.split(":", 1)
+                result = process_approval_command(action, topic_id)
+
+                if result["status"] == "approved":
+                    msg = f"✅ <b>{topic_id}</b> APPROVED — uploading to YouTube..."
+                elif result["status"] == "rejected":
+                    msg = f"❌ <b>{topic_id}</b> REJECTED"
+                elif result["status"] == "already_approved":
+                    msg = f"⚠️ <b>{topic_id}</b> already approved"
+                elif result["status"] == "already_rejected":
+                    msg = f"⚠️ <b>{topic_id}</b> already rejected"
+                else:
+                    msg = f"⚠️ <b>{topic_id}</b> {result['status']}"
+
+                try:
+                    payload = _json.dumps({
+                        "chat_id": chat_id,
+                        "text": msg,
+                        "parse_mode": "HTML",
+                    }).encode()
+                    req = _ur.Request(f"{base}/sendMessage", data=payload,
+                                     headers={"Content-Type": "application/json"})
+                    _ur.urlopen(req, timeout=10)
+                except Exception:
+                    pass
+
+                # Answer the callback query (removes loading state from button)
+                try:
+                    payload = _json.dumps({"callback_query_id": callback_id}).encode()
+                    req = _ur.Request(f"{base}/answerCallbackQuery", data=payload,
+                                     headers={"Content-Type": "application/json"})
+                    _ur.urlopen(req, timeout=10)
+                except Exception:
+                    pass
+
+                handled.append({"type": "callback", "action": action, "topic_id": topic_id, "result": result["status"]})
+                continue
+
+        # Handle text commands: /approve VDNA219 or /reject VDNA219
+        msg_obj = update.get("message", {})
+        text = msg_obj.get("text", "").strip()
+        chat_id = msg_obj.get("chat", {}).get("id")
+
+        if text.startswith("/approve ") or text.startswith("/reject "):
+            parts = text.split(maxsplit=1)
+            if len(parts) == 2:
+                action = parts[0][1:]  # strip leading "/"
+                topic_id = parts[1].strip()
+                result = process_approval_command(action, topic_id)
+
+                if result["status"] == "approved":
+                    reply = f"✅ <b>{topic_id}</b> APPROVED — uploading to YouTube..."
+                elif result["status"] == "rejected":
+                    reply = f"❌ <b>{topic_id}</b> REJECTED"
+                elif result["status"] == "already_approved":
+                    reply = f"⚠️ <b>{topic_id}</b> already approved"
+                elif result["status"] == "already_rejected":
+                    reply = f"⚠️ <b>{topic_id}</b> already rejected"
+                elif result["status"] == "not_found":
+                    reply = f"⚠️ <b>{topic_id}</b> not found in pending queue"
+                else:
+                    reply = f"⚠️ <b>{topic_id}</b> {result['status']}"
+
+                try:
+                    payload = _json.dumps({
+                        "chat_id": chat_id,
+                        "text": reply,
+                        "parse_mode": "HTML",
+                    }).encode()
+                    req = _ur.Request(f"{base}/sendMessage", data=payload,
+                                     headers={"Content-Type": "application/json"})
+                    _ur.urlopen(req, timeout=10)
+                except Exception:
+                    pass
+                handled.append({"type": "command", "action": action, "topic_id": topic_id, "result": result["status"]})
+
+    return handled
 
 
 if __name__ == "__main__":

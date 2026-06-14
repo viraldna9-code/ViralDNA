@@ -189,13 +189,10 @@ def decide_publish_plan(topic: dict) -> PublishDecision:
         decision.num_shorts = max(decision.num_shorts, 2)
         decision.reason += " | Breaking news → ensure main + shorts"
     elif spike == spikeLevel.BACKGROUND:
-        # Don't reduce shorts below 2 for high-CPM categories (politics, policy, economics)
-        min_shorts = 2 if category in (
-            ContentCategory.POLITICS, ContentCategory.POLICY,
-            ContentCategory.ECONOMICS, ContentCategory.DISASTER,
-        ) else 1
-        decision.num_shorts = max(min_shorts, min(decision.num_shorts, 2))
-        decision.reason += " | Background → reduce shorts"
+        # Floor: never go below 2 shorts regardless of spike level
+        # (channel growth requires consistent short-form output)
+        decision.num_shorts = max(2, min(decision.num_shorts, 2))
+        decision.reason += " | Background → floor 2 shorts"
 
     # Step 3: Keyword analysis
     deep_score, quick_score = _keyword_analysis(title, description)
@@ -215,13 +212,11 @@ def decide_publish_plan(topic: dict) -> PublishDecision:
         decision.num_shorts = max(decision.num_shorts, 2)
         decision.reason += " | High source diversity"
     elif diversity <= 1:
-        # Don't reduce shorts below 2 for high-CPM categories even with low diversity
-        if category not in (
-            ContentCategory.POLITICS, ContentCategory.POLICY,
-            ContentCategory.ECONOMICS, ContentCategory.DISASTER,
-        ):
-            decision.num_shorts = min(decision.num_shorts, 1)
-            decision.reason += " | Low source diversity"
+        # Floor: never go below 2 shorts for any news category
+        # (channel growth requires consistent short-form output)
+        if decision.num_shorts < 2:
+            decision.num_shorts = 2
+        decision.reason += " | Low source diversity (floor applied)"
 
     # Step 5: Bounds check
     decision.num_shorts = max(0, min(3, decision.num_shorts))

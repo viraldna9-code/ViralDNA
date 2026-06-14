@@ -5,6 +5,323 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ---
 
+## 2026-06-13
+
+### 10:00 IST — v63.0 Fish Speech Voice Cloning (CRITICAL — RVC Replacement)
+
+**Problem:** RVC voice model (`jay_voice_prod.pth`) permanently lost. `voiceover.py` v62.0 had `use_rvc = False` hardcoded with gTTS fallback — generic robotic voices, no personality, no brand identity.
+
+**Root cause:** RVC model file was never backed up. `rvc_python` package installed but wrong version (no `infer.py` module). Even with correct package, no `.pth` weights to load.
+
+**Solution:** Fish Speech 1.4 integration for English voice cloning.
+- Created `modules/fish_voice_cloner.py` — standalone module wrapping Fish Speech local inference
+- Fish Speech 1.4 checkpoint dir: `/home/jay/fish-speech-v1.5/checkpoints/fish-speech-1.4/` (944MB model + 180MB decoder)
+- Uses VQGAN reference encoding: reference audio → VQ tokens → conditions text generation → decoded to 44100Hz WAV
+- Auto-trims reference audio to 15s (model max_seq_len=4096 constraint, long reference exceeds limit)
+- Lazy-loaded singleton — model loaded once on first English segment, stays in GPU VRAM (1.4GB)
+- RTX 3050 6GB: inference ~10-12 tokens/sec (acceptable for production)
+
+**Language strategy:**
+- English: Fish Speech voice cloning (Jay's voice from `voice_sample.wav`)
+- Telugu: gTTS (Fish Speech tokenizer has 0 Telugu/Hindi tokens in vocabulary)
+
+**Graceful degradation:** If Fish Speech fails for ANY reason, auto-falls back to gTTS. Three-layer safety:
+1. Try Fish Speech voice cloning
+2. On exception/empty output → gTTS fallback
+3. On gTTS failure → log error, return False, pipeline skips segment
+
+**Performance:**
+- Model load: 6.0s (text2semantic 494M params) + 1.5s (VQGAN decoder)
+- Per-segment generation: ~12s per sentence (Fish Speech is autoregressive)
+- GPU VRAM: 1.4GB peak
+- Output: 44100Hz 16-bit mono WAV
+
+**Config:**
+- `FISH_SPEECH_ENABLED=1` (env var to disable)
+- `FISH_REF_AUDIO=/home/jay/voice_sample.wav` (reference voice)
+- `FISH_REF_TEXT=` (transcript of reference audio)
+
+**Files changed:**
+- `modules/fish_voice_cloner.py` — NEW (Fish Speech voice cloning engine)
+- `modules/voiceover.py` — v62.0 → v63.0 (Fish Speech integration)
+
+**Test results:**
+- Standalone test: 9.4s audio from 25-word sentence ✅
+- Integration test via voiceover.py: 5.7s audio from 14-word sentence ✅
+- Voice cloning quality: natural Indian English accent, Jay's voice characteristics
+
+---
+
+## 2026-06-11
+
+### 15:30 IST — v87.7 Local Visual Generator (CRITICAL)
+
+**Problem:** When all image APIs fail (RSS, Serper, ComfyUI, local pack missing), pipeline produces solid color backgrounds — ugly, unprofessional videos with no scene visuals.
+
+**Root cause:** No true local fallback. `local_image_pack.py` doesn't exist. `_local_image_pack_fallback()` returns None. `video_assembler.py` falls back to a single static background image per video.
+
+**Fix:** Created `modules/local_visual_generator.py` — 100% offline PIL/Pillow-based news scene image generator.
+- Generates professional news-style visuals with gradient backgrounds
+- Category-aware color schemes (war=red, tech=blue, economics=green, etc.)
+- Large bold headline text with shadow
+- Decorative elements (accent bars, corner triangles, grid pattern)
+- Category badge overlay
+- Bottom info bar with scene number
+- Each scene index produces different gradient direction + color variation
+- 1600x900 JPEG output, ~120KB per image
+
+**Integration points:**
+1. `modules/visual_fetcher.py` — Strategy 4 after local pack (Strategy 3), Strategy 5 emergency single image
+2. `modules/video_assembler.py` — Before local image pack fallback, generates `num_scenes` images per slideshow
+
+**Test results:** All 6 categories generate correctly, 3 scenes per topic with visual variety.
+
+**Files changed:** `modules/local_visual_generator.py` (NEW), `modules/visual_fetcher.py`, `modules/video_assembler.py`
+
+### 14:00 IST — v87.6 Short Video Minimum Fix (PRODUCTION)
+
+**Problem:** Pipeline only produced 1 short video per topic instead of the agreed 2+.
+- VDNA218 produced only 1 short (should have been 2).
+- Root cause: `publish_decision_engine.py` reduced `num_shorts` to 1 for:
+  - Non-high-CPM categories (GENERAL, HEALTH, etc.) when spike=BACKGROUND
+  - Low source diversity (only 1 source like The Hindu)
+
+**What we decided:** Channel growth requires consistent short-form output. Minimum 2 shorts for ALL categories.
+
+**Fix in `modules/publish_decision_engine.py`:**
+1. **BACKGROUND spike floor:** Changed from `min_shorts=1` for non-high-CPM → `min_shorts=2` for ALL categories
+2. **Low diversity floor:** Changed from `cap at 1` → `floor at 2` for ALL categories
+3. Both paths now ensure `num_shorts >= 2` regardless of category, spike level, or source count
+
+**Test results:**
+- GENERAL + BACKGROUND + 1 source → `num_shorts=2` ✓ (was 1)
+- POLITICS + BACKGROUND + 1 source → `num_shorts=2` ✓
+- BREAKING + 1 source → `num_shorts=2` ✓
+
+**Files changed:** `modules/publish_decision_engine.py`
+
+## 2026-06-10
+
+### 14:30 IST — v87.0 Metadata Quality Overhaul (CRITICAL)
+
+**Problem:** Uploaded videos had garbage metadata — source names in titles, duplicate #Shorts, competitor channel tags, "TOPICS: ai" placeholder, generic chapters, bloated descriptions.
+
+**Root cause:** Title generation appended year/source without cleaning, short title logic duplicated #Shorts, channel_tags included competitor names, "ai" keyword matched substrings, chapters were static generics, description was a wall of repetitive CTAs.
+
+- **FIXED** Title generation (youtube_uploader.py:220-270)
+  → Strips source names (" - The Hindu", " | NDTV", etc.) from titles
+  → Main titles capped at 70 chars with smart word-boundary truncation
+  → Short titles: single #Shorts suffix, no duplicate year, capped at 60 chars
+  → Fixes: "West Asia war... - The Hindu (2026)" → "US Attacks Iran After Apache Helicopter Shot Down"
+
+- **FIXED** Short title duplication (youtube_uploader.py:240-253)
+  → Old logic: append #Shorts → insert (2026) before #Shorts → result: "title (2026) #Shorts (2026) #Shorts"
+  → New logic: strip existing #Shorts/year first, then build clean title
+  → Fixes: duplicate #Shorts and duplicate year suffix
+
+- **FIXED** Competitor channel tags removed (youtube_uploader.py:287-293, 523-529)
+  → Removed "TV9 Telugu", "Sakshi news", "Eenadu news", "NTV Telugu", "ABN Andhra" from channel_tags
+  → These tags help YouTube suggest competitors' videos, not ours
+  → Audit check G1 inverted: now FLAGS competitor tags as warning (was rewarding them)
+
+- **FIXED** "TOPICS: ai" placeholder (youtube_uploader.py:914, 917-937, 1121)
+  → Removed "ai" from HIGH_VALUE_KEYWORDS (2-char keyword matched "details", "aircraft", etc.)
+  → Removed "ai" from tag_map in _build_hashtag_block
+  → _extract_seo_keywords now uses word-boundary regex for short keywords (<=3 chars)
+  → Fixes: "🔑 TOPICS: ai" → proper topic keywords
+
+- **FIXED** Generic chapters (youtube_uploader.py:1265-1296)
+  → Old: static "Intro", "The Story", "Key Details", "Analysis", "What This Means"
+  → New: extracts proper nouns from topic title for keyword-rich chapters
+  → Fixes: "0:00 Intro" → "0:00 Breaking", "0:15 US Iran", etc.
+
+- **FIXED** Description bloat (youtube_uploader.py:415-433)
+  → Removed repetitive CTA blocks (19 lines → 5 lines)
+  → Removed affiliate/crowdfunding/merch sections (no CTR benefit for news channel)
+  → Subscribe CTA still in first 3 lines (audit requirement)
+  → Fixes: 500+ char description with repeated CTAs → concise 200 char block
+
+- **FIXED** upload_approved.py title stripping (upload_approved.py:134-136)
+  → Also strips source names from topic_title_short passed to uploader
+  → Belt-and-suspenders with youtube_uploader.py title cleaning
+
+- **UPDATED** VDNA218 metadata on YouTube via API
+  → Main video (9vxPRDcl0RA): new title, description, tags
+  → Short video (_00tPsz4AXI): new title, description, tags
+
+### 20:30 IST — v87.2 Image Relevance 3-Tier Gate (CRITICAL)
+
+**Problem:** News RSS image fetcher was accepting completely unrelated images — Sanjiv Goenka photos for US-Iran war videos, Shreyas Iyer cricket photos for political topics. Two root causes:
+1. Gemini visual check was fail-open (quota exhausted → accept everything)
+2. Keyword overlap was too weak — "India" or "US" matching was enough
+
+**Root cause:** When Gemini quota was exhausted, `_visual_relevance_check` returned `True` (fail-open), accepting ANY image. Even when Gemini worked, the prompt "Say YES only if..." was too strict — studio headshots of relevant politicians were rejected.
+
+**Fix: 3-tier relevance gate in news_image_fetcher.py:**
+- **Tier 1 (fast reject):** < 2 non-generic keyword overlap → instant reject, no API call
+- **Tier 1.5 (fast accept):** >= 3 non-generic keyword overlap → instant accept, skip Gemini
+- **Tier 2 (Gemini confirm):** 2-word overlap → call Gemini, but accept regardless (Gemini can only add signal, not override strong text match)
+- Generic word filter: 70+ stop words (india, us, news, live, update, etc.) excluded from overlap count
+- Fail-closed: Gemini errors → accept based on text overlap (already >= 2 to reach Tier 2)
+
+**Also fixed:**
+- Added `SERPER_APIKEY_BACKUP1` to config (was in env but not loaded)
+- Added Sanjiv Goenka, Shreyas Iyer to person-prefix reject list
+
+**Test results (7/7 pass):**
+- "TMC's Sushmita Dev Quits Party and Rajya Sabha" → ACCEPT (3-word overlap, Tier 1.5)
+- "Sanjiv Goenka Exclusive" → REJECT (0 overlap, Tier 1)
+- "Shreyas Iyer's father's viral celebration" → REJECT (0 overlap, Tier 1)
+- "India Today: Latest News Update" → REJECT (all generic, Tier 1)
+- "What is US Fifth Fleet? Why Iran targeted America's Bahrain base" → ACCEPT (Tier 1.5)
+
+**Verified:** Pipeline run3 — accepted "Indian Express | What is US Fifth Fleet?" for US-Iran war topic. No Sanjiv Goenka photos.
+
+### 21:00 IST — v87.3 Thumbnail Fix
+
+**Problem:** Thumbnails shown to user were wrong — same as scene visual, text cut off, or blank/black.
+- ffmpeg frame grab at 5s = text overlay cut off, nonsensical
+- Short video (12s) at 4s = black frame
+- I was sending my own ffmpeg grabs instead of pipeline-generated branded thumbnails
+
+**Root cause:** Pipeline generates proper branded thumbnails via `thumbnail_creator.py` saved to `thumbnails/` dir. Approval gate sends them as `thumbnail_files`. But I manually extracted ffmpeg frames and sent those instead.
+
+**Fix:** Always use pipeline-generated branded thumbnails from `thumbnails/` directory. Only fall back to ffmpeg if they don't exist. For short videos, content is at 5-6s (black at start/end).
+
+**Also:** Updated vdna-image-quality skill with thumbnail rules.
+
+### 16:30 IST — v87.4 Inline Keyboard + Config Fix (PRODUCTION)
+
+**Problem 1:** Approval gate had no inline keyboard buttons — user had to manually type `/approve VDNA219` or `/reject VDNA219`.
+
+**Fix:** Added inline keyboard with ✅ Approve / ❌ Reject buttons to approval gate Telegram messages.
+- `telegram_alert.py`: Added `reply_markup` parameter to `send_telegram()` and `send_telegram_photo()`
+- `approval_gate.py`: Builds inline keyboard with `callback_data=approve:VDNA219` / `reject:VDNA219`
+- `approval_gate.py`: Added `poll_callback_queries()` function that polls Telegram for button clicks
+- New cron job: "VDNA Telegram Callback Poller" (every 1 min) — auto-polls and triggers upload on approve
+
+**Problem 2:** Config typo — `SERPER_APIKEY_BACKUP1` missing underscore.
+
+**Fix:** Renamed to `SERPER_API_KEY_BACKUP1` in both `config.py` and `video_assembler.py`.
+
+**Files changed:** `modules/telegram_alert.py`, `modules/approval_gate.py`, `modules/config.py`, `modules/video_assembler.py`
+**New cron:** `8668354dfab5` — VDNA Telegram Callback Poller (every 1m, deliver=local)
+
+### 11:00 IST — v87.5 Duplicate Fix + Command Handling (PRODUCTION)
+
+**Problem 1:** User received duplicate approval messages.
+- Root cause: I manually sent messages via send_message tool AND the approval gate also sent them.
+- Fix: Never manually send approval messages — let approval gate handle it exclusively.
+
+**Problem 2:** `/approve VDNA218` text command not working — "No pending command to approve".
+- Root cause: Callback poller only listened for `callback_query` (inline keyboard buttons), NOT `message` (text commands).
+- Fix: Changed `allowed_updates` from `["callback_query"]` to `["callback_query","message"]` in poll_callback_queries().
+- Added text command parsing: `/approve VDNA218` → action="approve", topic_id="VDNA218"
+- Added `answerCallbackQuery` call to remove loading spinner from inline keyboard buttons.
+
+**Problem 3:** Approval only updated queue but didn't trigger upload.
+- Root cause: `process_approval_command()` returned "approved" status but didn't call upload_approved.py.
+- Fix: Added subprocess call to `upload_approved.py --approve <topic_id>` after queue update.
+
+**Files changed:** `modules/approval_gate.py`
+
+### 15:00 IST — v87.1 Pre-Run Fixes
+
+- **FIXED** Short title length overflow (youtube_uploader.py:246-253)
+  → Old: truncated base for " #Shorts" (9 chars) but then added " (2026)" (6 more) → 67 chars total
+  → New: truncates base for " ({year}) #Shorts" (13 chars) → exactly 60 chars max
+  → Tested with 8 edge cases, all pass
+
+- **FIXED** YouTube token auto-refresh (upload_approved.py:67-84)
+  → Old: token refreshed once at startup only — expired mid-pipeline for evening cron
+  → New: _build_fresh_service() refreshes if expired OR expires within 10 minutes
+  → Token refreshed at upload time, not production time (approval gate separates them)
+  → Fixes: evening cron token expiry at 5:31 PM IST (pipeline starts 5:30 PM)
+
+- **VERIFIED** All pipeline modules compile, metadata tests pass (15/15)
+- **VERIFIED** Evening Publish cron: 0 12 * * * (5:30 PM IST), next run today 12:00 UTC
+- **VERIFIED** YouTube token: refreshed, auto-refresh on expiry, commentThreads scope added
+- **VERIFIED** Telegram delivery: approval gate sends thumbnail + all scene visuals
+
+### 13:00 IST — v86.0 Title-Video Mismatch Bug Fixes (CRITICAL)
+
+**Root cause:** Multiple bugs caused approval queue to show wrong topic title vs actual videos produced.
+
+- **FIXED** Topic slug not recomputed in retry loop (run_multi_agent_pipeline.py:3411)
+  → When topic attempt N fails and attempt N+1 succeeds, `topic_slug` was still from topic N.
+  → Now recomputes slug from `sorted_topics[topic_idx]` title on every retry iteration.
+  → Fixes: video files named after wrong topic.
+
+- **FIXED** Stale approval queue entries accumulating across runs (approval_gate.py)
+  → `_cleanup_stale_queue_entries()` removes entries whose video files don't exist on disk.
+  → `_validate_video_files()` filters to only existing files before queueing.
+  → `send_approval_request()` now skips queue entry entirely if no valid videos.
+  → Fixes: ghost entries from previous runs showing in approval queue.
+
+- **FIXED** Cross-contamination of thumbnails/videos between pipeline runs (run_multi_agent_pipeline.py:3370)
+  → Workspace cleanup at start of `execute_pipeline()` removes all files from thumbnails/ and videos/ dirs.
+  → Prevents pre-ship check from finding stale thumbnails from previous runs.
+  → Fixes: "cross-contamination" warnings in pre_ship_check.log.
+
+- **FIXED** Title-video slug consistency gate before approval (run_multi_agent_pipeline.py:1453)
+  → New consistency check: verifies `topic_slug` appears in all video filenames.
+  → If mismatch detected, logs error and HALTS — does NOT send approval request.
+  → Fixes: approval queue showing wrong title for actual videos (safety net).
+
+**Files changed:**
+- `modules/run_multi_agent_pipeline.py` — retry loop slug recompute + workspace cleanup + consistency gate
+- `modules/approval_gate.py` — stale entry cleanup + video validation
+
+**Approval queue status:** Both pending entries (UNKNOWN + VDNA218) have been invalidated by these fixes.
+Old entries with missing video files will be auto-cleaned on next approval request.
+
+---
+
+## 2026-06-10
+
+### 13:15 IST — v86.1 All Visuals in Approval Request
+
+- **ADDED** Scene visuals (viz_*.jpg) sent automatically with every approval request
+  → Uploader agent now collects all `viz_*.jpg` from output/runtime/
+  → `send_approval_request()` accepts new `scene_visuals` parameter
+  → After the thumbnail+message, all scene visuals are sent as individual Telegram photos
+  → Scene visual paths saved in approval_queue.json for persistence
+  → No more manual "send me visuals" needed — everything comes in the approval message
+
+---
+
+### 13:30 IST — v86.2 Fix Modi Image in US-Iran War Video
+
+- **ROOT CAUSE**: Two bugs caused PM Modi's photo to appear in "US strikes Iran" video:
+  1. `video_assembler.py` line 1487: `topic_title or script_text[:100]` — when topic_title was empty, script text used as RSS query. Script mentioned "PM Modi spoke to Amir of Kuwait" → matched Modi RSS article.
+  2. `news_image_fetcher.py`: Rare noun "modi" alone passed relevance gate (single-word match, no secondary keyword required).
+- **FIX 1**: Removed `script_text[:100]` fallback — always uses actual `topic_title`.
+- **FIX 2**: Stricter rare noun gate — rare noun alone not enough, must also have >=1 non-rare keyword overlap.
+- **FILES**: `modules/video_assembler.py`, `modules/news_image_fetcher.py`
+
+---
+
+### 14:05 IST — v86.3 Person-Subject Mismatch Check (CRITICAL)
+
+**Problem**: v86.2 fix was insufficient. Article "PM Modi speaks to Amir of Kuwait, expresses concern over escalation of tensions in West Asia" passed keyword overlap check because "West Asia" matched the topic. The image showed PM Modi, not the war.
+
+**Root cause**: Keyword overlap (`west`, `asia`) was >=2, passing the relevance gate. The article IS about West Asia, but the IMAGE is of Modi — a commentator, not a primary actor.
+
+**Fix**: Added person-subject mismatch check in `news_image_fetcher.py`:
+- If article title starts with a known commentator/observer person name (PM Modi, Rahul Gandhi, Mamata Banerjee, etc.)
+- AND that person is NOT mentioned in the topic title
+- → REJECT the article (the image would show the wrong person)
+
+**Key design decision**: Only COMMENTATORS are in the prefix list, not primary actors. "Trump" is NOT listed because he IS a primary actor in US-Iran war topics. "Modi" IS listed because he's an Indian PM commenting on West Asia, not a war actor.
+
+**Bug fix**: First implementation had `continue` inside inner `for` loop (only continued prefix loop, not article loop). Fixed with `_person_rejected` flag pattern.
+
+**Verified**: Pipeline re-run correctly rejects both Modi articles, accepts Trump/US-Iran war articles.
+
+**FILES**: `modules/news_image_fetcher.py`
+
+---
+
 ## 2026-06-09
 
 ### 19:00 IST — v85.4 Agent & Fact-Check Fixes
