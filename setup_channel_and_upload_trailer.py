@@ -17,7 +17,7 @@ import subprocess
 # ── Setup paths ──
 BASE = "/home/jay/ViralDNA"
 CRED = os.path.join(BASE, "credentials", "youtube_token.json")
-TRAILER = os.path.join(BASE, "videos", "trailer", "v7", "trailer_v7_final.mp4")
+TRAILER = os.path.join(BASE, "videos", "trailer", "trailer_final.mp4")
 
 # ── Channel metadata ──
 CHANNEL_TITLE = "The Viral DNA"
@@ -220,17 +220,39 @@ def set_channel_metadata(youtube, channel_id):
         }
     }
 
-    resp = youtube.channels().update(
-        part="snippet,brandingSettings",
-        body=body,
+    # YouTube API requires separate calls for brandingSettings vs snippet
+    # Call 1: snippet (title, description)
+    resp1 = youtube.channels().update(
+        part="snippet",
+        body={
+            "id": channel_id,
+            "snippet": {
+                "title": CHANNEL_TITLE,
+                "description": CHANNEL_DESCRIPTION,
+            },
+        },
     ).execute()
 
-    desc = resp.get("snippet", {}).get("description", "")
-    kws = resp.get("brandingSettings", {}).get("channel", {}).get("keywords", "")
+    # Call 2: brandingSettings (keywords, profileColor)
+    resp2 = youtube.channels().update(
+        part="brandingSettings",
+        body={
+            "id": channel_id,
+            "brandingSettings": {
+                "channel": {
+                    "keywords": " ".join(CHANNEL_KEYWORDS),
+                    "profileColor": "#CC0000",
+                }
+            }
+        },
+    ).execute()
+
+    desc = resp1.get("snippet", {}).get("description", "")
+    kws = resp2.get("brandingSettings", {}).get("channel", {}).get("keywords", "")
 
     print(f"  [OK] Description: {len(desc)} chars")
     print(f"  [OK] Keywords: {len(kws.split())} keywords set")
-    return resp
+    return resp2
 
 
 def verify_all(youtube, channel_id, video_id):
