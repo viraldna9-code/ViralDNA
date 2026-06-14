@@ -19,24 +19,46 @@ class TrendDiscovery:
         self.headers = {"User-Agent": "ViralDNABot/1.0 (contact@viraldna.com)"}
         self.ist = ZoneInfo("Asia/Kolkata")
 
-        # --- TIER 1: RSS Sources (8 total) ---
+        # --- TIER 1: RSS Sources (16 total) ---
         self.rss_sources = [
-            # Existing (4)
+            # Andhra/Telugu regional (4) — keep existing
             "https://www.thehindu.com/news/national/andhra-pradesh/feeder/default.rss",
             "https://timesofindia.indiatimes.com/rssfeeds/296589292.cms",  # AP Telugu
             "https://www.eenadu.net/rss/andhra-pradesh.xml",
             "https://news.google.com/rss/search?q=Andhra+Pradesh&hl=en-IN&gl=IN&ceid=IN:en",
-            # Phase 1 Expansions (4)
-            "https://www.rediff.com/rss/innews.xml",          # Rediff India news
-            "https://feeds.feedburner.com/ndtvnews-top-stories",  # NDTV top
-            "https://www.indiatoday.in/rss/1206514",         # India Today latest
-            "https://www.thehindu.com/news/national/feeder/default.rss",  # The Hindu national (broader)
+            # Indian national (4) — keep existing
+            "https://www.rediff.com/rss/innews.xml",
+            "https://feeds.feedburner.com/ndtvnews-top-stories",
+            "https://www.indiatoday.in/rss/1206514",
+            "https://www.thehindu.com/news/national/feeder/default.rss",
+            # Indian business/economy (2) — NEW
+            "https://economictimes.indiatimes.com/rssfeedsdefault.cms",
+            "https://www.livemint.com/rss/news",
+            # Tech/Science (2) — NEW
+            "https://feeds.feedburner.com/gadgets360-latest",  # NDTV Gadgets (Indian tech)
+            "https://www.thehindu.com/sci-tech/technology/feeder/default.rss",
+            # International/World (2) — NEW
+            "https://feeds.bbci.co.uk/news/world/asia/india/rss.xml",  # BBC India/Asia
+            "https://news.google.com/rss/search?q=India+world+news&hl=en&gl=US&ceid=US:en",
+            # Politics/National (2) — NEW
+            "https://www.thehindu.com/news/national/politics/feeder/default.rss",
+            "https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms",  # TOI Politics
         ]
 
-        # --- TIER 2: Diaspora-focused RSS ---
+        # --- TIER 2: Diaspora-focused RSS (4) ---
         self.diaspora_rss = [
-            "https://www.siasat.com/rss/feed-324.xml",  # Siasat (Telugu-friendly)
+            "https://www.siasat.com/rss/feed-324.xml",
             "https://news.google.com/rss/search?q=Telugu+diaspora+USA+immigration&hl=en&gl=US&ceid=US:en",
+            # US/UK Telugu community news — NEW
+            "https://news.google.com/rss/search?q=Telugu+community+USA+UK&hl=en&gl=US&ceid=US:en",
+            "https://www.siasat.com/rss/feed-325.xml",  # Siasat World
+        ]
+
+        # --- TIER 3: Trending / Viral signals (NEW) ---
+        # These are polled separately for viral coefficient scoring
+        self.trending_rss = [
+            "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en",  # India trending
+            "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",   # US trending (diaspora interest)
         ]
 
     # ================================================================
@@ -380,17 +402,23 @@ class TrendDiscovery:
         print(f"▶ Phase 1.1: Polling Multi-Source Discovery (lookback={lookback_hours}h)...")
         all_topics = []
 
-        # --- Tier 1: Core RSS (8 sources) ---
-        print("  [Source] Polling 8 RSS feeds...")
+        # --- Tier 1: Core RSS (16 sources) ---
+        print(f"  [Source] Polling {len(self.rss_sources)} RSS feeds...")
         rss_topics = self._poll_rss_sources(self.rss_sources, max_per_feed=3)
         print(f"  [Source] RSS returned {len(rss_topics)} topics")
         all_topics.extend(rss_topics)
 
         # --- Tier 1b: Diaspora RSS ---
-        print("  [Source] Polling diaspora RSS feeds...")
+        print(f"  [Source] Polling {len(self.diaspora_rss)} diaspora RSS feeds...")
         diaspora_topics = self._poll_rss_sources(self.diaspora_rss, max_per_feed=2)
         print(f"  [Source] Diaspora RSS returned {len(diaspora_topics)} topics")
         all_topics.extend(diaspora_topics)
+
+        # --- Tier 1c: Trending RSS (India + US) ---
+        print(f"  [Source] Polling {len(self.trending_rss)} trending RSS feeds...")
+        trending_topics = self._poll_rss_sources(self.trending_rss, max_per_feed=5)
+        print(f"  [Source] Trending RSS returned {len(trending_topics)} topics")
+        all_topics.extend(trending_topics)
 
         # --- Tier 2: Google Trends (free pytrends) ---
         print("  [Source] Fetching Google Trends India...")

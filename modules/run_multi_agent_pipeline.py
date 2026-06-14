@@ -2533,16 +2533,23 @@ class CTROptimizationAgent(BaseAgent):
             # Record in A/B test tracker (non-critical)
             try:
                 tracker = ABTestTracker()
-                for i, variant in enumerate(ab_variants):
+                # Skip variant[0] (original title) — only test meaningful variants
+                testable_variants = [v for v in ab_variants if isinstance(v, dict) and v.get("type") != "original"]
+                for i, variant in enumerate(testable_variants):
                     variant_title = variant["title"] if isinstance(variant, dict) else str(variant)
+                    # Skip if variant is identical to control
+                    if variant_title.strip() == best_title.strip():
+                        self.log(f"  Skipping identical A/B variant: '{variant_title}'")
+                        continue
                     tracker.create_test(
                         "title",
-                        f"CTR title test variant {i}",
+                        f"CTR title test {variant.get('type', 'variant_{i}')}",
                         {"title": best_title},
                         {"title": variant_title},
                         topic=selected_topic.get("title", ""),
                         video_id=f"title_test_{selected_topic.get('id', 'unknown')}_{i}",
                     )
+                    self.log(f"  A/B test registered: '{best_title}' vs '{variant_title}'")
             except Exception as tracker_err:
                 self.log(f"A/B tracker registration skipped (non-critical): {tracker_err}")
 
@@ -2568,7 +2575,8 @@ class YouTubeAnalyticsAgent(BaseAgent):
     """
     def __init__(self, orchestrator):
         super().__init__("YouTube Analytics", orchestrator)
-        self.analytics = YouTubeAnalytics()
+        token_path = os.path.join(config.DRIVE["CREDENTIALS"], "youtube_token.json")
+        self.analytics = YouTubeAnalytics(credentials_path=token_path)
 
     def learn(self, ledger: dict):
         """Analyze performance trends from analytics feedback."""
@@ -2598,9 +2606,53 @@ class YouTubeAnalyticsAgent(BaseAgent):
                             youtube_ids.append(yt_id)
 
             if youtube_ids:
-                self.log(f"Tracking {len(youtube_ids)} video(s)")
-                # Note: Requires YouTube Analytics API OAuth with proper scopes
-                state["analytics_tracking_ids"] = youtube_ids
+                self.log(f"Pulling analytics for {len(youtube_ids)} video(s): {youtube_ids}")
+                metrics = self.analytics.pull_metrics(video_ids=youtube_ids, days=30)
+                if metrics:
+                    self.log(f"Analytics received for {len(metrics)} video(s)")
+                    # Store in state for FeedbackAgent to process
+                    state["youtube_analytics"] = metrics
+                    # Also save to ledger for next run's producer brief
+                    if not hasattr(self.orchestrator, 'observer'):
+                        self.orchestrator.observer = GrowthObserver()
+                    ledger = self.orchestrator.observer.load_ledger()
+                    if "performance_metrics" not in ledger:
+                        ledger["performance_metrics"] = []
+                    ledger["performance_metrics"].append({
+                        "timestamp": datetime.now().isoformat(),
+                        "video_ids": youtube_ids,
+                        "metrics": metrics,
+                    })
+                    # Keep only last 50 performance snapshots
+                    ledger["performance_metrics"] = ledger["performance_metrics"][-50:]
+                    self.orchestrator.observer.save_ledger(ledger)
+                    self.log("Analytics saved to growth ledger")
+
+                    # Resolve A/B tests with real analytics data
+                    try:
+                        from ab_test_tracker import ABTestTracker
+                        ab_tracker = ABTestTracker()
+                        active_tests = ab_tracker.get_active_tests()
+                        resolved_count = 0
+                        for vid, vid_metrics in metrics.items():
+                            # Find active tests for this video and update results
+                            for test in active_tests:
+                                if test.get("status") == "running" and test.get("video_id", "").startswith("title_test_"):
+                                    # Update both control and variant with this video's metrics
+                                    # In a real A/B test we'd split traffic, but for now
+                                    # we compare the uploaded title's performance against baseline
+                                    views = vid_metrics.get("views", 0)
+                                    ctr = vid_metrics.get("impression_click_rate", 0.0)
+                                    if views > 0:
+                                        ab_tracker.record_result(test["id"], "variant", views, ctr)
+                                        resolved_count += 1
+                        if resolved_count:
+                            self.log(f"Updated {resolved_count} A/B test result(s) with analytics")
+                    except Exception as ab_err:
+                        self.log(f"A/B test resolution skipped: {ab_err}")
+                else:
+                    self.log("No analytics data returned (token may need yt-analytics.readonly scope)")
+                    state["analytics_tracking_ids"] = youtube_ids
             else:
                 self.log("No video IDs to track yet")
 
