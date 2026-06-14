@@ -108,6 +108,24 @@ def send_approval_request(
     if len(valid_videos) < len(video_files):
         print(f"  [ApprovalGate] ⚠️ {len(video_files) - len(valid_videos)} missing video(s) for {topic_id}. Using {len(valid_videos)} valid.", file=sys.stderr, flush=True)
 
+    # ── Gather video metadata (ffprobe) ──
+    video_meta = []
+    for vf in valid_videos:
+        vf_name = os.path.basename(vf)
+        vf_size = os.path.getsize(vf) // 1024 if os.path.exists(vf) else 0
+        try:
+            import subprocess as _sp
+            probe = _sp.run(['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', vf], capture_output=True, text=True, timeout=10)
+            info = json.loads(probe.stdout)
+            dur = float(info.get('format', {}).get('duration', 0))
+            vs = [s for s in info.get('streams', []) if s['codec_type'] == 'video']
+            res = f"{vs[0].get('width')}x{vs[0].get('height')}" if vs else '?'
+            subs = [s for s in info.get('streams', []) if s['codec_type'] == 'subtitle']
+            sub_tag = ' subs' if subs else ''
+            video_meta.append(f"  • {vf_name[:38]} | {dur:.0f}s | {res} | {vf_size}KB{sub_tag}")
+        except Exception:
+            video_meta.append(f"  • {vf_name[:38]} | {vf_size}KB")
+
     # Build message — short and scannable
     lines = [
         f"🎬 <b>ViralDNA — Video Ready</b>",
@@ -119,6 +137,20 @@ def send_approval_request(
         f"📌 <b>Topic:</b> {topic_title}",
         f"⭐ <b>Score:</b> {topic_score}  |  🆔 <b>ID:</b> <code>{topic_id}</code>",
     ]
+
+    # Add video metadata
+    if video_meta:
+        lines.append("")
+        lines.append(f"📹 <b>Videos ({len(video_meta)}):</b>")
+        lines.extend(video_meta)
+
+    # Add source URL
+    if topic_url:
+        lines.append("")
+        lines.append(f"🔗 <b>Source:</b> {topic_url}")
+    elif topic_source:
+        lines.append("")
+        lines.append(f"📰 <b>Feed:</b> {topic_source}")
 
     # Add publish schedule info if available (v85.1)
     if publish_decision:

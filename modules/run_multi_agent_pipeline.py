@@ -1,8 +1,15 @@
-# VERSION: 80.0
+# VERSION: 87.8
 # MODULE: run_multi_agent_pipeline.py
 # PURPOSE: Advanced Multi-Agent Orchestrator representing a full-lifecycle pipeline
 #          with self-learning task agents, integration validators, cleanup,
 #          scheduling, feedback, and intelligence agents.
+#
+#          v87.8: Fixed sys.path for module imports when run from any directory.
+
+import os, sys
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 #
 #          v79.0: Added ForensicAuditGateAgent — mandatory pre-ship audit gate
 #            between Assembly and Upload. Examines EVERY artifact (text, image,
