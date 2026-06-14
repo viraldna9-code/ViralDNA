@@ -1358,10 +1358,10 @@ class ResilientUploaderAgent(BaseAgent):
             return None
         # Full scopes needed for upload + comments + captions + playlists + analytics
         YOUTUBE_SCOPES = [
-            "https://www.googleapis.com/auth/youtube.upload",       # upload videos
-            "https://www.googleapis.com/auth/youtube.force-ssl",     # comments, playlists, captions
-            "https://www.googleapis.com/auth/youtube.readonly",      # analytics, channel info
-            "https://www.googleapis.com/auth/youtube.commentThreads", # pin comments, reply management (v85.1)
+            "https://www.googleapis.com/auth/youtube.upload",
+            "https://www.googleapis.com/auth/youtube.force-ssl",
+            "https://www.googleapis.com/auth/youtube.readonly",
+            "https://www.googleapis.com/auth/yt-analytics.readonly",
         ]
         try:
             creds = Credentials.from_authorized_user_file(token_path, YOUTUBE_SCOPES)
