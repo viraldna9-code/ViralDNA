@@ -489,3 +489,11 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 - **COMMIT** 21503ce — v87.10 short dedup fix, upload_approved path fix, CHANGELOG update
 - **COMMIT** a0139b5 — approval_gate metadata fix
 - **COMMIT** 0feaedc — voice models, test scripts, SD scenes, gitignore
+
+### 2026-06-14 — RAG Feedback Loop Wiring (v87.11)
+
+- **FIXED** Producer brief from growth ledger now injected into ScriptGenerator
+- **WIRED** `ScriptingAgent.execute()` → loads latest `producer_brief` from ledger → passes to `sg.run(topic, producer_brief=...)`
+- **CLOSED** the feedback loop: post-pipeline analytics → producer brief → next run's script prompt
+- **ROOT CAUSE**: `rag_injection_text` was stored in state post-upload but never fed back; `ScriptingAgent` called `sg.run(topic)` without brief
+- **COMMIT** a9206f1 — v87.11 RAG feedback loop wiring
