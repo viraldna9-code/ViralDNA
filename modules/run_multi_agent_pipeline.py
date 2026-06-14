@@ -785,7 +785,26 @@ class ScriptingAgent(BaseAgent):
             selected_topic = state.get("selected_topic")
             if not selected_topic:
                 raise ValueError("Selected topic missing.")
-            script_payload = self.sg.run(selected_topic)
+
+            # Load producer brief from ledger for RAG feedback injection
+            producer_brief = ""
+            try:
+                ledger = self.orchestrator.ledger
+                briefs = ledger.get("producer_briefs", [])
+                if briefs:
+                    producer_brief = briefs[-1].get("brief", "")
+                    self.log(f"Loaded producer brief from ledger ({len(producer_brief)} chars)")
+                else:
+                    performance = ledger.get("performance_metrics", [])
+                    if performance:
+                        producer_brief = "No performance data available yet. This is the first run with metrics."
+                    else:
+                        producer_brief = "No performance data available yet. This is the first run."
+            except Exception as brief_err:
+                self.log(f"Producer brief load warning (non-fatal): {brief_err}")
+                producer_brief = ""
+
+            script_payload = self.sg.run(selected_topic, producer_brief=producer_brief)
 
             # Phase 3.5: Humanize script — strip AI-isms before TTS
             try:
