@@ -462,6 +462,19 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 
 ## 2026-06-14 (continued)
 
+### 04:00 IST — v87.11 Top 5 Growth Blockers Fixed (CRITICAL)
+
+- **FIXED** YouTube Analytics stub — replaced 10-line `yt_analytics.py` with full YouTube Analytics API v2 integration (views, CTR, avg watch %, likes, subscribers, impressions)
+  - ACTION REQUIRED: Token needs `yt-analytics.readonly` scope — re-authorize YouTube OAuth
+- **FIXED** YouTubeAnalyticsAgent wired to real analytics — pulls metrics for all uploaded videos, saves to growth ledger for producer brief
+- **FIXED** A/B test variants — was testing title vs itself (350/350 broken); now skips original title variant and deduplicates
+- **FIXED** A/B test resolution — real YouTube Analytics CTR/views data now fed into `record_result()` to declare winners
+- **FIXED** RSS sources doubled 8→16 — added business (ET, LiveMint), tech (Gadgets360, The Hindu Tech), international (BBC India, Google News World), politics (The Hindu Politics, TOI Politics)
+- **FIXED** New Tier 3 trending RSS — India + US trending feeds for viral signal detection
+- **FIXED** Expanded diaspora RSS — added Siasat World + Telugu community USA/UK feeds
+- **CLEANED** 350 broken A/B tests from `ab_test_db.json` (87 identical pairs + 263 synthetic data archived)
+- **COMMIT** `6bd800b` — 5 top growth blocker fixes
+
 ### 03:00 IST — VDNA218 Uploaded (Papikondalu Boat Rescue)
 
 - **UPLOADED** VDNA218 — "89 tourists rescued after boat develops snag en route to Papikondalu"
