@@ -5851,6 +5851,1854 @@
         "variant_ctr": 0.0
       },
       "winner": null
+    },
+    {
+      "id": "test_20260609_120556_266",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Andhra Politics Shakes: Rebel TMC MPs Linked to BJP?"
+      },
+      "variant": {
+        "title": "Andhra Politics Shakes: Rebel TMC MPs Linked to BJP?"
+      },
+      "topic": "Rebel TMC MPs siding with BJP, says Kalyan Banerjee - The Hindu",
+      "video_id": "title_test_unknown_0",
+      "status": "running",
+      "created_at": "2026-06-09T12:05:56.024848",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_120556_267",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Andhra Politics Shakes: Rebel TMC MPs Linked to BJP?"
+      },
+      "variant": {
+        "title": "Andhra Politics Shakes: Rebel TMC MPs Linked to BJP? \u2014 Explained"
+      },
+      "topic": "Rebel TMC MPs siding with BJP, says Kalyan Banerjee - The Hindu",
+      "video_id": "title_test_unknown_1",
+      "status": "running",
+      "created_at": "2026-06-09T12:05:56.030048",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_120556_268",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Andhra Politics Shakes: Rebel TMC MPs Linked to BJP?"
+      },
+      "variant": {
+        "title": "Analysis: Andhra Politics Shakes: Rebel TMC MPs Linked to BJP?"
+      },
+      "topic": "Rebel TMC MPs siding with BJP, says Kalyan Banerjee - The Hindu",
+      "video_id": "title_test_unknown_2",
+      "status": "running",
+      "created_at": "2026-06-09T12:05:56.033833",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260609_120556_269",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Andhra Politics Shakes: Rebel TMC MPs Linked to BJP?"
+      },
+      "variant": {
+        "title": "Andhra Politics Shakes: Rebel TMC MPs Linked to BJP? \u2014 Full Analysis"
+      },
+      "topic": "Rebel TMC MPs siding with BJP, says Kalyan Banerjee - The Hindu",
+      "video_id": "title_test_unknown_3",
+      "status": "running",
+      "created_at": "2026-06-09T12:05:56.037245",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_062713_270",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "PM Modi's 12-Year Vision: From Resolve to Reality"
+      },
+      "variant": {
+        "title": "PM Modi's 12-Year Vision: From Resolve to Reality"
+      },
+      "topic": "Collective thinking, resolve and dream: 12 years of PM Modi government - The Times of India",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T06:27:13.119309",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_062713_271",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "PM Modi's 12-Year Vision: From Resolve to Reality"
+      },
+      "variant": {
+        "title": "PM Modi's 12-Year Vision: From Resolve to Reality \u2014 What It Means"
+      },
+      "topic": "Collective thinking, resolve and dream: 12 years of PM Modi government - The Times of India",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T06:27:13.123055",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_062713_272",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "PM Modi's 12-Year Vision: From Resolve to Reality"
+      },
+      "variant": {
+        "title": "What Happened with PM Modi's 12-Year Vision:?"
+      },
+      "topic": "Collective thinking, resolve and dream: 12 years of PM Modi government - The Times of India",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T06:27:13.126644",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_062713_273",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "PM Modi's 12-Year Vision: From Resolve to Reality"
+      },
+      "variant": {
+        "title": "PM Modi's 12-Year Vision: From Resolve to Reality \u2014 Complete Breakdown"
+      },
+      "topic": "Collective thinking, resolve and dream: 12 years of PM Modi government - The Times of India",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T06:27:13.130298",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_065032_274",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "West Asia War Update: U.S. Hits Iran"
+      },
+      "variant": {
+        "title": "West Asia War Update: U.S. Hits Iran"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T06:50:32.876039",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_065032_275",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "West Asia War Update: U.S. Hits Iran"
+      },
+      "variant": {
+        "title": "West Asia War Update: U.S. Hits Iran \u2014 What It Means"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T06:50:32.879293",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_065032_276",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "West Asia War Update: U.S. Hits Iran"
+      },
+      "variant": {
+        "title": "What Happened with West Asia War Update:?"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T06:50:32.882418",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_065032_277",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "West Asia War Update: U.S. Hits Iran"
+      },
+      "variant": {
+        "title": "West Asia War Update: U.S. Hits Iran \u2014 Full Analysis"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T06:50:32.886070",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_072044_278",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "US Strikes Iran After Helicopter Downing"
+      },
+      "variant": {
+        "title": "US Strikes Iran After Helicopter Downing"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T07:20:44.893719",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_072044_279",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "US Strikes Iran After Helicopter Downing"
+      },
+      "variant": {
+        "title": "US Strikes Iran After Helicopter Downing \u2014 Explained"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T07:20:44.896616",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_072044_280",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "US Strikes Iran After Helicopter Downing"
+      },
+      "variant": {
+        "title": "What Happened with US Strikes Iran After?"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T07:20:44.901981",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_072044_281",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "US Strikes Iran After Helicopter Downing"
+      },
+      "variant": {
+        "title": "US Strikes Iran After Helicopter Downing \u2014 Full Analysis"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T07:20:44.905145",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_080817_282",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Apache Helicopter Downed, US Retaliates Against Iran"
+      },
+      "variant": {
+        "title": "Apache Helicopter Downed, US Retaliates Against Iran"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T08:08:17.089597",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_080817_283",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Apache Helicopter Downed, US Retaliates Against Iran"
+      },
+      "variant": {
+        "title": "Apache Helicopter Downed, US Retaliates Against Iran \u2014 Explained"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T08:08:17.093026",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_080817_284",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Apache Helicopter Downed, US Retaliates Against Iran"
+      },
+      "variant": {
+        "title": "What Happened with Apache Helicopter Downed, US?"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T08:08:17.096758",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_080817_285",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Apache Helicopter Downed, US Retaliates Against Iran"
+      },
+      "variant": {
+        "title": "Apache Helicopter Downed, US Retaliates Against Iran \u2014 Full Analysis"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T08:08:17.099842",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_083838_286",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Apache Helicopter Incident Sparks US Retaliation"
+      },
+      "variant": {
+        "title": "Apache Helicopter Incident Sparks US Retaliation"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T08:38:38.681759",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_083838_287",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Apache Helicopter Incident Sparks US Retaliation"
+      },
+      "variant": {
+        "title": "Apache Helicopter Incident Sparks US Retaliation \u2014 Explained"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T08:38:38.685037",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_083838_288",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Apache Helicopter Incident Sparks US Retaliation"
+      },
+      "variant": {
+        "title": "What Happened with Apache Helicopter Incident Sparks?"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T08:38:38.689337",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_083838_289",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Apache Helicopter Incident Sparks US Retaliation"
+      },
+      "variant": {
+        "title": "Apache Helicopter Incident Sparks US Retaliation \u2014 Full Analysis"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T08:38:38.694425",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_085251_290",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Global Alert: US Attacks Iran!"
+      },
+      "variant": {
+        "title": "Global Alert: US Attacks Iran!"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T08:52:51.226753",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_085251_291",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Global Alert: US Attacks Iran!"
+      },
+      "variant": {
+        "title": "Global Alert: US Attacks Iran! \u2014 What It Means"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T08:52:51.231919",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_085251_292",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Global Alert: US Attacks Iran!"
+      },
+      "variant": {
+        "title": "What Happened with Global Alert: US Attacks?"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T08:52:51.239043",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_085251_293",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Global Alert: US Attacks Iran!"
+      },
+      "variant": {
+        "title": "Global Alert: US Attacks Iran! \u2014 Full Analysis"
+      },
+      "topic": "West Asia war highlights: U.S. strikes Iran after Apache helicopter downing - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T08:52:51.244545",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_122032_294",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Jagan Demands \u20b91 Crore for Steel Blast Victims"
+      },
+      "variant": {
+        "title": "Jagan Demands \u20b91 Crore for Steel Blast Victims"
+      },
+      "topic": "Not a single rupee from the State: Jagan demands \u20b91 crore each for steel blast families",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T12:20:32.235081",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_122032_295",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Jagan Demands \u20b91 Crore for Steel Blast Victims"
+      },
+      "variant": {
+        "title": "Jagan Demands \u20b91 Crore for Steel Blast Victims \u2014 Explained"
+      },
+      "topic": "Not a single rupee from the State: Jagan demands \u20b91 crore each for steel blast families",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T12:20:32.238916",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_122032_296",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Jagan Demands \u20b91 Crore for Steel Blast Victims"
+      },
+      "variant": {
+        "title": "What Happened with Jagan Demands \u20b91 Crore?"
+      },
+      "topic": "Not a single rupee from the State: Jagan demands \u20b91 crore each for steel blast families",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T12:20:32.242662",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_122032_297",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Jagan Demands \u20b91 Crore for Steel Blast Victims"
+      },
+      "variant": {
+        "title": "Jagan Demands \u20b91 Crore for Steel Blast Victims \u2014 Complete Breakdown"
+      },
+      "topic": "Not a single rupee from the State: Jagan demands \u20b91 crore each for steel blast families",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T12:20:32.246280",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_122904_298",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Big Jolt: Sushmita Dev Resigns from Rajya Sabha!"
+      },
+      "variant": {
+        "title": "Big Jolt: Sushmita Dev Resigns from Rajya Sabha!"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T12:29:04.799277",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_122904_299",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Big Jolt: Sushmita Dev Resigns from Rajya Sabha!"
+      },
+      "variant": {
+        "title": "Big Jolt: Sushmita Dev Resigns from Rajya Sabha! \u2014 Explained"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T12:29:04.803244",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_122904_300",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Big Jolt: Sushmita Dev Resigns from Rajya Sabha!"
+      },
+      "variant": {
+        "title": "What Happened with Big Jolt: Sushmita Dev?"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T12:29:04.806921",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_122904_301",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Big Jolt: Sushmita Dev Resigns from Rajya Sabha!"
+      },
+      "variant": {
+        "title": "Big Jolt: Sushmita Dev Resigns from Rajya Sabha! \u2014 Full Analysis"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T12:29:04.810905",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123022_302",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Why Did She Leave? TMC's Sushmita Dev Quits Rajya Sabha!"
+      },
+      "variant": {
+        "title": "Why Did She Leave? TMC's Sushmita Dev Quits Rajya Sabha!"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA219_0",
+      "status": "running",
+      "created_at": "2026-06-10T12:30:22.476852",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123022_303",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Why Did She Leave? TMC's Sushmita Dev Quits Rajya Sabha!"
+      },
+      "variant": {
+        "title": "Why Did She Leave? TMC's Sushmita Dev Quits Rajya Sabha! \u2014 What It Means"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA219_1",
+      "status": "running",
+      "created_at": "2026-06-10T12:30:22.480390",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123022_304",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Why Did She Leave? TMC's Sushmita Dev Quits Rajya Sabha!"
+      },
+      "variant": {
+        "title": "Analysis: Why Did She Leave? TMC's Sushmita Dev Quits Rajya Sabha!"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA219_2",
+      "status": "running",
+      "created_at": "2026-06-10T12:30:22.484157",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123022_305",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Why Did She Leave? TMC's Sushmita Dev Quits Rajya Sabha!"
+      },
+      "variant": {
+        "title": "Why Did She Leave? TMC's Sushmita Dev Quits Rajya Sabha! \u2014 Full Analysis"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA219_3",
+      "status": "running",
+      "created_at": "2026-06-10T12:30:22.487982",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123144_306",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Why Did Sushmita Dev Resign From Rajya Sabha?"
+      },
+      "variant": {
+        "title": "Why Did Sushmita Dev Resign From Rajya Sabha?"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T12:31:44.481437",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123144_307",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Why Did Sushmita Dev Resign From Rajya Sabha?"
+      },
+      "variant": {
+        "title": "Why Did Sushmita Dev Resign From Rajya Sabha? \u2014 What It Means"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T12:31:44.484758",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123144_308",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Why Did Sushmita Dev Resign From Rajya Sabha?"
+      },
+      "variant": {
+        "title": "Analysis: Why Did Sushmita Dev Resign From Rajya Sabha?"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T12:31:44.488337",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123144_309",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Why Did Sushmita Dev Resign From Rajya Sabha?"
+      },
+      "variant": {
+        "title": "Why Did Sushmita Dev Resign From Rajya Sabha? \u2014 Full Analysis"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T12:31:44.491742",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123233_310",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Breaking: Explosion at US Base in Bahrain!"
+      },
+      "variant": {
+        "title": "Breaking: Explosion at US Base in Bahrain!"
+      },
+      "topic": "Watch: Explosion seen at US 5th Fleet headquarters in Bahrain as Iran retaliates - The Times of India",
+      "video_id": "title_test_VDNA219_0",
+      "status": "running",
+      "created_at": "2026-06-10T12:32:33.302162",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123233_311",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Breaking: Explosion at US Base in Bahrain!"
+      },
+      "variant": {
+        "title": "Breaking: Explosion at US Base in Bahrain! \u2014 What It Means"
+      },
+      "topic": "Watch: Explosion seen at US 5th Fleet headquarters in Bahrain as Iran retaliates - The Times of India",
+      "video_id": "title_test_VDNA219_1",
+      "status": "running",
+      "created_at": "2026-06-10T12:32:33.310144",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123233_312",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Breaking: Explosion at US Base in Bahrain!"
+      },
+      "variant": {
+        "title": "What Happened with Breaking: Explosion at US?"
+      },
+      "topic": "Watch: Explosion seen at US 5th Fleet headquarters in Bahrain as Iran retaliates - The Times of India",
+      "video_id": "title_test_VDNA219_2",
+      "status": "running",
+      "created_at": "2026-06-10T12:32:33.315932",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123233_313",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Breaking: Explosion at US Base in Bahrain!"
+      },
+      "variant": {
+        "title": "Breaking: Explosion at US Base in Bahrain! \u2014 Full Analysis"
+      },
+      "topic": "Watch: Explosion seen at US 5th Fleet headquarters in Bahrain as Iran retaliates - The Times of India",
+      "video_id": "title_test_VDNA219_3",
+      "status": "running",
+      "created_at": "2026-06-10T12:32:33.321994",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123407_314",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Tanker Fire in Oman: What it Means for You"
+      },
+      "variant": {
+        "title": "Tanker Fire in Oman: What it Means for You"
+      },
+      "topic": "US, Iran war LIVE: Fire erupts in tanker off Oman; one dead, two crew members missing | World News - Hindustan Times",
+      "video_id": "title_test_VDNA220_0",
+      "status": "running",
+      "created_at": "2026-06-10T12:34:07.916304",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123407_315",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Tanker Fire in Oman: What it Means for You"
+      },
+      "variant": {
+        "title": "Tanker Fire in Oman: What it Means for You \u2014 What It Means"
+      },
+      "topic": "US, Iran war LIVE: Fire erupts in tanker off Oman; one dead, two crew members missing | World News - Hindustan Times",
+      "video_id": "title_test_VDNA220_1",
+      "status": "running",
+      "created_at": "2026-06-10T12:34:07.921389",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123407_316",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Tanker Fire in Oman: What it Means for You"
+      },
+      "variant": {
+        "title": "What Happened with Tanker Fire in Oman:?"
+      },
+      "topic": "US, Iran war LIVE: Fire erupts in tanker off Oman; one dead, two crew members missing | World News - Hindustan Times",
+      "video_id": "title_test_VDNA220_2",
+      "status": "running",
+      "created_at": "2026-06-10T12:34:07.926355",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_123407_317",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Tanker Fire in Oman: What it Means for You"
+      },
+      "variant": {
+        "title": "Tanker Fire in Oman: What it Means for You \u2014 Full Analysis"
+      },
+      "topic": "US, Iran war LIVE: Fire erupts in tanker off Oman; one dead, two crew members missing | World News - Hindustan Times",
+      "video_id": "title_test_VDNA220_3",
+      "status": "running",
+      "created_at": "2026-06-10T12:34:07.930799",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_125434_318",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Why Did She Leave? Sushmita Dev's TMC Exit"
+      },
+      "variant": {
+        "title": "Why Did She Leave? Sushmita Dev's TMC Exit"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-10T12:54:34.854469",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_125434_319",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Why Did She Leave? Sushmita Dev's TMC Exit"
+      },
+      "variant": {
+        "title": "Why Did She Leave? Sushmita Dev's TMC Exit \u2014 What It Means"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-10T12:54:34.859945",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_125434_320",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Why Did She Leave? Sushmita Dev's TMC Exit"
+      },
+      "variant": {
+        "title": "Analysis: Why Did She Leave? Sushmita Dev's TMC Exit"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-10T12:54:34.863981",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_125434_321",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Why Did She Leave? Sushmita Dev's TMC Exit"
+      },
+      "variant": {
+        "title": "Why Did She Leave? Sushmita Dev's TMC Exit \u2014 Full Analysis"
+      },
+      "topic": "Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-10T12:54:34.867852",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_134053_322",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Big Blast at US Base! Iran Retaliation Confirmed?"
+      },
+      "variant": {
+        "title": "Big Blast at US Base! Iran Retaliation Confirmed?"
+      },
+      "topic": "Watch: Explosion seen at US 5th Fleet headquarters in Bahrain as Iran retaliates - The Times of India",
+      "video_id": "title_test_VDNA219_0",
+      "status": "running",
+      "created_at": "2026-06-10T13:40:53.146474",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_134053_323",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Big Blast at US Base! Iran Retaliation Confirmed?"
+      },
+      "variant": {
+        "title": "Big Blast at US Base! Iran Retaliation Confirmed? \u2014 What It Means"
+      },
+      "topic": "Watch: Explosion seen at US 5th Fleet headquarters in Bahrain as Iran retaliates - The Times of India",
+      "video_id": "title_test_VDNA219_1",
+      "status": "running",
+      "created_at": "2026-06-10T13:40:53.150146",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_134053_324",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Big Blast at US Base! Iran Retaliation Confirmed?"
+      },
+      "variant": {
+        "title": "Analysis: Big Blast at US Base! Iran Retaliation Confirmed?"
+      },
+      "topic": "Watch: Explosion seen at US 5th Fleet headquarters in Bahrain as Iran retaliates - The Times of India",
+      "video_id": "title_test_VDNA219_2",
+      "status": "running",
+      "created_at": "2026-06-10T13:40:53.154402",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260610_134053_325",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Big Blast at US Base! Iran Retaliation Confirmed?"
+      },
+      "variant": {
+        "title": "Big Blast at US Base! Iran Retaliation Confirmed? \u2014 Full Analysis"
+      },
+      "topic": "Watch: Explosion seen at US 5th Fleet headquarters in Bahrain as Iran retaliates - The Times of India",
+      "video_id": "title_test_VDNA219_3",
+      "status": "running",
+      "created_at": "2026-06-10T13:40:53.158188",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260611_045849_326",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Merchant Shipping Safety: India's UNSC Stance"
+      },
+      "variant": {
+        "title": "Merchant Shipping Safety: India's UNSC Stance"
+      },
+      "topic": "Firmly opposed to attacks on merchant shipping: India tells UNSC amid ongoing Iran conflict - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-11T04:58:49.395306",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260611_045849_327",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Merchant Shipping Safety: India's UNSC Stance"
+      },
+      "variant": {
+        "title": "Merchant Shipping Safety: India's UNSC Stance \u2014 Explained"
+      },
+      "topic": "Firmly opposed to attacks on merchant shipping: India tells UNSC amid ongoing Iran conflict - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-11T04:58:49.399128",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260611_045849_328",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Merchant Shipping Safety: India's UNSC Stance"
+      },
+      "variant": {
+        "title": "What Happened with Merchant Shipping Safety: India's?"
+      },
+      "topic": "Firmly opposed to attacks on merchant shipping: India tells UNSC amid ongoing Iran conflict - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-11T04:58:49.405415",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260611_045849_329",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Merchant Shipping Safety: India's UNSC Stance"
+      },
+      "variant": {
+        "title": "Merchant Shipping Safety: India's UNSC Stance \u2014 Full Analysis"
+      },
+      "topic": "Firmly opposed to attacks on merchant shipping: India tells UNSC amid ongoing Iran conflict - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-11T04:58:49.409682",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260611_050003_330",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "UNSC Alert: India's Big Statement on Global Trade!"
+      },
+      "variant": {
+        "title": "UNSC Alert: India's Big Statement on Global Trade!"
+      },
+      "topic": "Firmly opposed to attacks on merchant shipping: India tells UNSC amid ongoing Iran conflict - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-11T05:00:03.018862",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260611_050003_331",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "UNSC Alert: India's Big Statement on Global Trade!"
+      },
+      "variant": {
+        "title": "UNSC Alert: India's Big Statement on Global Trade! \u2014 What It Means"
+      },
+      "topic": "Firmly opposed to attacks on merchant shipping: India tells UNSC amid ongoing Iran conflict - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-11T05:00:03.022671",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260611_050003_332",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "UNSC Alert: India's Big Statement on Global Trade!"
+      },
+      "variant": {
+        "title": "What Happened with UNSC Alert: India's Big?"
+      },
+      "topic": "Firmly opposed to attacks on merchant shipping: India tells UNSC amid ongoing Iran conflict - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-11T05:00:03.029212",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260611_050003_333",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "UNSC Alert: India's Big Statement on Global Trade!"
+      },
+      "variant": {
+        "title": "UNSC Alert: India's Big Statement on Global Trade! \u2014 Full Analysis"
+      },
+      "topic": "Firmly opposed to attacks on merchant shipping: India tells UNSC amid ongoing Iran conflict - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-11T05:00:03.033436",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260612_120158_334",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "US Navy Attacks Indian Ships! India's Stern Warning!"
+      },
+      "variant": {
+        "title": "US Navy Attacks Indian Ships! India's Stern Warning!"
+      },
+      "topic": "U.S. Navy attacked 3 merchant vessels with Indian seafarers; these strikes must stop: India's firm message to Washington - The Hindu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-12T12:01:58.379976",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260612_120158_335",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "US Navy Attacks Indian Ships! India's Stern Warning!"
+      },
+      "variant": {
+        "title": "US Navy Attacks Indian Ships! India's Stern Warning! \u2014 What It Means"
+      },
+      "topic": "U.S. Navy attacked 3 merchant vessels with Indian seafarers; these strikes must stop: India's firm message to Washington - The Hindu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-12T12:01:58.383894",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260612_120158_336",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "US Navy Attacks Indian Ships! India's Stern Warning!"
+      },
+      "variant": {
+        "title": "What Happened with US Navy Attacks Indian?"
+      },
+      "topic": "U.S. Navy attacked 3 merchant vessels with Indian seafarers; these strikes must stop: India's firm message to Washington - The Hindu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-12T12:01:58.388198",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260612_120158_337",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "US Navy Attacks Indian Ships! India's Stern Warning!"
+      },
+      "variant": {
+        "title": "US Navy Attacks Indian Ships! India's Stern Warning! \u2014 Full Analysis"
+      },
+      "topic": "U.S. Navy attacked 3 merchant vessels with Indian seafarers; these strikes must stop: India's firm message to Washington - The Hindu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-12T12:01:58.391956",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260613_122018_338",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Parents Warned: Social Media Ban for Kids?"
+      },
+      "variant": {
+        "title": "Parents Warned: Social Media Ban for Kids?"
+      },
+      "topic": "Parents should not allow children to use social media: Andhra Pradesh child rights panel",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-13T12:20:18.423296",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260613_122018_339",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Parents Warned: Social Media Ban for Kids?"
+      },
+      "variant": {
+        "title": "Parents Warned: Social Media Ban for Kids? \u2014 Explained"
+      },
+      "topic": "Parents should not allow children to use social media: Andhra Pradesh child rights panel",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-13T12:20:18.427389",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260613_122018_340",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Parents Warned: Social Media Ban for Kids?"
+      },
+      "variant": {
+        "title": "Analysis: Parents Warned: Social Media Ban for Kids?"
+      },
+      "topic": "Parents should not allow children to use social media: Andhra Pradesh child rights panel",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-13T12:20:18.432072",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260613_122018_341",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Parents Warned: Social Media Ban for Kids?"
+      },
+      "variant": {
+        "title": "Parents Warned: Social Media Ban for Kids? \u2014 Full Analysis"
+      },
+      "topic": "Parents should not allow children to use social media: Andhra Pradesh child rights panel",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-13T12:20:18.436103",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260614_015939_342",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Tourists Rescued After Boat Trouble Near Papikondalu"
+      },
+      "variant": {
+        "title": "Tourists Rescued After Boat Trouble Near Papikondalu"
+      },
+      "topic": "89 tourists rescued after boat develops snag en route to Papikondalu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-14T01:59:39.234943",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260614_015939_343",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Tourists Rescued After Boat Trouble Near Papikondalu"
+      },
+      "variant": {
+        "title": "Tourists Rescued After Boat Trouble Near Papikondalu \u2014 Explained"
+      },
+      "topic": "89 tourists rescued after boat develops snag en route to Papikondalu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-14T01:59:39.250227",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260614_015939_344",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Tourists Rescued After Boat Trouble Near Papikondalu"
+      },
+      "variant": {
+        "title": "What Happened with Tourists Rescued After Boat?"
+      },
+      "topic": "89 tourists rescued after boat develops snag en route to Papikondalu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-14T01:59:39.264279",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260614_015939_345",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Tourists Rescued After Boat Trouble Near Papikondalu"
+      },
+      "variant": {
+        "title": "Tourists Rescued After Boat Trouble Near Papikondalu \u2014 Full Analysis"
+      },
+      "topic": "89 tourists rescued after boat develops snag en route to Papikondalu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-14T01:59:39.278734",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260614_025135_346",
+      "test_type": "title",
+      "test_name": "CTR title test variant 0",
+      "control": {
+        "title": "Papikondalu Boat Breakdown: 89 Tourists Rescued!"
+      },
+      "variant": {
+        "title": "Papikondalu Boat Breakdown: 89 Tourists Rescued!"
+      },
+      "topic": "89 tourists rescued after boat develops snag en route to Papikondalu",
+      "video_id": "title_test_VDNA218_0",
+      "status": "running",
+      "created_at": "2026-06-14T02:51:35.803943",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260614_025135_347",
+      "test_type": "title",
+      "test_name": "CTR title test variant 1",
+      "control": {
+        "title": "Papikondalu Boat Breakdown: 89 Tourists Rescued!"
+      },
+      "variant": {
+        "title": "Papikondalu Boat Breakdown: 89 Tourists Rescued! \u2014 Explained"
+      },
+      "topic": "89 tourists rescued after boat develops snag en route to Papikondalu",
+      "video_id": "title_test_VDNA218_1",
+      "status": "running",
+      "created_at": "2026-06-14T02:51:35.810143",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260614_025135_348",
+      "test_type": "title",
+      "test_name": "CTR title test variant 2",
+      "control": {
+        "title": "Papikondalu Boat Breakdown: 89 Tourists Rescued!"
+      },
+      "variant": {
+        "title": "What Happened with Papikondalu Boat Breakdown: 89?"
+      },
+      "topic": "89 tourists rescued after boat develops snag en route to Papikondalu",
+      "video_id": "title_test_VDNA218_2",
+      "status": "running",
+      "created_at": "2026-06-14T02:51:35.814218",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
+    },
+    {
+      "id": "test_20260614_025135_349",
+      "test_type": "title",
+      "test_name": "CTR title test variant 3",
+      "control": {
+        "title": "Papikondalu Boat Breakdown: 89 Tourists Rescued!"
+      },
+      "variant": {
+        "title": "Papikondalu Boat Breakdown: 89 Tourists Rescued! \u2014 Complete Breakdown"
+      },
+      "topic": "89 tourists rescued after boat develops snag en route to Papikondalu",
+      "video_id": "title_test_VDNA218_3",
+      "status": "running",
+      "created_at": "2026-06-14T02:51:35.817998",
+      "results": {
+        "control_views": 0,
+        "variant_views": 0,
+        "control_ctr": 0.0,
+        "variant_ctr": 0.0
+      },
+      "winner": null
     }
   ],
   "stats": {

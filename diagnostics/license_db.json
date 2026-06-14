@@ -485,11 +485,29 @@
       "attribution_required": true,
       "notes": "Topic: Quote of the day by Gad Saad: \u201cAnyone who is willing to end a relationship becau | URL: https://static.toiimg.com/thumb/msid-131588050,width-1280,height-720,resizemode-6,overlay-toi_sw,pt-32,y_pad-600/photo.jpg | Domain: static.toiimg.com",
       "tracked_at": "2026-06-08T13:43:56.964105"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_0.jpg",
+      "source": "th-i",
+      "license": "Unknown  from th-i.thgim.com",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu | URL: https://th-i.thgim.com/public/incoming/ndnlmg/article71083813.ece/alternates/FREE_1200/PTI06_10_2026_000061B.jpg | Domain: th-i.thgim.com",
+      "tracked_at": "2026-06-10T12:54:28.892708"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_1.jpg",
+      "source": "i",
+      "license": "Unknown  from i.ytimg.com",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu | URL: https://i.ytimg.com/vi/I8FWloyYDf4/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCxJUaq76Xp7ms6MVdSJMZmX2fqrA | Domain: i.ytimg.com",
+      "tracked_at": "2026-06-10T12:54:34.059838"
     }
   ],
   "violations": [],
   "stats": {
-    "total_tracked": 54,
+    "total_tracked": 56,
     "violation_count": 0,
     "commercial_safe": 1
   }

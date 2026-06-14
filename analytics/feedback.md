@@ -1,24 +1,38 @@
 # ViralDNA Channel Health Report
-### Last updated: Tuesday, June 09 2026 — 16:50 IST
+### Last updated: Saturday, June 13 2026 — 14:39 IST
 
 ## Channel: The Viral DNA
-- **Views:** 13,345 | **Subscribers:** 8 | **Videos:** 30 (21 shorts)
-- **Monetization:** 8/1000 subs (0.8%)
+- **Views:** 15,354 | **Subscribers:** 9 | **Videos:** 34 (23 shorts)
+- **Monetization:** 9/1000 subs (0.9%)
 
 
 ## 🟠 HIGH PRIORITY (Fix Today)
-- **[SEO]** 3 public video(s) with ZERO views
+- **[CONSISTENCY]** NO new video in last 24 hours
+  -> Publish at least 1 video today
+- **[SEO]** 4 public video(s) with ZERO views
   -> Check titles, thumbnails, descriptions
+- **[CADENCE]** ZERO uploads in last 24h (target: 1 main + 2 shorts/day)
+  -> Publish today -- consistency is the #1 growth factor
 
 ## 🟡 MEDIUM (This Week)
-- **[ENGAGEMENT]** Low like rate (0.0%) on 'Mamata's Own MPs Rebel — BJP Meeting Sho'
+- **[ENGAGEMENT]** Low like rate (0.0%) on 'Firmly opposed to attacks on merchant sh'
   -> Improve thumbnails and titles
-- **[ENGAGEMENT]** Low like rate (0.5%) on 'INDIA Bloc Meet Tomorrow, Mamata — Why I'
+- **[ENGAGEMENT]** Low like rate (0.9%) on 'US Strikes Iran — Apache Helicopter Down'
   -> Improve thumbnails and titles
-- **[SEO]** 1 video(s) with titles >70 chars (truncated in search): 'Trinamool Rebel, 10 MPs Meet BJP Le...' (78 chars)
+- **[ENGAGEMENT]** Low like rate (0.0%) on 'Trinamool 10 MPs Meet BJP Leaders 🔥 #Sho'
+  -> Improve thumbnails and titles
+- **[ENGAGEMENT]** Low like rate (0.7%) on 'Mamata's Own MPs Rebel — BJP Meeting Sho'
+  -> Improve thumbnails and titles
+- **[ENGAGEMENT]** Low like rate (0.0%) on 'Trinamool Rebel, 10 MPs Meet BJP Leaders'
+  -> Improve thumbnails and titles
+- **[ENGAGEMENT]** Low like rate (0.0%) on 'Free Power for Farmers: A Congress 'Pate'
+  -> Improve thumbnails and titles
+- **[ENGAGEMENT]** Low like rate (0.0%) on 'Free power for farmers is — Why It Matte'
+  -> Improve thumbnails and titles
+- **[SEO]** 3 video(s) with titles >70 chars (truncated in search): 'Firmly opposed to attacks on mercha...' (90 chars), 'Firmly opposed to attacks on mercha...' (100 chars), 'Trinamool Rebel, 10 MPs Meet BJP Le...' (78 chars)
   -> Shorten titles to <70 chars -- use tags for extra keywords
-- **[BRANDING]** No channel trailer set -- new visitors see generic home page
-  -> Set trailer: YouTube Studio -> Customization -> Branding -> Trailer for non-subscribers
+- **[ENGAGEMENT]** 3 video(s) with 200+ views but ZERO comments
+  -> Pin a comment asking a question -- boosts engagement signal
 - **[DUPLICATES]** Near-duplicate titles (similarity 62%): 'Free power for farmers is — Why It Matte' vs 'Free power for farmers is — What Happene'
   -> Merge or remove duplicate content
 - **[DUPLICATES]** Near-duplicate titles (similarity 62%): 'INDIA Bloc Meet Tomorrow, Mamata — Why I' vs 'INDIA Bloc Meet Tomorrow, Mamata — What '
@@ -29,14 +43,14 @@
   -> Merge or remove duplicate content
 
 ## 🔵 LOW (Nice to Have)
-- **[ENGAGEMENT]** 1 video(s) with 50+ views but no comments
-  -> Ask viewers to comment in the video CTA
+- **[SEO]** Channel country not set -- limits regional discoverability
+  -> Set channel country to IN (India) in YouTube Studio -> Settings -> Channel -> Advanced
 
 ## ℹ️ INFO
-- **[MONETIZATION]** Monetization NOT enabled (8/1000 subs)
-- **[PERFORMANCE]** Shorts outperforming mains (644 vs 2 avg views)
-- **[MONETIZATION]** Monetization: 8/1000 subs (0.8%). Need 992 more.
-- **[CADENCE]** Cadence good: 1.1 mains/day, 2.3 shorts/day -- keep it up
+- **[MONETIZATION]** Monetization NOT enabled (9/1000 subs)
+- **[PERFORMANCE]** Shorts outperforming mains (659 vs 18 avg views)
+- **[MONETIZATION]** Monetization: 9/1000 subs (0.9%). Need 991 more.
+- **[CADENCE]** Cadence good: 1.1 mains/day, 2.0 shorts/day -- keep it up
 - **[ANALYTICS]** YouTube Analytics API not enabled on GCloud project — cannot check watch time, impressions, CTR, per-video subs
 
 ---
