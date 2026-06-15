@@ -510,3 +510,56 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 - **CLOSED** the feedback loop: post-pipeline analytics → producer brief → next run's script prompt
 - **ROOT CAUSE**: `rag_injection_text` was stored in state post-upload but never fed back; `ScriptingAgent` called `sg.run(topic)` without brief
 - **COMMIT** a9206f1 — v87.11 RAG feedback loop wiring
+
+---
+
+## 2026-06-15 — Remaining Audit Fixes (v87.12)
+
+### 09:00 IST — Forensic Audit Items #7,#9,#10,#11,#12,#14
+
+**14-item forensic audit status: 13/14 fixed (1 cancelled as audit was wrong)**
+
+**#7 — CTR Optimizer Ignores Thumbnails (FIXED)**
+- Added `_analyze_thumbnail()` method to `CTROptimizer.optimize()`
+- Uses OpenCV for: face detection (Haar cascade), brightness/contrast measurement, text coverage estimation, dominant color vibrancy analysis
+- `optimize()` now returns `thumbnail_score` (0-50) combined with title score for total `ctr_score`
+- Gracefully skips when `thumbnail_path` is empty or cv2 unavailable
+
+**#9 — No Keyword/Search Volume Data (FIXED)**
+- Enhanced `_generate_topic_tags()` Gemini prompt with search volume strategy
+- New prompt instructs LLM to generate: high-volume broad tags, medium-volume specific tags, long-tail query-style tags, real-time intent suffixes ("today", "latest", "update")
+- Tags now optimized for what viewers actually type in search bar
+
+**#10 — Upload Schedule Advisory Only (FIXED)**
+- Wired `state["upload_schedule"]` from `UploadTimeOptimizationAgent` through entire upload chain
+- `ResilientUploaderAgent.execute()` now reads schedule from state and passes to `upload_production_slot()`
+- `upload_production_slot()` passes through to `upload_single_video()` → `_get_scheduled_publish_time(upload_schedule=...)`
+- Premiere time now uses optimizer's recommended time instead of static config default
+- Schedule logged in pipeline output for visibility
+
+**#11 — Shorts Titles Formulaic (FIXED)**
+- Replaced 3 hardcoded title templates ("X — What Happened", "What X Means for You", "X — Telugu States React") with LLM-based generation
+- `generate_shorts_title_batch()` now accepts `topic_context` and `source` parameters
+- Tries Gemini LLM first with creative prompt requiring emoji, power words, curiosity angles, non-formulaic patterns
+- Falls back to enhanced heuristic with 10 diverse templates (randomly sampled) injecting hooks/emoji/power words
+- Signature formulaic patterns explicitly banned in LLM prompt
+
+**#12 — Shorts CTA Generic "Link in Bio" (FIXED)**
+- Removed `CTA_PHRASES` class attribute (was generic static list)
+- `build_shorts_cta()` now always uses `main_video_url` when available — never falls back to "link in bio"
+- Fallback CTA (no main video URL) now says "Full video on my channel — subscribe for more 🔔" not "link in bio"
+- Pinned comment now includes 🤝 emoji and full URL
+
+**#13 — Telegram Notifications Disabled (CANCELLED)**
+- Audit was incorrect — Telegram is enabled and working
+- You receive approval messages and pipeline summary notifications
+- No code change needed
+
+**#14 — Thumbnails Template-Only (FIXED)**
+- `_calc_text_position()` now content-aware: divides image into 6 horizontal bands, computes edge density per band via numpy gradient analysis, places text in cleanest (lowest edge density) region
+- Added `_find_salient_region()` helper using grid-based edge concentration analysis
+- Fixed lower-third placement regardless of image content
+- Falls back to original behavior if numpy unavailable
+
+**FILES CHANGED:** `modules/ctr_optimizer.py`, `modules/shorts_optimizer.py`, `modules/thumbnail_creator.py`, `modules/youtube_uploader.py`, `modules/run_multi_agent_pipeline.py`
+**COMMIT** db5867c — v87.12 remaining audit fixes
