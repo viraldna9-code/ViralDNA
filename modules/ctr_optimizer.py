@@ -1,15 +1,16 @@
 """
-CTR Optimizer v2.0
+CTR Optimizer v3.0
 Content-aware title/thumbnail CTR optimization.
 Uses proven CTR factors: hook words, emotional triggers, length, specificity, curiosity gap.
+v3.0: Thumbnail visual analysis — brightness, contrast, face detection, text coverage.
 """
-import re
+import re, os
 
 
 class CTROptimizer:
     """
     Real CTR scoring based on YouTube best practices and research.
-    Scores titles on multiple factors that research shows impact click-through rate.
+    Scores titles AND thumbnails on multiple factors that research shows impact click-through rate.
     """
 
     # Hook words that increase CTR (based on YouTube analytics research)
@@ -46,18 +47,25 @@ class CTROptimizer:
 
     def optimize(self, title: str, thumbnail_path: str = "") -> dict:
         """
-        Full CTR optimization analysis.
-        Returns {title, thumbnail_path, ctr_score, factors, recommendations}.
+        Full CTR optimization analysis — title + thumbnail.
+        Returns {title, thumbnail_path, ctr_score, title_score, thumbnail_score, factors, thumbnail_factors, recommendations}.
         """
-        score = self._score_title(title)
+        title_score = self._score_title(title)
         factors = self._analyze_factors(title)
-        recommendations = self._generate_recommendations(title, score, factors)
+        thumb_score, thumb_factors = self._score_thumbnail(thumbnail_path)
+        combined = int(title_score * 0.6 + thumb_score * 0.4)
+        recommendations = self._generate_recommendations(title, title_score, factors)
+        thumb_recs = self._generate_thumbnail_recommendations(thumb_score, thumb_factors)
+        recommendations.extend(thumb_recs)
 
         return {
             "title": title,
             "thumbnail_path": thumbnail_path,
-            "ctr_score": score,
+            "ctr_score": combined,
+            "title_score": title_score,
+            "thumbnail_score": thumb_score,
             "factors": factors,
+            "thumbnail_factors": thumb_factors,
             "recommendations": recommendations,
         }
 
@@ -256,6 +264,187 @@ class CTROptimizer:
 
         if not recs:
             recs.append("Minor improvements possible but title is generally well-optimized.")
+
+        return recs
+
+    # ── Thumbnail Visual Analysis ─────────────────────────────────────────
+
+    def _score_thumbnail(self, thumbnail_path: str) -> tuple:
+        """
+        Analyze thumbnail image for CTR-relevant visual factors.
+        Returns (score, factors_dict).
+
+        Analyzes: brightness, contrast, face presence, text coverage,
+        color vibrancy — all proven to impact thumbnail CTR.
+        """
+        if not thumbnail_path or not os.path.exists(thumbnail_path):
+            return 0, {"error": "thumbnail_not_found", "path": thumbnail_path}
+
+        try:
+            from PIL import Image, ImageStat
+            img = Image.open(thumbnail_path).convert("RGB")
+            stat = ImageStat.Stat(img)
+        except Exception as e:
+            return 0, {"error": str(e), "path": thumbnail_path}
+
+        factors = {}
+        score = 50  # baseline
+
+        # 1. Brightness — well-lit thumbnails get 25%+ more clicks
+        # stat.mean gives per-channel mean; overall brightness = average of R,G,B
+        brightness = sum(stat.mean) / 3.0
+        factors["brightness"] = round(brightness, 1)
+        if 100 <= brightness <= 200:
+            score += 10  # well-lit sweet spot
+        elif brightness < 60:
+            score -= 15  # too dark = invisible in feed
+            factors["brightness_issue"] = "too_dark"
+        elif brightness > 240:
+            score -= 8  # overexposed/washed out
+            factors["brightness_issue"] = "too_bright"
+
+        # 2. Contrast — high contrast stands out in feed
+        # stddev of luminance
+        stddev = sum(stat.stddev) / 3.0
+        factors["contrast"] = round(stddev, 1)
+        if stddev >= 50:
+            score += 10  # high contrast,
+        elif stddev >= 30:
+            score += 5   # moderate
+        else:
+            score -= 10  # low contrast = flat/unnoticeable
+            factors["contrast_issue"] = "too_low"
+
+        # 3. Color vibrancy — vibrant thumbnails outperform muted ones
+        r, g, b = stat.mean
+        color_spread = max(r, g, b) - min(r, g, b)
+        factors["color_vibrancy"] = round(color_spread, 1)
+        if color_spread >= 40:
+            score += 8
+        elif color_spread < 15:
+            score -= 5  # monochrome/muted
+            factors["vibrancy_issue"] = "too_muted"
+
+        # 4. Face detection — faces increase CTR by 30-50%
+        has_face = self._detect_faces(img)
+        factors["has_face"] = has_face
+        if has_face:
+            score += 15
+
+        # 5. Aspect ratio / resolution check
+        w, h = img.size
+        factors["resolution"] = f"{w}x{h}"
+        if w >= 1280 and h >= 720:
+            score += 5
+        elif w < 640:
+            score -= 10
+            factors["resolution_issue"] = "too_small"
+
+        # 6. Text coverage estimation (high text area = lower CTR for news,
+        #    but some text helps — sweet spot 15-35% of image)
+        text_ratio = self._estimate_text_area(img)
+        factors["text_coverage_pct"] = round(text_ratio * 100, 1)
+        if 0.15 <= text_ratio <= 0.35:
+            score += 5
+        elif text_ratio > 0.55:
+            score -= 8  # too much text = cluttered
+            factors["text_issue"] = "too_much_text"
+
+        factors["score"] = max(0, min(100, score))
+        return max(0, min(100, score)), factors
+
+    def _detect_faces(self, img) -> bool:
+        """
+        Fast face detection using a simple brightness-blob heuristic.
+        For production accuracy, falls back to OpenCV if available.
+        Returns True if likely face region detected.
+        """
+        try:
+            # Try OpenCV first (most reliable)
+            import cv2
+            import numpy as np
+            gray = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2GRAY)
+            cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+            if os.path.exists(cascade_path):
+                cascade = cv2.CascadeClassifier(cascade_path)
+                faces = cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4, minSize=(30, 30))
+                return len(faces) > 0
+        except ImportError:
+            pass
+
+        # Heuristic: look for skin-tone region in center-upper area
+        # Skin tone in RGB: R>95, G>40, B>20, R>G, R>B, |R-G|>15
+        import numpy as np
+        arr = np.array(img)
+        h, w = arr.shape[:2]
+        # Focus on center-upper two-thirds (where faces typically appear)
+        region = arr[h//6:h*2//3, w//4:w*3//4]
+        if region.size == 0:
+            return False
+        r, g, b = region[:,:,0], region[:,:,1], region[:,:,2]
+        skin_mask = (
+            (r > 95) & (g > 40) & (b > 20) &
+            (r > g) & (r > b) &
+            (np.abs(r.astype(int) - g.astype(int)) > 15)
+        )
+        skin_ratio = skin_mask.sum() / skin_mask.size
+        return skin_ratio > 0.03  # >3% skin pixels = likely a face
+
+    def _estimate_text_area(self, img) -> float:
+        """
+        Estimate what fraction of the thumbnail is covered by text.
+        Uses edge density heuristic: text regions have high edge concentration.
+        Returns 0.0-1.0 ratio.
+        """
+        try:
+            from PIL import ImageFilter, ImageStat
+            gray = img.convert("L")
+            # Apply edge detection filter
+            edges = gray.filter(ImageFilter.FIND_EDGES)
+            edge_stat = ImageStat.Stat(edges)
+            # High edge density = more text/graphics
+            edge_mean = edge_stat.mean[0]
+            # Normalize: typical edge_mean range 10-80 for text-heavy images
+            ratio = min(1.0, edge_mean / 80.0)
+            return ratio
+        except Exception:
+            return 0.0
+
+    def _generate_thumbnail_recommendations(self, score: int, factors: dict) -> list:
+        """Generate actionable thumbnail improvement recommendations."""
+        recs = []
+
+        if factors.get("error") == "thumbnail_not_found":
+            recs.append("THUMBNAIL MISSING — Provide a thumbnail_path for CTR analysis")
+            return recs
+
+        if score >= 80:
+            recs.append("Thumbnail is visually well-optimized for CTR.")
+            return recs
+
+        if factors.get("brightness_issue") == "too_dark":
+            recs.append("Thumbnail is TOO DARK — increase exposure/brightness by 30-50%")
+        elif factors.get("brightness_issue") == "too_bright":
+            recs.append("Thumbnail is OVEREXPOSED — reduce brightness, recover detail")
+
+        if factors.get("contrast_issue") == "too_low":
+            recs.append("Thumbnail has LOW CONTRAST — boost contrast or add dark overlay + bright text")
+
+        if factors.get("vibrancy_issue") == "too_muted":
+            recs.append("Thumbnail colors are MUTED — increase saturation by 20-30% for feed visibility")
+
+        if not factors.get("has_face", False):
+            recs.append("NO FACE detected — thumbnails with faces get 30-50% more clicks. Add a relevant face/image.")
+
+        if factors.get("resolution_issue") == "too_small":
+            recs.append("Thumbnail resolution too low — use at least 1280x720")
+
+        if factors.get("text_issue") == "too_much_text":
+            recs.append("Too much text on thumbnail — reduce to a short 3-5 word headline max")
+
+        text_pct = factors.get("text_coverage_pct", 0)
+        if text_pct < 15:
+            recs.append("Add a short headline text to the thumbnail for context")
 
         return recs
 

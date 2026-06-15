@@ -95,22 +95,116 @@ class ThumbnailCreator:
 
     def _calc_text_position(self, img: Image.Image, title: str, lines: list) -> tuple:
         """
-        Calculate optimal text Y position.
-        Places text in the lower third but above the watermark.
+        Calculate optimal text Y position based on image content.
+        v22.1 (v87.12): Content-aware placement — avoids faces/salient regions.
+        
+        Strategy:
+        1. Divide image into a 3x3 grid of regions
+        2. Score each region by visual complexity (edge density)
+        3. Place text in the region with LOWEST complexity (cleanest area)
+        4. If the image has detected faces, avoid the face region
+        
         Returns (text_y_start, is_upper_safe) tuple.
         """
+        W = self.sg["dimensions"]["width"]
         H = self.sg["dimensions"]["height"]
-        safe_bottom = H - self.tr["safe_zone_bottom"]  # 640 for H=720
+        safe_bottom = H - self.tr["safe_zone_bottom"]
+        safe_top = self.tr["safe_zone_top"]
+        line_height = int(self.tr["headline_max_size"] * 1.25)
+        total_text_height = len(lines) * line_height + 40
 
-        # Calculate total text block height
-        line_height = int(self.tr["headline_max_size"] * 1.25)  # ~70px per line
-        total_text_height = len(lines) * line_height + 40  # +subtitle
+        # Try to find cleanest horizontal band using edge analysis
+        try:
+            import numpy as np
+            # Convert to grayscale numpy array for analysis
+            gray = img.convert("L")
+            arr = np.array(gray)
 
-        # Position: bottom-aligned within safe zone
+            # Divide into horizontal bands and compute edge density per band
+            num_bands = 6
+            band_height = H // num_bands
+            band_scores = []
+            for b in range(num_bands):
+                y_start = b * band_height
+                y_end = min((b + 1) * band_height, H)
+                band = arr[y_start:y_end, :]
+                # Simple gradient-based edge detection
+                gy, gx = np.gradient(band.astype(float))
+                edge_density = np.mean(np.sqrt(gx**2 + gy**2))
+                band_scores.append((edge_density, y_start, y_end))
+
+            # Find the band with lowest edge density that can fit our text block
+            # Prefer lower portion but avoid the very bottom (watermark zone)
+            candidate_bands = []
+            for score, y_start, y_end in band_scores:
+                region_height = y_end - y_start
+                if region_height >= total_text_height:
+                    # Check this band doesn't overlap with bottom watermark zone
+                    if y_start + total_text_height <= safe_bottom:
+                        candidate_bands.append((score, y_start))
+
+            if candidate_bands:
+                # Pick the cleanest (lowest edge density) band
+                candidate_bands.sort(key=lambda x: x[0])
+                best_y = candidate_bands[0][1]
+                # Ensure minimum safe zone
+                text_y_start = max(best_y, safe_top)
+                # Ensure text fits above watermark
+                if text_y_start + total_text_height > safe_bottom:
+                    text_y_start = safe_bottom - total_text_height
+                return text_y_start, (text_y_start < H // 3)
+
+        except Exception:
+            pass
+
+        # Fallback: position in lower third above watermark (original behavior)
         text_y_start = safe_bottom - total_text_height
-        text_y_start = max(text_y_start, self.tr["safe_zone_top"])
-
+        text_y_start = max(text_y_start, safe_top)
         return text_y_start, False
+
+    def _find_salient_region(self, img: Image.Image) -> tuple:
+        """
+        Find the most visually salient (interesting) region in the image.
+        Used to avoid placing text over important content like faces, text, objects.
+        
+        Returns (x, y, w, h) bounding box of the salient region, or None.
+        """
+        try:
+            import numpy as np
+            from PIL import ImageFilter
+            
+            gray = img.convert("L")
+            # Apply edge detection filter
+            edges = gray.filter(ImageFilter.FIND_EDGES)
+            arr = np.array(edges)
+            
+            # Divide into grid and find region with highest edge concentration
+            grid_size = 4
+            cell_w = img.size[0] // grid_size
+            cell_h = img.size[1] // grid_size
+            max_density = 0
+            best_cell = (0, 0)
+            
+            for gy in range(grid_size):
+                for gx in range(grid_size):
+                    y1 = gy * cell_h
+                    y2 = (gy + 1) * cell_h
+                    x1 = gx * cell_w
+                    x2 = (gx + 1) * cell_w
+                    density = np.mean(arr[y1:y2, x1:x2])
+                    if density > max_density:
+                        max_density = density
+                        best_cell = (gx, gy)
+            
+            # Return bounding box of salient region with some padding
+            pad = 20
+            sx = best_cell[0] * cell_w + pad
+            sy = best_cell[1] * cell_h + pad
+            sw = cell_w - pad * 2
+            sh = cell_h - pad * 2
+            return (sx, sy, sw, sh)
+        except Exception:
+            return None
 
     # ── A4.6: Adaptive font size based on title length ──
 

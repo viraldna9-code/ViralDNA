@@ -1548,13 +1548,27 @@ class ResilientUploaderAgent(BaseAgent):
             youtube_service = self._get_youtube_service()
             if youtube_service:
                 state["youtube_service"] = youtube_service
+                # ── Upload schedule enforcement (v87.12) ──
+                # UploadTimeOptimizationAgent computes optimal times and stores in state.
+                # Combine main + shorts schedule into one dict for the uploader.
+                upload_schedule = state.get("upload_schedule") or {}
+                shorts_sched = state.get("shorts_upload_schedule", [])
+                if upload_schedule:
+                    upload_schedule["shorts_schedule"] = shorts_sched
+                    self.log(f"📅 Upload schedule: {upload_schedule.get('recommended_time_ist', 'N/A')} IST "
+                             f"({upload_schedule.get('window_name', 'N/A')})")
+                    if shorts_sched:
+                        for s in shorts_sched:
+                            self.log(f"  Short {s['short_number']}: {s['ist_time']} IST")
+
                 uploader = YouTubeUploader(youtube_service, config)
                 upload_results = uploader.upload_production_slot(
                     selected_topic,
                     config.DRIVE["VIDEO_OUTPUT"],
                     config.DRIVE["THUMBNAILS"],
                     script_payload=state.get("script_payload"),
-                    publish_decision=publish_decision
+                    publish_decision=publish_decision,
+                    upload_schedule=upload_schedule if upload_schedule else None
                 )
                 state["upload_results"] = upload_results
                 self.orchestrator.timer.stop("Phase 7: Upload", "7.2 API Uploading")

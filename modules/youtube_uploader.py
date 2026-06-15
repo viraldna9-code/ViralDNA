@@ -172,12 +172,16 @@ class YouTubeUploader:
         return False, None
 
     # ─── Scheduled Publish Time ───
-    def _get_scheduled_publish_time(self, is_short: bool = False, short_index: int = 0) -> str:
+    def _get_scheduled_publish_time(self, is_short: bool = False, short_index: int = 0,
+                                     upload_schedule: dict = None) -> str:
         """Return ISO-8601 UTC publish time for YouTube API.
 
-        If main_publish_time_ist / shorts_publish_time_ist is set (e.g. "09:00"),
-        schedules for the next occurrence of that IST time (tomorrow if already passed).
-        Otherwise falls back to relative delay from now.
+        Priority:
+        1. upload_schedule dict from UploadTimeOptimizer (state["upload_schedule"])
+        2. Static main_publish_time_ist / shorts_publish_time_ist from config
+        3. Relative delay from now (fallback)
+
+        upload_schedule format: {"recommended_time_ist": "18:00", ...}
         """
         from datetime import datetime, timedelta, timezone
         IST = timezone(timedelta(hours=5, minutes=30))
@@ -196,9 +200,15 @@ class YouTubeUploader:
             utc = target.astimezone(timezone.utc)
             return utc.isoformat().replace("+00:00", "Z")
 
+        # Determine which time string to use
         if is_short:
+            # Shorts: use schedule's shorts times if available
+            if upload_schedule and upload_schedule.get("shorts_schedule"):
+                shorts_sched = upload_schedule["shorts_schedule"]
+                if short_index < len(shorts_sched):
+                    time_str = shorts_sched[short_index].get("ist_time", "18:00")
+                    return _next_occurrence(time_str)
             if self.shorts_publish_time_ist:
-                # Each short gets an additional gap after the main publish time
                 gap = self.shorts_publish_gap_minutes
                 return _next_occurrence(self.shorts_publish_time_ist, extra_minutes=gap * short_index)
             # Fallback: relative
@@ -207,6 +217,9 @@ class YouTubeUploader:
             gap = timedelta(minutes=self.shorts_publish_gap_minutes)
             target = now_utc + main_delay + (gap * short_index)
         else:
+            # Main video: use schedule's recommended time if available
+            if upload_schedule and upload_schedule.get("recommended_time_ist"):
+                return _next_occurrence(upload_schedule["recommended_time_ist"])
             if self.main_publish_time_ist:
                 return _next_occurrence(self.main_publish_time_ist)
             # Fallback: relative
@@ -455,7 +468,8 @@ class YouTubeUploader:
     # ─── Metadata Builder (YouTube API format) ───
     def _create_metadata(self, title_raw: str, desc_raw: str, rag_context: str,
                          topic: dict = None, is_short: bool = False,
-                         short_index: int = 0, variant_idx: int = 0) -> dict:
+                         short_index: int = 0, variant_idx: int = 0,
+                         upload_schedule: dict = None) -> dict:
         topic = topic or {}
         import datetime
         year = datetime.datetime.now().year
@@ -542,7 +556,8 @@ class YouTubeUploader:
         }
 
         if self.schedule_premiere:
-            scheduled_time = self._get_scheduled_publish_time(is_short, short_index=short_index)
+            scheduled_time = self._get_scheduled_publish_time(is_short, short_index=short_index,
+                                                              upload_schedule=upload_schedule)
             body["status"]["publishAt"] = scheduled_time
             body["status"]["privacyStatus"] = "private"
 
@@ -967,12 +982,22 @@ class YouTubeUploader:
         url = topic.get("url", "")
 
         prompt = f"""You are a YouTube SEO expert for a Telugu news channel called TheViralDNA.
-Generate 8-12 topic-specific YouTube tags for this news video.
+Generate 8-12 topic-specific YouTube tags for this news video, optimized for search discovery.
 
 Topic: {topic_title}
 Source: {source}
 URL: {url}
 Content preview: {rag_context[:500]}
+
+SEARCH VOLUME STRATEGY:
+- Include 2-3 HIGH-VOLUME tags: broad terms people actually search (e.g., "India news", "Telugu news", "breaking news today")
+- Include 3-5 MEDIUM-VOLUME tags: specific to this story, moderate competition (e.g., "AP politics 2026", "Telangana budget")
+- Include 2-3 LONG-TAIL tags: very specific phrases with low competition but intent-driven (e.g., "why did DMK boycott 2026 meeting")
+- Think about what a viewer would TYPE IN THE SEARCH BAR to find this video
+- Prioritize tags with search volume over obscure entity names nobody searches
+- Include query-style tags (question format): "what is happening in AP", "why Telangana news today"
+- For breaking/trending news, include "today", "latest", "update" suffixes — these match real-time search intent
+- Include the year for temporal relevance (e.g., "India news {year}", "politics {year}")
 
 Rules:
 - Tags must be SPECIFIC to this topic (names, places, organizations, events)
@@ -1635,7 +1660,8 @@ Output JSON array:"""
                             is_short: bool = False, pinned_comment: str = None,
                             short_index: int = 0, variant_idx: int = 0,
                             topic: dict = None, script_text: str = "",
-                            duration_s: float = 0) -> dict:
+                            duration_s: float = 0,
+                            upload_schedule: dict = None) -> dict:
         """Upload a single video variant. Returns status dict."""
         if not os.path.exists(video_path):
             return {"status": "failed", "error": f"Video not found: {video_path}"}
@@ -1645,7 +1671,8 @@ Output JSON array:"""
 
             body = self._create_metadata(title_raw, desc_raw, rag_context,
                                          topic=topic, is_short=is_short,
-                                         short_index=short_index, variant_idx=variant_idx)
+                                         short_index=short_index, variant_idx=variant_idx,
+                                         upload_schedule=upload_schedule)
 
             media = MediaFileUpload(video_path, mimetype=self.video_mimetype,
                                     chunksize=self.upload_chunk_size, resumable=True)
@@ -1688,7 +1715,8 @@ Output JSON array:"""
 
     # ─── Full Production Slot Upload (A/B testing approach) ───
     def upload_production_slot(self, topic: dict, videos_dir: str, thumbnails_dir: str,
-                                script_payload=None, publish_decision=None) -> dict:
+                                script_payload=None, publish_decision=None,
+                                upload_schedule: dict = None) -> dict:
         """
         Uploads ONE video per slot (best title variant only).
         Per-variant thumbnails are generated for YouTube Studio A/B testing.
@@ -1756,7 +1784,8 @@ Output JSON array:"""
                     video_path=main_video_path, thumbnail_path=thumb,
                     is_short=False, pinned_comment=pinned,
                     variant_idx=0, topic=topic,
-                    script_text=main_script_text, duration_s=main_duration
+                    script_text=main_script_text, duration_s=main_duration,
+                    upload_schedule=upload_schedule
                 )
                 upload_results["main"] = res
 
@@ -1845,7 +1874,8 @@ Output JSON array:"""
                         video_path=short_video_with_thumb, thumbnail_path=None,
                         is_short=True, pinned_comment=pinned,
                         short_index=s_idx, variant_idx=0, topic=topic,
-                        script_text=short_script_text, duration_s=short_duration
+                        script_text=short_script_text, duration_s=short_duration,
+                        upload_schedule=upload_schedule
                     )
                     upload_results["shorts"][short_key] = res
 
