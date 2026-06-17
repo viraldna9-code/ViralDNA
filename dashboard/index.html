@@ -60,7 +60,7 @@ tr:hover { background:rgba(88,166,255,0.05); }
 </head>
 <body>
 
-<h1>🧬 ViralDNA Dashboard — Live System Health <span class="refresh">Auto-refreshes every 60s • Generated 2026-06-09 15:41 IST</span></h1>
+<h1>🧬 ViralDNA Dashboard — Live System Health <span class="refresh">Auto-refreshes every 60s • Generated 2026-06-15 12:28 IST</span></h1>
 
 <div class="nav">
   <button class="nav-btn active" onclick="showSection('overview',this)">📊 Overview</button>
@@ -87,26 +87,26 @@ tr:hover { background:rgba(88,166,255,0.05); }
   </div>
   <div class="card">
     <h2>💻 Codebase</h2>
-    <div class="metric"><span class="metric-label">Python Files</span><span class="metric-value info">119</span></div>
-    <div class="metric"><span class="metric-label">Module Files</span><span class="metric-value info">82</span></div>
+    <div class="metric"><span class="metric-label">Python Files</span><span class="metric-value info">157</span></div>
+    <div class="metric"><span class="metric-label">Module Files</span><span class="metric-value info">65</span></div>
     <div class="metric"><span class="metric-label">Entry Points</span><span class="metric-value warn">~8 active / 43 total</span></div>
     <div class="metric"><span class="metric-label">Empty Agent Stubs</span><span class="metric-value crit">20+</span></div>
     <div class="metric"><span class="metric-label">Test Files in modules/</span><span class="metric-value warn">10</span></div>
   </div>
   <div class="card">
     <h2>💾 System</h2>
-    <div class="metric"><span class="metric-label">Disk Free</span><span class="metric-value ok">928.7 GB</span></div>
-    <div class="metric"><span class="metric-label">Disk Used</span><span class="metric-value">14.1%</span></div>
-    <div class="progress-bar"><div class="progress-fill fill-ok" style="width:14.1%"></div></div>
+    <div class="metric"><span class="metric-label">Disk Free</span><span class="metric-value ok">876.7 GB</span></div>
+    <div class="metric"><span class="metric-label">Disk Used</span><span class="metric-value">18.9%</span></div>
+    <div class="progress-bar"><div class="progress-fill fill-ok" style="width:18.9%"></div></div>
     <div class="metric"><span class="metric-label">Python Venv</span><span class="metric-value ok">OK</span></div>
     <div class="metric"><span class="metric-label">Hermes Gateway</span><span class="metric-value ok">RUNNING</span></div>
     <div class="metric"><span class="metric-label">Hermes Version</span><span class="metric-value info">v0.16.0+ (latest)</span></div>
   </div>
   <div class="card">
     <h2>🏥 System Health Score</h2>
-    <div class="metric"><span class="metric-label">Overall</span><span class="metric-value warn">DEGRADED (77%)</span></div>
-    <div class="progress-bar"><div class="progress-fill fill-warn" style="width:77%"></div></div>
-    <div class="metric"><span class="metric-label">Cron Jobs OK</span><span class="metric-value warn">3/5</span></div>
+    <div class="metric"><span class="metric-label">Overall</span><span class="metric-value ok">HEALTHY (80%)</span></div>
+    <div class="progress-bar"><div class="progress-fill fill-ok" style="width:80%"></div></div>
+    <div class="metric"><span class="metric-label">Cron Jobs OK</span><span class="metric-value warn">4/6</span></div>
     <div class="metric"><span class="metric-label">Env Vars SET</span><span class="metric-value ok">4/4</span></div>
     <div class="metric"><span class="metric-label">Upload Status</span><span class="metric-value crit">BANNED (Manual)</span></div>
     <div class="metric"><span class="metric-label">Approval Gate</span><span class="metric-value ok">ACTIVE</span></div>
@@ -118,48 +118,56 @@ tr:hover { background:rgba(88,166,255,0.05); }
 <div id="cron" class="section">
 <div class="grid">
   <div class="card" style="grid-column:1/-1">
-    <h2>⏰ Cron Jobs (5 total)</h2>
+    <h2>⏰ Cron Jobs (6 total)</h2>
     <table>
     <tr><th>Job</th><th>Schedule</th><th>Last Run</th><th>Status</th><th>Next Run</th><th>Enabled</th></tr>
     
       <tr>
         <td><span class="status-dot ok"></span> VDNA Morning Publish (9AM IST)</td>
         <td><code>{'kind': 'cron', 'expr': '0 2 * * *', 'display': '0 2 * * *'}</code></td>
-        <td>2026-06-09 02:29</td>
+        <td>2026-06-14 04:32</td>
         <td><span class="badge badge-ok">ok</span></td>
-        <td>2026-06-10 02:00</td>
+        <td>2026-06-16 02:00</td>
         <td>✅</td>
       </tr>
       <tr>
         <td><span class="status-dot crit"></span> VDNA Evening Publish (7PM IST)</td>
         <td><code>{'kind': 'cron', 'expr': '0 12 * * *', 'display': '0 12 * * *'}</code></td>
-        <td>2026-06-08 12:23</td>
+        <td>2026-06-14 12:13</td>
         <td><span class="badge badge-crit">error</span></td>
-        <td>2026-06-09 12:00</td>
+        <td>2026-06-15 12:00</td>
         <td>✅</td>
       </tr>
       <tr>
-        <td><span class="status-dot ok"></span> ViralDNA Channel Health Monitor</td>
+        <td><span class="status-dot crit"></span> ViralDNA Channel Health Monitor</td>
         <td><code>{'kind': 'interval', 'minutes': 120, 'display': 'every 120m'}</code></td>
-        <td>2026-06-09 09:17</td>
-        <td><span class="badge badge-ok">ok</span></td>
-        <td>2026-06-09 11:17</td>
+        <td>2026-06-14 10:36</td>
+        <td><span class="badge badge-crit">error</span></td>
+        <td>2026-06-15 07:04</td>
         <td>✅</td>
       </tr>
       <tr>
         <td><span class="status-dot ok"></span> ViralDNA Daily Analytics Report</td>
         <td><code>{'kind': 'cron', 'expr': '30 0 * * *', 'display': '30 0 * * *'}</code></td>
-        <td>2026-06-09 02:22</td>
+        <td>2026-06-14 01:25</td>
         <td><span class="badge badge-ok">ok</span></td>
-        <td>2026-06-10 00:30</td>
+        <td>2026-06-16 00:30</td>
         <td>✅</td>
       </tr>
       <tr>
-        <td><span class="status-dot unk"></span> ViralDNA Weekly Analytics Report</td>
+        <td><span class="status-dot ok"></span> ViralDNA Weekly Analytics Report</td>
         <td><code>{'kind': 'cron', 'expr': '30 0 * * 0', 'display': '30 0 * * 0'}</code></td>
-        <td>None</td>
-        <td><span class="badge badge-dead">None</span></td>
-        <td>2026-06-14 00:30</td>
+        <td>2026-06-14 01:25</td>
+        <td><span class="badge badge-ok">ok</span></td>
+        <td>2026-06-21 00:30</td>
+        <td>✅</td>
+      </tr>
+      <tr>
+        <td><span class="status-dot ok"></span> VDNA Telegram Callback Poller</td>
+        <td><code>{'kind': 'interval', 'minutes': 1, 'display': 'every 1m'}</code></td>
+        <td>2026-06-15 06:56</td>
+        <td><span class="badge badge-ok">ok</span></td>
+        <td>2026-06-15 06:57</td>
         <td>✅</td>
       </tr>
     </table>
@@ -171,10 +179,18 @@ tr:hover { background:rgba(88,166,255,0.05); }
 <div id="queue" class="section">
 <div class="grid">
   <div class="card" style="grid-column:1/-1">
-    <h2>📋 Approval Queue (0 pending, 0 approved, 0 rejected)</h2>
+    <h2>📋 Approval Queue (1 pending, 0 approved, 0 rejected)</h2>
     <table>
     <tr><th>Topic ID</th><th>Title</th><th>Videos</th><th>Thumbs</th><th>Requested</th><th>Status</th></tr>
-    <tr><td colspan="6" style="text-align:center;color:var(--border)">No pending items ✅</td></tr>
+    
+      <tr>
+        <td>VDNA218</td>
+        <td>Bihar | Samrat gets going</td>
+        <td>3</td>
+        <td>1</td>
+        <td>2026-06-15T12:22</td>
+        <td><span class="badge badge-ok">OK</span></td>
+      </tr>
     </table>
   </div>
 </div>
@@ -247,9 +263,9 @@ tr:hover { background:rgba(88,166,255,0.05); }
   <div class="card">
     <h2>📺 YouTube Channel</h2>
     <div class="metric"><span class="metric-label">Channel</span><span class="metric-value info">The ViralDNA</span></div>
-    <div class="metric"><span class="metric-label">Subscribers</span><span class="metric-value ok">8</span></div>
-    <div class="metric"><span class="metric-label">Total Videos</span><span class="metric-value info">30</span></div>
-    <div class="metric"><span class="metric-label">Total Views</span><span class="metric-value info">13345</span></div>
+    <div class="metric"><span class="metric-label">Subscribers</span><span class="metric-value ok">9</span></div>
+    <div class="metric"><span class="metric-label">Total Videos</span><span class="metric-value info">37</span></div>
+    <div class="metric"><span class="metric-label">Total Views</span><span class="metric-value info">15407</span></div>
     <div class="metric"><span class="metric-label">Upload</span><span class="metric-value crit">BANNED</span></div>
     <div class="metric"><span class="metric-label">Category</span><span class="metric-value">News & Politics (25)</span></div>
     
@@ -294,7 +310,7 @@ tr:hover { background:rgba(88,166,255,0.05); }
   <div class="card">
     <h2>📁 Key Paths</h2>
     <div class="metric"><span class="metric-label">Project</span><span class="metric-value"><code>/home/jay/ViralDNA</code></span></div>
-    <div class="metric"><span class="metric-label">Modules</span><span class="metric-value"><code>modules/</code> (82 files)</span></div>
+    <div class="metric"><span class="metric-label">Modules</span><span class="metric-value"><code>modules/</code> (65 files)</span></div>
     <div class="metric"><span class="metric-label">Logs</span><span class="metric-value"><code>logs/</code></span></div>
     <div class="metric"><span class="metric-label">Venv Python</span><span class="metric-value"><code>/home/jay/venv/bin/python3</code></span></div>
     <div class="metric"><span class="metric-label">.env File</span><span class="metric-value"><code>~/.env</code></span></div>
@@ -312,12 +328,12 @@ tr:hover { background:rgba(88,166,255,0.05); }
     <pre id="log">{
   "checks": [
     {
-      "timestamp": "2026-06-09T14:46:05.422167+05:30",
-      "total_views": 13345,
-      "subscribers": 8,
-      "video_count": 30,
-      "shorts_count": 21,
-      "issues_count": 15,
+      "timestamp": "2026-06-14T08:56:10.126448+05:30",
+      "total_views": 15356,
+      "subscribers": 9,
+      "video_count": 37,
+      "shorts_count": 25,
+      "issues_count": 20,
       "critical_count": 1,
       "auto_fixed": []
     }
@@ -328,21 +344,21 @@ tr:hover { background:rgba(88,166,255,0.05); }
 }</pre>
     <h3>Latest Feedback</h3>
     <pre id="log"># ViralDNA Channel Health Report
-### Last updated: Tuesday, June 09 2026 — 14:46 IST
+### Last updated: Sunday, June 14 2026 — 08:56 IST
 
 ## Channel: The Viral DNA
-- **Views:** 13,345 | **Subscribers:** 8 | **Videos:** 30 (21 shorts)
-- **Monetization:** 8/1000 subs (0.8%)
+- **Views:** 15,356 | **Subscribers:** 9 | **Videos:** 37 (25 shorts)
+- **Monetization:** 9/1000 subs (0.9%)
 
 
 ## 🟠 HIGH PRIORITY (Fix Today)
-- **[SEO]** 3 public video(s) with ZERO views
+- **[SEO]** 4 public video(s) with ZERO views
   -> Check titles, thumbnails, descriptions
 
 ## 🟡 MEDIUM (This Week)
-- **[ENGAGEMENT]** Low like rate (0.0%) on 'Mamata's Own MPs Rebel — BJP Meeting Sho'
+- **[ENGAGEMENT]** Low like rate (0.0%) on 'Firmly opposed to attacks on merchant sh'
   -> Improve thumbnails and titles
-- **[ENGAG</pre>
+- **[ENGAGE</pre>
   </div>
 </div>
 </div>

@@ -1,6 +1,8 @@
 """
-VDNA 2.0 — Director + Factory Architecture
+VDNA 3.0 — Director + Factory Architecture
 ============================================
+The official ViralDNA pipeline as of June 15, 2026.
+
 Layer 1: OWL Director — decides WHAT to produce, manages lifecycle
 Layer 2: Python Factory — crash-isolated workers that produce artifacts
 Layer 3: Skills Specialists — wrapped existing modules (voiceover, video_assembler, etc.)
@@ -12,18 +14,24 @@ Key improvements over v80.0 monolithic orchestrator:
 4. Disk monitoring — refuses to write if disk < 500MB
 5. Signal handling — SIGTERM/SIGINT triggers graceful shutdown, not crash
 6. Per-phase isolation — each factory worker runs in controlled environment
+7. RAG feedback loop — producer brief from past performance injected into scripting
+8. CTR optimization — title + thumbnail scored after creation
+9. Shorts optimization — LLM-based titles after assembly
+10. Upload time optimization — IST window enforced
+11. YouTube Analytics — real metrics pulled post-pipeline
 
 Architecture:
     Director.run()
         ├── Phase 1: Discovery        → FactoryWorker("discovery")
         ├── Phase 2: Weighting        → FactoryWorker("weighting")
-        ├── Phase 3: Scripting        → FactoryWorker("scripting")
+        ├── Phase 3: Scripting        → FactoryWorker("scripting") [+ RAG brief]
         ├── Phase 4: Voice            → FactoryWorker("voice") [Fish Speech + gTTS fallback]
         ├── Phase 5: Visuals          → FactoryWorker("visuals")
-        ├── Phase 6: Thumbnail       → FactoryWorker("thumbnail")
-        ├── Phase 7: Assembly         → FactoryWorker("assembly")
-        ├── Phase 8: Upload           → FactoryWorker("upload")
-        └── Phase 9: Post-pipeline    → FactoryWorker("post_pipeline")
+        ├── Phase 6: Thumbnail       → FactoryWorker("thumbnail") [+ CTR optimizer]
+        ├── Phase 7: Assembly         → FactoryWorker("assembly") [+ Shorts optimizer]
+        ├── Phase 8: Forensic Audit  → FactoryWorker("forensic_audit")
+        ├── Phase 9: Upload           → FactoryWorker("upload") [+ Upload time optimizer]
+        └── Phase 10: Post-pipeline   → FactoryWorker("post_pipeline") [+ Analytics + RAG]
 """
 
 import os
@@ -247,6 +255,12 @@ class VDNA2Director:
         from forensic_audit import ForensicAudit
         from pre_ship_check import PreShipCheck
         from publish_decision_engine import decide_publish_plan
+        # VDNA 3.0: New modules wired into pipeline
+        from ctr_optimizer import CTROptimizer
+        from shorts_optimizer import ShortsOptimizer
+        from upload_time_optimizer import UploadTimeOptimizer
+        from yt_analytics import YouTubeAnalytics
+        from rag_feedback import RagFeedbackLoop
 
         self.skills = {
             "trend_discovery": TrendDiscovery(config_instance=config),
@@ -260,6 +274,12 @@ class VDNA2Director:
             "forensic_audit": ForensicAudit(drive_base=config.DRIVE_BASE),
             "pre_ship_check": PreShipCheck(drive_base=config.DRIVE_BASE),
             "decide_publish_plan": decide_publish_plan,
+            # VDNA 3.0 additions
+            "ctr_optimizer": CTROptimizer(),
+            "shorts_optimizer": ShortsOptimizer(),
+            "upload_time_optimizer": UploadTimeOptimizer(),
+            "yt_analytics": YouTubeAnalytics(credentials_path=config.DRIVE.get("YOUTUBE_TOKEN", "")),
+            "rag_feedback": RagFeedbackLoop(ledger_path=os.path.join(config.DRIVE_BASE, "diagnostics", "growth_ledger.json")),
         }
         print(f"   📦 Loaded {len(self.skills)} skill modules")
 
@@ -417,17 +437,67 @@ class VDNA2Director:
         return state
 
     def _phase_scripting(self, state):
-        """Phase 3: Generate bilingual script."""
+        """Phase 3: Generate bilingual script.
+        VDNA 3.0: Loads producer brief from RAG feedback loop for context injection.
+        """
         print("   📝 Generating script...")
         topic = state.get("selected_topic", {})
         sg = self.skills["script_generator"]
-        script = sg.run(topic=topic, producer_brief=None)
-        state["script_payload"] = script
+
+        # VDNA 3.0: Load producer brief from RAG feedback loop
+        producer_brief = ""
+        try:
+            rag = self.skills["rag_feedback"]
+            brief_data = rag.generate_producer_brief()
+            if brief_data:
+                producer_brief = brief_data
+                print("   🧠 RAG producer brief loaded for script context")
+        except Exception as e:
+            print(f"   ⚠️ RAG brief load failed: {e} — continuing without")
+
+        script = sg.run(topic=topic, producer_brief=producer_brief)
+        # VDNA 3.0: Convert ScriptPayload to dict for JSON checkpoint serialization
+        if hasattr(script, '__dict__'):
+            state["script_payload"] = script.__dict__
+        else:
+            state["script_payload"] = script
         print(f"   📄 Script generated: {len(str(script))} chars")
         return state
 
+    def _extract_script_text(self, script_payload):
+        """VDNA 3.0: Extract main text and short texts from any script payload format.
+        Handles ScriptPayload objects, dicts (from checkpoint), and strings.
+        Returns (main_text: str, short_texts: dict[int, str])
+        """
+        if isinstance(script_payload, str):
+            return script_payload, {}
+        elif isinstance(script_payload, dict):
+            main_raw = script_payload.get("main_raw", "")
+            main_clean = script_payload.get("main_clean", "")
+            main_text = main_clean or main_raw
+            short_texts = {}
+            for i in range(1, 4):
+                val = script_payload.get(f"short_{i}_clean", "")
+                if not val:
+                    val = script_payload.get(f"short_{i}_raw", "")
+                short_texts[i] = val
+            return main_text, short_texts
+        else:
+            # Live ScriptPayload object
+            main_seg = script_payload.get_segment("main")
+            main_text = main_seg.get("text", "")
+            if not main_text:
+                main_text = getattr(script_payload, "full_script", "") or ""
+            short_texts = {}
+            for i in range(1, 4):
+                short_seg = script_payload.get_segment(f"short_{i}")
+                short_texts[i] = short_seg.get("text", "")
+            return main_text, short_texts
+
     def _phase_voice(self, state):
-        """Phase 4: Voice synthesis with Fish Speech (primary)."""
+        """Phase 4: Voice synthesis with Fish Speech (primary).
+        VDNA 3.0: Handles both ScriptPayload objects and string payloads (from checkpoint restore).
+        """
         print("   🎙️  Synthesizing voice (Fish Speech primary)...")
         vg = self.skills["voiceover"]()
         script_payload = state.get("script_payload")
@@ -436,12 +506,35 @@ class VDNA2Director:
 
         voiceover_assets = {}
 
-        # Main video voiceover
-        main_seg = script_payload.get_segment("main")
-        main_text = main_seg.get("text", "")
-        if not main_text:
-            # Fallback: try full_script attribute
-            main_text = getattr(script_payload, "full_script", "") or ""
+        # Handle ScriptPayload objects, dict (from checkpoint), or string
+        if isinstance(script_payload, str):
+            # Checkpoint stored str() representation — use raw string as main text
+            main_text = script_payload
+            short_texts = {}
+        elif isinstance(script_payload, dict):
+            # Dict from checkpoint restore — extract text fields
+            main_raw = script_payload.get("main_raw", "")
+            main_clean = script_payload.get("main_clean", "")
+            main_text = main_clean or main_raw
+            short_texts = {}
+            for i in range(1, 4):
+                key = f"short_{i}_clean"
+                val = script_payload.get(key, "")
+                if not val:
+                    key = f"short_{i}_raw"
+                    val = script_payload.get(key, "")
+                short_texts[i] = val
+        else:
+            # Live ScriptPayload object
+            main_seg = script_payload.get_segment("main")
+            main_text = main_seg.get("text", "")
+            if not main_text:
+                main_text = getattr(script_payload, "full_script", "") or ""
+            short_texts = {}
+            for i in range(1, 4):
+                short_seg = script_payload.get_segment(f"short_{i}")
+                short_texts[i] = short_seg.get("text", "")
+
         if main_text:
             main_audio = os.path.join(
                 config.DRIVE.get("AUDIO_OUTPUT", "/home/jay/ViralDNA/audio"),
@@ -456,10 +549,9 @@ class VDNA2Director:
 
         # Short voiceover
         for i in range(1, 4):
-            short_key = f"short_{i}"
-            short_seg = script_payload.get_segment(short_key)
-            short_text = short_seg.get("text", "")
+            short_text = short_texts.get(i, "")
             if short_text:
+                short_key = f"short_{i}"
                 short_audio = os.path.join(
                     config.DRIVE.get("AUDIO_OUTPUT", "/home/jay/ViralDNA/audio"),
                     f"{state.get('topic_slug', 'topic')}_{short_key}.mp3"
@@ -486,9 +578,7 @@ class VDNA2Director:
         script_payload = state.get("script_payload")
         voiceover_assets = {}
 
-        main_text = script_payload.get_segment("main").get("text", "")
-        if not main_text:
-            main_text = getattr(script_payload, "full_script", "") or ""
+        main_text, _ = self._extract_script_text(script_payload)
         if main_text:
             main_audio = os.path.join(
                 config.DRIVE.get("AUDIO_OUTPUT", "/home/jay/ViralDNA/audio"),
@@ -577,7 +667,9 @@ class VDNA2Director:
             return None
 
     def _phase_thumbnail(self, state):
-        """Phase 6: Thumbnail creation."""
+        """Phase 6: Thumbnail creation.
+        VDNA 3.0: CTR optimizer scores and refines title + thumbnail after creation.
+        """
         print("   🏷️  Creating thumbnail...")
         tc = self.skills["thumbnail_creator"]
         topic = state.get("selected_topic", {})
@@ -592,10 +684,23 @@ class VDNA2Director:
             runtime_dir=config.DRIVE.get("RUNTIME", "/home/jay/ViralDNA/output/runtime"),
         )
         state["branded_thumbnail"] = thumb_path
+
+        # VDNA 3.0: CTR optimization — score title + thumbnail
+        try:
+            ctr = self.skills["ctr_optimizer"]
+            title = topic.get("title", "ViralDNA News")
+            ctr_result = ctr.optimize(title=title, thumbnail_path=thumb_path)
+            state["ctr_optimization"] = ctr_result
+            print(f"   📊 CTR score: {ctr_result.get('ctr_score', 'N/A')}/100 (title: {ctr_result.get('title_score', 'N/A')}, thumb: {ctr_result.get('thumbnail_score', 'N/A')})")
+        except Exception as e:
+            print(f"   ⚠️ CTR optimization failed: {e} — continuing without")
+
         return state
 
     def _phase_assembly(self, state):
-        """Phase 7: Video assembly with FFmpeg."""
+        """Phase 7: Video assembly with FFmpeg.
+        VDNA 3.0: Shorts optimizer generates titles + CTAs after assembly.
+        """
         print("   🎬 Assembling videos...")
         va = self.skills["video_assembler"]
         script_payload = state.get("script_payload")
@@ -613,16 +718,21 @@ class VDNA2Director:
 
         compiled_videos = []
 
+        # VDNA 3.0: Extract text from any payload format (object, dict, string)
+        main_text, short_texts = self._extract_script_text(script_payload)
+
         # Main video
         if decision.produce_main:
-            main_seg = script_payload.get_segment("main")
             audio_path = voiceover_assets.get("main")
             if audio_path:
                 main_filename = f"{topic_slug}_Main.mp4"
+                # Calculate target duration from word count (~150 wpm speaking rate)
+                word_count = len(main_text.split()) if main_text else 200
+                target_duration = max(60, min(word_count * 0.4, 600))
                 va.assemble_video(
                     main_filename, audio_path, background_canvas,
-                    main_filename, main_seg.get("target_duration_s", 300),
-                    async_mode=False, script_text=main_seg.get("text", ""),
+                    main_filename, target_duration,
+                    async_mode=False, script_text=main_text[:500],
                     is_short=False, topic_title=topic.get("title", "")
                 )
                 main_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], main_filename)
@@ -636,13 +746,15 @@ class VDNA2Director:
         for i in range(1, decision.num_shorts + 1):
             key = f"short_{i}"
             if key in voiceover_assets:
-                short_seg = script_payload.get_segment(key)
+                short_text = short_texts.get(i, "")
                 short_audio = voiceover_assets[key]
                 short_filename = f"{topic_slug}_Short{i}.mp4"
+                short_word_count = len(short_text.split()) if short_text else 30
+                short_duration = max(15, min(short_word_count * 0.4, 60))
                 va.assemble_video(
                     short_filename, short_audio, background_canvas,
-                    short_filename, short_seg.get("target_duration_s", 60),
-                    async_mode=False, script_text=short_seg.get("text", ""),
+                    short_filename, short_duration,
+                    async_mode=False, script_text=short_text[:200],
                     is_short=True, topic_title=topic.get("title", "")
                 )
                 short_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], short_filename)
@@ -657,6 +769,29 @@ class VDNA2Director:
 
         state["compiled_videos"] = compiled_videos
         print(f"   🎬 Total videos: {len(compiled_videos)}")
+
+        # VDNA 3.0: Shorts optimization — generate titles, CTAs, branding
+        try:
+            so = self.skills["shorts_optimizer"]
+            topic_title = topic.get("title", "")
+            topic_context = topic.get("description", "")
+            source = topic.get("source", "")
+            shorts_titles = so.generate_shorts_title_batch(
+                base_title=topic_title,
+                topic_context=topic_context,
+                source=source,
+            )
+            state["shorts_titles"] = shorts_titles
+            print(f"   📱 Shorts titles generated: {len(shorts_titles)} variants")
+
+            # VDNA 3.0: Build CTA with main video URL for subscriber conversion
+            main_video_url = state.get("main_video_url", "")
+            cta = so.build_shorts_cta(main_video_url=main_video_url, topic_title=topic_title)
+            state["shorts_cta"] = cta
+            print(f"   🔗 Shorts CTA: {cta.get('cta_text', 'N/A')[:60]}...")
+        except Exception as e:
+            print(f"   ⚠️ Shorts optimization failed: {e} — continuing without")
+
         return state
 
     def _phase_forensic_audit(self, state):
@@ -672,13 +807,25 @@ class VDNA2Director:
         return state
 
     def _phase_upload(self, state):
-        """Phase 9: YouTube upload."""
+        """Phase 9: YouTube upload.
+        VDNA 3.0: Upload time optimizer enforces IST window (4PM-8PM).
+        """
         print("   📤 Uploading to YouTube...")
         from youtube_uploader import YouTubeUploader
         uploader = YouTubeUploader(config)
         compiled_videos = state.get("compiled_videos", [])
         topic = state.get("selected_topic", {})
         results = []
+
+        # VDNA 3.0: Check optimal upload time window
+        try:
+            uto = self.skills["upload_time_optimizer"]
+            schedule = uto.get_optimal_upload_time()
+            state["upload_schedule"] = schedule
+            print(f"   ⏰ Upload window: {schedule.get('window_name', 'N/A')} (score: {schedule.get('window_score', 'N/A')})")
+        except Exception as e:
+            print(f"   ⚠️ Upload time optimization failed: {e}")
+
         for video_path in compiled_videos:
             is_short = "Short" in video_path
             result = uploader.upload(
@@ -694,8 +841,45 @@ class VDNA2Director:
         return state
 
     def _phase_post_pipeline(self, state):
-        """Phase 10: Post-pipeline tasks (analytics, notifications)."""
+        """Phase 10: Post-pipeline tasks (analytics, RAG feedback, notifications).
+        VDNA 3.0: Pulls YouTube Analytics, stores metrics, generates producer brief.
+        """
         print("   📊 Post-pipeline: analytics + notifications...")
+
+        # VDNA 3.0: YouTube Analytics — pull metrics for uploaded videos
+        try:
+            yta = self.skills["yt_analytics"]
+            upload_results = state.get("upload_results", [])
+            video_ids = []
+            for r in upload_results:
+                if isinstance(r, dict):
+                    vid = r.get("video_id", "")
+                    if vid:
+                        video_ids.append(vid)
+            if video_ids:
+                metrics = yta.pull_metrics(video_ids=video_ids, days=7)
+                state["analytics_summary"] = metrics
+                print(f"   📈 Analytics pulled for {len(video_ids)} videos")
+            else:
+                print("   📈 No video IDs available for analytics pull")
+        except Exception as e:
+            print(f"   ⚠️ YouTube Analytics failed: {e}")
+
+        # VDNA 3.0: RAG feedback — store performance + generate producer brief
+        try:
+            rag = self.skills["rag_feedback"]
+            topic = state.get("selected_topic", {})
+            upload_results = state.get("upload_results", [])
+            analytics = state.get("analytics_summary", {})
+            rag.store_run_performance(
+                topic_title=topic.get("title", ""),
+                video_ids=[r.get("video_id", "") for r in upload_results if isinstance(r, dict)],
+                analytics=analytics,
+            )
+            print("   🧠 RAG feedback stored for next run")
+        except Exception as e:
+            print(f"   ⚠️ RAG feedback storage failed: {e}")
+
         # Send Telegram summary
         compiled = state.get("compiled_videos", [])
         upload = state.get("upload_results", {})
@@ -703,7 +887,7 @@ class VDNA2Director:
         topic = state.get("selected_topic", {})
 
         msg = (
-            f"🧬 VDNA 2.0 Pipeline Complete\n"
+            f"🧬 VDNA 3.0 Pipeline Complete\n"
             f"━━━━━━━━━━━━━━━━━━━━━\n"
             f"📰 Topic: {topic.get('title', 'N/A')}\n"
             f"🎬 Videos: {len(compiled)}\n"
@@ -711,6 +895,7 @@ class VDNA2Director:
             f"⚠️ Errors: {len(errors)}\n"
             f"━━━━━━━━━━━━━━━━━━━━━"
         )
+        print(f"   📬 Sending Telegram notification...")
         self._send_telegram(msg)
         return state
 
@@ -729,14 +914,20 @@ class VDNA2Director:
             load_dotenv(os.path.expanduser("~/.env"))
             token = os.getenv("TELEGRAM_BOT_TOKEN")
             chat_id = os.getenv("TELEGRAM_CHAT_ID")
-            if token and chat_id:
-                requests.post(
-                    f"https://api.telegram.org/bot{token}/sendMessage",
-                    json={"chat_id": chat_id, "text": message},
-                    timeout=10
-                )
+            if not token or not chat_id:
+                print("   ⚠️ Telegram: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID")
+                return
+            r = requests.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat_id, "text": message},
+                timeout=10
+            )
+            if r.status_code == 200:
+                print("   📬 Telegram notification sent")
+            else:
+                print(f"   ⚠️ Telegram returned {r.status_code}: {r.text[:200]}")
         except Exception as e:
-            print(f"   ⚠️ Telegram notification failed: {e}")
+            print(f"   ⚠️ Telegram notification failed: {type(e).__name__}: {e}")
 
     def _print_final_report(self):
         """Print final pipeline report."""

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ViralDNA Pipeline Flow Map</title>
+<style>
+:root {
+  --bg: #020617; --surface: #0f172a; --border: #1e293b;
+  --text: #e2e8f0; --muted: #64748b;
+  --cyan: #22d3ee; --green: #34d399; --blue: #60a5fa;
+  --purple: #a78bfa; --pink: #fb7185; --yellow: #fbbf24; --orange: #fb923c;
+  --red: #f87171;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size:12px; line-height:1.4; padding:24px; }
+h1 { color:var(--cyan); font-size:20px; margin-bottom:4px; }
+.subtitle { color:var(--muted); font-size:11px; margin-bottom:24px; }
+h2 { font-size:14px; margin:20px 0 12px; padding:6px 12px; border-radius:6px; display:inline-block; }
+h2.pre { background:rgba(96,165,250,0.15); color:var(--blue); border:1px solid rgba(96,165,250,0.3); }
+h2.main { background:rgba(52,211,153,0.15); color:var(--green); border:1px solid rgba(52,211,153,0.3); }
+h2.post { background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); }
+h2.gate { background:rgba(251,191,36,0.15); color:var(--yellow); border:1px solid rgba(251,191,36,0.3); }
+
+.flow { display:flex; flex-direction:column; gap:6px; margin-bottom:8px; }
+.step {
+  display:flex; align-items:center; gap:12px; padding:8px 14px;
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  position:relative;
+}
+.step:hover { border-color:var(--cyan); }
+.num { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:bold; flex-shrink:0; }
+.agent-name { font-weight:bold; min-width:220px; }
+.agent-desc { color:var(--muted); font-size:11px; flex:1; }
+.badge { padding:2px 8px; border-radius:10px; font-size:10px; font-weight:bold; }
+.badge-task { background:rgba(52,211,153,0.2); color:var(--green); }
+.badge-gate { background:rgba(251,191,36,0.2); color:var(--yellow); }
+.badge-pre { background:rgba(96,165,250,0.2); color:var(--blue); }
+.badge-post { background:rgba(167,139,250,0.2); color:var(--purple); }
+.badge-warn { background:rgba(248,113,113,0.2); color:var(--red); }
+
+.arrow { text-align:center; color:var(--muted); font-size:16px; margin:2px 0; }
+.arrow-gate { color:var(--yellow); }
+
+/* Color coding by phase */
+.phase-discovery .num { background:rgba(34,211,238,0.2); color:var(--cyan); }
+.phase-script .num { background:rgba(52,211,153,0.2); color:var(--green); }
+.phase-voice .num { background:rgba(251,146,60,0.2); color:var(--orange); }
+.phase-visual .num { background:rgba(167,139,250,0.2); color:var(--purple); }
+.phase-assembly .num { background:rgba(251,113,133,0.2); color:var(--pink); }
+.phase-upload .num { background:rgba(248,113,113,0.2); color:var(--red); }
+.phase-pre .num { background:rgba(96,165,250,0.2); color:var(--blue); }
+.phase-post .num { background:rgba(167,139,250,0.2); color:var(--purple); }
+
+.legend { display:flex; gap:16px; flex-wrap:wrap; margin:20px 0; padding:12px; background:var(--surface); border:1px solid var(--border); border-radius:8px; }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:11px; }
+.legend-dot { width:10px; height:10px; border-radius:50%; }
+
+.confusion-box { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); border-radius:8px; padding:16px; margin:20px 0; }
+.confusion-box h3 { color:var(--red); font-size:13px; margin-bottom:10px; }
+.confusion-box ul { margin-left:20px; }
+.confusion-box li { margin-bottom:6px; color:var(--text); }
+.confusion-box code { background:rgba(0,0,0,0.3); padding:1px 5px; border-radius:3px; font-size:11px; }
+
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:20px 0; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px; text-align:center; }
+.stat-num { font-size:28px; font-weight:bold; color:var(--cyan); }
+.stat-label { font-size:11px; color:var(--muted); margin-top:4px; }
+</style>
+</head>
+<body>
+
+<h1>🧬 ViralDNA Pipeline — Complete Flow Map</h1>
+<div class="subtitle">Version 87.8 • Generated June 15, 2026 • 47 agents total</div>
+
+<div class="stats">
+  <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">Pre-Pipeline Agents</div></div>
+  <div class="stat-card"><div class="stat-num">13</div><div class="stat-label">Task Agents</div></div>
+  <div class="stat-card"><div class="stat-num">13</div><div class="stat-label">Integration Gates</div></div>
+  <div class="stat-card"><div class="stat-num">16</div><div class="stat-label">Post-Pipeline Agents</div></div>
+  <div class="stat-card"><div class="stat-num">65</div><div class="stat-label">Module Files</div></div>
+  <div class="stat-card"><div class="stat-num">60</div><div class="stat-label">Topics Processed</div></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Pre-Pipeline</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>Discovery</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Script/Compliance</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Voice/Visual</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Thumbnail/CTR</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--pink)"></div>Assembly</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Upload</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>Integration Gate</div>
+</div>
+
+<!-- ===== PRE-PIPELINE ===== -->
+<h2 class="pre">PRE-PIPELINE (5 agents)</h2>
+<div class="flow">
+
+  <div class="step phase-pre">
+    <div class="num">1</div>
+    <div class="agent-name">CleanupAgent</div>
+    <div class="agent-desc">Wipes stale files from videos/, audio/, thumbnails/, output/runtime/ — prevents cross-contamination between runs</div>
+    <div class="badge badge-pre">PRE</div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="step phase-pre">
+    <div class="num">2</div>
+    <div class="agent-name">LicenseComplianceAgent</div>
+    <div class="agent-desc">Pre-checks content licenses, copyright risks before production begins</div>
+    <div class="badge badge-pre">PRE</div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="step phase-pre">
+    <div class="num">3</div>
+    <div class="agent-name">UploadTimeOptimizationAgent</div>
+    <div class="agent-desc">Calculates optimal upload schedule based on historical performance data</div>
+    <div class="badge badge-pre">PRE</div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="step phase-pre">
+    <div class="num">4</div>
+    <div class="agent-name">ContentCalendarAgent</div>
+    <div class="agent-desc">Checks content calendar, competitor intel, avoids topic collisions</div>
+    <div class="badge badge-pre">PRE</div>
+  </div>
+  <div class="arrow">↓</div>
+
+  <div class="step phase-pre">
+    <div class="num">5</div>
+    <div class="agent-name">PrimetimeSchedulerAgent</div>
+    <div class="agent-desc">Auto-detects primetime (4-8PM IST) / quiet hours mode, sets lookback window</div>
+    <div class="badge badge-pre">PRE</div>
+  </div>
+</div>
+
+<div class="arrow" style="margin:12px 0">═══════════════════ MAIN PIPELINE ═══════════════════</div>
+
+<!-- ===== PHASE 1: DISCOVERY ===== -->
+<h2 class="main">PHASE 1 — DISCOVERY</h2>
+<div class="flow">
+  <div class="step phase-discovery">
+    <div class="num">6</div>
+    <div class="agent-name">DiscoveryAgent</div>
+    <div class="agent-desc">Scans 16+ RSS feeds (The Hindu, TOI, BBC, ET, LiveMint, etc.), runs trend_discovery + spike_detection, produces sorted_topics list</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 1: DiscoveryWeightingIntegration</span> ═══</div>
+</div>
+
+<!-- ===== PHASE 2: WEIGHTING ===== -->
+<div class="flow">
+  <div class="step phase-discovery">
+    <div class="num">7</div>
+    <div class="agent-name">WeightingAgent</div>
+    <div class="agent-desc">Scores topics via edge_scorer + editorial_scorer, applies post_filter dedup, ranks by CPM/category/spike level</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 2: WeightingScriptingIntegration</span> ═══</div>
+</div>
+
+<!-- ===== PHASE 3: SCRIPTING ===== -->
+<h2 class="main">PHASE 2 — SCRIPTING & COMPLIANCE</h2>
+<div class="flow">
+  <div class="step phase-script">
+    <div class="num">8</div>
+    <div class="agent-name">ScriptingAgent</div>
+    <div class="agent-desc">Generates full video script via Gemini (hook-first, conversational), produces shorts scripts, loads producer_brief from RAG feedback loop</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 3: ScriptingComplianceIntegration</span> ═══</div>
+
+  <div class="step phase-script">
+    <div class="num">9</div>
+    <div class="agent-name">FactCheckAgent</div>
+    <div class="agent-desc">Verifies named entities + roles against source URLs via fact_check.py, BLOCKS pipeline on factual errors</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 4: FactCheckComplianceIntegration</span> ═══</div>
+
+  <div class="step phase-script">
+    <div class="num">10</div>
+    <div class="agent-name">ComplianceAgent</div>
+    <div class="agent-desc">Legal/script check, defamation risk scoring, election compliance, synthetic media labeling</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 5: ComplianceAdFriendlyIntegration</span> ═══</div>
+
+  <div class="step phase-script">
+    <div class="num">11</div>
+    <div class="agent-name">AdFriendlyCheckAgent</div>
+    <div class="agent-desc">Verifies content is ad-friendly (no controversial imagery, appropriate for advertisers)</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+</div>
+
+<!-- ===== PHASE 4: VOICE & VISUALS ===== -->
+<h2 class="main">PHASE 3 — VOICE & VISUAL ASSETS</h2>
+<div class="flow">
+  <div class="step phase-voice">
+    <div class="num">12</div>
+    <div class="agent-name">VoiceSynthesisAgent</div>
+    <div class="agent-desc">Fish Speech 1.4 voice cloning (English, Jay's voice) + gTTS fallback (Telugu). Generates per-segment WAV files</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 6: ComplianceVoiceIntegration</span> ═══</div>
+
+  <div class="step phase-visual">
+    <div class="num">13</div>
+    <div class="agent-name">VisualHarvestingAgent</div>
+    <div class="agent-desc">Stable Diffusion 1.5 (primary) → RSS/Serper image fetch (fallback) → PIL gradient (last resort). 3-tier relevance gate</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 7: VoiceVisualIntegration</span> ═══</div>
+</div>
+
+<!-- ===== PHASE 5: THUMBNAIL & CTR ===== -->
+<h2 class="main">PHASE 4 — THUMBNAIL & CTR OPTIMIZATION</h2>
+<div class="flow">
+  <div class="step phase-visual">
+    <div class="num">14</div>
+    <div class="agent-name">ThumbnailSynthesisAgent</div>
+    <div class="agent-desc">Generates branded thumbnails via thumbnail_creator.py — content-aware text placement, face detection, category colors</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 8: VisualThumbnailIntegration</span> ═══</div>
+
+  <div class="step phase-visual">
+    <div class="num">15</div>
+    <div class="agent-name">CTROptimizationAgent</div>
+    <div class="agent-desc">Optimizes title + thumbnail for CTR. Analyzes face/brightness/text coverage. Generates A/B test variants</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 9: ThumbnailAssemblyIntegration + GATE 10: CTROptimizationIntegration</span> ═══</div>
+</div>
+
+<!-- ===== PHASE 6: ASSEMBLY ===== -->
+<h2 class="main">PHASE 5 — ASSEMBLY & AUDIT</h2>
+<div class="flow">
+  <div class="step phase-assembly">
+    <div class="num">16</div>
+    <div class="agent-name">SequentialAssemblyAgent</div>
+    <div class="agent-desc">FFmpeg video assembly: main video (1280x720, 4M bitrate) + shorts (vertical, 2M bitrate). .ass subtitles, scene transitions</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 11: AssemblyUploadIntegration</span> ═══</div>
+
+  <div class="step phase-assembly">
+    <div class="num">17</div>
+    <div class="agent-name">ForensicAuditGateAgent 🛑</div>
+    <div class="agent-desc">HARD GATE: Examines ALL artifacts (text, image, audio, video, metadata). Checks banned phrases, hook patterns, scene counts. HALT on failure</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 12: ForensicAuditUploadIntegration</span> ═══</div>
+</div>
+
+<!-- ===== PHASE 7: UPLOAD ===== -->
+<h2 class="main">PHASE 6 — UPLOAD & PUBLISH</h2>
+<div class="flow">
+  <div class="step phase-upload">
+    <div class="num">18</div>
+    <div class="agent-name">ResilientUploaderAgent</div>
+    <div class="agent-desc">Saves to Google Drive review folder (UPLOAD_ENABLED=false). Would upload to YouTube with scheduled premiere if enabled</div>
+    <div class="badge badge-task">TASK</div>
+  </div>
+  <div class="arrow arrow-gate">↓ ═══ <span style="font-size:10px">GATE 13: UploadFeedbackIntegration</span> ═══</div>
+</div>
+
+<!-- ===== APPROVAL GATE ===== -->
+<div class="arrow" style="margin:12px 0">═══════════ APPROVAL GATE (Human-in-the-Loop) ═══════════</div>
+<div class="flow">
+  <div class="step" style="border-color:var(--yellow);">
+    <div class="num" style="background:rgba(251,191,36,0.2);color:var(--yellow)">!</div>
+    <div class="agent-name">approval_gate.py → Telegram</div>
+    <div class="agent-desc">Sends thumbnail + scene visuals + metadata to Telegram. Inline ✅ Approve / ❌ Reject buttons. Callback poller checks every 1min</div>
+    <div class="badge badge-gate">HUMAN</div>
+  </div>
+  <div class="arrow">↓ (on approve)</div>
+  <div class="step" style="border-color:var(--green);">
+    <div class="num" style="background:rgba(52,211,153,0.2);color:var(--green)">→</div>
+    <div class="agent-name">upload_approved.py</div>
+    <div class="agent-desc">Triggered by callback poller on approve. Refreshes YouTube token, uploads main + shorts, sets premiere time, adds to playlists</div>
+    <div class="badge badge-gate">AUTO</div>
+  </div>
+</div>
+
+<!-- ===== POST-PIPELINE ===== -->
+<h2 class="post">POST-PIPELINE (16 agents)</h2>
+<div class="flow">
+  <div class="step phase-post">
+    <div class="num">19</div>
+    <div class="agent-name">FeedbackAgent</div>
+    <div class="agent-desc">Collects pipeline execution metrics, errors, timing data for self-learning</div>
+    <div class="badge badge-post">POST</div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="step phase-post">
+    <div class="num">20</div>
+    <div class="agent-name">YouTubeAnalyticsAgent</div>
+    <div class="agent-desc">Pulls views, CTR, avg watch %, likes, subscribers via YouTube Analytics API v2. Saves to growth ledger</div>
+    <div class="badge badge-post">POST</div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="step phase-post">
+    <div class="num">21</div>
+    <div class="agent-name">CommunityEngagementAgent</div>
+    <div class="agent-desc">Manages A/B test tracking, community engagement metrics</div>
+    <div class="badge badge-post">POST</div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="step phase-post">
+    <div class="num">22</div>
+    <div class="agent-name">CompetitorIntelAgent</div>
+    <div class="agent-desc">Analyzes competitor channels, content gaps, trending topics in niche</div>
+    <div class="badge badge-post">POST</div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="step phase-post">
+    <div class="num">23</div>
+    <div class="agent-name">RetentionOptimizationAgent</div>
+    <div class="agent-desc">Analyzes audience retention patterns, suggests improvements</div>
+    <div class="badge badge-post">POST</div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="step phase-post">
+    <div class="num">24</div>
+    <div class="agent-name">ShortsOptimizationAgent</div>
+    <div class="agent-desc">Optimizes short-form titles (LLM-generated, non-formulaic), CTAs, scene pacing</div>
+    <div class="badge badge-post">POST</div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="step phase-post">
+    <div class="num">25</div>
+    <div class="agent-name">ContentQualityAgent</div>
+    <div class="agent-desc">Post-hoc content quality scoring, benchmark tracking</div>
+    <div class="badge badge-post">POST</div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="step phase-post">
+    <div class="num">26</div>
+    <div class="agent-name">ReliabilityAgent</div>
+    <div class="agent-desc">Tracks upload reliability, failure rates, quota usage</div>
+    <div class="badge badge-post">POST</div>
+  </div>
+  <div class="arrow">↓</div>
+  <div class="step phase-post">
+    <div class="num">27-34</div>
+    <div class="agent-name">CollaborationAgent, BlogCompanionAgent, NewsletterAgent, CommunityPosterAgent, AudienceChannelManagerAgent, UploadTimingAgent, IntelligenceAgent, ContinuousAuditorAgent</div>
+    <div class="agent-desc">Extended pipeline: blog posts, newsletters, community outreach, audience management, intelligence gathering</div>
+    <div class="badge badge-post">POST</div>
+  </div>
+</div>
+
+<!-- ===== CONFUSION POINTS ===== -->
+<div class="confusion-box">
+  <h3>⚠️ Common Confusion Points When Pipeline Starts</h3>
+  <ul>
+    <li><strong>Topic injection vs discovery:</strong> If <code>--topic-file</code> is passed (from monitor_cloud.py), Discovery + Weighting are SKIPPED. The injected topic goes straight to Scripting. This is how cron jobs work — monitor picks the topic, pipeline produces it.</li>
+    <li><strong>Topic retry loop:</strong> Pipeline tries up to 5 topics (MAX_TOPIC_RETRIES). If Scripting/Assembly fails on topic 1, it moves to topic 2. Forensic audit failure = HARD HALT (no retry).</li>
+    <li><strong>Integration gates vs task agents:</strong> 13 integration gates sit BETWEEN task agents. They validate state handoffs. If a gate fails (missing/empty state key), the topic is marked failed and next topic is tried.</li>
+    <li><strong>Upload is DISABLED:</strong> ResilientUploaderAgent saves to Google Drive, NOT YouTube. YouTube upload only happens via <code>upload_approved.py</code> after manual Telegram approval.</li>
+    <li><strong>Post-pipeline agents run AFTER upload:</strong> They don't block the pipeline. Analytics, competitor intel, blog generation all happen after the main flow completes.</li>
+    <li><strong>Workspace cleanup runs TWICE:</strong> Once in CleanupAgent (pre-pipeline) and once inline at start of execute_pipeline(). This is intentional — belt and suspenders.</li>
+    <li><strong>Shorts are produced by ShortsOptimizationAgent (post) NOT the main pipeline:</strong> Main pipeline produces 1 main video. Shorts count is decided by publish_decision_engine.py (min 2). ShortsOptimizer runs post-pipeline to refine titles/CTAs.</li>
+    <li><strong>Approval gate is separate from pipeline:</strong> Pipeline → approval_queue.json → Telegram → human approves → callback poller → upload_approved.py. The pipeline itself NEVER uploads to YouTube.</li>
+  </ul>
+</div>
+
+<div style="text-align:center;color:var(--muted);font-size:11px;margin-top:20px;">
+  ViralDNA v87.8 • Pipeline Flow Map • Generated June 15 2026
+</div>
+</body>
+</html>

@@ -503,11 +503,65 @@
       "attribution_required": true,
       "notes": "Topic: Another jolt to TMC, party MP Sushmita Dev resigns from Rajya Sabha - The Hindu | URL: https://i.ytimg.com/vi/I8FWloyYDf4/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCxJUaq76Xp7ms6MVdSJMZmX2fqrA | Domain: i.ytimg.com",
       "tracked_at": "2026-06-10T12:54:34.059838"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_0.jpg",
+      "source": "img-s-msn-com",
+      "license": "Unknown  from img-s-msn-com.akamaized.net",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Bihar | Samrat gets going | URL: https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA24ZbWu.img?w=768&h=1174&m=6&x=71&y=746&s=66&d=66 | Domain: img-s-msn-com.akamaized.net",
+      "tracked_at": "2026-06-15T06:42:38.282869"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_1.jpg",
+      "source": "akm-img-a-in",
+      "license": "Unknown  from akm-img-a-in.tosshub.com",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Bihar | Samrat gets going | URL: https://akm-img-a-in.tosshub.com/indiatoday/images/story/202606/samrat-choudhary-060304754-16x9_0.jpg?VersionId=.nOcijG_BFqww2MjR_nnJgclyhkdHl8C&size=690:388 | Domain: akm-img-a-in.tosshub.com",
+      "tracked_at": "2026-06-15T06:42:40.193930"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_2.jpg",
+      "source": "newsarenaindia",
+      "license": "Unknown  from newsarenaindia.com",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Bihar | Samrat gets going | URL: https://newsarenaindia.com/_next/image?url=https%3A%2F%2Fimages.newsarenaindia.com%2Fbihar-newnaijpg_1776234285849.jpg&w=1920&q=75 | Domain: newsarenaindia.com",
+      "tracked_at": "2026-06-15T06:42:41.004624"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_0.jpg",
+      "source": "img-s-msn-com",
+      "license": "Unknown  from img-s-msn-com.akamaized.net",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Bihar | Samrat gets going | URL: https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA24ZbWu.img?w=768&h=1174&m=6&x=71&y=746&s=66&d=66 | Domain: img-s-msn-com.akamaized.net",
+      "tracked_at": "2026-06-15T06:47:22.191983"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_1.jpg",
+      "source": "akm-img-a-in",
+      "license": "Unknown  from akm-img-a-in.tosshub.com",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Bihar | Samrat gets going | URL: https://akm-img-a-in.tosshub.com/indiatoday/images/story/202606/samrat-choudhary-060304754-16x9_0.jpg?VersionId=.nOcijG_BFqww2MjR_nnJgclyhkdHl8C&size=690:388 | Domain: akm-img-a-in.tosshub.com",
+      "tracked_at": "2026-06-15T06:47:23.956715"
+    },
+    {
+      "path": "/home/jay/ViralDNA/output/runtime/viz_news_2.jpg",
+      "source": "newsarenaindia",
+      "license": "Unknown  from newsarenaindia.com",
+      "commercial_safe": false,
+      "attribution_required": true,
+      "notes": "Topic: Bihar | Samrat gets going | URL: https://newsarenaindia.com/_next/image?url=https%3A%2F%2Fimages.newsarenaindia.com%2Fbihar-newnaijpg_1776234285849.jpg&w=1920&q=75 | Domain: newsarenaindia.com",
+      "tracked_at": "2026-06-15T06:47:24.381923"
     }
   ],
   "violations": [],
   "stats": {
-    "total_tracked": 56,
+    "total_tracked": 62,
     "violation_count": 0,
     "commercial_safe": 1
   }

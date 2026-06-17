@@ -113,68 +113,118 @@ class ForensicAudit:
                     if st not in expected_states:
                         expected_states.append(st)
 
-        segments = ["main", "short_1", "short_2", "short_3"]
-        for seg in segments:
-            segment = script_payload.get_segment(seg)
-            text = segment["text"]
-            wc = segment["word_count"]
+        # VDNA 3.0: Handle dict (from checkpoint) or ScriptPayload object
+        if isinstance(script_payload, dict):
+            segments = ["main", "short_1", "short_2", "short_3"]
+            for seg in segments:
+                text = script_payload.get(f"{seg}_clean", "") or script_payload.get(f"{seg}_raw", "")
+                wc = len(text.split())
+                if seg == "main" and wc < 100:
+                    issues.append(f"TEXT: Main script too short ({wc} words, min 100)")
+                if seg.startswith("short_") and wc < 10:
+                    issues.append(f"TEXT: {seg} script too short ({wc} words, min 10)")
+                text_lower = text.lower()
 
-            if seg == "main" and wc < 100:
-                issues.append(f"TEXT: Main script too short ({wc} words, min 100)")
-            if seg.startswith("short_") and wc < 10:
-                issues.append(f"TEXT: {seg} script too short ({wc} words, min 10)")
+                # ── State accuracy check ──
+                if expected_states and seg == "main":
+                    state_mentioned = any(s.lower() in text_lower for s in expected_states)
+                    if not state_mentioned:
+                        all_known_states = list(state_keywords.keys())
+                        wrong_states_in_script = [s for s in all_known_states
+                                                  if s.lower() in text_lower and s not in expected_states]
+                        if wrong_states_in_script:
+                            issues.append(
+                                f"TEXT: STATE MISMATCH in {seg} — source is {expected_states} "
+                                f"but script mentions {wrong_states_in_script}. "
+                                f"Script must use the correct state from the source."
+                            )
+                        elif len(expected_states) == 1:
+                            issues.append(
+                                f"TEXT: STATE MISSING in {seg} — source topic is about "
+                                f"{expected_states[0]} but script never mentions the state name."
+                            )
 
-            text_lower = text.lower()
+                for phrase in self.FORBIDDEN_PHRASES:
+                    if phrase in text_lower:
+                        issues.append(f"TEXT: Forbidden phrase '{phrase}' found in {seg}")
 
-            # ── State accuracy check ──
-            if expected_states and seg == "main":
-                # Check if script mentions the expected state
-                state_mentioned = any(s.lower() in text_lower for s in expected_states)
-                if not state_mentioned:
-                    # Check if a WRONG state is mentioned
-                    all_known_states = list(state_keywords.keys())
-                    wrong_states_in_script = [s for s in all_known_states
-                                              if s.lower() in text_lower and s not in expected_states]
-                    if wrong_states_in_script:
-                        issues.append(
-                            f"TEXT: STATE MISMATCH in {seg} — source is {expected_states} "
-                            f"but script mentions {wrong_states_in_script}. "
-                            f"Script must use the correct state from the source."
-                        )
-                    # If no state mentioned at all in a political/regional story, warn
-                    elif len(expected_states) == 1:
-                        issues.append(
-                            f"TEXT: STATE MISSING in {seg} — source topic is about "
-                            f"{expected_states[0]} but script never mentions the state name."
-                        )
+                for phrase in self.BANNED_ACADEMIC_PHRASES:
+                    if phrase in text_lower:
+                        issues.append(f"TEXT: Academic/banned phrase '{phrase}' in {seg} — use conversational YouTube style")
 
-            for phrase in self.FORBIDDEN_PHRASES:
-                if phrase in text_lower:
-                    issues.append(f"TEXT: Forbidden phrase '{phrase}' found in {seg}")
+                if seg.startswith("short_"):
+                    first_words = " ".join(text_lower.split()[:10])
+                    has_hook = any(re.match(p, first_words) for p in self.SHORT_HOOK_PATTERNS)
+                    if re.match(r"^(?:the\s+)?\w+\s+(?:party|government|minister|cm|pm|mla|mp)\s+(?:announced|said|declared|stated)", first_words):
+                        issues.append(f"TEXT: {seg} starts with passive announcement opener — must start with shocking fact/question in first 2 seconds (v84.3)")
+                    elif not has_hook and seg == "short_1":
+                        issues.append(f"TEXT: {seg} has no question/shock/number hook in first 10 words — violates v84.3 short format. First words: '{first_words[:60]}...'")
 
-            # v84.3: Ban academic/formal phrases (YouTube Studio style guide)
-            for phrase in self.BANNED_ACADEMIC_PHRASES:
-                if phrase in text_lower:
-                    issues.append(f"TEXT: Academic/banned phrase '{phrase}' in {seg} — use conversational YouTube style")
+                for pii_pattern in self.PII_PATTERNS:
+                    matches = re.findall(pii_pattern, text)
+                    if matches:
+                        issues.append(f"TEXT: PII leak ({matches[0][:8]}...) found in {seg}")
 
-            # v84.3: Short hook audit — first 10 words must contain a hook
-            if seg.startswith("short_"):
-                first_words = " ".join(text_lower.split()[:10])
-                has_hook = any(re.match(p, first_words) for p in self.SHORT_HOOK_PATTERNS)
-                # Also check for "Breaking news from [place]" passive opener
-                if re.match(r"^(?:the\s+)?\w+\s+(?:party|government|minister|cm|pm|mla|mp)\s+(?:announced|said|declared|stated)", first_words):
-                    issues.append(f"TEXT: {seg} starts with passive announcement opener — must start with shocking fact/question in first 2 seconds (v84.3)")
-                elif not has_hook and seg == "short_1":
-                    issues.append(f"TEXT: {seg} has no question/shock/number hook in first 10 words — violates v84.3 short format. First words: '{first_words[:60]}...'")
+                for flag in self.MEDICAL_RED_FLAGS:
+                    if flag in text_lower:
+                        issues.append(f"COMPLIANCE: Medical red flag '{flag}' in {seg}")
+        else:
+            segments = ["main", "short_1", "short_2", "short_3"]
+            for seg in segments:
+                segment = script_payload.get_segment(seg)
+                text = segment["text"]
+                wc = segment["word_count"]
 
-            for pii_pattern in self.PII_PATTERNS:
-                matches = re.findall(pii_pattern, text)
-                if matches:
-                    issues.append(f"TEXT: PII leak ({matches[0][:8]}...) found in {seg}")
+                if seg == "main" and wc < 100:
+                    issues.append(f"TEXT: Main script too short ({wc} words, min 100)")
+                if seg.startswith("short_") and wc < 10:
+                    issues.append(f"TEXT: {seg} script too short ({wc} words, min 10)")
 
-            for flag in self.MEDICAL_RED_FLAGS:
-                if flag in text_lower:
-                    issues.append(f"COMPLIANCE: Medical red flag '{flag}' in {seg}")
+                text_lower = text.lower()
+
+                # ── State accuracy check ──
+                if expected_states and seg == "main":
+                    state_mentioned = any(s.lower() in text_lower for s in expected_states)
+                    if not state_mentioned:
+                        all_known_states = list(state_keywords.keys())
+                        wrong_states_in_script = [s for s in all_known_states
+                                                  if s.lower() in text_lower and s not in expected_states]
+                        if wrong_states_in_script:
+                            issues.append(
+                                f"TEXT: STATE MISMATCH in {seg} — source is {expected_states} "
+                                f"but script mentions {wrong_states_in_script}. "
+                                f"Script must use the correct state from the source."
+                            )
+                        elif len(expected_states) == 1:
+                            issues.append(
+                                f"TEXT: STATE MISSING in {seg} — source topic is about "
+                                f"{expected_states[0]} but script never mentions the state name."
+                            )
+
+                for phrase in self.FORBIDDEN_PHRASES:
+                    if phrase in text_lower:
+                        issues.append(f"TEXT: Forbidden phrase '{phrase}' found in {seg}")
+
+                for phrase in self.BANNED_ACADEMIC_PHRASES:
+                    if phrase in text_lower:
+                        issues.append(f"TEXT: Academic/banned phrase '{phrase}' in {seg} — use conversational YouTube style")
+
+                if seg.startswith("short_"):
+                    first_words = " ".join(text_lower.split()[:10])
+                    has_hook = any(re.match(p, first_words) for p in self.SHORT_HOOK_PATTERNS)
+                    if re.match(r"^(?:the\s+)?\w+\s+(?:party|government|minister|cm|pm|mla|mp)\s+(?:announced|said|declared|stated)", first_words):
+                        issues.append(f"TEXT: {seg} starts with passive announcement opener — must start with shocking fact/question in first 2 seconds (v84.3)")
+                    elif not has_hook and seg == "short_1":
+                        issues.append(f"TEXT: {seg} has no question/shock/number hook in first 10 words — violates v84.3 short format. First words: '{first_words[:60]}...'")
+
+                for pii_pattern in self.PII_PATTERNS:
+                    matches = re.findall(pii_pattern, text)
+                    if matches:
+                        issues.append(f"TEXT: PII leak ({matches[0][:8]}...) found in {seg}")
+
+                for flag in self.MEDICAL_RED_FLAGS:
+                    if flag in text_lower:
+                        issues.append(f"COMPLIANCE: Medical red flag '{flag}' in {seg}")
 
         return issues
 

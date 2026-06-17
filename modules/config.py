@@ -68,7 +68,7 @@ BRANDING_CONFIG = {"palette": {"primary_text": (255,255,255), "secondary_text": 
 
 # YouTube Uploader Configuration
 YOUTUBE_UPLOAD_CONFIG = {
-    "privacy_status": "private",
+    "privacy_status": "public",
     "category_id": "25",  # News & Politics
     "default_language": "en",
     "schedule_premiere": True,

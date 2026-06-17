@@ -1,5 +1,35 @@
 {
-  "pending": {},
+  "pending": {
+    "VDNA218": {
+      "token": "99615171",
+      "topic_id": "VDNA218",
+      "topic_title": "Bihar | Samrat gets going",
+      "topic_source": "https://www.indiatoday.in/rss/1206514",
+      "topic_url": "",
+      "topic_score": 0,
+      "video_files": [
+        "/home/jay/ViralDNA/videos/Bihar_|_Samrat_gets_going_Main.mp4",
+        "/home/jay/ViralDNA/videos/Bihar_|_Samrat_gets_going_Short1.mp4",
+        "/home/jay/ViralDNA/videos/Bihar_|_Samrat_gets_going_Short2.mp4"
+      ],
+      "thumbnail_files": [
+        "/home/jay/ViralDNA/thumbnails/Bihar_|_Samrat_gets_going_branded_v3.jpg"
+      ],
+      "scene_visuals": [
+        "/home/jay/ViralDNA/output/runtime/viz_news_0.jpg",
+        "/home/jay/ViralDNA/output/runtime/viz_news_1.jpg",
+        "/home/jay/ViralDNA/output/runtime/viz_news_2.jpg"
+      ],
+      "publish_decision": {
+        "produce_main": true,
+        "num_shorts": 2,
+        "reason": "Category: general | Background \u2192 floor 2 shorts | Low source diversity (floor applied)",
+        "summary": "1 Main Video + 2 Short(s)"
+      },
+      "requested_at": "2026-06-15T12:22:02.716558+05:30",
+      "status": "pending"
+    }
+  },
   "approved": {},
   "rejected": {},
   "uploaded": {

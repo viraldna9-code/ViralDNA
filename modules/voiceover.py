@@ -270,15 +270,20 @@ class VoiceoverGenerator:
 
         # --- gTTS fallback (Telugu, or English if Fish Speech failed) ---
         gtts_lang = "en" if lang == "en" else "te"
+
+        def _do_tts():
+            from gtts import gTTS
+            tts = gTTS(text=text, lang=gtts_lang, slow=False)
+            tts.save(out_path)
+
         try:
-            loop = asyncio.get_event_loop()
-
-            def _do_tts():
-                from gtts import gTTS
-                tts = gTTS(text=text, lang=gtts_lang, slow=False)
-                tts.save(out_path)
-
-            await loop.run_in_executor(None, _do_tts)
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(_do_tts)
+                future.result(timeout=60)  # 60s timeout — gTTS should not take longer
+        except concurrent.futures.TimeoutError:
+            print(f"   ❌ gTTS TIMEOUT (>60s) for '{text[:30]}...' (lang={gtts_lang}) — network slow?")
+            return False
         except Exception as e:
             print(f"   ❌ gTTS Synthesis Error for '{text[:30]}...' (lang={gtts_lang}): {e}")
             return False

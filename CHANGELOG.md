@@ -563,3 +563,185 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 
 **FILES CHANGED:** `modules/ctr_optimizer.py`, `modules/shorts_optimizer.py`, `modules/thumbnail_creator.py`, `modules/youtube_uploader.py`, `modules/run_multi_agent_pipeline.py`
 **COMMIT** db5867c — v87.12 remaining audit fixes
+
+---
+
+## 2026-06-15
+
+### 14:00 IST — VDNA 3.0: Clean Pipeline System (MAJOR — Architecture Clarity)
+
+**Problem:** Two parallel pipeline systems existed causing confusion:
+- **System A (OLD):** `modules/run_multi_agent_pipeline.py` — 3687-line monolith, no checkpoint/resume, no timeout enforcement, no signal handling. What cron was calling.
+- **System B (VDNA 2.0):** `modules/vdna2_director.py` — 780-line clean director with checkpoint/resume, per-phase timeout, signal handling, disk monitoring. What user ran manually on June 14 and it worked.
+
+Cron was calling System A (old/broken), not System B (proven). This caused "today it works tomorrow it fails" intermittent failures.
+
+**Solution: VDNA 3.0 — Single Clean Entrypoint**
+
+Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the proven VDNA 2.0 Director with clear naming and proper CLI interface.
+
+**What VDNA 3.0 includes (from VDNA 2.0):**
+- 9-phase pipeline with FactoryWorker crash isolation
+- Checkpoint/resume via `vdna2_checkpoint.py` (any phase can crash and resume)
+- Per-phase timeout enforcement
+- Graceful degradation with fallback functions per phase
+- Disk space monitoring
+- Signal handling (SIGTERM/SIGINT graceful shutdown)
+- 11 skill modules loaded by the Director
+
+**VDNA 3.0 Module Map (every file, its version, its purpose):**
+
+| File | Version | Purpose | Used By |
+|------|---------|---------|---------|
+| `run_vdna3.py` | v3.0 | **ENTRYPOINT** — CLI wrapper, loads Director | Cron jobs |
+| `modules/vdna2_director.py` | v2.0 | **DIRECTOR** — 9-phase orchestrator, FactoryWorker pattern | run_vdna3.py |
+| `modules/vdna2_checkpoint.py` | v1.0 | **CHECKPOINT** — save/resume, PhaseTimer, disk monitor, signal handlers | vdna2_director.py |
+| `modules/config.py` | v50.4 | **CONFIG** — all paths, API keys, YouTube settings | All modules |
+| `modules/trend_discovery.py` | v70.0 | **PHASE 1** — discover trending news via Google Trends RSS + Serper | vdna2_director |
+| `modules/post_filter.py` | v71.0 | **PHASE 2** — score, weight, deduplicate topics | vdna2_director |
+| `modules/script_generator.py` | v84.3 | **PHASE 3** — write scripts with Gemini AI | vdna2_director |
+| `modules/voiceover.py` | v63.0 | **PHASE 4** — Fish Speech 1.4 primary, gTTS fallback | vdna2_director |
+| `modules/local_visual_generator.py` | v87.8 | **PHASE 5a** — Stable Diffusion 1.5 image generation | vdna2_director |
+| `modules/visual_fetcher.py` | v80.0 | **PHASE 5b** — news image fetch with Gemini Vision gate | vdna2_director |
+| `modules/thumbnail_creator.py` | v22.0 | **PHASE 6** — smart thumbnail with text overlay | vdna2_director |
+| `modules/video_assembler.py` | v84.3 | **PHASE 7** — FFmpeg video assembly (main + shorts) | vdna2_director |
+| `modules/forensic_audit.py` | v1.0 | **PHASE 8** — video quality audit before upload | vdna2_director |
+| `modules/pre_ship_check.py` | v1.0 | **PHASE 8b** — pre-upload validation | vdna2_director |
+| `modules/youtube_uploader.py` | v1.8 | **PHASE 9** — YouTube Data API v3 upload (skipped if upload disabled) | vdna2_director |
+| `modules/publish_decision_engine.py` | v1.0 | **PHASE 9b** — decides main + shorts count (min 2 shorts) | vdna2_director |
+| `modules/gemini_engine.py` | v1.0 | **SHARED** — Gemini API wrapper used by multiple phases | vdna2_director |
+
+**Files NOT used in VDNA 3.0 (legacy — do NOT call):**
+- `modules/run_multi_agent_pipeline.py` — old 3687-line monolith (System A)
+- `daily_publish.py` — old cron script
+- `run_pipeline_entrypoint.py` — old entrypoint
+
+**Cron jobs updated:**
+- `VDNA 3.0 Morning Publish (9AM IST)` — ID: ab423cd38769 — now calls `run_vdna3.py`
+- `VDNA 3.0 Evening Publish (7PM IST)` — ID: 47ccc5ce2210 — now calls `run_vdna3.py`
+- Other cron jobs (Health Monitor, Daily/Weekly Analytics, Callback Poller) — unchanged
+
+**Verified:**
+- All 16 imports pass cleanly
+- Director initializes with 11 skill modules loaded
+- Checkpoint directory created correctly
+- Entrypoint compiles without errors
+
+**FILES CREATED:** `run_vdna3.py`
+**FILES MODIFIED:** cron job prompts (Morning, Evening)
+**NAMING CONVENTION:** VDNA 3.0 = run_vdna3.py entrypoint + VDNA 2.0 Director internals. The "3.0" refers to the clean system architecture and naming, not a rewrite of the director.
+
+---
+
+## 2026-06-15
+
+### 10:00 IST — v87.9 VDNA 3.0 Module Wiring (CRITICAL — All Modules Now Active in Pipeline)
+
+**STATUS:** DONE | **COMMIT:** pending
+**SUMMARY:** Forensic audit revealed 5 patched modules (ctr_optimizer, shorts_optimizer, upload_time_optimizer, yt_analytics, rag_feedback) were never wired into the VDNA 3.0 Director's _load_skills() or phase execution. They existed as code but were dead code — the Director's 9 phases never called them. This update wires all 5 modules into the pipeline execution phases, bringing the Director from 11 to 16 skill modules.
+
+**CRITICAL FIXES:**
+
+1. **RAG Feedback Loop wired into Phase 3 (Scripting)**
+   - `vdna2_director.py` _phase_scripting() now calls `rag_feedback.generate_producer_brief()` to load producer brief from growth ledger
+   - Brief is passed as `producer_brief=` parameter to `script_generator.run()` for context injection
+   - Was previously hardcoded `producer_brief=None` — RAG wiring from commit a9206f1 was only in old monolith
+
+2. **CTR Optimizer wired into Phase 6 (Thumbnail)**
+   - `vdna2_director.py` _phase_thumbnail() now calls `ctr_optimizer.optimize()` after thumbnail creation
+   - Scores both title and thumbnail, outputs combined CTR score
+   - Was previously a dead module — code existed at ctr_optimizer.py v3.0 but never called
+
+3. **Shorts Optimizer wired into Phase 7 (Assembly)**
+   - `vdna2_director.py` _phase_assembly() now calls `shorts_optimizer.generate_shorts_title_batch()` after video assembly
+   - Also calls `shorts_optimizer.build_shorts_cta()` with main video URL for dynamic CTA
+   - CTA no longer falls back to generic "link in bio" when main video URL exists
+
+4. **Upload Time Optimizer wired into Phase 9 (Upload)**
+   - `vdna2_director.py` _phase_upload() now calls `upload_time_optimizer.get_optimal_upload_time()` before uploading
+   - Reports optimal IST window (4PM-8PM primetime peak = score 100)
+   - Schedule info stored in state["upload_schedule"] for logging
+
+5. **YouTube Analytics wired into Phase 10 (Post-Pipeline)**
+   - `vdna2_director.py` _phase_post_pipeline() now calls `yt_analytics.pull_metrics()` for uploaded videos
+   - Extracts video IDs from upload results, pulls 7-day metrics
+   - RAG feedback stores run performance for next run's producer brief
+   - Notification message updated from "VDNA 2.0" to "VDNA 3.0"
+
+6. **privacy_status changed: "private" → "public"** (config.py:71)
+   - All videos now upload as public — immediately discoverable
+   - Previous "private" setting meant videos were invisible without premiere scheduling
+
+7. **A/B test database cleaned** (diagnostics/ab_test_db.json)
+   - Purged 262 empty/archived tests with synthetic data (5991 lines → 50 lines)
+   - Retained 1 test with real data
+   - Added metadata: version, stats, last_cleaned timestamp
+
+**MODULE MAP (16 skills in _load_skills()):**
+- `trend_discovery` — Phase 1: News discovery (TrendDiscovery)
+- `post_filter` — Phase 2: Quality filtering (PostFilter)
+- `script_generator` — Phase 3: Bilingual script (ScriptGenerator + RAG brief)
+- `voiceover` — Phase 4: Fish Speech + gTTS (VoiceoverGenerator)
+- `video_assembler` — Phase 7: FFmpeg assembly (VideoAssembler)
+- `thumbnail_creator` — Phase 6: Thumbnails (ThumbnailCreator)
+- `visual_fetcher` — Phase 5: Image fetch (VisualFetcher)
+- `gemini_engine` — LLM engine (GeminiEngine)
+- `forensic_audit` — Phase 8: Pre-ship audit (ForensicAudit)
+- `pre_ship_check` — Quality gate (PreShipCheck)
+- `decide_publish_plan` — Publish decision (decide_publish_plan)
+- **`ctr_optimizer`** — Phase 6: Title+thumbnail scoring (CTROptimizer) [NEW]
+- **`shorts_optimizer`** — Phase 7: Shorts titles+CTA (ShortsOptimizer) [NEW]
+- **`upload_time_optimizer`** — Phase 9: IST window (UploadTimeOptimizer) [NEW]
+- **`yt_analytics`** — Phase 10: Metrics pull (YouTubeAnalytics) [NEW]
+- **`rag_feedback`** — Phase 3+10: Producer brief + storage (RagFeedbackLoop) [NEW]
+
+**FILES MODIFIED:** `modules/vdna2_director.py`, `modules/config.py`, `diagnostics/ab_test_db.json`
+**VERIFICATION:** All 4 files compile OK. All 5 new module imports verified. Director initializes with 16 skills confirmed.
+**BREAKING CHANGES:** privacy_status now public (was private). Videos immediately visible on upload.
+
+---
+
+## 2026-06-15
+
+### 14:00 IST — VDNA 3.0 Pipeline Fix: ScriptPayload Dict Serialization (CRITICAL)
+
+**Problem:** Pipeline crashed at Phase 7 (Assembly) with `AttributeError: 'dict' object has no attribute 'get_segment'`. Root cause: checkpoint system stored `ScriptPayload` as `str()` representation, and the scripting phase was updated to store `ScriptPayload.__dict__` (a dict) for JSON serialization. But voice, visuals, assembly, and forensic_audit phases still called `.get_segment()` — a method only on `ScriptPayload` objects.
+
+**Solution (four-pronged):**
+
+**A) Scripting phase — store as dict:**
+- `modules/vdna2_director.py` — Scripting phase now stores `script_payload.__dict__` instead of the raw object
+- Added `_extract_script_text()` helper method that handles all three formats: live object, dict (from checkpoint), string (legacy)
+
+**B) Voice phase — handle all formats:**
+- Voice phase already had inline dict/string handling — verified correct
+
+**C) Assembly phase — use helper:**
+- Replaced `script_payload.get_segment("main")` and `script_payload.get_segment(key)` with `self._extract_script_text()` and dict-safe access
+
+**D) Forensic audit — handle dict payloads:**
+- `modules/forensic_audit.py` — Added `isinstance(script_payload, dict)` branch that extracts text from `{seg}_clean`/`{seg}_raw` keys and runs all audit checks (state accuracy, forbidden phrases, PII, medical red flags, short hooks)
+
+**E) gTTS timeout fix:**
+- `modules/voiceover.py` — Added 60-second timeout to gTTS network calls using `concurrent.futures` with `future.result(timeout=60)`. Prevents indefinite hangs on slow network.
+
+**FILES MODIFIED:** `modules/vdna2_director.py`, `modules/forensic_audit.py`, `modules/voiceover.py`
+**VERIFICATION:** All files compile OK. Pipeline ran successfully — 3 videos produced (1 main + 2 shorts). Forensic audit passed on re-run.
+**BREAKING CHANGES:** None. All changes are backward-compatible with live `ScriptPayload` objects.
+
+---
+
+## 2026-06-16
+
+### 06:00 IST — Fish Speech Fix + Telegram Debug
+
+**Problem 1 — Fish Speech failing:** Pipeline used `#!/usr/bin/env python3` (system Python) which lacks `transformers`. The venv at `/home/jay/venv/bin/python3` has `transformers 5.11.0` installed. Fish Speech worked yesterday because it was run from the venv directly.
+
+**Fix:** Changed `run_vdna3.py` shebang from `#!/usr/bin/env python3` to `#!/home/jay/venv/bin/python3`. Fish Speech now loads successfully (494M params in 7.4s + 1.1s decoder on CUDA).
+
+**Problem 2 — No Telegram approval alert:** The `_send_telegram()` call in `_phase_post_pipeline()` was not producing any output (neither success nor error). Root cause: the `post_pipeline` phase completed but the Telegram send was silently skipped — likely because the `FactoryWorker` checkpoint logic or print buffering swallowed the output.
+
+**Fix:** Added explicit debug print before `_send_telegram()` call. Verified Telegram bot sends successfully (HTTP 200) with test message.
+
+**FILES MODIFIED:** `run_vdna3.py` (shebang), `modules/vdna2_director.py` (debug print before telegram send)
+**VERIFICATION:** Fish Speech loads on venv Python. Telegram bot sends successfully (message_id 799). Pipeline re-run pending.
