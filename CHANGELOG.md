@@ -745,3 +745,21 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 
 **FILES MODIFIED:** `run_vdna3.py` (shebang), `modules/vdna2_director.py` (debug print before telegram send)
 **VERIFICATION:** Fish Speech loads on venv Python. Telegram bot sends successfully (message_id 799). Pipeline re-run pending.
+
+---
+
+## 2026-06-17
+
+### 15:00 IST — Persistent Memory Files
+
+**Problem:** Session memory lost between sessions. No persistent context for OWL agent.
+
+**Fix:** Created memory files in repo:
+- `docs/memory/MEMORY.md` — project status, key rules, git log
+- `docs/memory/USER.md` — user profile, preferences, project-specific notes
+- Both tracked in git, survive across sessions
+- Hermes memory updated with pointer to these files
+- UPDATE RULE added: Every significant change → update memory files + git commit
+
+**FILES CREATED:** `docs/memory/MEMORY.md`, `docs/memory/USER.md`
+**VERIFICATION:** Files committed (25779ab). Companion to MBite memory files.
