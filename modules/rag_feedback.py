@@ -130,7 +130,29 @@ class RagFeedbackLoop:
 
         return results
 
-    # ─── Step 2: Store Metrics in Ledger ──────────────────────────────
+    # ─── Step 2 (alias): Store Run Performance ─────────────────────────
+    def store_run_performance(self, topic_title: str, video_ids: list[str] = None,
+                              analytics: dict = None):
+        """
+        Store a performance snapshot from a pipeline run.
+        Called by vdna2_director.py post-pipeline phase.
+        Delegates to store_metrics after building the metrics dict.
+        """
+        metrics_by_id = {}
+        if video_ids:
+            for vid in video_ids:
+                if analytics and vid in analytics:
+                    metrics_by_id[vid] = analytics[vid]
+                else:
+                    # No analytics data yet (upload skipped) — store placeholder
+                    metrics_by_id[vid] = {
+                        "views": None,
+                        "likes": None,
+                        "note": "Analytics pending — will be pulled on next run"
+                    }
+        return self.store_metrics(metrics_by_id, topic_title)
+
+    # ─── Step 2 (original): Store Metrics in Ledger ────────────────────
     def store_metrics(self, metrics_by_id: dict, topic_title: str):
         """Store a performance snapshot in the growth ledger."""
         ledger = self._load_ledger()
