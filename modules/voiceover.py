@@ -1,6 +1,7 @@
-# VERSION: 63.0
+# VERSION: 64.0
 # MODULE: voiceover.py
-# PURPOSE: Bilingual newsroom audio engine with Fish Speech voice cloning (English) + gTTS (Telugu).
+# PURPOSE: Bilingual newsroom audio engine with Edge-TTS (PrabhatNeural + MohanNeural).
+#          RVC slot left open for when jay_voice_prod.pth is retrained.
 #          Performs Telugu-English splitting, sequential synthesis, precision silent pause stitching,
 #          and broadcast-grade DSP mastering (Highpass, Compressor, Limiter).
 
@@ -44,21 +45,23 @@ class VoiceoverGenerator:
         :param config_obj: Configuration module (unused, uses global config for standard mappings)
         """
         # TTS engine selection
-        self.use_fish_speech = os.environ.get("FISH_SPEECH_ENABLED", "1") == "1"
-        self.fish_cloner = None  # Lazy-loaded on first English segment
+        # Primary: Edge-TTS (PrabhatNeural for English, MohanNeural for Telugu)
+        # RVC: Slot open — set use_rvc=True + rvc_model path when jay_voice_prod.pth is retrained
+        self.use_fish_speech = False  # Deprecated — replaced by Edge-TTS
+        self.fish_cloner = None
         self.ref_audio = os.environ.get("FISH_REF_AUDIO", "/home/jay/voice_sample.wav")
         self.ref_text = os.environ.get("FISH_REF_TEXT", "This is a reference voice sample.")
 
-        # RVC removed — model file not available
+        # RVC — slot left open for when jay_voice_prod.pth is retrained
         self.use_rvc = False
-        self.rvc_model = None
+        self.rvc_model = os.environ.get("RVC_MODEL_PATH", "/home/jay/rvc_core/assets/weights/jay_voice_prod.pth")
 
-        # Fallback TTS settings
-        self.edge_tts_bin = os.getenv("EDGE_TTS_BIN", "edge-tts")
-        self.eng_voice = "en-IN"
+        # Edge-TTS settings
+        self.edge_tts_bin = os.getenv("EDGE_TTS_BIN", "/home/jay/venv/bin/edge-tts")
+        self.eng_voice = "en-IN-PrabhatNeural"
         self.eng_rate = "-6%"
         self.eng_pitch = "-5Hz"
-        self.tel_voice = "te-IN"
+        self.tel_voice = "te-IN-MohanNeural"
         self.tel_rate = "-3%"
         self.tel_pitch = "-4Hz"
 
@@ -69,10 +72,10 @@ class VoiceoverGenerator:
         os.makedirs(self.audio_dir, exist_ok=True)
         os.makedirs(self.runtime_dir, exist_ok=True)
 
-        fish_status = "Fish Speech Voice Cloning (English) + gTTS (Telugu)" if self.use_fish_speech else "gTTS (Telugu + English fallback)"
-        print(f"⚡ [AUDIO ENGINE] Bilingual Master-Stitching Engine (v63.0) Initialized.")
+        fish_status = "Edge-TTS PrabhatNeural (English) + MohanNeural (Telugu)"
+        print(f"⚡ [AUDIO ENGINE] Bilingual Master-Stitching Engine (v64.0) Initialized.")
         print(f"   🎙️  TTS Engine: {fish_status}")
-        print(f"   📢  RVC Neural Voice Twin: Bypassed (model unavailable)")
+        print(f"   🧠  RVC Neural Voice Twin: {'Active' if self.use_rvc else 'Standby (model not loaded — set RVC_MODEL_PATH + use_rvc=True when ready)'}")
 
     def _get_silence_file(self, duration: float) -> str:
         """
@@ -238,37 +241,43 @@ class VoiceoverGenerator:
     async def _synthesize_segment_async(self, text: str, lang: str, out_path: str) -> bool:
         """
         Synthesizes a single text segment.
-        English: Fish Speech voice cloning (Jay's voice) with gTTS fallback.
-        Telugu: gTTS (Telugu not supported by Fish Speech vocab).
+        Primary: Edge-TTS with PrabhatNeural (English) / MohanNeural (Telugu)
+        RVC: Slot left open for when jay_voice_prod.pth is retrained
+        Fallback: gTTS (if edge-tts fails)
         """
         out_dir = os.path.dirname(out_path)
         if out_dir:
             os.makedirs(out_dir, exist_ok=True)
 
-        if lang == "en" and self.use_fish_speech:
-            # --- Fish Speech voice cloning for English ---
-            cloner = _get_fish_cloner()
-            if cloner is not None:
-                try:
-                    loop = asyncio.get_event_loop()
+        # ── Primary: Edge-TTS (PrabhatNeural for English, MohanNeural for Telugu) ──
+        voice = "en-IN-PrabhatNeural" if lang == "en" else "te-IN-MohanNeural"
+        rate = self.eng_rate if lang == "en" else self.tel_rate
+        pitch = self.eng_pitch if lang == "en" else self.tel_pitch
 
-                    def _do_fish():
-                        cloner.clone_voice(
-                            text=text,
-                            reference_audio=self.ref_audio,
-                            reference_text=self.ref_text,
-                            output_path=out_path,
-                        )
+        try:
+            # Use --rate=VAL syntax to avoid argparse treating -6% as a flag
+            proc = await asyncio.create_subprocess_exec(
+                self.edge_tts_bin,
+                "--voice", voice,
+                f"--rate={rate}",
+                f"--pitch={pitch}",
+                "--text", text,
+                "--write-media", out_path,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            await asyncio.wait_for(proc.communicate(), timeout=30)
+            # Edge-TTS may return exit code 2 when RVC-WSL-PATCH stderr leaks through,
+            # but the file is still valid. Check file existence/size, not just exit code.
+            if os.path.exists(out_path) and os.path.getsize(out_path) > 0:
+                return True
+            print(f"   ⚠️  Edge-TTS failed ({voice}): exit code {proc.returncode}, no output file")
+        except asyncio.TimeoutError:
+            print(f"   ⚠️  Edge-TTS timeout (>30s) for '{text[:30]}...'")
+        except Exception as e:
+            print(f"   ⚠️  Edge-TTS error: {e}")
 
-                    await loop.run_in_executor(None, _do_fish)
-
-                    if os.path.exists(out_path) and os.path.getsize(out_path) > 0:
-                        return True
-                    print(f"   ⚠️  Fish Speech produced empty output, falling back to gTTS...")
-                except Exception as e:
-                    print(f"   ⚠️  Fish Speech error: {e}. Falling back to gTTS...")
-
-        # --- gTTS fallback (Telugu, or English if Fish Speech failed) ---
+        # ── Fallback: gTTS ──
         gtts_lang = "en" if lang == "en" else "te"
 
         def _do_tts():
@@ -280,9 +289,9 @@ class VoiceoverGenerator:
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 future = executor.submit(_do_tts)
-                future.result(timeout=60)  # 60s timeout — gTTS should not take longer
+                future.result(timeout=60)
         except concurrent.futures.TimeoutError:
-            print(f"   ❌ gTTS TIMEOUT (>60s) for '{text[:30]}...' (lang={gtts_lang}) — network slow?")
+            print(f"   ❌ gTTS TIMEOUT (>60s) for '{text[:30]}...' (lang={gtts_lang})")
             return False
         except Exception as e:
             print(f"   ❌ gTTS Synthesis Error for '{text[:30]}...' (lang={gtts_lang}): {e}")
