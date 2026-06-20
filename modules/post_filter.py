@@ -398,4 +398,16 @@ class PostFilter:
         for t in weighted_topics[:5]:
             print(f"    Scored: {t['title'][:45]}... | Total: {t['cpm_weight']} (trend={t['_trending_score']}, src={t['_source_score']}, fresh={t['_recency_score']}, telugu={t['_telugu_boost']})")
 
+        # ── GROWTH ALIGNMENT SCORING (v72.0) ──
+        # Force every topic to justify itself: "Will this grow MY channel?"
+        # Multiplies cpm_weight by growth_modifier (0.4x to 1.6x).
+        try:
+            from growth_alignment import rank_topics_by_growth
+            weighted_topics = rank_topics_by_growth(weighted_topics, verbose=True)
+            print(f"   📈 Growth alignment applied — topics re-ranked by channel fit")
+        except ImportError:
+            print(f"   ⚠️ growth_alignment module not found — skipping growth scoring")
+        except Exception as e:
+            print(f"   ⚠️ Growth scoring failed: {e} — continuing without")
+
         return weighted_topics
