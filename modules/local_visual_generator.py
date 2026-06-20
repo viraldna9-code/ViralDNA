@@ -140,14 +140,37 @@ def _build_sd_negative_prompt() -> str:
     )
 
 
+def _gpu_available() -> bool:
+    """Check if CUDA GPU is available (not just torch.cuda.is_available, but also
+    that the GPU has enough VRAM for SD 1.5 ~3.5GB). Returns False on CPU-only/WSL."""
+    try:
+        import torch
+        if not torch.cuda.is_available():
+            return False
+        # Check VRAM >= 3GB
+        gpu_mem = torch.cuda.get_device_properties(0)
+        vram_bytes = getattr(gpu_mem, "total_mem", 0)
+        if vram_bytes < 3 * 1024**3:  # < 3GB
+            print(f"  [LocalVisual] GPU VRAM {vram_bytes // (1024**2)}MB < 3GB — skip SD")
+            return False
+        return True
+    except Exception:
+        return False
+
+
 def _ensure_sd_model() -> object:
     """
     Download SD v1.5 model if not present, then return the pipeline.
-    Returns None if download fails.
+    Returns None if download fails OR no GPU is available.
     """
     global _sd_pipe
     if _sd_pipe is not None:
         return _sd_pipe
+
+    # ─── Early GPU detection — skip entire SD path on CPU-only ─────────────
+    if not _gpu_available():
+        print("  [LocalVisual] No CUDA GPU with >=3GB VRAM — skipping SD, using PIL fallback")
+        return None
 
     try:
         from diffusers import StableDiffusionPipeline

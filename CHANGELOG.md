@@ -5,6 +5,33 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ---
 
+## 2026-06-20
+
+### 14:30 IST — Phase 5 CPU Hang Fix + RAG Ledger Seed (Performance & Analytics Run)
+
+**Problem:** Phase 5 (Visuals) hung for 25+ minutes at "Loading weights: 14% (55/396)" on WSL CPU-only environment. Stable Diffusion v1.5 loads 3.4GB+ weights on CPU before failing — PhaseTimer is cooperative and cannot interrupt the blocking load call.
+
+**Solution:**
+- Added `_gpu_available()` function in `local_visual_generator.py` — checks CUDA availability AND VRAM >= 3GB before attempting SD load
+- `_ensure_sd_model()` now calls `_gpu_available()` first; returns None immediately on CPU-only/WSL
+- PIL fallback triggers instantly (0.13s vs 25+ min hang)
+- GPU detection: `torch.cuda.is_available()` + `total_mem >= 3GB` check
+
+**RAG Ledger Seed:**
+- Seeded `growth_ledger.json` with analytics from 10 manually uploaded videos (June 15-17)
+- Performance metrics: 3 entries, retention analysis: 19 entries
+- Top performer: "TDP was forced to respond to a cockroach meme party" — 740 views, 7 likes (shorts)
+- Total views (10 videos, 30 days): 1,214 | Likes: 8 | Subs gained: 0
+- Channel 30-day totals: 17,108 views | 1,265 watch min | 9 subs | 57.2% avg view %
+
+**Audit Results (all PASS):**
+- All 21 modules import cleanly (0 failures)
+- All 6 skill instantiations work (RAG, CTR, Shorts, Upload Time, Publish Decision, Forensic Audit)
+- Config v50.4 / Pipeline v85.1 — all paths correct
+- RAG brief now shows: "Total videos tracked: 3, Total views: 495"
+
+---
+
 ## 2026-06-14
 
 ### 09:00 IST — v87.8 Visual Fetch Overhaul (CRITICAL — Stable Diffusion + Image Relevance)

@@ -1,0 +1,32 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1280
+PlayResY: 720
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Bebas Neue,45,&H00FFFFFF,&H0000D7FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,3,2,2,30,30,60,1
+Style: CTA,Bebas Neue,55,&H00FFD7FF,&H0000D7FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,4,2,5,30,30,100,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:03.54,Default,,0,0,0,,{\fad(200,200)}If you re a student
+Dialogue: 0,0:00:03.54,0:00:07.58,Default,,0,0,0,,{\fad(200,200)}in Andhra Pradesh, or know
+Dialogue: 0,0:00:07.58,0:00:11.62,Default,,0,0,0,,{\fad(200,200)}someone who is, get ready
+Dialogue: 0,0:00:11.62,0:00:15.66,Default,,0,0,0,,{\fad(200,200)}for some good news! The
+Dialogue: 0,0:00:15.66,0:00:19.70,Default,,0,0,0,,{\fad(200,200)}pass rate for the SSC
+Dialogue: 0,0:00:19.70,0:00:23.74,Default,,0,0,0,,{\fad(200,200)}supplementary exams just shot up
+Dialogue: 0,0:00:23.74,0:00:27.78,Default,,0,0,0,,{\fad(200,200)}to an amazing percent. This
+Dialogue: 0,0:00:27.78,0:00:31.82,Default,,0,0,0,,{\fad(200,200)}means a lot more students
+Dialogue: 0,0:00:31.82,0:00:35.86,Default,,0,0,0,,{\fad(200,200)}who took the May exams
+Dialogue: 0,0:00:35.86,0:00:39.90,Default,,0,0,0,,{\fad(200,200)}are now celebrating, thanks to
+Dialogue: 0,0:00:39.90,0:00:43.94,Default,,0,0,0,,{\fad(200,200)}a special 20 day coaching
+Dialogue: 0,0:00:43.94,0:00:47.98,Default,,0,0,0,,{\fad(200,200)}plan that happened right after
+Dialogue: 0,0:00:47.98,0:00:52.02,Default,,0,0,0,,{\fad(200,200)}the main tests. Can you
+Dialogue: 0,0:00:52.02,0:00:56.06,Default,,0,0,0,,{\fad(200,200)}imagine the relief for those
+Dialogue: 0,0:00:56.06,0:01:00.10,Default,,0,0,0,,{\fad(200,200)}78,261 students out of the
+Dialogue: 0,0:01:00.10,0:01:04.14,Default,,0,0,0,,{\fad(200,200)}nearly 95,000 who appeared? Nara
+Dialogue: 0,0:01:04.14,0:01:08.18,Default,,0,0,0,,{\fad(200,200)}Lokesh, the minister, even shared
+Dialogue: 0,0:01:08.18,0:01:12.22,Default,,0,0,0,,{\fad(200,200)}these numbers. This isn t
+Dialogue: 1,0:01:11.74,0:01:13.74,CTA,,0,0,0,,{\fad(150,150)}Subscribe for more breaking news!
