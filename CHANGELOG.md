@@ -815,3 +815,26 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 **Result:** All scenes now guaranteed to have an image — either from API sources or PIL fallback. No more static videos.
 
 **COMMIT:** 183734c
+
+### 18:30 IST — VDNA 3.0 Run 20260621_0629
+
+**Topic:** "Permanent yoga centres to be set up in A.P.'s Swarna Grama and Ward Secretariats" (CM Naidu + Baba Ramdev initiative)
+
+**Growth Scorer:** 49/100 (WEAK, 1.0x) — Low audience fit for international commodity yoga news, but selected as highest-scored topic available.
+
+**Results:**
+- All 3 videos produced with 5/5 images each — v88.0 image mismatch fix working perfectly
+- Scene 0: NewsRSS ✅ (100KB, The Hindu AP)
+- Scene 1-4: Serper ✅ (relaxed gate accepting quality images despite 0 keyword overlap)
+- Short2 Scene 4: PIL fallback ✅ (API sources exhausted, PIL filled the gap)
+- Voice: Edge-TTS PrabhatNeural — Main 1689KB (~73s), Short1 472KB, Short2 546KB, Short3 559KB
+- All 10/10 phases completed, 0 errors
+- Forensic audit: PASSED
+- Upload: 3 videos uploaded as private
+
+**YouTube URLs (private):**
+- Main: https://www.youtube.com/watch?v=lvxICCFRN7g
+- Short1: https://www.youtube.com/watch?v=EJl-E9lDdIM
+- Short2: https://www.youtube.com/watch?v=r6ZCn5Ud8ik
+
+**COMMIT:** 6a0a6ca
