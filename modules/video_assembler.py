@@ -747,8 +747,8 @@ Script:
                 try:
                     from modules.news_image_fetcher import fetch_news_images
                     print(f"    Assembler: [NewsRSS] Fetching real news photos for scene {i}...")
-                    # Fetch one image per scene (already deduped via used_image_hashes)
-                    rss_results = fetch_news_images(topic_title, count=1,
+                    # v88.0: Fetch 3 candidates so dedup doesn't starve subsequent scenes
+                    rss_results = fetch_news_images(topic_title, count=3,
                                                      used_hashes=used_image_hashes)
                     if rss_results:
                         result = rss_results[0]
@@ -913,34 +913,43 @@ Script:
                                             _topic_words.update(["telangana", "hyderabad", "farmers", "procurement", "paddy", "ration", "cm", "revanth", "congress", "bjp", "tdp"])
                                         elif _serper_state == "Andhra Pradesh":
                                             _topic_words.update(["andhra", "amaravati", "vijayawada", "farmers", "procurement", "paddy", "cm", "jagan", "ysrcp", "tdp"])
+                                    # v88.0: Add generic news visual words so relevant images aren't rejected
+                                    # by keyword mismatch (e.g. "students celebrate" for SSC results topic)
+                                    _topic_words.update(["news", "india", "indian", "people", "crowd", "protest",
+                                                        "meeting", "rally", "press", "conference", "minister",
+                                                        "official", "government", "public", "street", "city"])
 
                                     # Check relevance: image title or source should share keywords with topic
                                     _img_text = img_title + " " + img_source + " " + img_domain
                                     _img_words = set(w.strip(".,;:!?()[]'\"") for w in _img_text.split() if len(w) >= 4)
                                     if _topic_words and _img_words:
                                         _overlap = _topic_words & _img_words
-                                        # Require at least 1 keyword overlap for relevance
                                         if len(_overlap) == 0:
-                                            # Exception: if image is from a known news domain, be more lenient
+                                            # v88.0: Only reject non-news-domain images with zero overlap
+                                            # AND low visual quality (small size already filtered above)
                                             _news_domains = ["thehindu", "deccanherald", "deccanchronicle", "newindianexpress",
                                                            "timesofindia", "hindustantimes", "indianexpress", "ndtv",
                                                            "news18", "reuters", "apnews", "bbc", "aljazeera",
                                                            "wikimedia", "commons.wikimedia"]
                                             _is_news_domain = any(nd in img_domain for nd in _news_domains)
                                             if not _is_news_domain:
-                                                print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED off-topic (title: {img_title[:60]}...)")
-                                                continue
-                                            # For news domains, still check state match
-                                            if _serper_state:
-                                                _state_in_img = _serper_state.lower() in _img_text
-                                                _wrong_state = False
-                                                if _serper_state == "Telangana" and ("andhra pradesh" in _img_text or ("andhra" in _img_text and "pradesh" in _img_text)):
-                                                    _wrong_state = True
-                                                elif _serper_state == "Andhra Pradesh" and "telangana" in _img_text:
-                                                    _wrong_state = True
-                                                if _wrong_state:
-                                                    print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED wrong state (title: {img_title[:60]}...)")
-                                                    continue
+                                                # v88.0: Accept if image passed quality checks (size, color, edges)
+                                                # — quality checks above already confirmed it's a real photo
+                                                print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: ACCEPTED despite no keyword overlap (quality OK, title: {img_title[:60]}...)")
+                                                # Don't continue — accept the image
+                                            else:
+                                                print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: ACCEPTED news domain (title: {img_title[:60]}...)")
+                                                # For news domains, still check state match
+                                                if _serper_state:
+                                                    _state_in_img = _serper_state.lower() in _img_text
+                                                    _wrong_state = False
+                                                    if _serper_state == "Telangana" and ("andhra pradesh" in _img_text or ("andhra" in _img_text and "pradesh" in _img_text)):
+                                                        _wrong_state = True
+                                                    elif _serper_state == "Andhra Pradesh" and "telangana" in _img_text:
+                                                        _wrong_state = True
+                                                    if _wrong_state:
+                                                        print(f"      [Serper-Img] Scene {i} attempt {attempt_idx}: REJECTED wrong state (title: {img_title[:60]}...)")
+                                                        continue
 
                                     # v80.0: Person-name verification (shared validator)
                                     from modules.image_validator import check_person_name_in_title
@@ -1485,6 +1494,30 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             prompts = self.generate_image_prompts(script_text, num_scenes)
             slideshow_dir = os.path.join(runtime_dir, f"slideshow_{output_name.replace('.mp4', '')}")
             image_paths = self.download_scene_images(prompts, slideshow_dir, topic_title=topic_title)
+
+        # v88.0: Fill partial results — if API sources returned fewer images than num_scenes,
+        # generate PIL fallback images for the missing slots instead of repeating/blurring.
+        if image_paths and len(image_paths) < num_scenes:
+            missing = num_scenes - len(image_paths)
+            print(f"    Assembler: {len(image_paths)}/{num_scenes} API images — filling {missing} missing with PIL fallback...")
+            try:
+                from modules.local_visual_generator import generate_scene_image
+                for idx in range(num_scenes):
+                    if idx >= len(image_paths):
+                        pil_path = os.path.join(slideshow_dir, f"scene_img_{idx}_pil.jpg")
+                        generate_scene_image(
+                            topic_title or script_text or "News",
+                            output_path=pil_path,
+                            width=1600, height=900,
+                            scene_index=idx
+                        )
+                        if os.path.exists(pil_path) and os.path.getsize(pil_path) > 5120:
+                            image_paths.insert(idx, pil_path)
+                            print(f"    Assembler: ✓ PIL fill scene {idx}")
+                        else:
+                            print(f"    Assembler: ✗ PIL fill scene {idx} failed (file missing or too small)")
+            except Exception as e:
+                print(f"    Assembler: PIL fill failed: {e}")
 
         if not image_paths:
             # v87.7: Generate local visuals with PIL before falling back to static background

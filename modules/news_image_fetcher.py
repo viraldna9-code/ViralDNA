@@ -373,10 +373,9 @@ def fetch_news_images(topic_title, count=5, used_hashes=None):
                                       "still", "already", "since", "while",
                                       "during", "between", "through", "across"}
                 overlap_filtered = {w for w in overlap if w.lower() not in GENERIC_NEWS_WORDS}
-                # v87.8: Raised from >=2 to >=3 — "Andhra Pradesh" alone matches
-                # every AP article (forest, ship, etc.) even when topic is about
-                # child rights / social media. Require 3+ specific keywords.
-                if len(overlap_filtered) < 3:
+                # v88.0: Lowered from >=3 to >=2 — >=3 was too strict for niche topics
+                # (e.g. "SSC Supplementary Results" only matches 2 keywords in RSS titles)
+                if len(overlap_filtered) < 2:
                     # Not enough meaningful overlap — skip
                     continue
 
