@@ -521,7 +521,18 @@ class VDNA2Director:
         except Exception:
             pass
 
-        sorted_topics = pf.run(raw_news, category_bonus=category_bonus)
+        sorted_topics = pf.run(raw_news)
+        # VDNA 3.0: Apply content calendar category bonus (1.3x for preferred category)
+        if category_bonus and sorted_topics:
+            preferred = category_bonus.get("preferred_category", "")
+            bonus_mult = category_bonus.get("bonus_multiplier", 1.3)
+            if preferred:
+                for t in sorted_topics:
+                    cats = t.get("categories", [])
+                    if isinstance(cats, list) and preferred.lower() in [c.lower() for c in cats]:
+                        t["score"] = t.get("score", 0) * bonus_mult
+                sorted_topics.sort(key=lambda x: x.get("score", 0), reverse=True)
+                print(f"   📅 Calendar bonus applied: '{preferred}' category ×{bonus_mult}")
         state["sorted_topics"] = sorted_topics
         if sorted_topics:
             state["selected_topic"] = sorted_topics[0]
@@ -545,10 +556,10 @@ class VDNA2Director:
             cq = self.skills["content_quality"]
             title = topic.get("title", "")
             desc = topic.get("description", topic.get("summary", ""))
-            quality_result = cq.check_quality(title=title, description=desc)
+            quality_result = cq.run_quality_check(script_text=title + " " + desc)
             state["pre_production_quality"] = quality_result
-            score = quality_result.get("quality_score", 0)
-            if score < 30:
+            score = quality_result.get("quality_score", quality_result.get("overall_score", 0))
+            if isinstance(score, (int, float)) and score < 30:
                 print(f"   ⚠️ Low quality score ({score}/100) — proceeding with caution")
             else:
                 print(f"   ✅ Quality score: {score}/100")
@@ -560,16 +571,17 @@ class VDNA2Director:
             fc = self.skills["fact_check"]
             title = topic.get("title", "")
             source_url = topic.get("url", topic.get("link", ""))
-            fc_result = fc.fact_check_script(
+            fc_result = fc.check_script(
                 script_text=title + " " + topic.get("description", ""),
                 title=title,
                 source_url=source_url,
             )
             state["pre_production_fact_check"] = fc_result
-            if fc_result.get("verified"):
-                print(f"   ✅ Fact check: verified ({fc_result.get('entity_count', 0)} entities)")
+            verdict = fc_result.get("verdict", fc_result.get("status", "unknown"))
+            if verdict in ("VERIFIED", "PASS", "verified", "pass"):
+                print(f"   ✅ Fact check: {verdict}")
             else:
-                print(f"   ⚠️ Fact check: {fc_result.get('status', 'unverified')} — flag for review")
+                print(f"   ⚠️ Fact check: {verdict} — flag for review")
         except Exception as e:
             print(f"   ⚠️ Fact check failed: {e}")
 
