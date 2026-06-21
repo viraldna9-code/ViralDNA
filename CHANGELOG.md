@@ -7,6 +7,23 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-21
 
+### 15:00 IST — Typewriter Readability: Larger Font + Background Box (v95.6)
+
+**Bug:** Text was too small (64px) to read on mobile screens. No background contrast — white text on dark bg was hard to read. Typewriter was too fast (8+ chars/s).
+
+**Fix:**
+- Font: 64→80px for shorts (clamp 68-90), larger for comfortable mobile reading
+- Max chars: 22→16 for shorts — bigger font needs fewer chars per line
+- Safe zone: 20%-80% (tighter, more edge margin)
+- Added `drawbox` — semi-transparent black rectangle (55% opacity) behind text block
+- Slower typewriter: 5-12 chars/s (was 8-20) — easier to follow
+- Shadow: 3px (was 2px) for stronger text contrast
+- Fallback `_render_simple` also gets bg box + same sizing
+
+**Verified:** 7-line text block = 840px / 1152px safe zone ✓
+
+**COMMIT:** 3fe663c
+
 ### 14:50 IST — Typewriter Renderer Rewrite: No Subtitles + Real Typewriter + Shorts Fit (v95.5)
 
 **Bug:** Subtitles were burned over typewriter text (double text). Typewriter was just sequential line fade-in (not real typewriter). Text overflowed borders in shorts. Text and voice out of sync.
