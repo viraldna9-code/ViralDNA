@@ -271,6 +271,18 @@ class VDNA2Director:
         from upload_reliability_v3 import UploadReliability
         from license_compliance_v3 import LicenseCompliance
         from content_calendar_v3 import ContentCalendarV3
+        # VDNA 3.0 Tier 3: Remaining agents from old pipeline
+        from primetime_scheduler_v3 import PrimetimeScheduler
+        from cleanup_agent_v3 import CleanupAgent
+        from continuous_auditor_v3 import ContinuousAuditor
+        from fact_check_v3 import FactCheckV3
+        from compliance_check_v3 import ComplianceCheckV3
+        from ad_friendly_check_v3 import AdFriendlyCheckV3
+        from intelligence_agent_v3 import IntelligenceAgentV3
+        from blog_companion_v3 import BlogCompanionV3
+        from newsletter_agent_v3 import NewsletterAgentV3
+        from collaboration_agent_v3 import CollaborationAgentV3
+        from audience_channel_manager_v3 import AudienceChannelManagerV3
 
         self.skills = {
             "trend_discovery": TrendDiscovery(config_instance=config),
@@ -300,6 +312,18 @@ class VDNA2Director:
             "upload_reliability": UploadReliability(),
             "license_compliance": LicenseCompliance(),
             "content_calendar": ContentCalendarV3(),
+            # VDNA 3.0 Tier 3: Remaining agents from old pipeline
+            "primetime_scheduler": PrimetimeScheduler(),
+            "cleanup_agent": CleanupAgent(),
+            "continuous_auditor": ContinuousAuditor(),
+            "fact_check": FactCheckV3(),
+            "compliance_check": ComplianceCheckV3(),
+            "ad_friendly_check": AdFriendlyCheckV3(),
+            "intelligence_agent": IntelligenceAgentV3(),
+            "blog_companion": BlogCompanionV3(),
+            "newsletter_agent": NewsletterAgentV3(),
+            "collaboration_agent": CollaborationAgentV3(),
+            "audience_channel_manager": AudienceChannelManagerV3(),
         }
         print(f"   📦 Loaded {len(self.skills)} skill modules")
 
@@ -310,9 +334,42 @@ class VDNA2Director:
         Args:
             injected_topic: Optional pre-selected topic (skips discovery/weighting)
         """
-        print(f"\n{'━'*70}")
+        print(f"{'━'*70}")
         print(f"🚀 VIRALDNA 2.0 PIPELINE START — {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print(f"{'━'*70}\n")
+
+        # ── PHASE 0: Pre-Pipeline ──
+        try:
+            print("━" * 50)
+            print("⚙️  PHASE 0: Pre-Pipeline")
+            print("━" * 50)
+            # 0.1: Cleanup
+            try:
+                cleanup = self.skills["cleanup_agent"]
+                cleanup_stats = cleanup.cleanup()
+                disk = cleanup.check_disk_space()
+                print(f"   🧹 Cleanup: {cleanup_stats['cleaned']} files removed, {cleanup_stats['freed_mb']}MB freed")
+                print(f"   💾 Disk: {disk['free_gb']}GB free ({'OK' if disk['sufficient'] else 'LOW'})")
+                self.state["cleanup_stats"] = cleanup_stats
+                self.state["disk_status"] = disk
+            except Exception as e:
+                print(f"   ⚠️ Cleanup error (non-fatal): {e}")
+
+            # 0.2: Primetime scheduling
+            try:
+                sched = self.skills["primetime_scheduler"]
+                run_mode = sched.get_run_mode()
+                upload_sched = sched.get_upload_schedule()
+                self.state["run_mode"] = run_mode
+                self.state["upload_schedule"] = upload_sched
+                print(f"   🕐 Run mode: {run_mode['mode']} (hour {run_mode['hour_ist']} IST)")
+                if upload_sched.get("main_upload"):
+                    rec = upload_sched["main_upload"].get("recommended_time_ist", "N/A")
+                    print(f"   📅 Recommended upload: {rec} IST")
+            except Exception as e:
+                print(f"   ⚠️ Primetime scheduling error (non-fatal): {e}")
+        except Exception as e:
+            print(f"   ⚠️ Pre-pipeline error (non-fatal): {e}")
 
         # ── PHASE 1: Discovery ──
         if injected_topic:
@@ -1170,7 +1227,195 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Content calendar check failed: {e}")
 
-        # ── 10.11: Telegram Summary ──
+        # ── 10.11: Fact Check (Named Entity Verification) ──
+        try:
+            fc = self.skills["fact_check"]
+            script = state.get("script_payload")
+            script_text = ""
+            if script and hasattr(script, "full_script"):
+                script_text = script.full_script
+            elif isinstance(script, dict):
+                script_text = script.get("full_script", "")
+            topic = state.get("selected_topic", {})
+            if script_text:
+                fc_result = fc.check_script(
+                    script_text=script_text,
+                    title=topic.get("title", ""),
+                    source_url=topic.get("source_url", ""),
+                    topic_desc=topic.get("description", ""),
+                )
+                state["fact_check_result"] = fc_result
+                verdict = fc_result.get("verdict", "UNCERTAIN")
+                icon = "✅" if verdict == "PASS" else ("⚠️" if verdict == "UNCERTAIN" else "🔴")
+                print(f"   {icon} Fact check: {verdict}")
+                for w in fc_result.get("warnings", [])[:2]:
+                    print(f"      ⚠️  {w}")
+            else:
+                print("   ✅ Fact check: no script text, skipping")
+        except Exception as e:
+            print(f"   ⚠️ Fact check failed: {e}")
+
+        # ── 10.12: Compliance Check ──
+        try:
+            cc = self.skills["compliance_check"]
+            script = state.get("script_payload")
+            script_text = ""
+            if script and hasattr(script, "full_script"):
+                script_text = script.full_script
+            elif isinstance(script, dict):
+                script_text = script.get("full_script", "")
+            topic = state.get("selected_topic", {})
+            if script_text:
+                comp_result = cc.check_compliance(script_text, topic)
+                state["compliance_result"] = comp_result
+                verdict = comp_result.get("verdict", "PASS")
+                icon = "✅" if verdict == "PASS" else "🔴"
+                print(f"   {icon} Compliance: {verdict}")
+                if verdict != "PASS":
+                    print(f"      ⚠️  {comp_result.get('reason', '')}")
+            else:
+                print("   ✅ Compliance: no script text, skipping")
+        except Exception as e:
+            print(f"   ⚠️ Compliance check failed: {e}")
+
+        # ── 10.13: Ad-Friendly Check ──
+        try:
+            af = self.skills["ad_friendly_check"]
+            topic = state.get("selected_topic", {})
+            script = state.get("script_payload")
+            script_text = ""
+            if script and hasattr(script, "full_script"):
+                script_text = script.full_script
+            elif isinstance(script, dict):
+                script_text = script.get("full_script", "")
+            af_result = af.check_content(
+                title=topic.get("title", ""),
+                description=topic.get("description", ""),
+                script=script_text,
+                tags=topic.get("tags", []),
+            )
+            state["ad_friendly_result"] = af_result
+            score = af_result.get("score", 0)
+            icon = "✅" if score >= 85 else ("⚠️" if score >= 70 else "🔴")
+            print(f"   {icon} Ad-friendly: {score}/100 ({af_result.get('risk_level', 'N/A')})")
+            for rec in af_result.get("recommendations", [])[:2]:
+                print(f"      💡 {rec}")
+        except Exception as e:
+            print(f"   ⚠️ Ad-friendly check failed: {e}")
+
+        # ── 10.14: Intelligence Analysis ──
+        try:
+            ia = self.skills["intelligence_agent"]
+            intel_result = ia.analyze(state)
+            state["intelligence_recommendations"] = intel_result.get("recommendations", [])
+            recs = intel_result.get("recommendations", [])
+            if recs:
+                print(f"   🧠 Intelligence: {len(recs)} recommendation(s)")
+                for rec in recs[:3]:
+                    print(f"      → {rec}")
+            else:
+                print("   ✅ Intelligence: pipeline healthy")
+        except Exception as e:
+            print(f"   ⚠️ Intelligence analysis failed: {e}")
+
+        # ── 10.15: Blog Companion ──
+        try:
+            bc = self.skills["blog_companion"]
+            topic = state.get("selected_topic", {})
+            script = state.get("script_payload")
+            script_text = ""
+            if script and hasattr(script, "full_script"):
+                script_text = script.full_script
+            elif isinstance(script, dict):
+                script_text = script.get("full_script", "")
+            upload = state.get("upload_results", {})
+            video_url = ""
+            if isinstance(upload, list) and upload:
+                video_url = upload[0].get("url", "") if isinstance(upload[0], dict) else ""
+            elif isinstance(upload, dict):
+                video_url = upload.get("main_video_url", "")
+            blog_result = bc.generate(topic=topic, script_text=script_text, video_url=video_url)
+            state["blog_article_paths"] = blog_result.get("paths", {})
+            if blog_result.get("success"):
+                paths = ", ".join(str(v) for v in blog_result.get("paths", {}).values() if v)
+                print(f"   📝 Blog article: {paths or 'generated'}")
+            else:
+                print(f"   ⚠️ Blog article: {blog_result.get('error', 'failed')}")
+        except Exception as e:
+            print(f"   ⚠️ Blog companion failed: {e}")
+
+        # ── 10.16: Newsletter Digest ──
+        try:
+            nl = self.skills["newsletter_agent"]
+            sorted_topics = state.get("sorted_topics", [])
+            nl_result = nl.generate(topics=sorted_topics[:10])
+            state["newsletter_path"] = nl_result.get("newsletter_path", "")
+            if nl_result.get("success"):
+                print(f"   📧 Newsletter: {nl_result.get('newsletter_path', 'generated')}")
+            else:
+                print(f"   ⚠️ Newsletter: {nl_result.get('error', 'failed')}")
+        except Exception as e:
+            print(f"   ⚠️ Newsletter generation failed: {e}")
+
+        # ── 10.17: Collaboration Tracking ──
+        try:
+            col = self.skills["collaboration_agent"]
+            topic = state.get("selected_topic", {})
+            col_result = col.run(topic=topic)
+            state["collaboration_stats"] = col_result.get("stats", {})
+            if col_result.get("success"):
+                stats = col_result.get("stats", {})
+                print(f"   🤝 Collaboration: {stats.get('total_partners', 0)} partners, {stats.get('total_outreach_sent', 0)} outreach")
+            else:
+                print(f"   ⚠️ Collaboration: {col_result.get('error', 'failed')}")
+        except Exception as e:
+            print(f"   ⚠️ Collaboration tracking failed: {e}")
+
+        # ── 10.18: Audience Channel Notifications ──
+        try:
+            acm = self.skills["audience_channel_manager"]
+            topic = state.get("selected_topic", {})
+            upload = state.get("upload_results", {})
+            video_url = ""
+            youtube_id = ""
+            if isinstance(upload, list) and upload:
+                if isinstance(upload[0], dict):
+                    video_url = upload[0].get("url", "")
+                    youtube_id = upload[0].get("youtube_id", "")
+            elif isinstance(upload, dict):
+                video_url = upload.get("main_video_url", "")
+                main = upload.get("main", {})
+                if isinstance(main, dict):
+                    youtube_id = main.get("youtube_id", "")
+            if video_url:
+                notify_result = acm.notify(
+                    title=topic.get("title", "New ViralDNA Video"),
+                    video_url=video_url,
+                    youtube_id=youtube_id,
+                )
+                state["channel_notification_result"] = notify_result
+                if notify_result.get("telegram_sent"):
+                    print(f"   📨 Audience notification: Telegram sent!")
+                else:
+                    print(f"   ⚠️ Audience notification: {notify_result.get('telegram_reason', 'not sent')}")
+            else:
+                print("   ✅ Audience notification: no video URL, skipping")
+        except Exception as e:
+            print(f"   ⚠️ Audience notification failed: {e}")
+
+        # ── 10.19: Continuous Auditor (Telemetry Commit) ──
+        try:
+            ca = self.skills["continuous_auditor"]
+            audit = ca.audit_pipeline_run(state)
+            state["audit_report"] = audit
+            icon = "✅" if audit["status"] == "healthy" else ("⚠️" if audit["status"] == "degraded" else "🔴")
+            print(f"   {icon} Audit: {audit['status']} (health={audit['health_score']}/100)")
+            ca.commit_telemetry(state)
+            print(f"   📊 Telemetry committed to growth ledger")
+        except Exception as e:
+            print(f"   ⚠️ Continuous auditor failed: {e}")
+
+        # ── 10.20: Telegram Summary ──
         compiled = state.get("compiled_videos", [])
         upload = state.get("upload_results", [])
         errors = state.get("errors", [])
