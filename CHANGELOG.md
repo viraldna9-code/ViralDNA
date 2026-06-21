@@ -7,6 +7,22 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-21
 
+### 15:15 IST — Typewriter Filter Fix: Single Drawtext Per Line (v95.7)
+
+**Bug:** Text appeared "mixed up" and "glimpsed" — overlapping/jumbled.
+Root cause: old approach used N drawtext layers per line (one per cumulative
+substring like 'P', 'Pa', 'Pap', ...), all visible simultaneously with
+between(t) enable. All layers stacked on top of each other = overlapping mess.
+
+**Fix:**
+- Replaced multi-layer approach with ONE drawtext per line
+- Uses substr() expression: text='substr(escaped, 0, if(gt(t,start), min(len, floor((t-start)*cps)), 0))'
+- Each line is a single element — no overlap, no flicker
+- Fixed fade-out alpha (was inverted: fading in instead of out)
+- Frame size now stable at ~130KB (was oscillating 13K-49K)
+
+**COMMIT:** 14b478a
+
 ### 15:00 IST — Typewriter Readability: Larger Font + Background Box (v95.6)
 
 **Bug:** Text was too small (64px) to read on mobile screens. No background contrast — white text on dark bg was hard to read. Typewriter was too fast (8+ chars/s).
