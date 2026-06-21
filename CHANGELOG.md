@@ -20,8 +20,6 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ---
 
-## 2026-06-21
-
 ### 00:03 IST — Text-Voice Sync: Global CPS + Silence-Aware Timing (v96.0)
 
 **Bug:** Text-voice desync persists. Typewriter scenes have uniform durations instead of proportional to word count. Shorts have inflated voice rate (3.22 w/s instead of ~2.1 w/s).
@@ -44,7 +42,7 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 - Text contains "U K", "P M" matching TTS acronym expansion
 - Pipeline: 3 videos, 0 errors
 
-### 16:00 IST — Text-Voice Sync: Full Fix — TTS Preprocessing + Proportional Timing (v95.9)
+### 23:33 IST — Text-Voice Sync: Full Fix — TTS Preprocessing + Proportional Timing (v95.9)
 
 **Bug:** Text-voice desync in both main and shorts. Sentences cut off incomplete.
 - Main: voice fast, text slow (voice finished before text displayed)
@@ -63,7 +61,7 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 **Result:** Scene duration matches voice time with 0.0s offset in both main and shorts.
 
-### 15:30 IST — Text-Voice Sync: Char-Proportional Line Starts (v95.8)
+### 21:08 IST — Text-Voice Sync: Char-Proportional Line Starts (v95.8)
 
 **Bug:** Text-voice timing inverted between formats.
 - Main: voice fast, text slow (voice finishes before text displays fully)
@@ -95,7 +93,7 @@ between(t) enable. All layers stacked on top of each other = overlapping mess.
 
 **COMMIT:** 14b478a
 
-### 15:00 IST — Typewriter Readability: Larger Font + Background Box (v95.6)
+### 20:28 IST — Typewriter Readability: Larger Font + Background Box (v95.6)
 
 **Bug:** Text was too small (64px) to read on mobile screens. No background contrast — white text on dark bg was hard to read. Typewriter was too fast (8+ chars/s).
 
@@ -112,7 +110,7 @@ between(t) enable. All layers stacked on top of each other = overlapping mess.
 
 **COMMIT:** 3fe663c
 
-### 14:50 IST — Typewriter Renderer Rewrite: No Subtitles + Real Typewriter + Shorts Fit (v95.5)
+### 20:17 IST — Typewriter Renderer Rewrite: No Subtitles + Real Typewriter + Shorts Fit (v95.5)
 
 **Bug:** Subtitles were burned over typewriter text (double text). Typewriter was just sequential line fade-in (not real typewriter). Text overflowed borders in shorts. Text and voice out of sync.
 
@@ -132,7 +130,7 @@ between(t) enable. All layers stacked on top of each other = overlapping mess.
 
 **COMMIT:** 5887782
 
-### 14:45 IST — Typewriter Renderer Shorts Text Fitting (v95.4)
+### 19:59 IST — Typewriter Renderer Shorts Text Fitting (v95.4)
 
 **Bug:** Text in short videos (1080x1920 9:16) was oversized and overflowing.
 Font was 160px (out_h//12), wrap was 38 chars — text overflowed screen bounds.
@@ -150,7 +148,7 @@ Main 7-line text block = 532px / 720px screen ✓
 **COMMIT:** 15f2482
 **FILES:** `modules/typewriter_renderer.py`
 
-### 14:30 IST — Audio Mux Same-File Corruption Fix (v95.3)
+### 19:45 IST — Audio Mux Same-File Corruption Fix (v95.3)
 
 **Bug:** `_mux_audio_subtitles()` passed same path for input and output to FFmpeg.
 When subtitles were enabled (re-encode path), FFmpeg read+wrote the same file,
@@ -162,7 +160,7 @@ Affects: main videos + shorts with subtitle burn-in.
 **COMMIT:** 6ffae09
 **FILES:** `modules/video_assembler.py`
 
-### 14:00 IST — Dead Image Pipeline Removal + Typewriter Renderer Integration (v95.2)
+### 19:32 IST — Dead Image Pipeline Removal + Typewriter Renderer Integration (v95.2)
 
 **Cleanup: Removed entire image pipeline (89 lines, 4 methods, 2 imports, 1 skill)**
 
@@ -1286,7 +1284,7 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 
 ## 2026-06-21
 
-### 18:00 IST — 10 Critical Growth Gaps: Build + Wire (v95.0)
+### 23:30 IST — 10 Critical Growth Gaps: Build + Wire (v95.0)
 
 **CONTEXT:** Forensic audit (v94.0) identified 10 critical growth gaps. This commit builds all 10 and wires them into the pipeline.
 
@@ -1330,7 +1328,7 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 
 ## 2026-06-21
 
-### 11:34 IST — Pipeline Run + Bug Fixes (v95.1)
+### 17:04 IST — Pipeline Run + Bug Fixes (v95.1)
 
 **PIPELINE RUN 20260621_1134:**
 - Topic: "Man kills three daughters, hangs self in Andhra Pradesh"
