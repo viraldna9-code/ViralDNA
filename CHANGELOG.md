@@ -7,6 +7,24 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-21
 
+### 14:45 IST — Typewriter Renderer Shorts Text Fitting (v95.4)
+
+**Bug:** Text in short videos (1080x1920 9:16) was oversized and overflowing.
+Font was 160px (out_h//12), wrap was 38 chars — text overflowed screen bounds.
+
+**Fix:**
+- Font size: `max(56, min(80, out_h//24))` → ~80px for shorts (was 160px)
+- Wrap width: `max(18, min(28, out_w//40))` → ~27 chars for shorts (was 38)
+- Line height: 1.55x multiplier (was 1.4x) for breathing room
+- Vertical safe zone: middle 70% of screen (15%-85%)
+- `_render_simple`: matched same sizing logic for consistency
+
+**Verified:** Short 5-line text block = 1116px / 1344px safe zone ✓
+Main 7-line text block = 532px / 720px screen ✓
+
+**COMMIT:** 15f2482
+**FILES:** `modules/typewriter_renderer.py`
+
 ### 14:30 IST — Audio Mux Same-File Corruption Fix (v95.3)
 
 **Bug:** `_mux_audio_subtitles()` passed same path for input and output to FFmpeg.
