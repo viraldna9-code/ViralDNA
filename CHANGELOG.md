@@ -1057,5 +1057,43 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 - Director compiles cleanly with all 35 skills
 - Skills dict: 35 skills loaded (was 16)
 
+**COMMIT:** e37ddc9
+
+---
+
+## 2026-06-21
+
+### 16:00 IST — Forensic Growth Audit + Prune (v94.0)
+
+**FINDING:** 4 of 19 ported modules were dead weight — no measurable growth impact.
+
+**PRUNED (D-tier, deleted):**
+- `community_poster_v3.py` — Generated weekly post schedule that was never consumed by any module
+- `ad_friendly_check_v3.py` — Channel not monetized (needs 1K subs + 4K watch hours)
+- `blog_companion_v3.py` — Generated blog articles but no blog exists to publish to
+- `newsletter_agent_v3.py` — Generated newsletter but no email list or platform exists
+
+**GRADE SUMMARY (19 modules audited):**
+- A-tier (direct growth driver, keep+wire): 3 — upload_reliability, retention_analyzer, primetime_scheduler
+- B-tier (indirect growth, keep+improve): 5 — community_engagement, content_quality, content_calendar, fact_check, audience_channel_manager
+- C-tier (operational hygiene, keep): 6 — license_compliance, cleanup_agent, continuous_auditor, compliance_check, intelligence_agent, collaboration_agent
+- D-tier (dead weight, pruned): 4 — community_poster, ad_friendly_check, blog_companion, newsletter_agent
+- F-tier (actively harmful): 1 — competitor_intel (hardcoded fake data, wastes quota)
+
+**CRITICAL GAPS IDENTIFIED (not yet built):**
+1. Thumbnail A/B testing — no module generates multiple thumbnails
+2. Title optimization — no A/B testing of titles
+3. Real competitor intelligence — competitor_intel has hardcoded data
+4. Upload scheduling — primetime_scheduler detects optimal time but doesn't delay upload
+5. Series funnel execution — retention_analyzer generates plans but pipeline never produces series
+6. Engagement loop — no comment response or pinning
+7. Shorts-specific optimization — no hook/format optimization for Shorts feed
+8. Cross-platform distribution — no Reels/Facebook/X clipping
+9. Subscribe CTA optimization — hardcoded CTA in script template
+10. Retention curve analysis — no YouTube Analytics retention curve parsing
+
+**REMAINING MODULES:** 15 (was 19)
+**SKILLS IN DIRECTOR:** 28 (was 32)
+
 **COMMIT:** TBD
-**FILES:** 11 new modules (+845 lines total), `modules/vdna2_director.py` (+350 lines for Phase 0 + Phase 10 expansion)
+**FILES:** Deleted 4 modules, `modules/vdna2_director.py` (removed 4 imports + 4 skill entries + 4 sub-phases), `docs/FORENSIC_GROWTH_AUDIT_20260621.md` (new, full audit report)

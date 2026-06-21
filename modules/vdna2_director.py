@@ -261,26 +261,20 @@ class VDNA2Director:
         from upload_time_optimizer import UploadTimeOptimizer
         from yt_analytics import YouTubeAnalytics
         from rag_feedback import RagFeedbackLoop
-        # VDNA 3.0 Tier 1: Post-pipeline growth agents
+        # VDNA 3.0 Growth + Operational agents (forensic audit pruned 4 dead weight modules)
         from community_engagement_v3 import CommunityEngagement
-        from community_poster_v3 import CommunityPoster
         from competitor_intel_v3 import CompetitorIntel
         from retention_analyzer_v3 import RetentionAnalyzer
         from content_quality_v3 import ContentQualityEngine
-        # VDNA 3.0 Tier 2: Operational reliability agents
         from upload_reliability_v3 import UploadReliability
         from license_compliance_v3 import LicenseCompliance
         from content_calendar_v3 import ContentCalendarV3
-        # VDNA 3.0 Tier 3: Remaining agents from old pipeline
         from primetime_scheduler_v3 import PrimetimeScheduler
         from cleanup_agent_v3 import CleanupAgent
         from continuous_auditor_v3 import ContinuousAuditor
         from fact_check_v3 import FactCheckV3
         from compliance_check_v3 import ComplianceCheckV3
-        from ad_friendly_check_v3 import AdFriendlyCheckV3
         from intelligence_agent_v3 import IntelligenceAgentV3
-        from blog_companion_v3 import BlogCompanionV3
-        from newsletter_agent_v3 import NewsletterAgentV3
         from collaboration_agent_v3 import CollaborationAgentV3
         from audience_channel_manager_v3 import AudienceChannelManagerV3
 
@@ -302,26 +296,20 @@ class VDNA2Director:
             "upload_time_optimizer": UploadTimeOptimizer(),
             "yt_analytics": YouTubeAnalytics(credentials_path=config.DRIVE.get("YOUTUBE_TOKEN", "")),
             "rag_feedback": RagFeedbackLoop(ledger_path=os.path.join(config.DRIVE_BASE, "diagnostics", "growth_ledger.json")),
-            # VDNA 3.0 Tier 1: Growth agents ported from old pipeline
+            # VDNA 3.0 Growth + Operational agents (forensic audit pruned 4 dead weight)
             "community_engagement": CommunityEngagement(),
-            "community_poster": CommunityPoster(),
             "competitor_intel": CompetitorIntel(),
             "retention_analyzer": RetentionAnalyzer(),
             "content_quality": ContentQualityEngine(),
-            # VDNA 3.0 Tier 2: Operational reliability agents
             "upload_reliability": UploadReliability(),
             "license_compliance": LicenseCompliance(),
             "content_calendar": ContentCalendarV3(),
-            # VDNA 3.0 Tier 3: Remaining agents from old pipeline
             "primetime_scheduler": PrimetimeScheduler(),
             "cleanup_agent": CleanupAgent(),
             "continuous_auditor": ContinuousAuditor(),
             "fact_check": FactCheckV3(),
             "compliance_check": ComplianceCheckV3(),
-            "ad_friendly_check": AdFriendlyCheckV3(),
             "intelligence_agent": IntelligenceAgentV3(),
-            "blog_companion": BlogCompanionV3(),
-            "newsletter_agent": NewsletterAgentV3(),
             "collaboration_agent": CollaborationAgentV3(),
             "audience_channel_manager": AudienceChannelManagerV3(),
         }
@@ -1040,7 +1028,6 @@ class VDNA2Director:
         # ── 10.3: Community Tab Posting ──
         try:
             ce = self.skills["community_engagement"]
-            cp = self.skills["community_poster"]
             topic = state.get("selected_topic", {})
             upload_results = state.get("upload_results", [])
             title = topic.get("title", "")
@@ -1052,11 +1039,6 @@ class VDNA2Director:
                     videos.append({"id": r["video_id"], "url": r.get("youtube_url", f"https://youtu.be/{r['video_id']}")})
 
             if videos:
-                # Generate community post schedule
-                post_schedule = cp.run(topic=topic, videos=videos)
-                state["community_post_schedule"] = post_schedule
-                print(f"   📢 Community posts scheduled: {post_schedule.get('total_weekly_posts', 0)} posts/week")
-
                 # Attempt to post launch comment via YouTube API
                 main_video = videos[0]
                 post_result = ce.post_to_community_tab(title=title, youtube_id=main_video["id"])
@@ -1278,32 +1260,7 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Compliance check failed: {e}")
 
-        # ── 10.13: Ad-Friendly Check ──
-        try:
-            af = self.skills["ad_friendly_check"]
-            topic = state.get("selected_topic", {})
-            script = state.get("script_payload")
-            script_text = ""
-            if script and hasattr(script, "full_script"):
-                script_text = script.full_script
-            elif isinstance(script, dict):
-                script_text = script.get("full_script", "")
-            af_result = af.check_content(
-                title=topic.get("title", ""),
-                description=topic.get("description", ""),
-                script=script_text,
-                tags=topic.get("tags", []),
-            )
-            state["ad_friendly_result"] = af_result
-            score = af_result.get("score", 0)
-            icon = "✅" if score >= 85 else ("⚠️" if score >= 70 else "🔴")
-            print(f"   {icon} Ad-friendly: {score}/100 ({af_result.get('risk_level', 'N/A')})")
-            for rec in af_result.get("recommendations", [])[:2]:
-                print(f"      💡 {rec}")
-        except Exception as e:
-            print(f"   ⚠️ Ad-friendly check failed: {e}")
-
-        # ── 10.14: Intelligence Analysis ──
+        # ── 10.13: Intelligence Analysis ──
         try:
             ia = self.skills["intelligence_agent"]
             intel_result = ia.analyze(state)
@@ -1318,46 +1275,7 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Intelligence analysis failed: {e}")
 
-        # ── 10.15: Blog Companion ──
-        try:
-            bc = self.skills["blog_companion"]
-            topic = state.get("selected_topic", {})
-            script = state.get("script_payload")
-            script_text = ""
-            if script and hasattr(script, "full_script"):
-                script_text = script.full_script
-            elif isinstance(script, dict):
-                script_text = script.get("full_script", "")
-            upload = state.get("upload_results", {})
-            video_url = ""
-            if isinstance(upload, list) and upload:
-                video_url = upload[0].get("url", "") if isinstance(upload[0], dict) else ""
-            elif isinstance(upload, dict):
-                video_url = upload.get("main_video_url", "")
-            blog_result = bc.generate(topic=topic, script_text=script_text, video_url=video_url)
-            state["blog_article_paths"] = blog_result.get("paths", {})
-            if blog_result.get("success"):
-                paths = ", ".join(str(v) for v in blog_result.get("paths", {}).values() if v)
-                print(f"   📝 Blog article: {paths or 'generated'}")
-            else:
-                print(f"   ⚠️ Blog article: {blog_result.get('error', 'failed')}")
-        except Exception as e:
-            print(f"   ⚠️ Blog companion failed: {e}")
-
-        # ── 10.16: Newsletter Digest ──
-        try:
-            nl = self.skills["newsletter_agent"]
-            sorted_topics = state.get("sorted_topics", [])
-            nl_result = nl.generate(topics=sorted_topics[:10])
-            state["newsletter_path"] = nl_result.get("newsletter_path", "")
-            if nl_result.get("success"):
-                print(f"   📧 Newsletter: {nl_result.get('newsletter_path', 'generated')}")
-            else:
-                print(f"   ⚠️ Newsletter: {nl_result.get('error', 'failed')}")
-        except Exception as e:
-            print(f"   ⚠️ Newsletter generation failed: {e}")
-
-        # ── 10.17: Collaboration Tracking ──
+        # ── 10.14: Collaboration Tracking ──
         try:
             col = self.skills["collaboration_agent"]
             topic = state.get("selected_topic", {})
@@ -1371,7 +1289,7 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Collaboration tracking failed: {e}")
 
-        # ── 10.18: Audience Channel Notifications ──
+        # ── 10.15: Audience Channel Notifications ──
         try:
             acm = self.skills["audience_channel_manager"]
             topic = state.get("selected_topic", {})
@@ -1403,7 +1321,7 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Audience notification failed: {e}")
 
-        # ── 10.19: Continuous Auditor (Telemetry Commit) ──
+        # ── 10.16: Continuous Auditor (Telemetry Commit) ──
         try:
             ca = self.skills["continuous_auditor"]
             audit = ca.audit_pipeline_run(state)
@@ -1415,7 +1333,7 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Continuous auditor failed: {e}")
 
-        # ── 10.20: Telegram Summary ──
+        # ── 10.17: Telegram Summary ──
         compiled = state.get("compiled_videos", [])
         upload = state.get("upload_results", [])
         errors = state.get("errors", [])
