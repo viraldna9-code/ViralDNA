@@ -7,7 +7,23 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-21
 
-### 15:15 IST — Typewriter Filter Fix: Single Drawtext Per Line (v95.7)
+### 15:30 IST — Text-Voice Sync: Char-Proportional Line Starts (v95.8)
+
+**Bug:** Text-voice timing inverted between formats.
+- Main: voice fast, text slow (voice finishes before text displays fully)
+- Short: text fast, voice slow (text finishes before voice)
+
+**Root cause:** Line starts used equal time splits (`line_start = i * duration/num_lines`), completely independent of voice timing.
+
+**Fix:**
+- Line starts now proportional to cumulative char count: `line_start = chars_before_line / cps`
+- Global cps = `total_chars / (duration * 0.95)` — matches TTS voice rate
+- Text and voice now progress at the same rate within each scene
+
+**Verification:**
+- MAIN: text finishes 12.10s, voice 12.92s (0.8s offset, scene 12.74s) ✓
+- SHORT: text finishes 3.69s, voice 3.88s (0.19s offset, scene 3.88s) ✓
+- Pipeline: 3 videos produced, 0 errors
 
 **Bug:** Text appeared "mixed up" and "glimpsed" — overlapping/jumbled.
 Root cause: old approach used N drawtext layers per line (one per cumulative
