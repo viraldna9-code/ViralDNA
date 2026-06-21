@@ -959,6 +959,54 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 - Director module compiles cleanly with all new imports
 - Skills dict: 21 skills loaded (was 16)
 
-**COMMIT:** TBD
+**COMMIT:** 2fb5ae7
 **FILES:** `modules/community_engagement_v3.py` (+200 lines), `modules/community_poster_v3.py` (+130 lines), `modules/competitor_intel_v3.py` (+120 lines), `modules/retention_analyzer_v3.py` (+150 lines), `modules/content_quality_v3.py` (+180 lines), `modules/vdna2_director.py` (+160 lines in Phase 10)
+
+---
+
+## 2026-06-21
+
+### 20:00 IST — Tier 2 Operational Reliability Agents Port (Quota, License, Calendar)
+
+**Problem:** VDNA 3.0 had no API quota monitoring, no license compliance checking, and no content calendar alignment. These are operational reliability gaps that could lead to quota exhaustion, copyright strikes, or content strategy misalignment.
+
+**Solution — 3 new modules ported from old pipeline:**
+
+1. **UploadReliability v3** (`modules/upload_reliability_v3.py`)
+   - YouTube API quota tracking (10K daily limit)
+   - Per-operation quota cost tracking (search=100, upload=1600, etc.)
+   - Failover account switching when quota critical
+   - Rate limit backoff with cooldown tracking
+   - Upload queue management (pending/failed tracking)
+   - Persistent state in `diagnostics/api_quota_log.json`
+
+2. **LicenseCompliance v3** (`modules/license_compliance_v3.py`)
+   - Wraps existing `LicenseTracker` with VDNA 3.0 state integration
+   - Pre-pipeline license compliance report
+   - Safe source verification (7+ approved sources)
+   - Non-fatal: won't block production if check fails
+
+3. **ContentCalendarV3** (`modules/content_calendar_v3.py`)
+   - Wraps existing `ContentCalendar` with VDNA 3.0 state integration
+   - Topic alignment checking against content strategy
+   - Weekly schedule (7 shorts/week, 2 mains/week)
+   - Category rotation based on weights (POLITICS=3, ECONOMICS=2, etc.)
+   - Category cooldown enforcement
+
+**Integration:**
+- All 3 modules added to `vdna2_director.py` skills dict (now 24 skills)
+- Phase 10 expanded with 3 new sub-phases:
+  - 10.8: API Quota & Reliability Check
+  - 10.9: License Compliance
+  - 10.10: Content Calendar Alignment
+  - 10.11: Telegram Summary (enhanced with reliability + license + calendar data)
+
+**Tested:**
+- All 3 modules import and compile cleanly
+- All 3 pass smoke tests (quota status, license report, calendar alignment)
+- Director compiles cleanly with all new imports
+- Skills dict: 24 skills loaded (was 21)
+
+**COMMIT:** TBD
+**FILES:** `modules/upload_reliability_v3.py` (+145 lines), `modules/license_compliance_v3.py` (+70 lines), `modules/content_calendar_v3.py` (+70 lines), `modules/vdna2_director.py` (+60 lines in Phase 10)
 

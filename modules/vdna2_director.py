@@ -267,6 +267,10 @@ class VDNA2Director:
         from competitor_intel_v3 import CompetitorIntel
         from retention_analyzer_v3 import RetentionAnalyzer
         from content_quality_v3 import ContentQualityEngine
+        # VDNA 3.0 Tier 2: Operational reliability agents
+        from upload_reliability_v3 import UploadReliability
+        from license_compliance_v3 import LicenseCompliance
+        from content_calendar_v3 import ContentCalendarV3
 
         self.skills = {
             "trend_discovery": TrendDiscovery(config_instance=config),
@@ -292,6 +296,10 @@ class VDNA2Director:
             "competitor_intel": CompetitorIntel(),
             "retention_analyzer": RetentionAnalyzer(),
             "content_quality": ContentQualityEngine(),
+            # VDNA 3.0 Tier 2: Operational reliability agents
+            "upload_reliability": UploadReliability(),
+            "license_compliance": LicenseCompliance(),
+            "content_calendar": ContentCalendarV3(),
         }
         print(f"   📦 Loaded {len(self.skills)} skill modules")
 
@@ -1105,7 +1113,64 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Content quality check failed: {e}")
 
-        # ── 10.8: Telegram Summary ──
+        # ── 10.8: API Quota & Reliability Check ──
+        try:
+            ur = self.skills["upload_reliability"]
+            quota = ur.get_quota_status()
+            state["api_quota_status"] = quota
+            account = ur.get_active_account()
+            backoff = ur.get_backoff_seconds("youtube")
+            queue = ur.get_queue_status()
+            state["reliability_status"] = {
+                "quota": quota,
+                "active_account": account,
+                "backoff_seconds": backoff,
+                "upload_queue": queue,
+            }
+            status_icon = "✅" if quota["status"] == "ok" else ("⚠️" if quota["status"] == "warning" else "🚨")
+            print(f"   {status_icon} API quota: {quota['status']} ({quota['percent_used']}% used, {quota['remaining']} remaining)")
+            if account != "primary":
+                print(f"   ⚠️ Failover account active: {account}")
+            if backoff > 0:
+                print(f"   ⏳ Rate limit backoff: {backoff}s remaining")
+            if queue["queued"] > 0:
+                print(f"   📋 Upload queue: {queue['queued']} pending")
+        except Exception as e:
+            print(f"   ⚠️ Reliability check failed: {e}")
+
+        # ── 10.9: License Compliance ──
+        try:
+            lc = self.skills["license_compliance"]
+            report = lc.get_compliance_report()
+            state["license_compliance_report"] = report
+            if report["pass"]:
+                print(f"   ✅ License compliance: PASS ({report['total_tracked']} assets tracked)")
+            else:
+                print(f"   ⚠️ License compliance: {report['violations']} violation(s) detected")
+            if report.get("safe_sources"):
+                print(f"   📋 Approved sources: {', '.join(report['safe_sources'][:4])}")
+        except Exception as e:
+            print(f"   ⚠️ License compliance check failed: {e}")
+
+        # ── 10.10: Content Calendar Alignment ──
+        try:
+            cc = self.skills["content_calendar"]
+            topic = state.get("selected_topic", {})
+            alignment = cc.check_topic_alignment(topic)
+            schedule = cc.get_weekly_schedule()
+            rotation = cc.get_category_rotation()
+            state["content_alignment"] = alignment
+            state["weekly_schedule"] = schedule
+            print(f"   📅 Content calendar: category={alignment.get('category', 'N/A')}, "
+                  f"aligned={'YES' if alignment.get('aligned') else 'NO'}")
+            print(f"   📊 Weekly plan: {schedule.get('shorts_per_week', '?')} shorts, "
+                  f"{schedule.get('main_videos_per_week', '?')} mains")
+            if rotation:
+                print(f"   🔄 Category rotation: {' → '.join(rotation[:5])}")
+        except Exception as e:
+            print(f"   ⚠️ Content calendar check failed: {e}")
+
+        # ── 10.11: Telegram Summary ──
         compiled = state.get("compiled_videos", [])
         upload = state.get("upload_results", [])
         errors = state.get("errors", [])
@@ -1137,6 +1202,20 @@ class VDNA2Director:
             fc = quality_info.get("fact_check", {})
             bi = quality_info.get("bias_detection", {})
             msg += f"✅ Quality: fact={'PASS' if fc.get('pass') else 'REVIEW'}, bias={bi.get('risk_level', 'N/A')}\n"
+
+        # Tier 2: reliability + license + calendar
+        reliability = state.get("reliability_status", {})
+        if reliability:
+            quota = reliability.get("quota", {})
+            msg += f"📊 API: {quota.get('status', 'N/A')} ({quota.get('percent_used', '?')}% used)\n"
+
+        license_report = state.get("license_compliance_report", {})
+        if license_report:
+            msg += f"📋 License: {'PASS' if license_report.get('pass') else 'REVIEW'}\n"
+
+        alignment = state.get("content_alignment", {})
+        if alignment:
+            msg += f"📅 Calendar: {alignment.get('category', 'N/A')} ({'aligned' if alignment.get('aligned') else 'check needed'})\n"
 
         msg += f"━━━━━━━━━━━━━━━━━━━━━"
 
