@@ -7,6 +7,19 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-21
 
+### 19:05 IST — Color Scheme: Match Channel Profile Pic (v96.1)
+
+**Change:** Updated video color scheme to match The Viral DNA channel profile pic.
+
+**Colors (extracted from profile pic):**
+- Background: `0x1a1a2e` → `0x050503` (near-black)
+- Text: `white` → `0xf7f7f7` (near-white)
+- Accent: added `0xc33731` (vibrant red) as 3px top border on text background box
+
+**Files:** `modules/typewriter_renderer.py` — bg_color default, fontcolor, drawbox accent
+
+---
+
 ### 18:17 IST — Text-Voice Sync: Global CPS + Silence-Aware Timing (v96.0)
 
 **Bug:** Text-voice desync persists. Typewriter scenes have uniform durations instead of proportional to word count. Shorts have inflated voice rate (3.22 w/s instead of ~2.1 w/s).
