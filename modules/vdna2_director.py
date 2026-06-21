@@ -809,15 +809,62 @@ class VDNA2Director:
     def _phase_upload(self, state):
         """Phase 9: YouTube upload.
         VDNA 3.0: Upload time optimizer enforces IST window (4PM-8PM).
+        Fixed: Properly constructs YouTube service, resolves branded thumbnail
+        from subdirectory, and calls upload_single_video with correct args.
         """
         print("   📤 Uploading to YouTube...")
+
+        # Build YouTube service
+        try:
+            from google.oauth2.credentials import Credentials
+            from googleapiclient.discovery import build as gbuild
+            cred_file = os.path.join(config.DRIVE.get("CREDENTIALS", "credentials"), "youtube_token.json")
+            if not os.path.exists(cred_file):
+                cred_file = "credentials/youtube_token.json"
+            with open(cred_file) as f:
+                creds_data = json.load(f)
+            creds = Credentials.from_authorized_user_info(creds_data)
+            youtube_service = gbuild("youtube", "v3", credentials=creds)
+            print("   🔑 YouTube service authenticated")
+        except Exception as e:
+            print(f"   ❌ YouTube auth failed: {e} — skipping upload")
+            state["upload_results"] = {"status": "failed", "error": str(e)}
+            return state
+
         from youtube_uploader import YouTubeUploader
-        uploader = YouTubeUploader(config)
+        uploader = YouTubeUploader(youtube_service, config.YOUTUBE_UPLOAD_CONFIG)
+
         compiled_videos = state.get("compiled_videos", [])
         topic = state.get("selected_topic", {})
+        topic_slug = state.get("topic_slug", "topic")
         results = []
 
+        # Resolve branded thumbnail path
+        # ThumbnailCreator saves to: thumbnails/<slug>_thumb.jpg/<slug>_branded.jpg
+        branded_thumb_dir = state.get("branded_thumbnail", "")
+        branded_thumb = ""
+        if branded_thumb_dir:
+            if os.path.isdir(branded_thumb_dir):
+                for f in os.listdir(branded_thumb_dir):
+                    if f.endswith("_branded.jpg"):
+                        branded_thumb = os.path.join(branded_thumb_dir, f)
+                        break
+            elif os.path.isfile(branded_thumb_dir):
+                branded_thumb = branded_thumb_dir
+            if not branded_thumb:
+                flat_thumb = os.path.join(
+                    config.DRIVE.get("THUMBNAILS", "thumbnails"),
+                    f"{topic_slug}_branded.jpg")
+                if os.path.isfile(flat_thumb):
+                    branded_thumb = flat_thumb
+
+        if branded_thumb:
+            print(f"   🖼️  Thumbnail: {os.path.basename(branded_thumb)}")
+        else:
+            print("   ⚠️  No branded thumbnail found — YouTube will auto-generate")
+
         # VDNA 3.0: Check optimal upload time window
+        schedule = None
         try:
             uto = self.skills["upload_time_optimizer"]
             schedule = uto.get_optimal_upload_time()
@@ -826,16 +873,47 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Upload time optimization failed: {e}")
 
+        title = topic.get("title", "ViralDNA News")
+        description = self._build_description(state)
+        tags = topic.get("tags", ["news", "india", "viral", "ViralDNA"])
+        if isinstance(tags, str):
+            tags = [t.strip() for t in tags.split(",")]
+
         for video_path in compiled_videos:
-            is_short = "Short" in video_path
-            result = uploader.upload(
+            if not os.path.exists(video_path):
+                print(f"   ⚠️ Video not found: {video_path} — skipping")
+                results.append({"status": "failed", "error": f"Video not found: {video_path}"})
+                continue
+
+            is_short = "Short" in os.path.basename(video_path)
+            short_index = 0
+            if is_short:
+                import re as _re
+                m = _re.search(r'Short(\d+)', os.path.basename(video_path))
+                short_index = int(m.group(1)) if m else 0
+
+            # Only pass thumbnail for main videos (shorts use frame injection)
+            thumb = branded_thumb if not is_short else None
+
+            print(f"   📤 Uploading: {os.path.basename(video_path)} ({'short' if is_short else 'main'})")
+            result = uploader.upload_single_video(
+                title_raw=title[:100],
+                desc_raw=description[:5000],
+                rag_context=title[:300],
                 video_path=video_path,
-                title=topic.get("title", "ViralDNA News"),
-                description=self._build_description(state),
-                tags=["news", "india", "viral"],
+                thumbnail_path=thumb or "",
                 is_short=is_short,
+                short_index=short_index,
+                variant_idx=0,
+                topic=topic,
             )
             results.append(result)
+
+            if result.get("status") == "success":
+                print(f"   ✅ Uploaded: {result.get('youtube_url', result.get('youtube_id', 'N/A'))}")
+            else:
+                print(f"   ❌ Upload failed: {result.get('error', 'unknown error')}")
+
         state["upload_results"] = results
         print(f"   📤 Uploaded {len(results)} videos")
         return state

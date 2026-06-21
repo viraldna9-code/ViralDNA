@@ -918,10 +918,16 @@ class YouTubeUploader:
         # Also add topic tags if available
         topic_tags = topic.get("tags", "")
         if topic_tags:
-            for tag in topic_tags.split(","):
-                tag = tag.strip()
-                if tag and tag not in found:
-                    found.append(tag)
+            if isinstance(topic_tags, list):
+                for tag in topic_tags:
+                    tag = tag.strip() if isinstance(tag, str) else str(tag)
+                    if tag and tag not in found:
+                        found.append(tag)
+            else:
+                for tag in topic_tags.split(","):
+                    tag = tag.strip()
+                    if tag and tag not in found:
+                        found.append(tag)
         return found[:12]
 
     # A2.7: Hashtag block builder
