@@ -1562,12 +1562,21 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                              has_subtitles, out_w, out_h, duration_str, is_short=False):
         """Mux audio + optional subtitles into the final video. Returns dict with path + validation."""
         import config
+        import tempfile
 
         if not os.path.exists(video_path):
             return None
 
         # If we have audio, mux it with the typewriter video
         if audio_path and os.path.exists(audio_path):
+            # Use a temp file for output to avoid same-file read/write corruption
+            mux_tmp = None
+            try:
+                fd, mux_tmp = tempfile.mkstemp(suffix=".mp4", dir=os.path.dirname(output_path))
+                os.close(fd)
+            except Exception:
+                mux_tmp = None
+
             cmd = [
                 self.ffmpeg, "-y",
                 "-i", video_path,
@@ -1583,22 +1592,29 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 "-c:a", "aac", "-b:a", "192k",
                 "-pix_fmt", "yuv420p",
                 "-shortest",
-                output_path
+                mux_tmp if mux_tmp else output_path
             ])
             try:
                 result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
                 if result.returncode != 0:
                     print(f"    ⚠️ Audio mux failed (rc={result.returncode}), using video without audio")
                     # Fallback: just use the video as-is
+                    if mux_tmp and os.path.exists(mux_tmp):
+                        os.remove(mux_tmp)
                     os.replace(video_path, output_path)
-                elif not (os.path.exists(output_path) and os.path.getsize(output_path) > 1024):
+                elif not (mux_tmp and os.path.exists(mux_tmp) and os.path.getsize(mux_tmp) > 1024):
+                    if mux_tmp and os.path.exists(mux_tmp):
+                        os.remove(mux_tmp)
                     os.replace(video_path, output_path)
                 else:
-                    # Mux succeeded, remove intermediate
+                    # Mux succeeded, move temp to final
                     if video_path != output_path and os.path.exists(video_path):
                         os.remove(video_path)
+                    os.replace(mux_tmp, output_path)
             except Exception as e:
                 print(f"    ⚠️ Audio mux error: {e}")
+                if mux_tmp and os.path.exists(mux_tmp):
+                    os.remove(mux_tmp)
                 if video_path != output_path:
                     os.replace(video_path, output_path)
         else:
