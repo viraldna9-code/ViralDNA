@@ -79,8 +79,8 @@ class TypewriterRenderer:
     def _build_typewriter_filter(self, text, out_w, out_h, duration_s, is_short=False):
         """
         Build an ffmpeg drawtext filter with real per-character typewriter effect.
-        Each character appears sequentially with a brief fade-in.
-        A semi-transparent background box is drawn behind the text block.
+        Uses a single drawtext per line with text expression that reveals characters.
+        No overlapping — each line is one drawtext element.
         """
         font_size = self._font_size(out_h, is_short)
         max_chars = self._max_chars(out_w, is_short)
@@ -102,12 +102,10 @@ class TypewriterRenderer:
         # Time allocation: each line gets equal time within duration
         time_per_line = duration_s / num_lines
 
-        # Horizontal margin for shorts (keep text away from right-side UI)
-        x_margin = int(out_w * 0.08) if is_short else 0  # ~86px on 1080
+        # Horizontal margin for shorts
+        x_margin = int(out_w * 0.08) if is_short else 0
 
         # ── Background box ──────────────────────────────────────────
-        # Draw a semi-transparent dark rectangle behind the text block
-        box_pad_x = int(font_size * 0.8)
         box_pad_top = int(font_size * 0.5)
         box_pad_bot = int(font_size * 0.3)
         box_x = x_margin
@@ -119,52 +117,65 @@ class TypewriterRenderer:
             f"drawbox=x={box_x}:y={box_y}:w={box_w}:h={box_h}:color=black@0.55:t=fill"
         ]
 
-        # ── Typewriter text ─────────────────────────────────────────
+        # ── Typewriter text: one drawtext per line ──────────────────
+        # Use text expression with substr() to reveal characters over time.
+        # text='substr(escaped_line, 0, if(gt(t,start), min(len, floor((t-start)*cps)), 0))'
         for i, line in enumerate(lines):
             line_start = i * time_per_line
-            line_end = line_start + time_per_line
             n_chars = len(line)
 
-            # Slower typewriter for readability: 5-12 chars/s
-            active_time = time_per_line * 0.80  # leave 20% pause at end
+            # Chars per second for this line
+            active_time = time_per_line * 0.80
             cps = max(5, min(12, n_chars / max(active_time, 0.5)))
 
-            for ch_idx in range(1, n_chars + 1):
-                partial = line[:ch_idx]
-                # Escape for ffmpeg drawtext
-                ch_escaped = (partial
-                              .replace("\\", "\\\\")
-                              .replace("'", "'\\\\''")
-                              .replace(":", "\\\\:")
-                              .replace("%", "%%"))
+            # Escape the line for ffmpeg
+            escaped = (line
+                       .replace("\\", "\\\\")
+                       .replace("'", "'\\\\''")
+                       .replace(":", "\\\\:")
+                       .replace("%", "%%")
+                       .replace("[", "\\\\[")
+                       .replace("]", "\\\\]")
+                       .replace(",", "\\\\,")
+                       .replace(";", "\\\\;"))
 
-                ch_time = line_start + (ch_idx - 1) / cps
-                ch_time_end = ch_time + 0.12  # 120ms fade per char
+            # Build text expression: reveal characters based on time
+            # Use if(gt(t,line_start), min(n_chars, floor((t-line_start)*cps)), 0)
+            # Then use substr to show only that many chars
+            text_expr = (
+                f"if(gt(t\\,{line_start:.3f})\\,"
+                f"substr('{escaped}'\\,0\\,"
+                f"min({n_chars}\\,floor((t-{line_start:.3f})*{cps:.1f})))\\,"
+                f"'')"
+            )
 
-                enable_expr = f"between(t\\,{ch_time:.3f}\\,{line_end:.3f})"
-                alpha_expr = (
-                    f"if(lte(t\\,{ch_time:.3f})\\,0\\,"
-                    f"if(lte(t\\,{ch_time_end:.3f})\\,"
-                    f"((t-{ch_time:.3f})/{ch_time_end-ch_time:.3f})\\,1))"
-                )
+            # Alpha: fade in each line, hold, fade out
+            line_end = line_start + time_per_line
+            fade_in_end = line_start + 0.3
+            fade_out_start = line_end - 0.3
+            alpha_expr = (
+                f"if(lte(t\\,{line_start:.3f})\\,0\\,"
+                f"if(lte(t\\,{fade_in_end:.3f})\\,((t-{line_start:.3f})/0.3)\\,"
+                f"if(gte(t\\,{fade_out_start:.3f})\\,(1-((t-{fade_out_start:.3f})/0.3))\\,"
+                f"1))"
+            )
 
-                y_pos = start_y + i * lh
-                x_pos = (f"({out_w}-text_w)/2" if not is_short
-                         else f"{x_margin}+({out_w}-2*{x_margin}-text_w)/2")
+            y_pos = start_y + i * lh
+            x_pos = (f"({out_w}-text_w)/2" if not is_short
+                     else f"{x_margin}+({out_w}-2*{x_margin}-text_w)/2")
 
-                filter_parts.append(
-                    f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
-                    f"text='{ch_escaped}':"
-                    f"fontsize={font_size}:"
-                    f"fontcolor=white:"
-                    f"x={x_pos}:"
-                    f"y={y_pos}:"
-                    f"shadowcolor=black@0.8:"
-                    f"shadowx=3:"
-                    f"shadowy=3:"
-                    f"alpha='{alpha_expr}':"
-                    f"enable='{enable_expr}'"
-                )
+            filter_parts.append(
+                f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
+                f"text='{text_expr}':"
+                f"fontsize={font_size}:"
+                f"fontcolor=white:"
+                f"x={x_pos}:"
+                f"y={y_pos}:"
+                f"shadowcolor=black@0.8:"
+                f"shadowx=3:"
+                f"shadowy=3:"
+                f"alpha='{alpha_expr}'"
+            )
 
         return ','.join(filter_parts)
 
