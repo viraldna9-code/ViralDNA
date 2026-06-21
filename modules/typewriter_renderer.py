@@ -81,6 +81,14 @@ class TypewriterRenderer:
         Build an ffmpeg drawtext filter with real per-character typewriter effect.
         Uses a single drawtext per line with text expression that reveals characters.
         No overlapping — each line is one drawtext element.
+
+        TIMING STRATEGY:
+        - Global cps (chars/sec) = total_chars / (duration_s * 0.85)
+          This matches the TTS voice speaking rate (~10 chars/s).
+        - Each line starts when its first character's time is reached:
+          line_start = chars_before_this_line / cps
+        - Each line's typewriter reveals chars at the same global cps.
+        - This ensures text appears in sync with the voice.
         """
         font_size = self._font_size(out_h, is_short)
         max_chars = self._max_chars(out_w, is_short)
@@ -99,11 +107,23 @@ class TypewriterRenderer:
         safe_height = safe_bottom - safe_top
         start_y = safe_top + max(0, (safe_height - total_h) // 2)
 
-        # Time allocation: each line gets equal time within duration
-        time_per_line = duration_s / num_lines
-
         # Horizontal margin for shorts
         x_margin = int(out_w * 0.08) if is_short else 0
+
+        # ── Global typewriter rate ──────────────────────────────────
+        # Calculate cps from total chars and total duration to match voice.
+        # The voice speaks throughout the entire duration, so text should too.
+        # Use 95% of duration for active typing, 5% for pause at end.
+        total_chars = sum(len(l) for l in lines)
+        active_time = duration_s * 0.95
+        cps = max(5, min(15, total_chars / max(active_time, 0.5)))
+
+        # Per-line start times: proportional to cumulative char count
+        # line N starts when char index = sum(len(lines[0..N-1])) / cps
+        char_offsets = [0]
+        for line in lines:
+            char_offsets.append(char_offsets[-1] + len(line))
+        # char_offsets[i] = total chars before line i
 
         # ── Background box ──────────────────────────────────────────
         box_pad_top = int(font_size * 0.5)
@@ -118,15 +138,11 @@ class TypewriterRenderer:
         ]
 
         # ── Typewriter text: one drawtext per line ──────────────────
-        # Use text expression with substr() to reveal characters over time.
-        # text='substr(escaped_line, 0, if(gt(t,start), min(len, floor((t-start)*cps)), 0))'
+        # Each line uses substr() to reveal characters at global cps.
+        # Line N starts at char_offsets[N] / cps.
         for i, line in enumerate(lines):
-            line_start = i * time_per_line
+            line_start = char_offsets[i] / cps
             n_chars = len(line)
-
-            # Chars per second for this line
-            active_time = time_per_line * 0.80
-            cps = max(5, min(12, n_chars / max(active_time, 0.5)))
 
             # Escape the line for ffmpeg
             escaped = (line
@@ -139,9 +155,7 @@ class TypewriterRenderer:
                        .replace(",", "\\\\,")
                        .replace(";", "\\\\;"))
 
-            # Build text expression: reveal characters based on time
-            # Use if(gt(t,line_start), min(n_chars, floor((t-line_start)*cps)), 0)
-            # Then use substr to show only that many chars
+            # Build text expression: reveal characters based on global time
             text_expr = (
                 f"if(gt(t\\,{line_start:.3f})\\,"
                 f"substr('{escaped}'\\,0\\,"
@@ -149,14 +163,17 @@ class TypewriterRenderer:
                 f"'')"
             )
 
-            # Alpha: fade in each line, hold, fade out
-            line_end = line_start + time_per_line
-            fade_in_end = line_start + 0.3
-            fade_out_start = line_end - 0.3
+            # Alpha: fade in at line start, fade out at line end
+            # Line ends when all its chars are revealed + a small hold
+            line_type_dur = n_chars / cps
+            line_end = line_start + line_type_dur + 0.3  # 300ms hold after last char
+            fade_dur = min(0.2, line_type_dur * 0.3)  # quick fade
+            fade_in_end = line_start + fade_dur
+            fade_out_start = line_end - fade_dur
             alpha_expr = (
                 f"if(lte(t\\,{line_start:.3f})\\,0\\,"
-                f"if(lte(t\\,{fade_in_end:.3f})\\,((t-{line_start:.3f})/0.3)\\,"
-                f"if(gte(t\\,{fade_out_start:.3f})\\,(1-((t-{fade_out_start:.3f})/0.3))\\,"
+                f"if(lte(t\\,{fade_in_end:.3f})\\,((t-{line_start:.3f})/{max(fade_dur,0.01):.3f})\\,"
+                f"if(gte(t\\,{fade_out_start:.3f})\\,(1-((t-{fade_out_start:.3f})/{max(fade_dur,0.01):.3f}))\\,"
                 f"1))"
             )
 
