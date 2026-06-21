@@ -7,6 +7,28 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-21
 
+### 18:17 IST — Text-Voice Sync: Global CPS + Silence-Aware Timing (v96.0)
+
+**Bug:** Text-voice desync persists. Typewriter scenes have uniform durations instead of proportional to word count. Shorts have inflated voice rate (3.22 w/s instead of ~2.1 w/s).
+
+**Root cause (3 issues):**
+1. Per-scene cps: each scene calculated its own chars/sec from its text+duration, causing short scenes to type much faster than the voice speaks
+2. Silence overhead: TTS adds 0.1-0.5s pauses between segments (~5% of total), but proportional split used total duration including silence
+3. Incomplete preprocessing: the duplicated `_preprocess_tts_text` missed space-variant contractions ("isn t" → "is not") and upper-case acronyms
+
+**Fix:**
+1. Added `VoiceEngine.preprocess_text()` — applies identical TTS transformations (smart quotes, all contraction variants, acronym expansion, abbreviation fix). Director calls this instead of duplicated logic
+2. Global cps computed from total text + audio duration, shared across ALL scenes — ensures uniform typing rate matches voice
+3. Silence-aware scene timing: `scene_duration = (words/voice_wps) + (words/total_words) * total_silence`
+4. Removed duplicated 80-line `_preprocess_tts_text` from director (now uses voice engine's method)
+
+**Validation:**
+- Main: typewriter 97.20s, video 97.10s (0.10s offset) ✓
+- Short1: typewriter 20.88s, video 20.72s (0.16s offset) ✓
+- Short2: typewriter 23.08s, video 22.93s (0.15s offset) ✓
+- Text contains "U K", "P M" matching TTS acronym expansion
+- Pipeline: 3 videos, 0 errors
+
 ### 16:00 IST — Text-Voice Sync: Full Fix — TTS Preprocessing + Proportional Timing (v95.9)
 
 **Bug:** Text-voice desync in both main and shorts. Sentences cut off incomplete.
