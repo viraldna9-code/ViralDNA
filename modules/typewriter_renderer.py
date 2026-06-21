@@ -1,138 +1,63 @@
 """
-Typewriter Text Renderer — VDNA 3.0
-Replaces the entire image pipeline with typewriter-style text animation.
-Each scene = one paragraph of script text that types out character by character.
-Clean, readable, no images needed.
+Typewriter text renderer for VDNA 3.0.
+
+Renders text with a per-character typewriter effect using ffmpeg drawtext.
+No subtitles — text is burned directly onto the video frames.
+
+For shorts (9:16 vertical): smaller font, narrower wrap, safe margins.
+For main (16:9): standard font, wider wrap.
 """
+
 import os
 import subprocess
-import math
+import tempfile
 
 
 class TypewriterRenderer:
-    """Renders text-as-video with typewriter animation using ffmpeg drawtext."""
+    """Renders typewriter-style text animation over a dark background."""
 
     def __init__(self, ffmpeg_bin="ffmpeg"):
         self.ffmpeg = ffmpeg_bin
 
-    # ── helpers ──────────────────────────────────────────────────────
+    # ── sizing helpers ──────────────────────────────────────────────
 
     @staticmethod
-    def _split_script(script_text, num_scenes):
-        """Split script into ~equal paragraph chunks for each scene."""
-        if not script_text:
-            return ["Breaking news."] * num_scenes
-
-        # Split into sentences
-        import re
-        sentences = re.split(r'(?<=[.!?])\s+', script_text.strip())
-        sentences = [s for s in sentences if s.strip()]
-
-        if not sentences:
-            return ["Breaking news."] * num_scenes
-
-        if len(sentences) <= num_scenes:
-            # Fewer sentences than scenes — pad with empty, each sentence is a scene
-            chunks = sentences + [""] * (num_scenes - len(sentences))
-            return chunks[:num_scenes]
-
-        # Group sentences into num_scenes chunks
-        chunk_size = max(1, len(sentences) // num_scenes)
-        chunks = []
-        for i in range(num_scenes):
-            start = i * chunk_size
-            end = (i + 1) * chunk_size if i < num_scenes - 1 else len(sentences)
-            chunk = " ".join(sentences[start:end]).strip()
-            if not chunk:
-                chunk = "..."
-            chunks.append(chunk)
-        return chunks
-
-    def _build_drawtext_filter(self, text, out_w, out_h, duration_s, is_short=False):
-        """
-        Build an ffmpeg drawtext filter expression that types out text
-        character by character (typewriter effect).
-
-        Text is centered, large font, white on dark background.
-        For shorts (9:16 vertical): smaller font, narrower wrap, safe margins.
-        """
-        # Font size: tuned per aspect ratio
+    def _font_size(out_h, is_short=False):
         if is_short:
-            # 1080x1920 vertical: ~72px gives ~20 lines with 1.5x line height
-            # Safe for mobile viewing with UI overlay margins
-            font_size = max(56, min(80, out_h // 24))
+            # 1080x1920: 56px fits ~24 lines with 1.6x line height
+            return max(44, min(64, out_h // 30))
         else:
-            font_size = max(36, out_h // 14)
+            # 1280x720: 42px fits ~12 lines
+            return max(36, min(52, out_h // 16))
 
-        # Word-wrap: narrower for shorts (vertical = less horizontal space)
+    @staticmethod
+    def _max_chars(out_w, is_short=False):
         if is_short:
-            # ~24 chars at ~72px font fits within 1080px with 150px side margins
-            max_chars = max(18, min(28, out_w // 40))
+            # 1080px wide, ~56px font, 120px side margins → ~22 chars
+            return max(16, min(24, out_w // 48))
         else:
-            max_chars = 38
+            return 38
 
-        wrapped_text = self._wrap_text(text, max_chars=max_chars)
-        escaped_wrapped = wrapped_text.replace("\\", "\\\\").replace("'", "\\\\'").replace(":", "\\\\:").replace("%", "%%")
+    @staticmethod
+    def _line_height(font_size):
+        return int(font_size * 1.6)
 
-        num_lines = wrapped_text.count('\n') + 1
-        line_height = int(font_size * 1.55)  # slightly more breathing room
-        total_text_height = num_lines * line_height
+    @staticmethod
+    def _safe_zone(out_h, is_short=False):
+        if is_short:
+            # Keep text in middle 65% to avoid top/bottom UI overlays
+            top = int(out_h * 0.175)
+            bottom = int(out_h * 0.825)
+        else:
+            top = int(out_h * 0.12)
+            bottom = int(out_h * 0.88)
+        return top, bottom
 
-        # Safe vertical margin: keep text in middle 70% of screen
-        safe_top = int(out_h * 0.15)
-        safe_bottom = int(out_h * 0.85)
-        safe_height = safe_bottom - safe_top
-        start_y = safe_top + max(0, (safe_height - total_text_height) // 2)
-
-        # Typewriter: reveal characters over time
-        chars = len(escaped_wrapped)
-        chars_per_sec = max(12, min(25, chars / max(duration_s * 0.7, 1.5)))
-        reveal_duration = min(chars / chars_per_sec, duration_s * 0.85)
-
-        # Horizontal safe margin for shorts (UI overlays on right side)
-        margin_x = int(out_w * 0.08) if is_short else 0  # ~88px on 1080 width
-
-        lines = wrapped_text.split('\n')
-        filter_parts = []
-
-        for line_idx, line in enumerate(lines):
-            line_escaped = line.replace("\\", "\\\\").replace("'", "\\\\'").replace(":", "\\\\:").replace("%", "%%")
-            line_start = line_idx * (duration_s / max(num_lines, 1))
-            line_end = line_start + min(0.4, duration_s / max(num_lines, 1) * 0.5)
-
-            enable_expr = f"between(t\\,{line_start:.2f}\\,{duration_s:.2f})"
-            alpha_expr = (
-                f"if(lte(t\\,{line_start:.2f})\\,0\\,"
-                f"if(lte(t\\,{line_end:.2f})\\,((t-{line_start:.2f})/{line_end-line_start:.2f})\\,1))"
-            )
-
-            y_pos = start_y + line_idx * line_height
-
-            # For shorts: add horizontal margin to keep text away from right-side UI
-            if is_short and margin_x > 0:
-                x_expr = f"(w-text_w)/2"
-            else:
-                x_expr = "(w-text_w)/2"
-
-            filter_parts.append(
-                f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
-                f"text='{line_escaped}':"
-                f"fontsize={font_size}:"
-                f"fontcolor=white@1:"
-                f"x={x_expr}:"
-                f"y={y_pos}:"
-                f"shadowcolor=black@0.8:"
-                f"shadowx=2:"
-                f"shadowy=2:"
-                f"alpha='{alpha_expr}':"
-                f"enable='{enable_expr}'"
-            )
-
-        return ','.join(filter_parts) if filter_parts else "null"
+    # ── word wrap ───────────────────────────────────────────────────
 
     @staticmethod
     def _wrap_text(text, max_chars=38):
-        """Simple word-wrap at max_chars, breaking at spaces."""
+        """Word-wrap at max_chars, breaking at spaces."""
         words = text.split()
         lines = []
         current = ""
@@ -147,7 +72,124 @@ class TypewriterRenderer:
             lines.append(current)
         return "\n".join(lines)
 
-    # ── main render ──────────────────────────────────────────────────
+    # ── drawtext filter builder ─────────────────────────────────────
+
+    def _build_typewriter_filter(self, text, out_w, out_h, duration_s, is_short=False):
+        """
+        Build an ffmpeg drawtext filter with real per-character typewriter effect.
+
+        Uses ffmpeg's eif expression to reveal characters one by one over time.
+        Each line appears sequentially with its own typewriter animation.
+        """
+        font_size = self._font_size(out_h, is_short)
+        max_chars = self._max_chars(out_w, is_short)
+        lh = self._line_height(font_size)
+        safe_top, safe_bottom = self._safe_zone(out_h, is_short)
+
+        wrapped = self._wrap_text(text, max_chars=max_chars)
+        lines = wrapped.split('\n')
+        num_lines = len(lines)
+
+        # Total text block height
+        total_h = num_lines * lh
+        safe_height = safe_bottom - safe_top
+        start_y = safe_top + max(0, (safe_height - total_h) // 2)
+
+        # Time allocation: each line gets equal time within duration
+        time_per_line = duration_s / max(num_lines, 1)
+
+        # Horizontal margin for shorts (keep text away from right-side UI)
+        x_margin = int(out_w * 0.06) if is_short else 0  # ~64px on 1080
+
+        filter_parts = []
+
+        for i, line in enumerate(lines):
+            if not line.strip():
+                continue
+
+            # Escape for ffmpeg drawtext
+            escaped = line.replace("\\", "\\\\").replace("'", "\\\\'").replace(":", "\\\\:").replace("%", "%%")
+
+            line_start = i * time_per_line
+            line_end = line_start + time_per_line
+
+            # Number of characters in this line
+            n_chars = len(line)
+
+            # Typewriter: reveal chars over the line's time slot
+            # Use eif expression: show min(trunc((t - start) * cps), n_chars) characters
+            # cps = chars per second for this line
+            active_time = time_per_line * 0.85  # leave 15% pause at end
+            cps = max(8, min(20, n_chars / max(active_time, 0.5)))
+
+            # Build the typewriter text expression:
+            # text='%{eif:min(trunc((t-T0)*cps),N):d}' shows N chars progressively
+            # But drawtext doesn't support printf-style. Use textfile approach instead.
+
+            # RELIABLE APPROACH: Use drawtext with text= and enable=
+            # Split each line into N segments, each showing one more character
+            # This gives a true typewriter effect without complex expressions.
+
+            # Actually, the most reliable ffmpeg-native typewriter:
+            # Use text='%{eif\:trunc((t-T0)*cps)\:d}' with text= prefix
+            # But this only works for numbers. For text, we use a different trick.
+
+            # PRACTICAL TYPEWRITER: Use the 'text' parameter with textfile
+            # that we generate dynamically. But that's complex.
+
+            # SIMPLEST RELIABLE TYPEWRITER:
+            # Use drawtext with text=full_text and alpha that reveals per-character
+            # using the 'enable' expression with text_w and x offset.
+            # Actually, just use a clip/mask approach.
+
+            # FINAL APPROACH: Use multiple drawtext layers, each showing one more
+            # character, with enable expressions. For short text this is fine.
+
+            # Even simpler: use the 'text' parameter with a fixed string and
+            # animate a white rectangle mask that reveals characters left-to-right.
+            # But that requires overlay filters.
+
+            # MOST PRACTICAL: Use drawtext with text= and a fade-in per character
+            # by splitting the line into individual character drawtext calls.
+            # For a 20-char line, that's 20 drawtext calls — ffmpeg handles it.
+
+            for ch_idx in range(1, n_chars + 1):
+                partial = line[:ch_idx]
+                ch_escaped = partial.replace("\\", "\\\\").replace("'", "\\\\'").replace(":", "\\\\:").replace("%", "%%")
+
+                # This character appears at: line_start + (ch_idx-1)/cps
+                ch_time = line_start + (ch_idx - 1) / cps
+                ch_time_end = ch_time + 0.15  # brief fade for this char
+
+                # Enable: show this partial text from ch_time until line_end
+                enable_expr = f"between(t\\,{ch_time:.3f}\\,{line_end:.3f})"
+
+                # Alpha: quick fade-in for each char
+                alpha_expr = (
+                    f"if(lte(t\\,{ch_time:.3f})\\,0\\,"
+                    f"if(lte(t\\,{ch_time_end:.3f})\\,((t-{ch_time:.3f})/{ch_time_end-ch_time:.3f})\\,1))"
+                )
+
+                y_pos = start_y + i * lh
+                x_pos = f"({out_w}-text_w)/2" if not is_short else f"{x_margin}+({out_w}-2*{x_margin}-text_w)/2"
+
+                filter_parts.append(
+                    f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
+                    f"text='{ch_escaped}':"
+                    f"fontsize={font_size}:"
+                    f"fontcolor=white:"
+                    f"x={x_pos}:"
+                    f"y={y_pos}:"
+                    f"shadowcolor=black@0.7:"
+                    f"shadowx=2:"
+                    f"shadowy=2:"
+                    f"alpha='{alpha_expr}':"
+                    f"enable='{enable_expr}'"
+                )
+
+        return ','.join(filter_parts) if filter_parts else "null"
+
+    # ── scene render ────────────────────────────────────────────────
 
     def render_scene(self, text, output_path, duration_s, out_w=1280, out_h=720,
                      is_short=False, bg_color="0x1a1a2e"):
@@ -158,10 +200,8 @@ class TypewriterRenderer:
         if not text.strip():
             text = "..."
 
-        # Build the drawtext filter
-        dt_filter = self._build_drawtext_filter(text, out_w, out_h, duration_s, is_short)
+        dt_filter = self._build_typewriter_filter(text, out_w, out_h, duration_s, is_short)
 
-        # Build ffmpeg command: color source + drawtext overlay
         cmd = [
             self.ffmpeg, "-y",
             "-f", "lavfi",
@@ -177,11 +217,8 @@ class TypewriterRenderer:
         ]
 
         try:
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=120
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             if result.returncode != 0:
-                # Fallback: simpler render without complex alpha expression
                 return self._render_simple(text, output_path, duration_s, out_w, out_h, is_short, bg_color)
             return os.path.exists(output_path) and os.path.getsize(output_path) > 1024
         except Exception as e:
@@ -189,42 +226,34 @@ class TypewriterRenderer:
             return self._render_simple(text, output_path, duration_s, out_w, out_h, is_short, bg_color)
 
     def _render_simple(self, text, output_path, duration_s, out_w, out_h, is_short, bg_color):
-        """Simpler fallback: just show text with fade-in, no per-line animation."""
-        # Match the main renderer's sizing for consistency
-        if is_short:
-            font_size = max(56, min(80, out_h // 24))
-            max_chars = max(18, min(28, out_w // 40))
-        else:
-            font_size = max(36, out_h // 14)
-            max_chars = 38
+        """Fallback: show full text with fade-in, no typewriter effect."""
+        font_size = self._font_size(out_h, is_short)
+        max_chars = self._max_chars(out_w, is_short)
+        lh = self._line_height(font_size)
+        safe_top, safe_bottom = self._safe_zone(out_h, is_short)
 
         wrapped = self._wrap_text(text, max_chars=max_chars)
         escaped = wrapped.replace("\\", "\\\\").replace("'", "\\\\'").replace(":", "\\\\:").replace("%", "%%")
 
         num_lines = wrapped.count('\n') + 1
-        line_height = int(font_size * 1.55)
-        total_h = num_lines * line_height
+        total_h = num_lines * lh
+        safe_height = safe_bottom - safe_top
+        start_y = safe_top + max(0, (safe_height - total_h) // 2)
 
-        # Safe vertical margin for shorts
-        if is_short:
-            safe_top = int(out_h * 0.15)
-            safe_bottom = int(out_h * 0.85)
-            safe_height = safe_bottom - safe_top
-            start_y = safe_top + max(0, (safe_height - total_h) // 2)
-        else:
-            start_y = (out_h - total_h) // 2
+        x_margin = int(out_w * 0.06) if is_short else 0
+        x_pos = f"(w-text_w)/2" if not is_short else f"{x_margin}+(w-2*{x_margin}-text_w)/2"
 
-        # Simple fade-in over 0.5s
-        alpha = "if(lte(t,0),0,if(lte(t,0.5),t/0.5,1))"
+        # Fade in over 0.4s
+        alpha = "if(lte(t,0),0,if(lte(t,0.4),t/0.4,1))"
 
         dt = (
             f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
             f"text='{escaped}':"
             f"fontsize={font_size}:"
             f"fontcolor=white:"
-            f"x=(w-text_w)/2:"
+            f"x={x_pos}:"
             f"y={start_y}:"
-            f"shadowcolor=black@0.8:"
+            f"shadowcolor=black@0.7:"
             f"shadowx=2:"
             f"shadowy=2:"
             f"alpha='{alpha}'"
@@ -251,10 +280,13 @@ class TypewriterRenderer:
             print(f"    [Typewriter] Simple render also failed: {e}")
             return False
 
+    # ── multi-scene render ──────────────────────────────────────────
+
     def render_all_scenes(self, script_text, num_scenes, duration_s, output_dir,
                           out_w=1280, out_h=720, is_short=False):
         """
         Render all scenes for a video. Returns list of scene clip paths.
+        Each scene gets an equal slice of the total duration.
         """
         os.makedirs(output_dir, exist_ok=True)
         chunks = self._split_script(script_text, num_scenes)
@@ -276,7 +308,6 @@ class TypewriterRenderer:
                 print(f"    [Typewriter] Scene {i+1}/{num_scenes} OK ({clip_duration:.1f}s)")
             else:
                 print(f"    [Typewriter] Scene {i+1}/{num_scenes} FAILED — using blank")
-                # Create a blank clip as fallback
                 blank_path = os.path.join(output_dir, f"tw_scene_{i}_blank.mp4")
                 self._render_blank(blank_path, clip_duration, out_w, out_h)
                 paths.append(blank_path)
@@ -300,3 +331,29 @@ class TypewriterRenderer:
             subprocess.run(cmd, capture_output=True, text=True, timeout=60)
         except Exception:
             pass
+
+    # ── script splitting ────────────────────────────────────────────
+
+    @staticmethod
+    def _split_script(script_text, num_scenes):
+        """Split script into num_scenes roughly equal chunks by sentences."""
+        import re
+        sentences = re.split(r'(?<=[.!?])\s+', script_text.strip())
+        sentences = [s for s in sentences if s.strip()]
+        if not sentences:
+            return ["..."] * num_scenes
+
+        chunks = []
+        per_scene = max(1, len(sentences) // num_scenes)
+        for i in range(num_scenes):
+            start = i * per_scene
+            end = start + per_scene if i < num_scenes - 1 else len(sentences)
+            chunk = " ".join(sentences[start:end])
+            if chunk.strip():
+                chunks.append(chunk)
+
+        # Pad if we got fewer chunks than requested
+        while len(chunks) < num_scenes:
+            chunks.append(chunks[-1] if chunks else "...")
+
+        return chunks[:num_scenes]

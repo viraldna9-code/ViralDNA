@@ -1456,26 +1456,13 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
         duration_str = f"{target_duration_s:.2f}"
         runtime_dir = os.path.dirname(audio_path)
-        ass_path = os.path.join(runtime_dir, f"{output_name}.ass")
 
         if is_short:
             out_w, out_h = 1080, 1920
         else:
             out_w, out_h = 1280, 720
 
-        has_subtitles = False
-        if script_text:
-            # v84.3: pass is_short + CTA text for shorts
-            cta = None
-            if is_short:
-                cta = "What do you think? Comment below!"
-            else:
-                # Main video CTA: subscribe prompt in last 3 seconds
-                cta = "Subscribe for more breaking news!"
-            has_subtitles = self.generate_ass_file(
-                script_text, target_duration_s, ass_path, out_w, out_h,
-                is_short=is_short, cta_text=cta
-            )
+        # VDNA 3.0: No subtitles — text is burned directly onto video by typewriter renderer
 
         # VDNA 3.0: Typewriter text scenes (replaces entire image pipeline)
         scene_clip_paths = []
@@ -1525,18 +1512,15 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             except Exception as e:
                 print(f"    Assembler: Typewriter concat failed: {e}")
 
-        # Mux audio + subtitles into the final video
+        # Mux audio into the final video (no subtitles — text is burned in)
         if os.path.exists(output_path) and os.path.getsize(output_path) > 1024:
-            result = self._mux_audio_subtitles(
+            result = self._mux_audio(
                 video_path=output_path,
                 audio_path=audio_path,
-                ass_path=ass_path,
                 output_path=output_path,
-                has_subtitles=has_subtitles,
                 out_w=out_w,
                 out_h=out_h,
                 duration_str=duration_str,
-                is_short=is_short,
             )
             if result:
                 return result
@@ -1558,79 +1542,62 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             print(f"    Assembler: Full text fallback also failed: {e}")
         return output_path if (os.path.exists(output_path) and os.path.getsize(output_path) > 1024) else None
 
-    def _mux_audio_subtitles(self, video_path, audio_path, ass_path, output_path,
-                             has_subtitles, out_w, out_h, duration_str, is_short=False):
-        """Mux audio + optional subtitles into the final video. Returns dict with path + validation."""
-        import config
-        import tempfile
+    def _mux_audio(self, video_path, audio_path, output_path, out_w, out_h, duration_str):
+                                 """Mux audio into the video. Returns dict with path + validation."""
+                                 import tempfile
 
-        if not os.path.exists(video_path):
-            return None
+                                 if not os.path.exists(video_path):
+                                     return None
 
-        # If we have audio, mux it with the typewriter video
-        if audio_path and os.path.exists(audio_path):
-            # Use a temp file for output to avoid same-file read/write corruption
-            mux_tmp = None
-            try:
-                fd, mux_tmp = tempfile.mkstemp(suffix=".mp4", dir=os.path.dirname(output_path))
-                os.close(fd)
-            except Exception:
-                mux_tmp = None
+                                 if audio_path and os.path.exists(audio_path):
+                                     mux_tmp = None
+                                     try:
+                                         fd, mux_tmp = tempfile.mkstemp(suffix=".mp4", dir=os.path.dirname(output_path))
+                                         os.close(fd)
+                                     except Exception:
+                                         mux_tmp = None
 
-            cmd = [
-                self.ffmpeg, "-y",
-                "-i", video_path,
-                "-i", audio_path,
-            ]
-            if has_subtitles and ass_path and os.path.isfile(ass_path):
-                escaped_ass = "'" + ass_path.replace("'", "'\\''") + "'"
-                cmd.extend(["-vf", f"subtitles={escaped_ass}"])
-                cmd.extend(["-c:v", "libx264", "-preset", "ultrafast", "-crf", "23"])
-            else:
-                cmd.extend(["-c:v", "copy"])
-            cmd.extend([
-                "-c:a", "aac", "-b:a", "192k",
-                "-pix_fmt", "yuv420p",
-                "-shortest",
-                mux_tmp if mux_tmp else output_path
-            ])
-            try:
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
-                if result.returncode != 0:
-                    print(f"    ⚠️ Audio mux failed (rc={result.returncode}), using video without audio")
-                    # Fallback: just use the video as-is
-                    if mux_tmp and os.path.exists(mux_tmp):
-                        os.remove(mux_tmp)
-                    os.replace(video_path, output_path)
-                elif not (mux_tmp and os.path.exists(mux_tmp) and os.path.getsize(mux_tmp) > 1024):
-                    if mux_tmp and os.path.exists(mux_tmp):
-                        os.remove(mux_tmp)
-                    os.replace(video_path, output_path)
-                else:
-                    # Mux succeeded, move temp to final
-                    if video_path != output_path and os.path.exists(video_path):
-                        os.remove(video_path)
-                    os.replace(mux_tmp, output_path)
-            except Exception as e:
-                print(f"    ⚠️ Audio mux error: {e}")
-                if mux_tmp and os.path.exists(mux_tmp):
-                    os.remove(mux_tmp)
-                if video_path != output_path:
-                    os.replace(video_path, output_path)
-        else:
-            # No audio — just ensure output is in the right place
-            if video_path != output_path:
-                os.replace(video_path, output_path)
+                                     cmd = [
+                                         self.ffmpeg, "-y",
+                                         "-i", video_path,
+                                         "-i", audio_path,
+                                         "-c:v", "copy",
+                                         "-c:a", "aac", "-b:a", "192k",
+                                         "-pix_fmt", "yuv420p",
+                                         "-shortest",
+                                         mux_tmp if mux_tmp else output_path
+                                     ]
+                                     try:
+                                         result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+                                         if result.returncode != 0:
+                                             print(f"    ⚠️ Audio mux failed (rc={result.returncode}), using video without audio")
+                                             if mux_tmp and os.path.exists(mux_tmp):
+                                                 os.remove(mux_tmp)
+                                             os.replace(video_path, output_path)
+                                         elif not (mux_tmp and os.path.exists(mux_tmp) and os.path.getsize(mux_tmp) > 1024):
+                                             if mux_tmp and os.path.exists(mux_tmp):
+                                                 os.remove(mux_tmp)
+                                             os.replace(video_path, output_path)
+                                         else:
+                                             if video_path != output_path and os.path.exists(video_path):
+                                                 os.remove(video_path)
+                                             os.replace(mux_tmp, output_path)
+                                     except Exception as e:
+                                         print(f"    ⚠️ Audio mux error: {e}")
+                                         if mux_tmp and os.path.exists(mux_tmp):
+                                             os.remove(mux_tmp)
+                                         if video_path != output_path:
+                                             os.replace(video_path, output_path)
+                                 else:
+                                     if video_path != output_path:
+                                         os.replace(video_path, output_path)
 
-        # Validate
-        is_valid, report = self.validate_output(
-            output_path, expected_w=out_w, expected_h=out_h
-        )
-        if not is_valid:
-            print(f"   ⚠️ VALIDATION WARNATIONS: {'; '.join(report['issues'])}")
-        else:
-            print(f"   ✅ Quality validated: {report['bitrate_kbps']}kbps, "
-                  f"{report['width']}x{report['height']}, {report['duration_s']:.1f}s")
+                                 is_valid, report = self.validate_output(output_path, expected_w=out_w, expected_h=out_h)
+                                 if not is_valid:
+                                     print(f"   ⚠️ VALIDATION WARNINGS: {'; '.join(report['issues'])}")
+                                 else:
+                                     print(f"   ✅ Quality validated: {report['bitrate_kbps']}kbps, "
+                                           f"{report['width']}x{report['height']}, {report['duration_s']:.1f}s")
 
-        print(f"    ✅ Assembled: {os.path.basename(output_path)} ({duration_str}s)")
-        return {"path": output_path, "validation_report": report}
+                                 print(f"    ✅ Assembled: {os.path.basename(output_path)} ({duration_str}s)")
+                                 return {"path": output_path, "validation_report": report}
