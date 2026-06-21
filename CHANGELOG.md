@@ -1095,5 +1095,46 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 **REMAINING MODULES:** 15 (was 19)
 **SKILLS IN DIRECTOR:** 28 (was 32)
 
+---
+
+## 2026-06-21
+
+### 18:00 IST — 10 Critical Growth Gaps: Build + Wire (v95.0)
+
+**CONTEXT:** Forensic audit (v94.0) identified 10 critical growth gaps. This commit builds all 10 and wires them into the pipeline.
+
+**8 NEW MODULES (+1,050 lines):**
+
+| Module | Gap Addressed | Wired Into |
+|--------|--------------|------------|
+| `thumbnail_ab_tester.py` | Gap 1: No thumbnail A/B testing | Phase 5 (post-thumbnail) |
+| `title_optimizer_v3.py` | Gap 2: No title A/B testing | Phase 5 (post-thumbnail) |
+| `engagement_loop.py` | Gap 6: No comment pinning/response | Phase 10.18 |
+| `shorts_optimizer_v3.py` | Gap 7: No Shorts hook/format optimization | Phase 7 (shorts assembly) |
+| `cross_platform_distributor.py` | Gap 8: No Reels/FB/X clipping | Phase 10.20 |
+| `subscribe_cta_optimizer.py` | Gap 9: Hardcoded CTA | Phase 10.19 |
+| `retention_curve_analyzer.py` | Gap 10: No retention curve parsing | Phase 10.21 |
+| `competitor_intel_v3.py` | Gap 3: Hardcoded fake data → YouTube Data API | Phase 10.22 |
+
+**DIRECTOR CHANGES (`vdna2_director.py`):**
+- Removed old `ctr_optimizer`, `shorts_optimizer`, `upload_time_optimizer` imports + skill entries (replaced by superior v3 modules)
+- Added 8 new imports + 8 skill entries (36 total skills)
+- Phase 2 (weighting): content_calendar injects category rotation bonus (1.3x multiplier)
+- Phase 2.5 (new): content_quality pre-production gate — fact-check + bias detection BEFORE scripting
+- Phase 5 (thumbnail): thumbnail A/B testing + title optimization after thumbnail creation
+- Phase 6 (upload): primetime_scheduler enforces upload delay (sleeps until optimal window)
+- Phase 7 (shorts): shorts_optimizer_v3 generates hooks, titles, CTAs, descriptions
+- Phase 10.18: Engagement loop — pinned comment + engagement prompt generation
+- Phase 10.19: Subscribe CTA optimization — dynamic CTAs based on series plan
+- Phase 10.20: Cross-platform distribution plan — Reels/FB/X clipping strategy
+- Phase 10.21: Retention curve analysis — parses YouTube Analytics retention data
+- Phase 10.22: Competitor intel — YouTube Data API service injection for live scanning
+
+**GAP 4 (upload scheduling):** primetime_scheduler now sleeps until optimal window instead of just printing recommendation.
+**GAP 5 (series funnel):** retention_analyzer series plan stored in state; subscribe_cta reads it for series-aware CTAs.
+
+**SKILLS IN DIRECTOR:** 36 (was 28)
+**TOTAL MODULES:** 37 (was 29)
+
 **COMMIT:** TBD
-**FILES:** Deleted 4 modules, `modules/vdna2_director.py` (removed 4 imports + 4 skill entries + 4 sub-phases), `docs/FORENSIC_GROWTH_AUDIT_20260621.md` (new, full audit report)
+**FILES:** 8 new modules, `modules/vdna2_director.py` (+200 lines for 10 new sub-phases)

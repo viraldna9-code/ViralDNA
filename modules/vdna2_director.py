@@ -255,10 +255,7 @@ class VDNA2Director:
         from forensic_audit import ForensicAudit
         from pre_ship_check import PreShipCheck
         from publish_decision_engine import decide_publish_plan
-        # VDNA 3.0: New modules wired into pipeline
-        from ctr_optimizer import CTROptimizer
-        from shorts_optimizer import ShortsOptimizer
-        from upload_time_optimizer import UploadTimeOptimizer
+        # VDNA 3.0: Analytics + RAG
         from yt_analytics import YouTubeAnalytics
         from rag_feedback import RagFeedbackLoop
         # VDNA 3.0 Growth + Operational agents (forensic audit pruned 4 dead weight modules)
@@ -277,6 +274,14 @@ class VDNA2Director:
         from intelligence_agent_v3 import IntelligenceAgentV3
         from collaboration_agent_v3 import CollaborationAgentV3
         from audience_channel_manager_v3 import AudienceChannelManagerV3
+        # VDNA 3.0 Growth Gap modules (10 critical gaps)
+        from thumbnail_ab_tester import ThumbnailABTester
+        from title_optimizer_v3 import TitleOptimizer
+        from engagement_loop import EngagementLoop
+        from shorts_optimizer_v3 import ShortsOptimizer
+        from cross_platform_distributor import CrossPlatformDistributor
+        from subscribe_cta_optimizer import SubscribeCTOptimizer
+        from retention_curve_analyzer import RetentionCurveAnalyzer
 
         self.skills = {
             "trend_discovery": TrendDiscovery(config_instance=config),
@@ -289,13 +294,9 @@ class VDNA2Director:
             "gemini_engine": GeminiEngine(),
             "forensic_audit": ForensicAudit(drive_base=config.DRIVE_BASE),
             "pre_ship_check": PreShipCheck(drive_base=config.DRIVE_BASE),
-            "decide_publish_plan": decide_publish_plan,
-            # VDNA 3.0 additions
-            "ctr_optimizer": CTROptimizer(),
-            "shorts_optimizer": ShortsOptimizer(),
-            "upload_time_optimizer": UploadTimeOptimizer(),
-            "yt_analytics": YouTubeAnalytics(credentials_path=config.DRIVE.get("YOUTUBE_TOKEN", "")),
             "rag_feedback": RagFeedbackLoop(ledger_path=os.path.join(config.DRIVE_BASE, "diagnostics", "growth_ledger.json")),
+            "decide_publish_plan": decide_publish_plan,
+            "yt_analytics": YouTubeAnalytics(credentials_path=config.DRIVE.get("YOUTUBE_TOKEN", "")),
             # VDNA 3.0 Growth + Operational agents (forensic audit pruned 4 dead weight)
             "community_engagement": CommunityEngagement(),
             "competitor_intel": CompetitorIntel(),
@@ -312,6 +313,14 @@ class VDNA2Director:
             "intelligence_agent": IntelligenceAgentV3(),
             "collaboration_agent": CollaborationAgentV3(),
             "audience_channel_manager": AudienceChannelManagerV3(),
+            # VDNA 3.0 Growth Gap modules (10 critical gaps)
+            "thumbnail_ab_tester": ThumbnailABTester(),
+            "title_optimizer": TitleOptimizer(),
+            "engagement_loop": EngagementLoop(),
+            "shorts_optimizer_v3": ShortsOptimizer(),
+            "cross_platform": CrossPlatformDistributor(),
+            "subscribe_cta": SubscribeCTOptimizer(),
+            "retention_curve": RetentionCurveAnalyzer(),
         }
         print(f"   📦 Loaded {len(self.skills)} skill modules")
 
@@ -387,6 +396,13 @@ class VDNA2Director:
             if not ok:
                 print("🛑 Weighting failed — no topics ranked")
                 return self.state
+
+        # ── PHASE 2.5: Pre-Production Quality Gate ──
+        worker = FactoryWorker("pre_production", self)
+        self.state, _ = worker.run(
+            self.state,
+            primary_fn=self._phase_pre_production_gate,
+        )
 
         # ── PHASE 3: Scripting ──
         worker = FactoryWorker("scripting", self)
@@ -486,11 +502,26 @@ class VDNA2Director:
         return state
 
     def _phase_weighting(self, state):
-        """Phase 2: Weight and rank topics."""
+        """Phase 2: Weight and rank topics.
+        VDNA 3.0: Content calendar injects category rotation bonus.
+        """
         print("   ⚖️  Weighting and ranking topics...")
         pf = self.skills["post_filter"]
         raw_news = state.get("raw_news", [])
-        sorted_topics = pf.run(raw_news)
+
+        # VDNA 3.0: Get category rotation bonus from content calendar
+        category_bonus = {}
+        try:
+            cc = self.skills["content_calendar"]
+            next_cat = cc.get_next_category()
+            if next_cat:
+                category_bonus = {"preferred_category": next_cat.get("category", ""),
+                                  "bonus_multiplier": 1.3}
+                print(f"   📅 Calendar rotation: preferring '{next_cat.get('category')}' category")
+        except Exception:
+            pass
+
+        sorted_topics = pf.run(raw_news, category_bonus=category_bonus)
         state["sorted_topics"] = sorted_topics
         if sorted_topics:
             state["selected_topic"] = sorted_topics[0]
@@ -499,6 +530,49 @@ class VDNA2Director:
             slug = "_".join(w for w in words if w).replace("/", "_").replace(":", "").replace("'", "").replace('"', "").replace("?", "").replace("!", "").replace(",", "").replace(";", "").replace("(", "").replace(")", "").replace("&", "and")
             state["topic_slug"] = slug or sorted_topics[0].get("id", "topic")
             print(f"   🏆 Top topic: {sorted_topics[0].get('title', 'N/A')[:60]}")
+        return state
+
+    def _phase_pre_production_gate(self, state):
+        """Phase 2.5: Pre-production quality gate.
+        VDNA 3.0: Content quality check BEFORE scripting — reject low-quality topics early.
+        Fact-check named entities in the selected topic title/description.
+        """
+        print("   🔬 Pre-production quality gate...")
+        topic = state.get("selected_topic", {})
+
+        # Content quality check
+        try:
+            cq = self.skills["content_quality"]
+            title = topic.get("title", "")
+            desc = topic.get("description", topic.get("summary", ""))
+            quality_result = cq.check_quality(title=title, description=desc)
+            state["pre_production_quality"] = quality_result
+            score = quality_result.get("quality_score", 0)
+            if score < 30:
+                print(f"   ⚠️ Low quality score ({score}/100) — proceeding with caution")
+            else:
+                print(f"   ✅ Quality score: {score}/100")
+        except Exception as e:
+            print(f"   ⚠️ Quality check failed: {e}")
+
+        # Fact-check named entities
+        try:
+            fc = self.skills["fact_check"]
+            title = topic.get("title", "")
+            source_url = topic.get("url", topic.get("link", ""))
+            fc_result = fc.fact_check_script(
+                script_text=title + " " + topic.get("description", ""),
+                title=title,
+                source_url=source_url,
+            )
+            state["pre_production_fact_check"] = fc_result
+            if fc_result.get("verified"):
+                print(f"   ✅ Fact check: verified ({fc_result.get('entity_count', 0)} entities)")
+            else:
+                print(f"   ⚠️ Fact check: {fc_result.get('status', 'unverified')} — flag for review")
+        except Exception as e:
+            print(f"   ⚠️ Fact check failed: {e}")
+
         return state
 
     def _phase_scripting(self, state):
@@ -750,15 +824,30 @@ class VDNA2Director:
         )
         state["branded_thumbnail"] = thumb_path
 
-        # VDNA 3.0: CTR optimization — score title + thumbnail
+        # VDNA 3.0: Thumbnail A/B testing — score variants, pick best
         try:
-            ctr = self.skills["ctr_optimizer"]
-            title = topic.get("title", "ViralDNA News")
-            ctr_result = ctr.optimize(title=title, thumbnail_path=thumb_path)
-            state["ctr_optimization"] = ctr_result
-            print(f"   📊 CTR score: {ctr_result.get('ctr_score', 'N/A')}/100 (title: {ctr_result.get('title_score', 'N/A')}, thumb: {ctr_result.get('thumbnail_score', 'N/A')})")
+            ab = self.skills["thumbnail_ab_tester"]
+            variants = ab.generate_variants(topic, thumb_path, thumb_path)
+            if variants:
+                best = ab.select_best(variants, topic)
+                state["thumbnail_ab_result"] = best
+                print(f"   🖼️  Thumbnail A/B: {best.get('recommendation', 'N/A')}")
         except Exception as e:
-            print(f"   ⚠️ CTR optimization failed: {e} — continuing without")
+            print(f"   ⚠️ Thumbnail A/B testing failed: {e}")
+
+        # VDNA 3.0: Title optimization — generate + score variants
+        try:
+            to = self.skills["title_optimizer"]
+            base_title = topic.get("title", "ViralDNA News")
+            variants = to.generate_variants(base_title, topic.get("description", ""))
+            best_title = to.select_best(variants)
+            state["title_optimization"] = best_title
+            # Override topic title with optimized version
+            if best_title.get("best_title"):
+                state["selected_topic"]["optimized_title"] = best_title["best_title"]
+                print(f"   📝 Title optimized: \"{best_title['best_title'][:60]}\" (score: {best_title['best_score']}/100)")
+        except Exception as e:
+            print(f"   ⚠️ Title optimization failed: {e}")
 
         return state
 
@@ -835,25 +924,38 @@ class VDNA2Director:
         state["compiled_videos"] = compiled_videos
         print(f"   🎬 Total videos: {len(compiled_videos)}")
 
-        # VDNA 3.0: Shorts optimization — generate titles, CTAs, branding
+        # VDNA 3.0: Shorts optimization — hooks, titles, CTAs
         try:
-            so = self.skills["shorts_optimizer"]
+            so = self.skills["shorts_optimizer_v3"]
             topic_title = topic.get("title", "")
-            topic_context = topic.get("description", "")
-            source = topic.get("source", "")
-            shorts_titles = so.generate_shorts_title_batch(
-                base_title=topic_title,
-                topic_context=topic_context,
-                source=source,
-            )
-            state["shorts_titles"] = shorts_titles
-            print(f"   📱 Shorts titles generated: {len(shorts_titles)} variants")
 
-            # VDNA 3.0: Build CTA with main video URL for subscriber conversion
+            # Generate hooks for each short
+            hooks = []
+            for i in range(3):
+                hook_style = ["shock_value", "curiosity_gap", "urgency"][i % 3]
+                hook = so.generate_hook(topic, style=hook_style)
+                hooks.append(hook)
+            state["shorts_hooks"] = hooks
+            print(f"   🎣 Shorts hooks: {len(hooks)} generated")
+
+            # Generate Shorts-optimized titles
+            shorts_titles = []
+            for i in range(3):
+                st = so.generate_shorts_title(topic_title, variant_idx=i)
+                shorts_titles.append(st)
+            state["shorts_titles"] = shorts_titles
+            print(f"   📱 Shorts titles: {len(shorts_titles)} variants")
+
+            # Generate end-screen CTAs
             main_video_url = state.get("main_video_url", "")
-            cta = so.build_shorts_cta(main_video_url=main_video_url, topic_title=topic_title)
-            state["shorts_cta"] = cta
-            print(f"   🔗 Shorts CTA: {cta.get('cta_text', 'N/A')[:60]}...")
+            cta_seq = so.generate_end_screen_cta(topic, main_video_url=main_video_url)
+            state["shorts_cta_sequence"] = cta_seq
+            print(f"   🔗 Shorts CTA sequence: {len(cta_seq.get('cta_sequence', []))} CTAs")
+
+            # Generate Shorts descriptions
+            shorts_desc = so.generate_shorts_description(topic, main_video_url)
+            state["shorts_description"] = shorts_desc
+            print(f"   📝 Shorts description: {len(shorts_desc)} chars")
         except Exception as e:
             print(f"   ⚠️ Shorts optimization failed: {e} — continuing without")
 
@@ -928,15 +1030,32 @@ class VDNA2Director:
         else:
             print("   ⚠️  No branded thumbnail found — YouTube will auto-generate")
 
-        # VDNA 3.0: Check optimal upload time window
-        schedule = None
+        # VDNA 3.0: Primetime scheduler — delay upload if outside optimal window
         try:
-            uto = self.skills["upload_time_optimizer"]
-            schedule = uto.get_optimal_upload_time()
-            state["upload_schedule"] = schedule
-            print(f"   ⏰ Upload window: {schedule.get('window_name', 'N/A')} (score: {schedule.get('window_score', 'N/A')})")
+            sched = self.skills["primetime_scheduler"]
+            run_mode = sched.get_run_mode()
+            upload_schedule = sched.get_upload_schedule()
+            state["run_mode"] = run_mode
+            state["upload_schedule"] = upload_schedule
+
+            recommended_time = upload_schedule.get("main_upload", {}).get("recommended_time_ist", "")
+            window_name = upload_schedule.get("main_upload", {}).get("window_name", "normal")
+            print(f"   ⏰ Run mode: {run_mode['mode']} | Window: {window_name} | Recommended: {recommended_time} IST")
+
+            # If quiet hours, delay upload to recommended time
+            if run_mode.get("is_quiet") and recommended_time:
+                from datetime import datetime as _dt
+                now_ist = _dt.now(config.IST)
+                rec_hour, rec_min = map(int, recommended_time.split(":"))
+                delay_min = (rec_hour - now_ist.hour) * 60 + (rec_min - now_ist.minute)
+                if delay_min > 0:
+                    delay_sec = min(delay_min * 60, 3600)  # max 1 hour delay
+                    print(f"   ⏳ Quiet hours — delaying upload {delay_min}min ({delay_sec}s) until {recommended_time} IST")
+                    import time as _time
+                    _time.sleep(delay_sec)
+                    print(f"   ▶️ Delay complete — uploading now")
         except Exception as e:
-            print(f"   ⚠️ Upload time optimization failed: {e}")
+            print(f"   ⚠️ Primetime scheduling failed: {e} — uploading immediately")
 
         title = topic.get("title", "ViralDNA News")
         description = self._build_description(state)
@@ -1336,6 +1455,97 @@ class VDNA2Director:
         # ── 10.17: Telegram Summary ──
         compiled = state.get("compiled_videos", [])
         upload = state.get("upload_results", [])
+        errors = state.get("errors", [])
+        topic = state.get("selected_topic", {})
+
+        # ── 10.18: Engagement Loop — pinned comment + response generation ──
+        try:
+            el = self.skills["engagement_loop"]
+            topic = state.get("selected_topic", {})
+            upload_results = state.get("upload_results", [])
+            video_id = ""
+            for r in upload_results:
+                if isinstance(r, dict) and r.get("video_id"):
+                    video_id = r["video_id"]
+                    break
+
+            pinned = el.generate_pinned_comment(topic, video_id=video_id)
+            state["pinned_comment"] = pinned
+            print(f"   📌 Pinned comment: {pinned.get('pinned_comment', '')[:60]}...")
+
+            engagement_prompt = el.generate_engagement_prompt(topic)
+            state["engagement_prompt"] = engagement_prompt
+            print(f"   💬 Engagement prompt: {engagement_prompt[:60]}...")
+        except Exception as e:
+            print(f"   ⚠️ Engagement loop failed: {e}")
+
+        # ── 10.19: Subscribe CTA Optimization ──
+        try:
+            cta = self.skills["subscribe_cta"]
+            topic = state.get("selected_topic", {})
+            series_plan = state.get("series_funnel_plan", {})
+
+            if series_plan.get("total_parts", 0) > 1:
+                # Series CTA
+                seq_cta = cta.get_series_cta(part=1, total=series_plan.get("total_parts", 3))
+            else:
+                # Standard CTA sequence
+                seq_cta = cta.get_full_cta_sequence(video_type="main", topic=topic)
+
+            state["subscribe_cta_result"] = seq_cta
+            if isinstance(seq_cta, list):
+                print(f"   🔔 CTA sequence: {len(seq_cta)} positions")
+            else:
+                print(f"   🔔 CTA: {seq_cta.get('cta_text', '')[:60]}...")
+        except Exception as e:
+            print(f"   ⚠️ CTA optimization failed: {e}")
+
+        # ── 10.20: Cross-Platform Distribution Plan ──
+        try:
+            cpd = self.skills["cross_platform"]
+            topic = state.get("selected_topic", {})
+            compiled_videos = state.get("compiled_videos", [])
+            main_video = compiled_videos[0] if compiled_videos else ""
+            clip_plan = cpd.generate_clip_plan(main_video, topic)
+            state["cross_platform_plan"] = clip_plan
+            print(f"   📱 Cross-platform: {clip_plan.get('total_platforms', 0)} platforms planned")
+        except Exception as e:
+            print(f"   ⚠️ Cross-platform planning failed: {e}")
+
+        # ── 10.21: Retention Curve Analysis ──
+        try:
+            rca = self.skills["retention_curve"]
+            analytics = state.get("analytics_summary", {})
+            # If we have retention data, analyze it
+            retention_data = analytics.get("retention_curve", [])
+            video_duration = analytics.get("avg_duration_sec", 300)
+            if retention_data:
+                retention_analysis = rca.analyze_retention_curve(retention_data, video_duration)
+                state["retention_analysis"] = retention_analysis
+                print(f"   📉 Retention: avg={retention_analysis.get('average_retention_pct', 'N/A')}%, "
+                      f"first30s={retention_analysis.get('first_30s_retention_pct', 'N/A')}%")
+                for insight in retention_analysis.get("insights", [])[:2]:
+                    print(f"      💡 {insight}")
+            else:
+                print(f"   📉 Retention: no curve data available (will analyze after YouTube processes)")
+        except Exception as e:
+            print(f"   ⚠️ Retention curve analysis failed: {e}")
+
+        # ── 10.22: Competitor Intel — pass YouTube service for live scanning ──
+        try:
+            ci = self.skills["competitor_intel"]
+            youtube_service = state.get("youtube_service")
+            if youtube_service:
+                ci.set_youtube_service(youtube_service)
+                print(f"   🔍 Competitor intel: YouTube API connected for live scanning")
+            else:
+                print(f"   🔍 Competitor intel: no YouTube service in state (set_youtube_service to enable)")
+        except Exception as e:
+            print(f"   ⚠️ Competitor intel setup failed: {e}")
+
+        # ── Telegram Summary ──
+        upload = state.get("upload_results", [])
+        compiled = state.get("compiled_videos", [])
         errors = state.get("errors", [])
         topic = state.get("selected_topic", {})
 
