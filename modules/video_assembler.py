@@ -1477,10 +1477,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 is_short=is_short, cta_text=cta
             )
 
-        image_paths = []
+        # VDNA 3.0: Typewriter text scenes (replaces entire image pipeline)
+        scene_clip_paths = []
         if is_short:
-            # v84.3: Studio wants jump-cuts every 5-7s. For a 30s short that's ~5-6 scenes.
-            # Use more scenes than before (was 3) to enable faster visual pacing.
             num_scenes = max(5, min(8, int(target_duration_s / 5)))
         elif target_duration_s > 120:
             num_scenes = 7
@@ -1490,244 +1489,132 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             num_scenes = 3
 
         if script_text:
-            print(f"    Assembler: Preparing generative slideshow ({num_scenes} scenes) via multi-source image chain...")
-            prompts = self.generate_image_prompts(script_text, num_scenes)
-            slideshow_dir = os.path.join(runtime_dir, f"slideshow_{output_name.replace('.mp4', '')}")
-            image_paths = self.download_scene_images(prompts, slideshow_dir, topic_title=topic_title)
-
-        # v88.0: Fill partial results — if API sources returned fewer images than num_scenes,
-        # generate PIL fallback images for the missing slots instead of repeating/blurring.
-        if image_paths and len(image_paths) < num_scenes:
-            missing = num_scenes - len(image_paths)
-            print(f"    Assembler: {len(image_paths)}/{num_scenes} API images — filling {missing} missing with PIL fallback...")
+            print(f"    Assembler: Rendering typewriter text scenes ({num_scenes} scenes)...")
+            tw_dir = os.path.join(runtime_dir, f"typewriter_{output_name.replace('.mp4', '')}")
             try:
-                from modules.local_visual_generator import generate_scene_image
-                for idx in range(num_scenes):
-                    if idx >= len(image_paths):
-                        pil_path = os.path.join(slideshow_dir, f"scene_img_{idx}_pil.jpg")
-                        generate_scene_image(
-                            topic_title or script_text or "News",
-                            output_path=pil_path,
-                            width=1600, height=900,
-                            scene_index=idx
-                        )
-                        if os.path.exists(pil_path) and os.path.getsize(pil_path) > 5120:
-                            image_paths.insert(idx, pil_path)
-                            print(f"    Assembler: ✓ PIL fill scene {idx}")
-                        else:
-                            print(f"    Assembler: ✗ PIL fill scene {idx} failed (file missing or too small)")
-            except Exception as e:
-                print(f"    Assembler: PIL fill failed: {e}")
-
-        if not image_paths:
-            # v87.7: Generate local visuals with PIL before falling back to static background
-            print("    Assembler: All API sources failed — generating local visuals with PIL...")
-            try:
-                from modules.local_visual_generator import generate_scene_images
-                slideshow_dir = os.path.join(runtime_dir, f"slideshow_{output_name.replace('.mp4', '')}")
-                local_paths = generate_scene_images(
-                    topic_title or script_text or "News",
-                    output_dir=slideshow_dir,
-                    count=num_scenes,
-                    width=1600,
-                    height=900
+                from modules.typewriter_renderer import TypewriterRenderer
+                tw = TypewriterRenderer(ffmpeg_bin=self.ffmpeg)
+                scene_clip_paths = tw.render_all_scenes(
+                    script_text=script_text,
+                    num_scenes=num_scenes,
+                    duration_s=target_duration_s,
+                    output_dir=tw_dir,
+                    out_w=out_w,
+                    out_h=out_h,
+                    is_short=is_short,
                 )
-                if local_paths:
-                    image_paths = local_paths
-                    print(f"    Assembler: ✓ Local visual generator: {len(image_paths)} images")
             except Exception as e:
-                print(f"    Assembler: Local visual generator failed: {e}")
+                print(f"    Assembler: Typewriter renderer failed: {e}")
 
-        if not image_paths:
-            # v52.1: Try local image pack before falling back to static background
-            print("    Assembler: API image sources failed, trying local image pack...")
+        # If typewriter rendered successfully, concatenate scene clips
+        if scene_clip_paths and all(os.path.exists(p) and os.path.getsize(p) > 1024 for p in scene_clip_paths):
+            print(f"    Assembler: Concatenating {len(scene_clip_paths)} typewriter scenes...")
+            concat_file = os.path.join(runtime_dir, f"tw_concat_{output_name.replace('.mp4', '')}.txt")
+            with open(concat_file, 'w') as f:
+                for clip_path in scene_clip_paths:
+                    f.write(f"file '{clip_path}'\n")
+            cmd = [
+                self.ffmpeg, "-y", "-safe", "0",
+                "-f", "concat", "-i", concat_file,
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+                "-pix_fmt", "yuv420p", "-r", "25",
+                output_path
+            ]
             try:
-                import importlib.util
-                lip_path = os.path.join(os.path.dirname(__file__), "local_image_pack.py")
-                spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
-                if spec and spec.loader:
-                    mod = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(mod)
-                    pack = mod.LocalImagePack()
-                local_images = pack.get_images(script_text or "", count=num_scenes, diversity=True)
-                if local_images:
-                    slideshow_dir = os.path.join(runtime_dir, f"slideshow_{output_name.replace('.mp4', '')}")
-                    os.makedirs(slideshow_dir, exist_ok=True)
-                    for i, src in enumerate(local_images):
-                        import shutil
-                        dest = os.path.join(slideshow_dir, f"scene_{i}.jpg")
-                        shutil.copy2(src, dest)
-                        image_paths.append(dest)
-                    print(f"    Assembler: ✓ Local pack: {len(image_paths)} images for slideshow")
-            except Exception:
-                pass
+                subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            except Exception as e:
+                print(f"    Assembler: Typewriter concat failed: {e}")
 
-        if not image_paths:
-            print(f"    Assembler: Falling back to static background loop ({visual_path}).")
-            image_paths = [visual_path]
-
-        cmd_inputs = []
-        filter_parts = []
-
-        unique_images = list(image_paths)
-        if len(unique_images) <= 1:
-            target_image = unique_images[0] if unique_images else visual_path
-            image_paths = [target_image]
-            num_inputs = 1
-            cmd_inputs.extend(["-loop", "1", "-t", f"{target_duration_s:.2f}", "-i", target_image])
-            scale_filter = f"scale={out_w}:{out_h},setsar=1"
-            fade_filter = f"fade=t=in:st=0:d=0.5,fade=t=out:st={target_duration_s - 0.5:.2f}:d=0.5"
-            filter_parts.append(f"[0:v]{scale_filter},{fade_filter}[bgv];")
-        else:
-            if is_short:
-                MAX_CLIP_DURATION = 6.0
-            elif target_duration_s > 120:
-                MAX_CLIP_DURATION = 25.0
-            elif target_duration_s > 60:
-                MAX_CLIP_DURATION = 20.0
-            else:
-                MAX_CLIP_DURATION = 15.0
-
-            import math
-            min_clips = math.ceil(target_duration_s / MAX_CLIP_DURATION)
-            min_clips = min(min_clips, num_scenes)
-            min_clips = max(min_clips, 1)
-
-            if len(unique_images) < min_clips:
-                repeated_images = []
-                while len(repeated_images) < min_clips:
-                    repeated_images.extend(unique_images)
-                image_paths = repeated_images[:min_clips]
-            else:
-                image_paths = unique_images[:min_clips]
-
-            num_inputs = len(image_paths)
-            clip_duration = target_duration_s / num_inputs
-
-            for i, img in enumerate(image_paths):
-                cmd_inputs.extend(["-loop", "1", "-t", f"{clip_duration:.2f}", "-i", img])
-                total_frames = int(clip_duration * 25)
-                pan_x = "(iw-iw/zoom)/2"
-                pan_y = "(ih-ih/zoom)/2"
-
-                if is_short:
-                    # v84.3: Aggressive jump-cut zoom for Studio recommendation.
-                    # Instead of slow Kenburns ramp (5% over full clip), use a quick
-                    # jump-cut: hold at 1.15x for first half, then jump to 1.25x.
-                    # Commas in zoom expression must be escaped for FFmpeg filter parser.
-                    zoom_base = 1.15
-                    half_frames = total_frames // 2
-                    # Escape commas inside z= expression so FFmpeg doesn't split on them
-                    # Note: FFmpeg zoompan uses 'in' (not 'n') for frame number
-                    zoom_expr = (
-                        f"if(lte(in\\,{half_frames})\\,"
-                        f"{zoom_base}\\,"
-                        f"1.25)"
-                    )
-                    scale_factor = 1.4  # generous scale to allow jump without edge artifacts
-                    kenburns = (
-                        f"scale={int(out_w * scale_factor)}:{int(out_h * scale_factor)},"
-                        f"zoompan=z='{zoom_expr}':x='{pan_x}':y='{pan_y}':d=1:"
-                        f"s={out_w}x{out_h}:fps=25,setsar=1"
-                    )
-                else:
-                    # Main videos: gentle Kenburns zoom (unchanged)
-                    zoom_percent = 0.03
-                    zoom_expr = f"1+{zoom_percent}*in/{total_frames}"
-                    scale_factor = 1.08
-                    kenburns = (
-                        f"scale={int(out_w * scale_factor)}:{int(out_h * scale_factor)},"
-                        f"zoompan=z='{zoom_expr}':x='{pan_x}':y='{pan_y}':d=1:"
-                        f"s={out_w}x{out_h}:fps=25,setsar=1"
-                    )
-                fade_filter = f"fade=t=in:st=0:d=0.5,fade=t=out:st={clip_duration - 0.5:.2f}:d=0.5"
-                filter_parts.append(f"[{i}:v]{kenburns},{fade_filter}[v{i}];")
-
-            concat_input_tags = "".join(f"[v{i}]" for i in range(num_inputs))
-            filter_parts.append(f"{concat_input_tags}concat=n={num_inputs}:v=1:a=0[bgv];")
-
-        # No FFmpeg watermark overlay on video — branding is only on the YouTube thumbnail
-        audio_input_idx = num_inputs
-        cmd_inputs.extend(["-i", audio_path])
-
-        if has_subtitles and os.path.isfile(ass_path):
-            # Properly escape for FFmpeg filter syntax: wrap in single quotes
-            # to protect / . and other special chars in the path.
-            escaped_ass = "'" + ass_path.replace("'", "'\\''") + "'"
-            filter_parts.append(f"[bgv]subtitles={escaped_ass}[outv]")
-        elif has_subtitles and not os.path.isfile(ass_path):
-            # .ass file was lost between write and FFmpeg execution — skip subtitles
-            print(f"    ⚠️  Assembler: .ass file missing at FFmpeg time: {ass_path}")
-            print(f"    ⚠️  Assembler: Proceeding without subtitles for {output_name}")
-            filter_parts.append(f"[bgv]copy[outv]")
-        else:
-            filter_parts.append(f"[bgv]copy[outv]")
-
-        filter_complex = "".join(filter_parts)
-
-        # v64.0: use HW encoder if available
-        video_encoder = self._get_video_encoder()
-        preset = "medium" if video_encoder == "libx264" else "default"
-
-        cmd = [self.ffmpeg, "-y", "-threads", "2"]
-        cmd.extend(cmd_inputs)
-        cmd.extend([
-            "-filter_complex", filter_complex,
-            "-map", "[outv]",
-            "-map", f"{audio_input_idx}:a",
-            "-c:v", video_encoder,
-        ])
-        if video_encoder == "libx264":
-            cmd.extend(["-preset", preset])
-            # Ensure minimum quality bitrate
-            if is_short:
-                cmd.extend(["-b:v", "2M", "-maxrate", "3M", "-bufsize", "4M"])
-            else:
-                cmd.extend(["-b:v", "4M", "-maxrate", "6M", "-bufsize", "8M"])
-        cmd.extend([
-            "-r", "25", "-g", "25",
-            "-c:a", "aac", "-b:a", "192k",
-            "-pix_fmt", "yuv420p",
-            output_path
-        ])
-
-        if async_mode:
-            log_dir = os.path.join(config.DRIVE["VIDEO_OUTPUT"], "logs")
-            os.makedirs(log_dir, exist_ok=True)
-            log_path = os.path.join(log_dir, f"{output_name}.log")
-            log_file = open(log_path, "w")
-            print(f"    Assembler: Launching asynchronous background assembly for {output_name}...")
-            process = subprocess.Popen(cmd, stdout=log_file, stderr=subprocess.STDOUT)
-            return {
-                "process": process, "path": output_path, "log_path": log_path,
-                "log_file": log_file, "output_name": output_name, "duration_str": duration_str
-            }
-        else:
-            log_dir = os.path.join(config.DRIVE["VIDEO_OUTPUT"], "logs")
-            os.makedirs(log_dir, exist_ok=True)
-            log_path = os.path.join(log_dir, f"{output_name}.log")
-            print(f"    Assembler: Syncing frames. Target: {duration_str}s | Encoder: {video_encoder}...")
-            with open(log_path, "w") as log_file:
-                result = subprocess.run(cmd, stdout=log_file, stderr=subprocess.STDOUT)
-            if result.returncode != 0:
-                # Read last 50 lines of log for error context
-                try:
-                    with open(log_path, "r") as lf:
-                        tail = "".join(lf.readlines()[-50:])
-                except Exception:
-                    tail = "(log unreadable)"
-                print(f"❌ FFmpeg Assembly Failed (rc={result.returncode}):\n{tail}")
-                raise Exception("Assembly failed.")
-
-            # v64.0: validate output quality
-            is_valid, report = self.validate_output(
-                output_path, expected_w=out_w, expected_h=out_h
+        # Mux audio + subtitles into the final video
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 1024:
+            result = self._mux_audio_subtitles(
+                video_path=output_path,
+                audio_path=audio_path,
+                ass_path=ass_path,
+                output_path=output_path,
+                has_subtitles=has_subtitles,
+                out_w=out_w,
+                out_h=out_h,
+                duration_str=duration_str,
+                is_short=is_short,
             )
-            if not is_valid:
-                print(f"   ⚠️ VALIDATION WARNINGS: {'; '.join(report['issues'])}")
-            else:
-                print(f"   ✅ Quality validated: {report['bitrate_kbps']}kbps, "
-                      f"{report['width']}x{report['height']}, {report['duration_s']:.1f}s")
+            if result:
+                return result
 
-            print(f"    ✅ Assembled: {output_name} ({duration_str}s)")
-            return {"path": output_path, "validation_report": report}
+        # VDNA 3.0: No image fallback — if typewriter failed, render pure text video directly
+        print(f"    Assembler: Fallback — rendering full text video in single pass...")
+        try:
+            from modules.typewriter_renderer import TypewriterRenderer
+            tw = TypewriterRenderer(ffmpeg_bin=self.ffmpeg)
+            tw.render_scene(
+                text=script_text[:500] if script_text else "Breaking news.",
+                output_path=output_path,
+                duration_s=target_duration_s,
+                out_w=out_w,
+                out_h=out_h,
+                is_short=is_short,
+            )
+        except Exception as e:
+            print(f"    Assembler: Full text fallback also failed: {e}")
+        return output_path if (os.path.exists(output_path) and os.path.getsize(output_path) > 1024) else None
+
+    def _mux_audio_subtitles(self, video_path, audio_path, ass_path, output_path,
+                             has_subtitles, out_w, out_h, duration_str, is_short=False):
+        """Mux audio + optional subtitles into the final video. Returns dict with path + validation."""
+        import config
+
+        if not os.path.exists(video_path):
+            return None
+
+        # If we have audio, mux it with the typewriter video
+        if audio_path and os.path.exists(audio_path):
+            cmd = [
+                self.ffmpeg, "-y",
+                "-i", video_path,
+                "-i", audio_path,
+            ]
+            if has_subtitles and ass_path and os.path.isfile(ass_path):
+                escaped_ass = "'" + ass_path.replace("'", "'\\''") + "'"
+                cmd.extend(["-vf", f"subtitles={escaped_ass}"])
+                cmd.extend(["-c:v", "libx264", "-preset", "ultrafast", "-crf", "23"])
+            else:
+                cmd.extend(["-c:v", "copy"])
+            cmd.extend([
+                "-c:a", "aac", "-b:a", "192k",
+                "-pix_fmt", "yuv420p",
+                "-shortest",
+                output_path
+            ])
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+                if result.returncode != 0:
+                    print(f"    ⚠️ Audio mux failed (rc={result.returncode}), using video without audio")
+                    # Fallback: just use the video as-is
+                    os.replace(video_path, output_path)
+                elif not (os.path.exists(output_path) and os.path.getsize(output_path) > 1024):
+                    os.replace(video_path, output_path)
+                else:
+                    # Mux succeeded, remove intermediate
+                    if video_path != output_path and os.path.exists(video_path):
+                        os.remove(video_path)
+            except Exception as e:
+                print(f"    ⚠️ Audio mux error: {e}")
+                if video_path != output_path:
+                    os.replace(video_path, output_path)
+        else:
+            # No audio — just ensure output is in the right place
+            if video_path != output_path:
+                os.replace(video_path, output_path)
+
+        # Validate
+        is_valid, report = self.validate_output(
+            output_path, expected_w=out_w, expected_h=out_h
+        )
+        if not is_valid:
+            print(f"   ⚠️ VALIDATION WARNATIONS: {'; '.join(report['issues'])}")
+        else:
+            print(f"   ✅ Quality validated: {report['bitrate_kbps']}kbps, "
+                  f"{report['width']}x{report['height']}, {report['duration_s']:.1f}s")
+
+        print(f"    ✅ Assembled: {os.path.basename(output_path)} ({duration_str}s)")
+        return {"path": output_path, "validation_report": report}

@@ -10,7 +10,7 @@ Layer 3: Skills Specialists — wrapped existing modules (voiceover, video_assem
 Key improvements over v80.0 monolithic orchestrator:
 1. Checkpoint/resume — any phase can crash and resume without full restart
 2. Timeout enforcement — no phase can hang forever
-3. Graceful degradation — Fish Speech fails? Falls back to gTTS. Visual fails? Uses local generator.
+3. Graceful degradation — Fish Speech fails? Falls back to gTTS. Assembly fails? Typewriter renderer fallback.
 4. Disk monitoring — refuses to write if disk < 500MB
 5. Signal handling — SIGTERM/SIGINT triggers graceful shutdown, not crash
 6. Per-phase isolation — each factory worker runs in controlled environment
@@ -26,12 +26,11 @@ Architecture:
         ├── Phase 2: Weighting        → FactoryWorker("weighting")
         ├── Phase 3: Scripting        → FactoryWorker("scripting") [+ RAG brief]
         ├── Phase 4: Voice            → FactoryWorker("voice") [Fish Speech + gTTS fallback]
-        ├── Phase 5: Visuals          → FactoryWorker("visuals")
-        ├── Phase 6: Thumbnail       → FactoryWorker("thumbnail") [+ CTR optimizer]
-        ├── Phase 7: Assembly         → FactoryWorker("assembly") [+ Shorts optimizer]
-        ├── Phase 8: Forensic Audit  → FactoryWorker("forensic_audit")
-        ├── Phase 9: Upload           → FactoryWorker("upload") [+ Upload time optimizer]
-        └── Phase 10: Post-pipeline   → FactoryWorker("post_pipeline") [+ Analytics + RAG]
+        ├── Phase 5: Thumbnail       → FactoryWorker("thumbnail") [+ CTR optimizer]
+        ├── Phase 6: Assembly         → FactoryWorker("assembly") [+ Shorts optimizer]
+        ├── Phase 7: Forensic Audit  → FactoryWorker("forensic_audit")
+        ├── Phase 8: Upload           → FactoryWorker("upload") [+ Upload time optimizer]
+        └── Phase 9: Post-pipeline   → FactoryWorker("post_pipeline") [+ Analytics + RAG]
 """
 
 import os
@@ -63,7 +62,6 @@ PHASE_TIMEOUTS = {
     "fact_check":      180,   # 3 min — fact verification
     "compliance":      60,    # 1 min — legal/compliance check
     "voice":           600,   # 10 min — Fish Speech is slow (~12s/sentence)
-    "visuals":         300,   # 5 min — image fetching/generation
     "thumbnail":       120,   # 2 min — thumbnail creation
     "assembly":        600,   # 10 min — FFmpeg video assembly
     "forensic_audit":  60,    # 1 min — pre-ship audit
@@ -187,7 +185,6 @@ class FactoryWorker:
             "fact_check": ["fact_check_result", "bias_check_result"],
             "compliance": ["compliance_result"],
             "voice": ["voiceover_assets"],
-            "visuals": ["visuals", "background_canvas"],
             "thumbnail": ["branded_thumbnail"],
             "assembly": ["compiled_videos", "publish_decision", "topic_slug"],
             "forensic_audit": ["audit_result"],
@@ -250,7 +247,6 @@ class VDNA2Director:
         from voiceover import VoiceoverGenerator
         from video_assembler import VideoAssembler
         from thumbnail_creator import ThumbnailCreator
-        from visual_fetcher import VisualFetcher
         from gemini_engine import GeminiEngine
         from forensic_audit import ForensicAudit
         from pre_ship_check import PreShipCheck
@@ -290,7 +286,6 @@ class VDNA2Director:
             "voiceover": VoiceoverGenerator,
             "video_assembler": VideoAssembler(config_instance=config),
             "thumbnail_creator": ThumbnailCreator(pacer=config, config_instance=config),
-            "visual_fetcher": VisualFetcher(pacer=config, config_instance=config),
             "gemini_engine": GeminiEngine(),
             "forensic_audit": ForensicAudit(drive_base=config.DRIVE_BASE),
             "pre_ship_check": PreShipCheck(drive_base=config.DRIVE_BASE),
@@ -425,18 +420,7 @@ class VDNA2Director:
             print("🛑 Voice synthesis failed (both primary and fallback)")
             return self.state
 
-        # ── PHASE 5: Visuals ──
-        worker = FactoryWorker("visuals", self)
-        self.state, ok = worker.run(
-            self.state,
-            primary_fn=self._phase_visuals,
-            fallback_fn=self._phase_visuals_fallback,
-        )
-        if not ok:
-            print("🛑 Visual harvesting failed (both primary and fallback)")
-            return self.state
-
-        # ── PHASE 6: Thumbnail ──
+        # ── PHASE 5: Thumbnail ──
         worker = FactoryWorker("thumbnail", self)
         self.state, ok = worker.run(
             self.state,
@@ -445,7 +429,7 @@ class VDNA2Director:
         if not ok:
             print("⚠️ Thumbnail creation failed — continuing without branded thumbnail")
 
-        # ── PHASE 7: Assembly ──
+        # ── PHASE 6: Assembly ──
         worker = FactoryWorker("assembly", self)
         self.state, ok = worker.run(
             self.state,
@@ -455,7 +439,7 @@ class VDNA2Director:
             print("🛑 Video assembly failed")
             return self.state
 
-        # ── PHASE 8: Forensic Audit ──
+        # ── PHASE 7: Forensic Audit ──
         worker = FactoryWorker("forensic_audit", self)
         self.state, ok = worker.run(
             self.state,
@@ -465,7 +449,7 @@ class VDNA2Director:
             print("🛑 Forensic audit failed — halting before upload")
             return self.state
 
-        # ── PHASE 9: Upload ──
+        # ── PHASE 8: Upload ──
         if os.environ.get("VIRALDNA_UPLOAD_ENABLED", "false").lower() == "true":
             worker = FactoryWorker("upload", self)
             self.state, ok = worker.run(
@@ -476,7 +460,7 @@ class VDNA2Director:
             print("⏭️ Upload skipped (VIRALDNA_UPLOAD_ENABLED=false — review mode)")
             self.state["upload_results"] = {"status": "skipped", "reason": "upload_disabled"}
 
-        # ── PHASE 10: Post-Pipeline ──
+        # ── PHASE 9: Post-Pipeline ──
         worker = FactoryWorker("post_pipeline", self)
         self.state, _ = worker.run(
             self.state,
@@ -745,80 +729,8 @@ class VDNA2Director:
         state["voiceover_assets"] = voiceover_assets
         return state
 
-    def _phase_visuals(self, state):
-        """Phase 5: Visual harvesting.
-        v87.8: Primary = Stable Diffusion via local_visual_generator.
-               Fallback = VisualFetcher (RSS/Serper) for supplementary images.
-        """
-        print("   🖼️  Harvesting visuals...")
-        topic = state.get("selected_topic", {})
-        topic_title = topic.get("title", "")
-        topic_slug = state.get("topic_slug", "topic")
-        runtime_dir = config.DRIVE.get("RUNTIME", "/home/jay/ViralDNA/output/runtime")
-        os.makedirs(runtime_dir, exist_ok=True)
-
-        # ─── Primary: Stable Diffusion local generation ────────────────────
-        from local_visual_generator import generate_scene_images
-        sd_dir = os.path.join(runtime_dir, "sd_scenes")
-        try:
-            sd_paths = generate_scene_images(
-                topic_title, sd_dir, count=5, width=1920, height=1080
-            )
-            if sd_paths:
-                state["visuals"] = sd_paths
-                bg_path = os.path.join(runtime_dir, f"{topic_slug}_bg.jpg")
-                import shutil
-                shutil.copy2(sd_paths[0], bg_path)
-                state["background_canvas"] = bg_path
-                print(f"   🖼️  SD generated {len(sd_paths)} scene images")
-                return state
-        except Exception as e:
-            print(f"   ⚠️  SD generation failed: {e}, trying VisualFetcher...")
-
-        # ─── Fallback: VisualFetcher (RSS/Serper) ─────────────────────────
-        vf = self.skills["visual_fetcher"]
-        visuals = vf.fetch_visuals(topic=topic)
-        state["visuals"] = visuals
-
-        bg_path = os.path.join(runtime_dir, f"{topic_slug}_bg.jpg")
-        if visuals:
-            import shutil
-            shutil.copy2(visuals[0], bg_path)
-            state["background_canvas"] = bg_path
-        else:
-            state["background_canvas"] = self._generate_local_background(state)
-
-        print(f"   🖼️  Visuals: {len(visuals)} images (from VisualFetcher)")
-        return state
-
-    def _phase_visuals_fallback(self, state):
-        """Phase 5 Fallback: local visual generation."""
-        print("   🔄 Visual fallback: using local generator...")
-        bg_path = self._generate_local_background(state)
-        state["background_canvas"] = bg_path
-        state["visuals"] = [bg_path]
-        return state
-
-    def _generate_local_background(self, state):
-        """Generate a local background image when all fetchers fail."""
-        try:
-            from local_visual_generator import generate_scene_image
-            topic = state.get("selected_topic", {})
-            title = topic.get("title", "News")
-            category = topic.get("category", "general")
-            bg_path = os.path.join(
-                config.DRIVE.get("RUNTIME", "/home/jay/ViralDNA/output/runtime"),
-                f"{state.get('topic_slug', 'topic')}_bg.jpg"
-            )
-            os.makedirs(os.path.dirname(bg_path), exist_ok=True)
-            generate_scene_image(title, bg_path)
-            return bg_path
-        except Exception as e:
-            print(f"   ⚠️ Local background generation failed: {e}")
-            return None
-
     def _phase_thumbnail(self, state):
-        """Phase 6: Thumbnail creation.
+        """Phase 5: Thumbnail creation.
         VDNA 3.0: CTR optimizer scores and refines title + thumbnail after creation.
         """
         print("   🏷️  Creating thumbnail...")
@@ -871,7 +783,6 @@ class VDNA2Director:
         va = self.skills["video_assembler"]
         script_payload = state.get("script_payload")
         voiceover_assets = state.get("voiceover_assets", {})
-        background_canvas = state.get("background_canvas")
         topic = state.get("selected_topic", {})
         topic_slug = state.get("topic_slug", "topic")
 
@@ -896,7 +807,7 @@ class VDNA2Director:
                 word_count = len(main_text.split()) if main_text else 200
                 target_duration = max(60, min(word_count * 0.4, 600))
                 va.assemble_video(
-                    main_filename, audio_path, background_canvas,
+                    main_filename, audio_path, None,
                     main_filename, target_duration,
                     async_mode=False, script_text=main_text[:500],
                     is_short=False, topic_title=topic.get("title", "")
@@ -918,7 +829,7 @@ class VDNA2Director:
                 short_word_count = len(short_text.split()) if short_text else 30
                 short_duration = max(15, min(short_word_count * 0.4, 60))
                 va.assemble_video(
-                    short_filename, short_audio, background_canvas,
+                    short_filename, short_audio, None,
                     short_filename, short_duration,
                     async_mode=False, script_text=short_text[:200],
                     is_short=True, topic_title=topic.get("title", "")

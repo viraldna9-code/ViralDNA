@@ -5,6 +5,38 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ---
 
+## 2026-06-21
+
+### 14:00 IST — Dead Image Pipeline Removal + Typewriter Renderer Integration (v95.2)
+
+**Cleanup: Removed entire image pipeline (89 lines, 4 methods, 2 imports, 1 skill)**
+
+**Removed:**
+- `_phase_visuals()` — Stable Diffusion + VisualFetcher image harvesting (dead code)
+- `_phase_visuals_fallback()` — local visual generation fallback (dead code)
+- `_generate_local_background()` — PIL background image gen (dead code)
+- `from visual_fetcher import VisualFetcher` import
+- `"visual_fetcher"` from skills dict
+- `"visuals"` timeout budget (300s)
+- `"visuals": ["visuals", "background_canvas"]` checkpoint key
+- `background_canvas` state variable from assembly phase
+- Phase 5 visuals worker block from `run()`
+- Renumbered phases: Thumbnail=5, Assembly=6, Forensic Audit=7, Upload=8, Post-Pipeline=9
+
+**Typewriter Renderer (from previous session):**
+- `modules/typewriter_renderer.py` — NEW, tested, produces valid H.264 MP4
+- `modules/video_assembler.py` — updated to use typewriter scenes + `_mux_audio_subtitles()`
+- Test render: 1280x720, 5s, 181KB — verified with ffpipe
+
+**Verification:**
+- Director compiles clean (py_compile OK)
+- All 3 modules import cleanly
+- Zero references to removed code remain
+- Phase list: discovery, weighting, scripting, fact_check, compliance, voice, thumbnail, assembly, forensic_audit, upload, post_pipeline
+
+**COMMIT:** (pending)
+**FILES:** `modules/vdna2_director.py`, `modules/video_assembler.py`, `modules/typewriter_renderer.py`
+
 ## 2026-06-20
 
 ### 14:30 IST — Phase 5 CPU Hang Fix + RAG Ledger Seed (Performance & Analytics Run)
