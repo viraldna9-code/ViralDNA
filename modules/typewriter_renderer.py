@@ -135,8 +135,12 @@ class TypewriterRenderer:
         box_y = start_y - box_pad_top
         box_h = total_h + box_pad_top + box_pad_bot
 
+        # Red accent bar at top of frame (drawn as part of bg box border)
+        # Since we can't add a 3rd filter to the chain (pad issues),
+        # we draw the red line as the top edge of the text bg box
         filter_parts = [
-            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h={box_h}:color=black@0.55:t=fill"
+            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h={box_h}:color=0x050503@0.65:t=fill",
+            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h=3:color=0xc33731@0.9:t=fill"
         ]
 
         # ── Typewriter text: one drawtext per line ──────────────────
@@ -187,12 +191,12 @@ class TypewriterRenderer:
                 f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
                 f"text='{text_expr}':"
                 f"fontsize={font_size}:"
-                f"fontcolor=white:"
+                f"fontcolor=0xf7f7f7:"
                 f"x={x_pos}:"
                 f"y={y_pos}:"
-                f"shadowcolor=black@0.8:"
-                f"shadowx=3:"
-                f"shadowy=3:"
+                f"shadowcolor=0x050503@0.9:"
+                f"shadowx=2:"
+                f"shadowy=2:"
                 f"alpha='{alpha_expr}'"
             )
 
@@ -201,7 +205,7 @@ class TypewriterRenderer:
     # ── scene render ────────────────────────────────────────────────
 
     def render_scene(self, text, output_path, duration_s, out_w=1280, out_h=720,
-                     is_short=False, bg_color="0x1a1a2e", global_cps=None):
+                     is_short=False, bg_color="0x050503", global_cps=None):
         """
         Render a single scene: dark background + typewriter text + bg box.
         global_cps: if provided, use this global chars/sec rate instead of
@@ -260,7 +264,7 @@ class TypewriterRenderer:
         x_margin = int(out_w * 0.08) if is_short else 0
         x_pos = f"(w-text_w)/2" if not is_short else f"{x_margin}+(w-2*{x_margin}-text_w)/2"
 
-        # Background box
+        # Background box with red accent border
         box_pad_x = int(font_size * 0.8)
         box_pad_top = int(font_size * 0.5)
         box_pad_bot = int(font_size * 0.3)
@@ -273,16 +277,17 @@ class TypewriterRenderer:
         alpha = "if(lte(t,0),0,if(lte(t,0.5),t/0.5,1))"
 
         dt = (
-            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h={box_h}:color=black@0.55:t=fill,"
+            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h={box_h}:color=0x050503@0.7:t=fill,"
+            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h=3:color=0xc33731@0.9:t=fill,"
             f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
             f"text='{escaped}':"
             f"fontsize={font_size}:"
-            f"fontcolor=white:"
+            f"fontcolor=0xf7f7f7:"
             f"x={x_pos}:"
             f"y={start_y}:"
-            f"shadowcolor=black@0.8:"
-            f"shadowx=3:"
-            f"shadowy=3:"
+            f"shadowcolor=0x050503@0.9:"
+            f"shadowx=2:"
+            f"shadowy=2:"
             f"alpha='{alpha}'"
         )
 
