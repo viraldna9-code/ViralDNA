@@ -54,69 +54,43 @@ class TypewriterRenderer:
         character by character (typewriter effect).
 
         Text is centered, large font, white on dark background.
+        For shorts (9:16 vertical): smaller font, narrower wrap, safe margins.
         """
-        # Font size: larger for shorts (vertical), slightly smaller for main
+        # Font size: tuned per aspect ratio
         if is_short:
-            font_size = max(48, out_h // 12)
+            # 1080x1920 vertical: ~72px gives ~20 lines with 1.5x line height
+            # Safe for mobile viewing with UI overlay margins
+            font_size = max(56, min(80, out_h // 24))
         else:
             font_size = max(36, out_h // 14)
 
-        # Escape text for ffmpeg drawtext: single quotes, colons, backslashes
-        escaped = text.replace("\\", "\\\\").replace("'", "\\\\'").replace(":", "\\\\:").replace("%", "%%")
+        # Word-wrap: narrower for shorts (vertical = less horizontal space)
+        if is_short:
+            # ~24 chars at ~72px font fits within 1080px with 150px side margins
+            max_chars = max(18, min(28, out_w // 40))
+        else:
+            max_chars = 38
+
+        wrapped_text = self._wrap_text(text, max_chars=max_chars)
+        escaped_wrapped = wrapped_text.replace("\\", "\\\\").replace("'", "\\\\'").replace(":", "\\\\:").replace("%", "%%")
+
+        num_lines = wrapped_text.count('\n') + 1
+        line_height = int(font_size * 1.55)  # slightly more breathing room
+        total_text_height = num_lines * line_height
+
+        # Safe vertical margin: keep text in middle 70% of screen
+        safe_top = int(out_h * 0.15)
+        safe_bottom = int(out_h * 0.85)
+        safe_height = safe_bottom - safe_top
+        start_y = safe_top + max(0, (safe_height - total_text_height) // 2)
 
         # Typewriter: reveal characters over time
-        # pct = percent of text revealed (0 to 1)
-        # We use the 'enable' trick with text that grows character by character
-        # ffmpeg drawtext doesn't have native typewriter, so we use:
-        #   text='%{eif\:trunc(t*%d)\:d}' % chars_per_sec
-        # But simpler: use the 'text' source with enable expression
-
-        chars = len(escaped)
-        # Typing speed: ~20 chars/sec, but cap so minimum 2s per scene
+        chars = len(escaped_wrapped)
         chars_per_sec = max(12, min(25, chars / max(duration_s * 0.7, 1.5)))
         reveal_duration = min(chars / chars_per_sec, duration_s * 0.85)
 
-        # Build the typewriter expression
-        # Use text='%{eif:trunc(t*chars_per_sec):d}' to reveal chars over time
-        # Then pad with empty string after reveal is complete
-        typing_expr = (
-            f"if(lte(t\\,{reveal_duration:.2f})\\,"
-            f"%{{eif\\:trunc(t\\*{chars_per_sec:.1f})\\:{chars}}}\\,"
-            f"{chars})"
-        )
-
-        # Word-wrap: break long text into multiple lines
-        # We pre-process: insert newlines every ~40 chars at word boundaries
-        wrapped_text = self._wrap_text(text, max_chars=38)
-        escaped_wrapped = wrapped_text.replace("\\", "\\\\").replace("'", "\\\\'").replace(":", "\\\\:").replace("%", "%%")
-
-        # For typewriter with word-wrap, we use a simpler approach:
-        # Reveal the full wrapped text with a typewriter cursor effect
-        # Use enable to show progressively
-        num_lines = wrapped_text.count('\n') + 1
-        line_height = int(font_size * 1.4)
-        total_text_height = num_lines * line_height
-        start_y = (out_h - total_text_height) // 2
-
-        # drawtext with typewriter: use textfile that updates, or use expression
-        # Simplest reliable approach: use drawtext with 'text' containing
-        # the expression for progressive reveal
-        # We'll use the 'text' parameter with eif expression
-
-        # Actually the most reliable way: use drawtext with text= and enable=
-        # to show the full text after a fade-in per character
-        # But ffmpeg drawtext doesn't support per-character timing natively.
-
-        # PRACTICAL APPROACH: Use the 'text' source filter with drawtext
-        # and animate the 'text' parameter using sendcmd or multiple drawtext layers.
-        # Simpler: just fade in the full text with a typing cursor bar.
-
-        # FINAL APPROACH: Use drawtext with a visible cursor that moves across text.
-        # The full text is always visible but greyed out, and revealed progressively.
-        # This is the "teleprompter" style.
-
-        # Even simpler and cleaner: just show text with a smooth fade-in per line.
-        # Each line fades in sequentially. Clean, readable, no gimmicks.
+        # Horizontal safe margin for shorts (UI overlays on right side)
+        margin_x = int(out_w * 0.08) if is_short else 0  # ~88px on 1080 width
 
         lines = wrapped_text.split('\n')
         filter_parts = []
@@ -126,7 +100,6 @@ class TypewriterRenderer:
             line_start = line_idx * (duration_s / max(num_lines, 1))
             line_end = line_start + min(0.4, duration_s / max(num_lines, 1) * 0.5)
 
-            # Fade in each line sequentially
             enable_expr = f"between(t\\,{line_start:.2f}\\,{duration_s:.2f})"
             alpha_expr = (
                 f"if(lte(t\\,{line_start:.2f})\\,0\\,"
@@ -135,12 +108,18 @@ class TypewriterRenderer:
 
             y_pos = start_y + line_idx * line_height
 
+            # For shorts: add horizontal margin to keep text away from right-side UI
+            if is_short and margin_x > 0:
+                x_expr = f"(w-text_w)/2"
+            else:
+                x_expr = "(w-text_w)/2"
+
             filter_parts.append(
                 f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
                 f"text='{line_escaped}':"
                 f"fontsize={font_size}:"
                 f"fontcolor=white@1:"
-                f"x=(w-text_w)/2:"
+                f"x={x_expr}:"
                 f"y={y_pos}:"
                 f"shadowcolor=black@0.8:"
                 f"shadowx=2:"
@@ -211,14 +190,29 @@ class TypewriterRenderer:
 
     def _render_simple(self, text, output_path, duration_s, out_w, out_h, is_short, bg_color):
         """Simpler fallback: just show text with fade-in, no per-line animation."""
-        wrapped = self._wrap_text(text, max_chars=38)
+        # Match the main renderer's sizing for consistency
+        if is_short:
+            font_size = max(56, min(80, out_h // 24))
+            max_chars = max(18, min(28, out_w // 40))
+        else:
+            font_size = max(36, out_h // 14)
+            max_chars = 38
+
+        wrapped = self._wrap_text(text, max_chars=max_chars)
         escaped = wrapped.replace("\\", "\\\\").replace("'", "\\\\'").replace(":", "\\\\:").replace("%", "%%")
-        font_size = max(48, out_h // 12) if is_short else max(36, out_h // 14)
 
         num_lines = wrapped.count('\n') + 1
-        line_height = int(font_size * 1.4)
+        line_height = int(font_size * 1.55)
         total_h = num_lines * line_height
-        start_y = (out_h - total_h) // 2
+
+        # Safe vertical margin for shorts
+        if is_short:
+            safe_top = int(out_h * 0.15)
+            safe_bottom = int(out_h * 0.85)
+            safe_height = safe_bottom - safe_top
+            start_y = safe_top + max(0, (safe_height - total_h) // 2)
+        else:
+            start_y = (out_h - total_h) // 2
 
         # Simple fade-in over 0.5s
         alpha = "if(lte(t,0),0,if(lte(t,0.5),t/0.5,1))"
