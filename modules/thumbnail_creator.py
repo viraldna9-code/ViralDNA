@@ -8,7 +8,7 @@
 #                 breaking-badge only for breaking news). A4.8 style guide enforcement
 #                 (category-specific colors/fonts, consistent brand treatment).
 
-import os, textwrap, re
+import os, textwrap, re, base64, hashlib, io
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import config
 
@@ -17,7 +17,30 @@ class ThumbnailCreator:
     A4.8: Style Guide Enforcement
     Consistent thumbnail branding across all videos. Category-specific accent colors
     and text placement rules ensure professional news-channel look.
+    v90.0: 3-layer image relevance filter — face detection, Gemini vision,
+           and featured-image-first selection.
     """
+
+    # ── v90.0: Politician face detection ──
+    # OpenCV Haar cascade for face detection — no ML model download needed
+    _FACE_CASCADE = None
+
+    # ── v90.0: Known politician names to flag (Telugu/Indian politics) ──
+    POLITICIAN_NAMES = {
+        "naidu", "chandrababu", "jagan", "ysr", "modi", "rahul", "gandhi",
+        "shah", "amit", "nirmala", "sitharaman", "jaishankar", "piyush",
+        "gadkari", "rajnath", "singh", "smriti", "irani", "nadda", "kcr",
+        "revanth", "pawan", "kalyan", "babu", "maharaj", "ramdev", "yogi",
+        "adityanath", "mamata", "banerjee", "kejriwal", "arvind", "akhilesh",
+        "yadav", "mayawati", "nitish", "kumar", "lalu", "prasad", "mulayam",
+        "siddaramaiah", "bommai", "kumaraswamy", "dk", "shivakumar", "ravi",
+        "naidu", "pawan", "chiranjeevi", "balakrishna", "ntr", "jr", "ntr",
+        "mahesh", "babu", "allu", "arjun", "prabhas", "ram", "charan",
+        "teja", "nani", "vijay", "devarakonda", "naga", "chaitanya",
+        "varun", "tej", "sai", "pallavi", "anil", "kapoor", "odisha",
+        "naveen", "patnaik", "biju", "janata", "dal", "bjp", "congress",
+        "tdp", "ysrcp", "jsp", "bsp", "sp", "aap", "trs", "bRS",
+    }
 
     # A4.8: Brand style guide — consistent colors, fonts, layout rules
     STYLE_GUIDE = {
@@ -236,6 +259,183 @@ class ThumbnailCreator:
         ]
         return any(kw in text for kw in breaking_keywords)
 
+    # ── v90.0: 3-Layer Image Relevance Filter ──
+    # Layer 1: Featured-image-first selection
+    # Layer 2: Face detection — reject images with politician faces for non-political topics
+    # Layer 3: Gemini Vision — verify image content matches topic headline
+
+    def _get_face_cascade(self):
+        """Lazy-load OpenCV Haar cascade for face detection."""
+        if self._FACE_CASCADE is None:
+            import cv2
+            # Try bundled cascade first, then system
+            cascade_paths = [
+                cv2.data.haarcascades + "haarcascade_frontalface_default.xml",
+                "/usr/share/opencv4/haarcascades/haarcascade_frontalface_default.xml",
+                "/usr/local/share/opencv4/haarcascades/haarcascade_frontalface_default.xml",
+            ]
+            for cp in cascade_paths:
+                if os.path.exists(cp):
+                    self._FACE_CASCADE = cv2.CascadeClassifier(cp)
+                    break
+            if self._FACE_CASCADE is None:
+                # Download if not found
+                import urllib.request
+                url = "https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_default.xml"
+                local = os.path.expanduser("~/.hermes/cache/haarcascade_frontalface_default.xml")
+                os.makedirs(os.path.dirname(local), exist_ok=True)
+                if not os.path.exists(local):
+                    print("  📥 Downloading face detection model...")
+                    urllib.request.urlretrieve(url, local)
+                self._FACE_CASCADE = cv2.CascadeClassifier(local)
+        return self._FACE_CASCADE
+
+    def _detect_faces(self, img_path):
+        """Detect faces in an image. Returns list of (x, y, w, h) rectangles."""
+        try:
+            import cv2
+            cascade = self._get_face_cascade()
+            if cascade is None:
+                return []
+            img = cv2.imread(img_path)
+            if img is None:
+                return []
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            faces = cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+            return faces.tolist() if faces is not None and len(faces) > 0 else []
+        except Exception:
+            return []
+
+    def _is_political_topic(self, topic_text):
+        """Check if the topic is about politics/government."""
+        text = topic_text.lower()
+        political_keywords = {
+            "minister", "cm", "chief minister", "pm", "prime minister", "bjp", "congress",
+            "tdp", "ysrcp", "jsp", "bsp", "sp", "aap", "trs", "brs", "election", "vote",
+            "parliament", "assembly", "mla", "mp", "cabinet", "government", "party",
+            "leader", "opposition", "ruling", "coalition", "mandate", "poll", "campaign",
+            "naidu", "modi", "jagan", "kcr", "chandra babu", "chandrababu",
+        }
+        return any(kw in text for kw in political_keywords)
+
+    def _layer2_face_filter(self, img_path, topic_text, max_faces_for_nonpolitical=0):
+        """
+        Layer 2: Face detection filter.
+        For non-political topics: reject images with any faces (likely politician stock photos).
+        For political topics: allow up to 2 faces (reasonable for political imagery).
+        Returns True if image passes the filter.
+        """
+        faces = self._detect_faces(img_path)
+        if not faces:
+            return True  # No faces — safe for any topic
+
+        is_political = self._is_political_topic(topic_text)
+        if is_political:
+            # Political topics: allow images with faces (up to 4)
+            return len(faces) <= 4
+        else:
+            # Non-political topics: reject if any faces detected
+            if max_faces_for_nonpolitical == 0:
+                return False
+            return len(faces) <= max_faces_for_nonpolitical
+
+    def _layer3_vision_check(self, img_path, topic_text):
+        """
+        Layer 3: Gemini Vision relevance check.
+        Sends the image to Gemini with the topic and asks if the image is relevant.
+        Returns True if relevant, False if not, None if check unavailable.
+        """
+        try:
+            _key = os.environ.get("GEMINI_API_KEY", "")
+            if not _key:
+                _env = os.path.expanduser("~/.env")
+                if os.path.exists(_env):
+                    for line in open(_env):
+                        if line.startswith("GEMINI_API_KEY="):
+                            _key = line.strip().split("=", 1)[1].strip("\"'")
+                            break
+            if not _key:
+                return None  # No API key — skip check
+
+            with open(img_path, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode("utf-8")
+
+            prompt = (
+                f"News topic: \"{topic_text}\"\n\n"
+                f"Is this image RELEVANT to the topic? "
+                f"Answer with exactly one word: YES or NO.\n"
+                f"Consider: Does the image show people/events/places related to the topic? "
+                f"If the image shows random politicians or unrelated people, answer NO."
+            )
+
+            payload = {
+                "contents": [{
+                    "parts": [
+                        {"text": prompt},
+                        {"inline_data": {"mime_type": "image/jpeg", "data": b64}}
+                    ]
+                }]
+            }
+
+            import requests as req
+            for model in ["gemini-2.0-flash", "gemini-1.5-flash"]:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={_key}"
+                try:
+                    resp = req.post(url, json=payload, timeout=20).json()
+                    if "candidates" in resp:
+                        text = resp["candidates"][0]["content"]["parts"][0]["text"].strip().upper()
+                        if "YES" in text:
+                            return True
+                        elif "NO" in text:
+                            return False
+                except Exception:
+                    continue
+            return None  # All models failed
+        except Exception:
+            return None
+
+    def _is_image_relevant(self, img_path, topic_text):
+        """
+        Combined 3-layer relevance check for a single image.
+        Returns (is_relevant: bool, reason: str).
+        """
+        if not os.path.exists(img_path):
+            return False, "file_missing"
+
+        # Layer 2: Face detection
+        face_ok = self._layer2_face_filter(img_path, topic_text)
+        if not face_ok:
+            return False, "face_rejected"
+
+        # Layer 3: Vision check (only if face check passed)
+        vision_ok = self._layer3_vision_check(img_path, topic_text)
+        if vision_ok is False:
+            return False, "vision_rejected"
+        # If vision_ok is None (unavailable), we trust the face check result
+
+        return True, "passed"
+
+    def _rank_images_by_relevance(self, image_paths, topic_text):
+        """
+        Rank a list of image paths by relevance to the topic.
+        Returns filtered + ranked list (most relevant first).
+        Non-relevant images are excluded.
+        """
+        if not image_paths:
+            return []
+
+        results = []
+        for path in image_paths:
+            if not os.path.exists(path):
+                continue
+            is_rel, reason = self._is_image_relevant(path, topic_text)
+            if is_rel:
+                results.append(path)
+            else:
+                print(f"  🖼️ Thumbnail: REJECTED {os.path.basename(path)} ({reason})")
+
+        return results
+
     # ── Background loading (unchanged logic) ──
 
     def _load_background_image(self, runtime_dir: str, slideshow_dir: str = None,
@@ -441,7 +641,114 @@ class ThumbnailCreator:
             except Exception as e:
                 print(f"  Thumbnail local image pack fallback failed: {e}")
 
+        # ── v90.0: Layer 1 — Featured-image-first reordering ──
+        # Reorder so that scene_img_* (Serper/real news photos) come first,
+        # then viz_news_*, then pack images. This is already handled by the
+        # collection order above. The relevance filter below handles Layers 2+3.
+
         return results
+
+    def _load_background_images_filtered(self, runtime_dir, slideshow_dir=None, topic_text=None, count=4):
+        """
+        v90.0: Load background images with 3-layer relevance filter applied.
+        Falls back to unfiltered results if filter removes all images.
+        """
+        # Load candidates (may return more than count so we have filtering room)
+        raw = self._load_background_images(runtime_dir, slideshow_dir=slideshow_dir,
+                                            topic_text=topic_text, count=count * 3)
+        if not raw:
+            return raw
+
+        # We need file paths for the filter, but _load_background_images returns PIL Images.
+        # Re-collect paths from the same sources for filtering.
+        candidate_paths = self._collect_candidate_paths(runtime_dir, slideshow_dir, topic_text, count * 3)
+        if not candidate_paths:
+            return raw  # No paths to filter — return unfiltered
+
+        # Apply 3-layer relevance filter
+        filtered_paths = self._rank_images_by_relevance(candidate_paths, topic_text or "")
+
+        if not filtered_paths:
+            print("  ⚠️ Thumbnail: All images rejected by relevance filter — using unfiltered")
+            return raw  # Fallback: return unfiltered if everything was rejected
+
+        # Load filtered images
+        from PIL import Image as PILImage
+        results = []
+        seen_hashes = set()
+        for fpath in filtered_paths:
+            if len(results) >= count:
+                break
+            try:
+                img = PILImage.open(fpath)
+                if img.size[0] < 320 or img.size[1] < 240:
+                    continue
+                if img.mode not in ("RGB", "RGBA"):
+                    img = img.convert("RGB")
+                elif img.mode == "RGBA":
+                    img = img.convert("RGB")
+                thumb = img.resize((64, 36), PILImage.LANCZOS).convert("L")
+                h = hashlib.md5(thumb.tobytes()).hexdigest()
+                if h not in seen_hashes:
+                    seen_hashes.add(h)
+                    results.append(img)
+            except Exception:
+                continue
+
+        if not results:
+            return raw  # Fallback
+
+        print(f"  🖼️ Thumbnail: {len(results)}/{len(raw)} images passed relevance filter")
+        return results
+
+    def _collect_candidate_paths(self, runtime_dir, slideshow_dir=None, topic_text=None, max_paths=12):
+        """Collect candidate image file paths from all sources (without loading them)."""
+        paths = []
+        seen = set()
+
+        def _add(path):
+            if path and os.path.exists(path) and path not in seen:
+                seen.add(path)
+                paths.append(path)
+
+        # 1. Slideshow dir — scene_img_* first, then scene_*
+        if runtime_dir and os.path.isdir(runtime_dir):
+            if slideshow_dir and os.path.isdir(slideshow_dir):
+                all_files = os.listdir(slideshow_dir)
+                for prefix in ["scene_img_", "scene_"]:
+                    for fname in sorted(all_files, reverse=True):
+                        if fname.startswith(prefix) and fname.endswith((".jpg", ".png")):
+                            _add(os.path.join(slideshow_dir, fname))
+                            if len(paths) >= max_paths:
+                                return paths
+
+            # 2. viz_news images
+            if os.path.isdir(runtime_dir):
+                for fname in sorted(os.listdir(runtime_dir), reverse=True):
+                    if fname.startswith("viz_news_") and fname.endswith(".jpg"):
+                        _add(os.path.join(runtime_dir, fname))
+                        if len(paths) >= max_paths:
+                            return paths
+
+        # 3. Local Image Pack
+        if topic_text and len(paths) < max_paths:
+            try:
+                import importlib.util
+                lip_path = os.path.join(os.path.dirname(__file__), "local_image_pack.py")
+                spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
+                if spec and spec.loader:
+                    mod = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
+                    pack = mod.LocalImagePack()
+                    images = pack.get_images(topic_text, count=max_paths)
+                    for ipath in images:
+                        _add(ipath)
+                        if len(paths) >= max_paths:
+                            break
+            except Exception:
+                pass
+
+        return paths
 
     def _try_load_image(self, fpath: str) -> Image.Image | None:
         try:
@@ -527,8 +834,9 @@ class ThumbnailCreator:
                     break
         topic_text = topic.get("title", "") if topic else ""
         # v81.0: Load MULTIPLE background images for variant diversity
-        bg_images = self._load_background_images(runtime_dir, slideshow_dir=slideshow_dir,
-                                                  topic_text=topic_text, count=4)
+        # v90.0: Apply 3-layer relevance filter (face detection + Gemini vision + featured-first)
+        bg_images = self._load_background_images_filtered(runtime_dir, slideshow_dir=slideshow_dir,
+                                                           topic_text=topic_text, count=4)
         if bg_images:
             img = self._center_crop(bg_images[0], W, H).convert("RGBA").resize((W, H), Image.LANCZOS)
         else:
