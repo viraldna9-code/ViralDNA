@@ -837,4 +837,67 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 - Short1: https://www.youtube.com/watch?v=EJl-E9lDdIM
 - Short2: https://www.youtube.com/watch?v=r6ZCn5Ud8ik
 
-**COMMIT:** 6a0a6ca
+---
+
+## 2026-06-21
+
+### 20:00 IST — Upload Phase Fix v89.0 (custom thumbnails + upload wiring)
+
+**Problem:** Custom thumbnails were never uploaded to YouTube. Every video had auto-generated thumbnails only.
+
+**Root Causes:**
+1. `_phase_upload()` called `uploader.upload()` — method DOES NOT EXIST on YouTubeUploader
+2. Only `upload_single_video()` and `upload_production_slot()` exist — `AttributeError` silently caught by FactoryWorker
+3. Thumbnail creator saves to `thumbnails/<topic>_thumb.jpg/<topic>_branded.jpg` (subdirectory per topic)
+4. Uploader expects `thumbnails/production_branded.jpg` (flat file) — path mismatch
+5. `topic_tags.split(",")` crashes when tags is already a list
+
+**Solution:**
+- Rewrote `_phase_upload()` to properly construct YouTube OAuth service and call `upload_single_video()` with correct paths
+- Fixed `topic_tags` handling to accept both str and list
+- Thumbnail path resolved from subdirectory: `thumbnails/<topic>_thumb.jpg/<topic>_branded.jpg`
+- All 3 yoga videos re-uploaded with custom branded thumbnails verified
+
+**YouTube URLs (re-uploaded with custom thumbnails):**
+- Main: https://www.youtube.com/watch?v=lvxICCFRN7g (custom_thumb=True ✅)
+- Short1: https://www.youtube.com/watch?v=EJl-E9lDdIM
+- Short2: https://www.youtube.com/watch?v=r6ZCn5Ud8ik
+
+**COMMIT:** 774e7c3
+
+---
+
+## 2026-06-21
+
+### 22:00 IST — Thumbnail Relevance Filter v90.0 (3-layer image defense)
+
+**Problem:** Thumbnail background images often show unrelated people (e.g., Odisha CM + Central Minister in a yoga centres video). Root cause: `thumbnail_creator.py` picked the first available image with no relevance checking.
+
+**Layer 1 — Featured-image-first selection:**
+- `scene_img_*` (Serper/real news photos) already preferred over `scene_*` (pack) and `viz_news_*`
+
+**Layer 2 — Face detection (OpenCV Haar cascade):**
+- Non-political topics: reject ANY image with faces (politician stock photos = #1 source of irrelevant thumbs)
+- Political topics: allow up to 4 faces, reject group photos with 5+
+- Uses `cv2.CascadeClassifier` with `haarcascade_frontalface_default.xml`
+- Lazy-loads cascade, downloads if not present
+
+**Layer 3 — Gemini Vision relevance check:**
+- Sends image + topic to Gemini 2.0 Flash / 1.5 Flash
+- Asks: "Is this image RELEVANT to the topic? YES or NO"
+- Gracefully degrades if API key missing or quota exceeded
+- Only runs if Layer 2 passed (avoids wasting API calls)
+
+**Integration:**
+- New `_load_background_images_filtered()` replaces `_load_background_images()` in `create_thumbnail()`
+- Collects candidate paths → `_rank_images_by_relevance()` → loads only filtered images
+- Falls back to unfiltered if ALL images rejected
+
+**Tested:**
+- Yoga topic: `scene_img_0.jpg` (5 faces) correctly REJECTED → 4/5 images passed
+- Political topic: face filter allows up to 4 faces
+- Module imports clean, all 9 new methods verified
+
+**COMMIT:** f4fed56
+**FILES:** `modules/thumbnail_creator.py` (+311 lines)
+
