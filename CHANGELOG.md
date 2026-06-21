@@ -7,6 +7,26 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-21
 
+### 14:50 IST — Typewriter Renderer Rewrite: No Subtitles + Real Typewriter + Shorts Fit (v95.5)
+
+**Bug:** Subtitles were burned over typewriter text (double text). Typewriter was just sequential line fade-in (not real typewriter). Text overflowed borders in shorts. Text and voice out of sync.
+
+**Fix:**
+- Removed ASS subtitle generation (`generate_ass_file`) and burn-in from `assemble_video()`
+- Replaced `_mux_audio_subtitles()` with `_mux_audio()` — no subtitle parameter
+- Rewrote `typewriter_renderer.py` from scratch:
+  - Real per-character typewriter: each character gets its own `drawtext` layer with `enable` and `alpha` expressions
+  - Characters appear left-to-right at auto-calculated chars/sec based on line duration
+  - Each line gets equal time slice: `time_per_line = duration_s / num_lines`
+  - Shorts (1080x1920): font 64px, max 22 chars/line, 6% side margins, safe zone 17.5%-85% of height
+  - Main (1280x720): font 52px, max 38 chars/line, centered
+  - Fallback: simple fade-in if typewriter filter fails
+- Text timing synced to audio: scene duration = total_audio / num_scenes
+
+**Files:** `modules/typewriter_renderer.py` (full rewrite), `modules/video_assembler.py` (removed subtitle code)
+
+**COMMIT:** 5887782
+
 ### 14:45 IST — Typewriter Renderer Shorts Text Fitting (v95.4)
 
 **Bug:** Text in short videos (1080x1920 9:16) was oversized and overflowing.
