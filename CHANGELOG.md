@@ -7,6 +7,18 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-21
 
+### 14:30 IST — Audio Mux Same-File Corruption Fix (v95.3)
+
+**Bug:** `_mux_audio_subtitles()` passed same path for input and output to FFmpeg.
+When subtitles were enabled (re-encode path), FFmpeg read+wrote the same file,
+causing rc=234 corruption. All videos assembled without audio.
+
+**Fix:** Write mux output to a temp file, then rename to final path.
+Affects: main videos + shorts with subtitle burn-in.
+
+**COMMIT:** 6ffae09
+**FILES:** `modules/video_assembler.py`
+
 ### 14:00 IST — Dead Image Pipeline Removal + Typewriter Renderer Integration (v95.2)
 
 **Cleanup: Removed entire image pipeline (89 lines, 4 methods, 2 imports, 1 skill)**
