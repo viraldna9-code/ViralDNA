@@ -790,3 +790,28 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 
 **FILES CREATED:** `docs/memory/MEMORY.md`, `docs/memory/USER.md`
 **VERIFICATION:** Files committed (25779ab). Companion to MBite memory files.
+
+---
+
+## 2026-06-21
+
+### 18:00 IST — Image Mismatch Fix v88.0 (12 videos affected)
+
+**Problem:** 12 out of 25 videos had image count mismatches — API sources returned fewer images than `num_scenes`, causing static/frozen frames. Worst cases: "Driver Dead" videos had 0/5 images (fully static). SSC Main had only 2/3 images for 58.8s.
+
+**Root Causes:**
+1. NewsRSS only returned 1 article per topic; subsequent scenes got nothing (dedup starvation)
+2. Serper off-topic rejection too aggressive — rejected images with 0 keyword overlap even when quality was good
+3. RSS keyword overlap threshold >=3 too strict for niche topics (e.g. "SSC Supplementary Results")
+4. Assembly had no partial-fill logic — only triggered PIL fallback on completely empty results
+
+**Solution:**
+- `video_assembler.py`: Added partial-fill logic — when API returns < num_scenes images, remaining slots filled with PIL fallback (0.13s each on CPU)
+- `video_assembler.py`: Relaxed Serper off-topic gate — accept images that pass quality checks even with 0 keyword overlap (only reject non-news-domain images)
+- `video_assembler.py`: Added generic news visual words to topic set ("india", "people", "crowd", "protest", etc.)
+- `news_image_fetcher.py`: Lowered keyword overlap threshold from >=3 to >=2
+- `video_assembler.py`: RSS fetcher now requests 3 candidates per scene instead of 1
+
+**Result:** All scenes now guaranteed to have an image — either from API sources or PIL fallback. No more static videos.
+
+**COMMIT:** 183734c
