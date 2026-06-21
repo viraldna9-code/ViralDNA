@@ -1136,5 +1136,36 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 **SKILLS IN DIRECTOR:** 36 (was 28)
 **TOTAL MODULES:** 37 (was 29)
 
-**COMMIT:** TBD
+**COMMIT:** 3ebc608
 **FILES:** 8 new modules, `modules/vdna2_director.py` (+200 lines for 10 new sub-phases)
+
+---
+
+## 2026-06-21
+
+### 11:34 IST — Pipeline Run + Bug Fixes (v95.1)
+
+**PIPELINE RUN 20260621_1134:**
+- Topic: "Man kills three daughters, hangs self in Andhra Pradesh"
+- Phase 0: Cleanup 87 files, primetime mode (16 IST), recommended upload 18:00 IST
+- Phase 1: 50 candidates from RSS (37+4+10+6), 0 from Reddit/YouTube/Inshorts
+- Phase 2: Growth alignment scored — top topic 46/100 (WEAK — commoditized)
+- Phase 2.5: Quality gate — score 0/100 (key mismatch), fact-check UNCERTAIN (no article text)
+- Phase 3: Script generated (89s)
+- Phase 4: TTS via Edge-TTS PrabhatNeural
+- Phase 5: 5 scene images (PIL fallback on CPU), thumbnail A/B scored 81/100, title optimized 63/100
+- Phase 6: Main 89.2s 1280×720 + 2 Shorts (13.4s, 18.2s) 1080×1920
+- Phase 10: Engagement loop, CTA, cross-platform plan, retention (no curve data), competitor (no YT service)
+- Upload: skipped (VIRALDNA_UPLOAD_ENABLED=false)
+- Telegram: failed (India ban — Network unreachable)
+- **Result: 3 videos, 0 errors**
+
+**BUG FIXES (commit 3d848cd):**
+1. `PostFilter.run()` doesn't accept `category_bonus` kwarg — moved bonus to post-processing
+2. `content_quality.check_quality()` → `run_quality_check(script_text=...)`
+3. `fact_check.fact_check_script()` → `check_script()`
+4. Quality score key: `overall_pass` not `quality_score` — added fallback chain
+5. Fact check verdict: `verdict` key (VERIFIED/PASS/UNCERTAIN) not `verified` boolean
+
+**COMMIT:** 3d848cd
+**FILES:** `modules/vdna2_director.py` (20 insertions, 8 deletions)
