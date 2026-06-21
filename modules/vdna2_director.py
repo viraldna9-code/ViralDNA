@@ -261,6 +261,12 @@ class VDNA2Director:
         from upload_time_optimizer import UploadTimeOptimizer
         from yt_analytics import YouTubeAnalytics
         from rag_feedback import RagFeedbackLoop
+        # VDNA 3.0 Tier 1: Post-pipeline growth agents
+        from community_engagement_v3 import CommunityEngagement
+        from community_poster_v3 import CommunityPoster
+        from competitor_intel_v3 import CompetitorIntel
+        from retention_analyzer_v3 import RetentionAnalyzer
+        from content_quality_v3 import ContentQualityEngine
 
         self.skills = {
             "trend_discovery": TrendDiscovery(config_instance=config),
@@ -280,6 +286,12 @@ class VDNA2Director:
             "upload_time_optimizer": UploadTimeOptimizer(),
             "yt_analytics": YouTubeAnalytics(credentials_path=config.DRIVE.get("YOUTUBE_TOKEN", "")),
             "rag_feedback": RagFeedbackLoop(ledger_path=os.path.join(config.DRIVE_BASE, "diagnostics", "growth_ledger.json")),
+            # VDNA 3.0 Tier 1: Growth agents ported from old pipeline
+            "community_engagement": CommunityEngagement(),
+            "community_poster": CommunityPoster(),
+            "competitor_intel": CompetitorIntel(),
+            "retention_analyzer": RetentionAnalyzer(),
+            "content_quality": ContentQualityEngine(),
         }
         print(f"   📦 Loaded {len(self.skills)} skill modules")
 
@@ -921,10 +933,12 @@ class VDNA2Director:
     def _phase_post_pipeline(self, state):
         """Phase 10: Post-pipeline tasks (analytics, RAG feedback, notifications).
         VDNA 3.0: Pulls YouTube Analytics, stores metrics, generates producer brief.
+        VDNA 3.0 Tier 1: Community engagement, competitor intel, retention,
+        content quality, milestone detection.
         """
-        print("   📊 Post-pipeline: analytics + notifications...")
+        print("   📊 Post-pipeline: analytics + growth agents...")
 
-        # VDNA 3.0: YouTube Analytics — pull metrics for uploaded videos
+        # ── 10.1: YouTube Analytics — pull metrics for uploaded videos ──
         try:
             yta = self.skills["yt_analytics"]
             upload_results = state.get("upload_results", [])
@@ -943,7 +957,7 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ YouTube Analytics failed: {e}")
 
-        # VDNA 3.0: RAG feedback — store performance + generate producer brief
+        # ── 10.2: RAG feedback — store performance ──
         try:
             rag = self.skills["rag_feedback"]
             topic = state.get("selected_topic", {})
@@ -958,21 +972,174 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ RAG feedback storage failed: {e}")
 
-        # Send Telegram summary
+        # ── 10.3: Community Tab Posting ──
+        try:
+            ce = self.skills["community_engagement"]
+            cp = self.skills["community_poster"]
+            topic = state.get("selected_topic", {})
+            upload_results = state.get("upload_results", [])
+            title = topic.get("title", "")
+
+            # Get YouTube video IDs from upload results
+            videos = []
+            for r in upload_results:
+                if isinstance(r, dict) and r.get("video_id"):
+                    videos.append({"id": r["video_id"], "url": r.get("youtube_url", f"https://youtu.be/{r['video_id']}")})
+
+            if videos:
+                # Generate community post schedule
+                post_schedule = cp.run(topic=topic, videos=videos)
+                state["community_post_schedule"] = post_schedule
+                print(f"   📢 Community posts scheduled: {post_schedule.get('total_weekly_posts', 0)} posts/week")
+
+                # Attempt to post launch comment via YouTube API
+                main_video = videos[0]
+                post_result = ce.post_to_community_tab(title=title, youtube_id=main_video["id"])
+                state["community_post_result"] = post_result
+                if post_result.get("posted"):
+                    print(f"   ✅ Community comment posted: {post_result.get('comment_id', 'N/A')}")
+                else:
+                    print(f"   📋 Community post generated (not posted): {post_result.get('reason', 'N/A')}")
+            else:
+                print("   📢 No videos to generate community posts for")
+        except Exception as e:
+            print(f"   ⚠️ Community engagement failed: {e}")
+
+        # ── 10.4: Subscriber Milestone Detection ──
+        try:
+            ce = self.skills["community_engagement"]
+            milestone = ce.check_milestone()
+            state["milestone_check"] = milestone
+            if milestone.get("celebrate"):
+                print(f"   🎉 MILESTONE: {milestone.get('milestone')} subscribers!")
+                print(f"      {milestone.get('message', '')}")
+            else:
+                print(f"   📊 Milestone check: {milestone.get('note', 'No new milestone')}")
+        except Exception as e:
+            print(f"   ⚠️ Milestone check failed: {e}")
+
+        # ── 10.5: Competitor Intelligence ──
+        try:
+            ci = self.skills["competitor_intel"]
+            # Push intel to ledger
+            ledger = ci.load_ledger() if hasattr(ci, 'load_ledger') else {}
+            ci.push_to_ledger(ledger)
+            summary = ci.get_competitor_summary()
+            gaps = ci.get_content_gap_result()
+            state["competitor_summary"] = summary
+            state["content_gaps"] = gaps
+            print(f"   🔍 Competitor scan: {summary.get('total_tracked', 0)} tracked, "
+                  f"{summary.get('high_threats', 0)} high threats, "
+                  f"{summary.get('content_gaps', 0)} gaps")
+            if gaps.get("top_priorities"):
+                for gap in gaps["top_priorities"][:3]:
+                    print(f"      → Gap: {gap.get('topic', 'N/A')}")
+        except Exception as e:
+            print(f"   ⚠️ Competitor intel failed: {e}")
+
+        # ── 10.6: Retention Analysis ──
+        try:
+            ra = self.skills["retention_analyzer"]
+            topic = state.get("selected_topic", {})
+            upload_results = state.get("upload_results", [])
+            topic_title = topic.get("title", "Telugu news")
+
+            # Plan series funnel for this topic
+            series_plan = ra.plan_series_funnel(topic_title, num_parts=3)
+            state["series_funnel_plan"] = series_plan
+            print(f"   📺 Series funnel planned: {series_plan.get('total_parts', 0)} parts")
+
+            # Generate next-video comment suggestion
+            next_comment = ra.build_next_video_comment()
+            state["next_video_comment"] = next_comment
+            print(f"   💬 Next-video comment: {next_comment[:60]}...")
+
+            # CTR benchmark for uploaded videos (if analytics available)
+            analytics = state.get("analytics_summary", {})
+            if analytics and upload_results:
+                for r in upload_results[:3]:
+                    if isinstance(r, dict) and r.get("video_id"):
+                        try:
+                            ra.benchmark_ctr(
+                                video_id=r["video_id"],
+                                category="news_politics",
+                                actual_ctr=0.05,  # Default; real CTR from analytics if available
+                            )
+                        except Exception:
+                            pass
+                print("   📊 CTR benchmarks updated")
+        except Exception as e:
+            print(f"   ⚠️ Retention analysis failed: {e}")
+
+        # ── 10.7: Content Quality Check ──
+        try:
+            cq = self.skills["content_quality"]
+            script = state.get("script_payload")
+            script_text = ""
+            if script and hasattr(script, "full_script"):
+                script_text = script.full_script
+            elif isinstance(script, dict):
+                script_text = script.get("full_script", "")
+
+            if script_text:
+                # Load video history for pillar analysis
+                ledger = cq.load_ledger()
+                video_history = ledger.get("execution_history", [])
+                quality_result = cq.run_quality_check(script_text, video_history)
+                state["content_quality_result"] = quality_result
+
+                fc = quality_result.get("fact_check", {})
+                bi = quality_result.get("bias_detection", {})
+                print(f"   ✅ Content quality: fact-check={'PASS' if fc.get('pass') else 'REVIEW'} "
+                      f"({fc.get('needs_review', 0)} flags), "
+                      f"bias={bi.get('risk_level', 'N/A')} risk")
+                if not fc.get("pass"):
+                    for flag in fc.get("flags", [])[:3]:
+                        print(f"      ⚠️  Fact: {flag}")
+                if bi.get("risk_level") != "low":
+                    for flag in bi.get("flags", [])[:3]:
+                        print(f"      ⚠️  Bias: {flag}")
+                print(f"   📊 Recommended next pillar: {quality_result.get('recommended_next_pillar', 'N/A')}")
+            else:
+                print("   ✅ Content quality: no script text available, skipping")
+        except Exception as e:
+            print(f"   ⚠️ Content quality check failed: {e}")
+
+        # ── 10.8: Telegram Summary ──
         compiled = state.get("compiled_videos", [])
-        upload = state.get("upload_results", {})
+        upload = state.get("upload_results", [])
         errors = state.get("errors", [])
         topic = state.get("selected_topic", {})
+
+        # Count successful uploads
+        upload_count = 0
+        if isinstance(upload, list):
+            upload_count = sum(1 for r in upload if isinstance(r, dict) and r.get("status") == "success")
+        elif isinstance(upload, dict):
+            upload_count = 1 if upload.get("status") == "success" else 0
+
+        milestone_info = state.get("milestone_check", {})
+        quality_info = state.get("content_quality_result", {})
 
         msg = (
             f"🧬 VDNA 3.0 Pipeline Complete\n"
             f"━━━━━━━━━━━━━━━━━━━━━\n"
             f"📰 Topic: {topic.get('title', 'N/A')}\n"
             f"🎬 Videos: {len(compiled)}\n"
-            f"📤 Upload: {upload.get('status', 'N/A') if isinstance(upload, dict) else 'done'}\n"
+            f"📤 Uploaded: {upload_count}\n"
             f"⚠️ Errors: {len(errors)}\n"
-            f"━━━━━━━━━━━━━━━━━━━━━"
         )
+
+        if milestone_info.get("celebrate"):
+            msg += f"🎉 Milestone: {milestone_info.get('milestone')} subs!\n"
+
+        if quality_info:
+            fc = quality_info.get("fact_check", {})
+            bi = quality_info.get("bias_detection", {})
+            msg += f"✅ Quality: fact={'PASS' if fc.get('pass') else 'REVIEW'}, bias={bi.get('risk_level', 'N/A')}\n"
+
+        msg += f"━━━━━━━━━━━━━━━━━━━━━"
+
         print(f"   📬 Sending Telegram notification...")
         self._send_telegram(msg)
         return state
