@@ -7,6 +7,25 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-21
 
+### 16:00 IST — Text-Voice Sync: Full Fix — TTS Preprocessing + Proportional Timing (v95.9)
+
+**Bug:** Text-voice desync in both main and shorts. Sentences cut off incomplete.
+- Main: voice fast, text slow (voice finished before text displayed)
+- Shorts: text fast, voice slow (text finished before voice)
+- Text sentences incomplete — displayed different content than voice spoke
+
+**Root cause (3 issues):**
+1. Typewriter received truncated text (`main[:500]`, `short[:200]`) while voice got full text
+2. Typewriter showed original text; voice spoke TTS-expanded text (contractions like "don't" → "do not", acronyms like "NEET" → "N E E T")
+3. Equal time splits per scene regardless of word count
+
+**Fix:**
+1. Pass full text to typewriter (removed `[:500]` and `[:200]` truncation)
+2. Added `_preprocess_tts_text()` — applies same transformations as TTS engine (smart quotes, contraction expansion, acronym expansion, abbreviation fix)
+3. Proportional scene timing — `scene_duration = total_duration * (scene_words / total_words)`
+
+**Result:** Scene duration matches voice time with 0.0s offset in both main and shorts.
+
 ### 15:30 IST — Text-Voice Sync: Char-Proportional Line Starts (v95.8)
 
 **Bug:** Text-voice timing inverted between formats.
