@@ -365,7 +365,7 @@ class VoiceoverGenerator:
         segments = self._segment_script(text)
         print(f"   🔍 Forensic Segment Audit: Found {len(segments)} bilingual segments.")
         
-        # Count words
+        # 3. Count words
         en_words = 0
         te_words = 0
         for s in segments:
@@ -378,9 +378,6 @@ class VoiceoverGenerator:
 
         # Create localized workspace inside output/runtime
         workspace_dir = os.path.join(self.runtime_dir, f"work_{slot}")
-        if os.path.exists(workspace_dir):
-            shutil.rmtree(workspace_dir)
-        os.makedirs(workspace_dir, exist_ok=True)
         
         # 2. Sequential Synthesis Stage (Safe sequential processing prevents MS rate limiting)
         print("   🎙️  Synthesizing voice segments sequentially...")
@@ -499,3 +496,24 @@ class VoiceoverGenerator:
             pass
             
         return {"status": "success", "path": final_path}
+
+    def preprocess_text(self, text):
+        """
+        Apply the same text transformations used during voice synthesis,
+        so the typewriter can display exactly what the voice speaks.
+        This avoids duplicating the preprocessing logic.
+        """
+        if not text:
+            return text
+        # 1. Smart quote normalization
+        text = text.replace("\u2019", "'").replace("\u2018", "'")
+        text = text.replace("\u2032", "'").replace("\u2035", "'")
+        text = text.replace("\u02bc", "'").replace("\u02bb", "'")
+        text = text.replace("\uff07", "'").replace("\u201b", "'")
+        # 2. Contraction expansion (handles space-variant and upper-case too)
+        text = self._expand_contractions(text)
+        # 3. Acronym expansion
+        text = self._expand_acronyms(text)
+        # 4. Fix TTS text (abbreviations, possessives, apostrophes)
+        text = self._fix_tts_text(text)
+        return text

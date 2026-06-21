@@ -76,15 +76,14 @@ class TypewriterRenderer:
 
     # ── drawtext filter builder ─────────────────────────────────────
 
-    def _build_typewriter_filter(self, text, out_w, out_h, duration_s, is_short=False):
+    def _build_typewriter_filter(self, text, out_w, out_h, duration_s, is_short=False, global_cps=None):
         """
         Build an ffmpeg drawtext filter with real per-character typewriter effect.
         Uses a single drawtext per line with text expression that reveals characters.
         No overlapping — each line is one drawtext element.
 
         TIMING STRATEGY:
-        - Global cps (chars/sec) = total_chars / (duration_s * 0.85)
-          This matches the TTS voice speaking rate (~10 chars/s).
+        - cps (chars/sec) = global_cps if provided, else calculated locally
         - Each line starts when its first character's time is reached:
           line_start = chars_before_this_line / cps
         - Each line's typewriter reveals chars at the same global cps.
@@ -111,12 +110,15 @@ class TypewriterRenderer:
         x_margin = int(out_w * 0.08) if is_short else 0
 
         # ── Global typewriter rate ──────────────────────────────────
-        # Calculate cps from total chars and total duration to match voice.
-        # The voice speaks throughout the entire duration, so text should too.
-        # Use 95% of duration for active typing, 5% for pause at end.
+        # Use global_cps if provided (calculated from full video text + audio duration).
+        # Otherwise, estimate from this scene's text and duration.
         total_chars = sum(len(l) for l in lines)
-        active_time = duration_s * 0.95
-        cps = max(5, min(15, total_chars / max(active_time, 0.5)))
+        if global_cps is not None:
+            cps = global_cps
+        else:
+            # Fallback: estimate from scene duration, accounting for silence
+            speaking_time = duration_s * 0.90
+            cps = max(8, min(14, total_chars / max(speaking_time, 0.5)))
 
         # Per-line start times: proportional to cumulative char count
         # line N starts when char index = sum(len(lines[0..N-1])) / cps
@@ -199,15 +201,18 @@ class TypewriterRenderer:
     # ── scene render ────────────────────────────────────────────────
 
     def render_scene(self, text, output_path, duration_s, out_w=1280, out_h=720,
-                     is_short=False, bg_color="0x1a1a2e"):
+                     is_short=False, bg_color="0x1a1a2e", global_cps=None):
         """
         Render a single scene: dark background + typewriter text + bg box.
+        global_cps: if provided, use this global chars/sec rate instead of
+                    calculating per-scene. This ensures all scenes type at the
+                    same rate, matching the voice.
         Returns True on success.
         """
         if not text.strip():
             text = "..."
 
-        dt_filter = self._build_typewriter_filter(text, out_w, out_h, duration_s, is_short)
+        dt_filter = self._build_typewriter_filter(text, out_w, out_h, duration_s, is_short, global_cps)
 
         cmd = [
             self.ffmpeg, "-y",
@@ -305,28 +310,44 @@ class TypewriterRenderer:
     # ── multi-scene render ──────────────────────────────────────────
 
     def render_all_scenes(self, script_text, num_scenes, duration_s, output_dir,
-                          out_w=1280, out_h=720, is_short=False):
+                          out_w=1280, out_h=720, is_short=False, voice_wps=None):
         """
         Render all scenes for a video. Returns list of scene clip paths.
-        Each scene's duration is proportional to its word count (matching voice rate).
-        Voice speaks at ~2.0 words/sec, so scene_duration = words / voice_wps.
+        All scenes share a global cps (chars/sec) matching the voice rate.
         """
         os.makedirs(output_dir, exist_ok=True)
         chunks = self._split_script(script_text, num_scenes)
 
-        # Calculate per-scene duration based on word count (matching voice rate)
-        # Voice rate: ~2.0 words/sec (measured from actual TTS output)
-        voice_wps = 2.0
         chunk_words = [max(1, len(chunk.split())) for chunk in chunks]
         total_words = sum(chunk_words)
+
+        # Compute global voice rate from audio duration and word count
+        if voice_wps is None:
+            # Account for silence pauses (~5% of total duration)
+            voice_wps = total_words / (duration_s * 0.95)
+
+        # Global cps: chars per second the typewriter should reveal text
+        # Total chars ≈ total_words * 5 (avg 4 chars/word + 1 space between words)
+        # Speaking time = total_words / voice_wps
+        # cps = total_chars / speaking_time
+        total_chars_estimate = total_words * 5  # includes spaces between words
+        speaking_time = total_words / voice_wps
+        global_cps = total_chars_estimate / max(speaking_time, 0.5)
+        global_cps = max(8, min(14, global_cps))  # clamp to reasonable range
+
+        # Total silence time (distributed across scenes)
+        total_silence = duration_s - speaking_time
 
         paths = []
         elapsed = 0.0
 
         for i, chunk in enumerate(chunks):
-            # Scene duration = proportional share of total duration by word count
-            # This ensures each scene's length matches how long the voice speaks it
-            scene_duration = duration_s * (chunk_words[i] / total_words)
+            # Active typing time for this scene (using global cps)
+            scene_speaking_time = chunk_words[i] / voice_wps
+            # Distribute silence proportionally by word count
+            scene_silence = (chunk_words[i] / total_words) * total_silence if total_words > 0 else 0
+            # Total scene duration = speaking time + silence share
+            scene_duration = scene_speaking_time + scene_silence
 
             out_path = os.path.join(output_dir, f"tw_scene_{i}.mp4")
             ok = self.render_scene(
@@ -336,6 +357,7 @@ class TypewriterRenderer:
                 out_w=out_w,
                 out_h=out_h,
                 is_short=is_short,
+                global_cps=global_cps,
             )
             if ok:
                 paths.append(out_path)
