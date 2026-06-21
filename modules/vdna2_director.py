@@ -629,6 +629,88 @@ class VDNA2Director:
                 short_texts[i] = short_seg.get("text", "")
             return main_text, short_texts
 
+    @staticmethod
+    def _preprocess_tts_text(text):
+        """
+        Apply the same text transformations that the TTS engine applies,
+        so the typewriter displays exactly what the voice speaks.
+        Must match voiceover.py: smart quotes → contractions → acronyms → fix_tts_text.
+        """
+        import re as _re
+
+        if not text:
+            return text
+
+        # 1. Smart quote normalization (matches voiceover.py line 320-324)
+        text = text.replace("\u2019", "'").replace("\u2018", "'")
+        text = text.replace("\u2032", "'").replace("\u2035", "'")
+        text = text.replace("\u02bc", "'").replace("\u02bb", "'")
+        text = text.replace("\uff07", "'").replace("\u201b", "'")
+
+        # 2. Contraction expansion (matches voiceover.py _expand_contractions)
+        contractions = {
+            "you're": "you are", "they're": "they are", "we're": "we are",
+            "I'm": "I am", "he's": "he is", "she's": "she is",
+            "it's": "it is", "that's": "that is", "what's": "what is",
+            "who's": "who is", "where's": "where is", "how's": "how is",
+            "there's": "there is", "here's": "here is", "why's": "why is",
+            "I've": "I have", "you've": "you have", "we've": "we have",
+            "they've": "they have", "I'd": "I would", "you'd": "you would",
+            "he'd": "he would", "she'd": "she would", "we'd": "we would",
+            "they'd": "they would", "I'll": "I will", "you'll": "you will",
+            "he'll": "he will", "she'll": "she will", "we'll": "we will",
+            "they'll": "they will", "can't": "cannot",
+            "won't": "will not", "don't": "do not", "doesn't": "does not",
+            "didn't": "did not", "isn't": "is not", "aren't": "are not",
+            "wasn't": "was not", "weren't": "were not", "hasn't": "has not",
+            "haven't": "have not", "hadn't": "had not", "couldn't": "could not",
+            "wouldn't": "would not", "shouldn't": "should not",
+            "mustn't": "must not", "needn't": "need not",
+            "let's": "let us", "who'd": "who would", "who'll": "who will",
+            "who've": "who have", "what'll": "what will", "what've": "what have",
+            "where'd": "where would", "where'll": "where will",
+            "when's": "when is", "how'd": "how would", "how'll": "how will",
+        }
+        for contraction, expansion in sorted(contractions.items(), key=lambda x: -len(x[0])):
+            text = _re.sub(r'\b' + _re.escape(contraction) + r'\b', expansion, text, flags=_re.IGNORECASE)
+
+        # 3. Acronym expansion (matches voiceover.py _expand_acronyms)
+        acronyms = {
+            r'\bNEET\b': 'N E E T', r'\bUG\b': 'U G', r'\bPG\b': 'P G',
+            r'\bCBI\b': 'C B I', r'\bBJP\b': 'B J P', r'\bINC\b': 'I N C',
+            r'\bTDP\b': 'T D P', r'\bYSRCP\b': 'Y S R C P', r'\bTRS\b': 'T R S',
+            r'\bBRS\b': 'B R S', r'\bMLA\b': 'M L A', r'\bMP\b': 'M P',
+            r'\bPM\b': 'P M', r'\bCM\b': 'C M', r'\bUPSC\b': 'U P S C',
+            r'\bAIIMS\b': 'A I I M S', r'\bIIT\b': 'I I T', r'\bNIT\b': 'N I T',
+            r'\bPhD\b': 'P h D', r'\bMBA\b': 'M B A', r'\bMBBS\b': 'M B B S',
+            r'\bUS\b': 'U S', r'\bUK\b': 'U K', r'\bEU\b': 'E U',
+            r'\bUN\b': 'U N', r'\bWHO\b': 'W H O', r'\bNASA\b': 'N A S A',
+            r'\bFBI\b': 'F B I', r'\bIRS\b': 'I R S', r'\bSSC\b': 'S S C',
+            r'\bRRB\b': 'R R B', r'\bIBPS\b': 'I B P S', r'\bSBI\b': 'S B I',
+        }
+        for pat, repl in acronyms.items():
+            text = _re.sub(pat, repl, text)
+
+        # 4. Fix TTS text (matches voiceover.py _fix_tts_text)
+        abbrev = [
+            (r'\bDr\.', 'Doctor'), (r'\bMr\.', 'Mister'), (r'\bMs\.', 'Miss'),
+            (r'\bMrs\.', 'Missus'), (r'\bProf\.', 'Professor'), (r'\bSt\.', 'Saint'),
+            (r'\bJr\.', 'Junior'), (r'\bSr\.', 'Senior'), (r'\bvs\.', 'versus'),
+            (r'\bNo\.', 'Number'), (r'\bInc\.', 'Incorporated'), (r'\bLtd\.', 'Limited'),
+            (r'\bCorp\.', 'Corporation'), (r'\bGovt\.', 'Government'),
+            (r'\bDept\.', 'Department'), (r'\bUniv\.', 'University'),
+            (r'\bAve\.', 'Avenue'), (r'\bBlvd\.', 'Boulevard'), (r'\bRd\.', 'Road'),
+            (r'\bPM\.', 'Prime Minister'), (r'\bCM\.', 'Chief Minister'),
+        ]
+        for pat, repl in abbrev:
+            text = _re.sub(pat, repl, text, flags=_re.IGNORECASE)
+        text = _re.sub(r"(\w+)'s\b", r"\1", text)
+        text = _re.sub(r"(\w+)s'\b", r"\1s", text)
+        text = text.replace("'", "")
+        text = _re.sub(r'\s+', ' ', text).strip()
+
+        return text
+
     def _phase_voice(self, state):
         """Phase 4: Voice synthesis with Fish Speech (primary).
         VDNA 3.0: Handles both ScriptPayload objects and string payloads (from checkpoint restore).
@@ -798,6 +880,11 @@ class VDNA2Director:
         # VDNA 3.0: Extract text from any payload format (object, dict, string)
         main_text, short_texts = self._extract_script_text(script_payload)
 
+        # Preprocess text to match TTS output (contraction expansion, acronym expansion, etc.)
+        # This ensures the typewriter displays exactly what the voice speaks
+        main_text_display = self._preprocess_tts_text(main_text)
+        short_texts_display = {k: self._preprocess_tts_text(v) for k, v in short_texts.items()}
+
         # Main video
         if decision.produce_main:
             audio_path = voiceover_assets.get("main")
@@ -809,7 +896,7 @@ class VDNA2Director:
                 va.assemble_video(
                     main_filename, audio_path, None,
                     main_filename, target_duration,
-                    async_mode=False, script_text=main_text[:500],
+                    async_mode=False, script_text=main_text_display,
                     is_short=False, topic_title=topic.get("title", "")
                 )
                 main_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], main_filename)
@@ -824,6 +911,7 @@ class VDNA2Director:
             key = f"short_{i}"
             if key in voiceover_assets:
                 short_text = short_texts.get(i, "")
+                short_text_display = short_texts_display.get(i, "")
                 short_audio = voiceover_assets[key]
                 short_filename = f"{topic_slug}_Short{i}.mp4"
                 short_word_count = len(short_text.split()) if short_text else 30
@@ -831,7 +919,7 @@ class VDNA2Director:
                 va.assemble_video(
                     short_filename, short_audio, None,
                     short_filename, short_duration,
-                    async_mode=False, script_text=short_text[:200],
+                    async_mode=False, script_text=short_text_display,
                     is_short=True, topic_title=topic.get("title", "")
                 )
                 short_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], short_filename)

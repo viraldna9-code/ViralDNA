@@ -308,31 +308,47 @@ class TypewriterRenderer:
                           out_w=1280, out_h=720, is_short=False):
         """
         Render all scenes for a video. Returns list of scene clip paths.
-        Each scene gets an equal slice of the total duration.
+        Each scene's duration is proportional to its word count (matching voice rate).
+        Voice speaks at ~2.0 words/sec, so scene_duration = words / voice_wps.
         """
         os.makedirs(output_dir, exist_ok=True)
         chunks = self._split_script(script_text, num_scenes)
-        clip_duration = duration_s / max(num_scenes, 1)
+
+        # Calculate per-scene duration based on word count (matching voice rate)
+        # Voice rate: ~2.0 words/sec (measured from actual TTS output)
+        voice_wps = 2.0
+        chunk_words = [max(1, len(chunk.split())) for chunk in chunks]
+        total_words = sum(chunk_words)
+
         paths = []
+        elapsed = 0.0
 
         for i, chunk in enumerate(chunks):
+            # Scene duration = proportional share of total duration by word count
+            # This ensures each scene's length matches how long the voice speaks it
+            scene_duration = duration_s * (chunk_words[i] / total_words)
+
             out_path = os.path.join(output_dir, f"tw_scene_{i}.mp4")
             ok = self.render_scene(
                 text=chunk,
                 output_path=out_path,
-                duration_s=clip_duration,
+                duration_s=scene_duration,
                 out_w=out_w,
                 out_h=out_h,
                 is_short=is_short,
             )
             if ok:
                 paths.append(out_path)
-                print(f"    [Typewriter] Scene {i+1}/{num_scenes} OK ({clip_duration:.1f}s)")
+                print(f"    [Typewriter] Scene {i+1}/{num_scenes} OK "
+                      f"({chunk_words[i]}w, {scene_duration:.1f}s, "
+                      f"t={elapsed:.1f}s-{elapsed+scene_duration:.1f}s)")
             else:
                 print(f"    [Typewriter] Scene {i+1}/{num_scenes} FAILED — using blank")
                 blank_path = os.path.join(output_dir, f"tw_scene_{i}_blank.mp4")
-                self._render_blank(blank_path, clip_duration, out_w, out_h)
+                self._render_blank(blank_path, scene_duration, out_w, out_h)
                 paths.append(blank_path)
+
+            elapsed += scene_duration
 
         return paths
 
