@@ -34,7 +34,7 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 - Zero references to removed code remain
 - Phase list: discovery, weighting, scripting, fact_check, compliance, voice, thumbnail, assembly, forensic_audit, upload, post_pipeline
 
-**COMMIT:** (pending)
+**COMMIT:** 685d6ad
 **FILES:** `modules/vdna2_director.py`, `modules/video_assembler.py`, `modules/typewriter_renderer.py`
 
 ## 2026-06-20
