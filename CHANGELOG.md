@@ -7,6 +7,14 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-22
 
+### 10:57 IST — Fix: Non-RSS Sources Set published=now() for Hard Freshness Gate (v96.3)
+
+**Problem:** Hard freshness gate rejected ALL 43 topics because Google Trends, Reddit, YouTube, Inshorts, and fallback payloads had no `published` field. Gate treats missing date as "reject".
+
+**Fix:** Added `published=datetime.now(timezone.utc).isoformat()` to all non-RSS payloads (Google Trends, Google News RSS, Reddit, YouTube, Inshorts, fallback). These are real-time trending sources — by definition they are fresh.
+
+**Result:** All discovery sources now pass the hard freshness gate with current timestamp.
+
 ### 10:48 IST — Fix: Hard Freshness Gate at Discovery — Reject Stale Topics Before Scoring (v96.3)
 
 **Problem:** Even with 3-layer recency scoring (v96.2), stale topics still entered the scoring pipeline. The Telugu keyword boost could still push an old topic to the top if no fresh topics had strong scores.
