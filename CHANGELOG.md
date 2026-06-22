@@ -7,6 +7,42 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-22
 
+### 15:30 IST — Critical Pipeline Fixes (v86.0)
+
+**Fixed 5 critical bugs causing poor video quality, missing metadata, and short durations.**
+
+**Bug 1 — Director Phase 8 bypassed upload_production_slot:**
+- Director was calling `upload_single_video()` in a loop, completely bypassing the full-featured `upload_production_slot()` method
+- This meant: no CTR title variants, no thumbnail upload, no pinned comments, no playlist routing, no dedup checking
+- Fix: Replaced the entire Phase 8 loop with a single `upload_production_slot()` call passing `script_payload`, `publish_decision`, and `topic_slug`
+
+**Bug 2 — Raw RSS headline used for ALL video titles:**
+- Line 1067: `title_raw=title[:100]` — the raw source headline was passed to main, short_1, short_2
+- Gemini-generated CTR-optimized title variants were generated, scored, stored in checkpoint... and never used
+- Fix: `upload_production_slot()` now uses `script_payload.main_title_variants[0]` (highest-scored) for main, and per-short variants for shorts
+
+**Bug 3 — Thumbnails generated but NOT uploaded to YouTube:**
+- Uploader looked for `production_branded.jpg` but files were named `<slug>_branded.jpg`
+- Forensic audit confirmed: "Thumbnail missing: production_branded.jpg"
+- Fix: Added fallback naming in uploader — checks `production_branded.jpg` → `<slug>_branded.jpg` → `<slug>_thumb.jpg`
+- Same fallback added for shorts: `production_short_N.mp4` → `<slug>_ShortN.mp4`
+
+**Bug 4 — Videos only ~100 seconds (too short for news):**
+- Duration formula `word_count * 0.4` gave ~100s for 250-word scripts
+- Fix: Changed to `word_count / 2.33` (140 WPM) with min 180s (3 min), max 600s (10 min)
+- Script prompt updated: main must be 400-700 words for 3-5 minute video
+- Shorts: 15-60s range (unchanged) but using correct WPM formula
+
+**Bug 5 — Script fallback templates too short:**
+- `_build_main_script()` fallback was only ~130 words (~56s of speech)
+- Fix: Expanded to ~400 words with proper story structure: Hook → What Happened → Why It Matters → Context → Engagement CTA
+
+**Files changed:**
+- `modules/vdna2_director.py` — Phase 8 rewrite, duration fix, topic_slug pass-through
+- `modules/youtube_uploader.py` — topic_slug parameter, fallback file naming for main + shorts
+- `modules/script_generator.py` — word count target 400-700, expanded fallback template
+- `modules/data_flow_registry.py` — ScriptPayload validation warns if < 400 words
+
 ### 12:18 IST — YouTube OAuth Re-auth + Production Pipeline Success (v96.5)
 
 **YouTube OAuth token fully re-authorized and production pipeline ran end-to-end.**

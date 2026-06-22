@@ -463,24 +463,44 @@ class ScriptGenerator:
     def _build_main_script(self, title: str, desc: str) -> str:
         """Build main video script with viral YouTube hook-first structure.
 
-        v84.2: YouTube Studio feedback — conversational tone, hook-first,
-        'you/your' language, analogy, engagement question CTA.
+        v86.0: Expanded to 400-700 words for 3-5 minute video.
+        Structure: Hook -> What Happened -> Why It Matters -> Context -> Engagement CTA.
         """
-        # Impact-first hook: start with what changes for the viewer, not with "X announced"
         return (
-            f"{title} — and it could change everything for your district. "
+            f"Let me tell you something that is happening right now, and you might not have heard the full story. "
+            f"{title}. "
             f"Here is what you need to know. "
             f"According to reports, {desc}. "
-            f"If you live in Telangana or Andhra Pradesh, this isn't just national news — "
-            f"it's a local event that could affect your daily life. "
+            f"Now, let me break this down for you. "
+            f"This is not just another headline — this has real consequences for millions of people. "
+            f"If you live in Telangana or Andhra Pradesh, this isn't just national news. "
+            f"This is a local event that could affect your family, your job, your children's future. "
+            f"Let me give you the context. "
             f"Local leaders and community members are already discussing what this means "
-            f"for common families, workers, and businesses in our region. "
-            f"The big question: will this actually help people on the ground, "
-            f"or is it just political promises? "
-            f"We will keep watching closely and bring you honest, simple updates. "
-            f"What do you think — will this make a real difference in your area? "
-            f"Tell me in the comments below. And if you want to stay connected to your homeland, "
-            f"hit subscribe — ViralDNA is here to keep you informed."
+            f"for common families, workers, and small businesses in our districts. "
+            f"The opposition is saying one thing, the government is saying another. "
+            f"But the real question is — what actually changes for people on the ground? "
+            f"Will this help a farmer in Nalgonda? Will this change anything for a student in Hyderabad? "
+            f"Will this affect your daily life in any way? "
+            f"That is what we need to talk about. "
+            f"Because behind every political decision, every policy announcement, there are real families. "
+            f"There are real people waiting to see if things get better. "
+            f"We have seen promises before. We have seen big announcements. "
+            f"But the real test is always in the implementation. "
+            f"Will this actually reach the people who need it most? "
+            f"Or will it stay on paper, another promise forgotten in a few months? "
+            f"Here is what I think. I think we should pay attention. "
+            f"We should ask questions. We should hold our leaders accountable. "
+            f"Because this is our state. These are our districts. And we deserve honest answers. "
+            f"We will keep watching this story closely and bring you honest, simple updates. "
+            f"No hype. No rumors. Just facts that matter to you. "
+            f"Now I want to hear from YOU. "
+            f"What do you think about this? Will this make a real difference in your area? "
+            f"Or have you heard promises like this before? "
+            f"Tell me in the comments below — I read every single one. "
+            f"And if you want to stay connected to your homeland and never miss an update, "
+            f"hit subscribe right now. Hit that notification bell. "
+            f"ViralDNA is here to keep you informed — because your voice matters."
         )
 
     def _build_short_1(self, title: str) -> str:
@@ -577,7 +597,7 @@ class ScriptGenerator:
                     f"3. STATE ACCURACY: The news item concerns {state_hint_str}. You MUST mention the state name ({state_hint_str}) at least once in the main script. Do NOT write 'Andhra Pradesh' for a Telangana story or vice versa. DO NOT mention the other Telugu state unless the source text explicitly mentions both. The state name MUST appear explicitly — do NOT replace it with vague terms like 'our state' or 'our homeland'.\n"
                     f"4. Punctuation: Ensure excellent, standard punctuation with clear periods (.), commas (,), and question marks (?). These are critical cues for our speech generator to take natural pauses and not rush.\n"
                     f"5. Length requirements:\n"
-                    f"   - 'main': A story-driven news report. It MUST be at least 150 words and at most 250 words to maintain our pacing.\n"
+                    f"   - 'main': A story-driven news report. It MUST be at least 400 words and at most 700 words for a 3-5 minute video. Structure it as: (1) HOOK — shocking/impactful first sentence, (2) WHAT HAPPENED — the core facts, (3) WHY IT MATTERS — impact on viewers' lives, (4) CONTEXT — background from source, (5) ENGAGEMENT QUESTION — specific question to drive comments. Do NOT use generic filler.\n"
                     f"   - 'short_1': High-impact 15-20s highlights (approx 35-45 words). Start with a SHOCKING STATEMENT or QUESTION in the first 2 seconds — NOT a generic intro. Example: 'Why are villagers refusing 700 rupees a day?' NOT 'Andhra villagers are in the news today.' End with a question that drives comments.\n"
                     f"   - 'short_2': Conversational explanation (approx 35-45 words). Start with 'What does this mean for you?' angle. Use 'you/your' language. End with engagement question.\n"
                     f"   - 'short_3': NRI direct CTA (approx 35-45 words). Start with 'If you are watching from...' — emotional, personal, about THEIR home. NOT generic 'Are you watching from overseas?'\n"

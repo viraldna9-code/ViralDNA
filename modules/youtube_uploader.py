@@ -1722,25 +1722,38 @@ Output JSON array:"""
     # ─── Full Production Slot Upload (A/B testing approach) ───
     def upload_production_slot(self, topic: dict, videos_dir: str, thumbnails_dir: str,
                                 script_payload=None, publish_decision=None,
-                                upload_schedule: dict = None) -> dict:
+                                upload_schedule: dict = None,
+                                topic_slug: str = "") -> dict:
         """
         Uploads ONE video per slot (best title variant only).
         Per-variant thumbnails are generated for YouTube Studio A/B testing.
         Uploading duplicate videos with different titles = spam risk.
         Total: 1 main + N shorts (based on publish_decision)
+        v86.0: Added topic_slug parameter for correct file naming.
         """
         upload_results = {
-            "main": None,          # single main video result
-            "shorts": {},          # short_1: result, short_2: result, ...
+            "main": None,
+            "shorts": {},
             "overall_status": "pending"
         }
+
+        # Determine file names — support both old (production_*) and new (<slug>_) naming
+        slug = topic_slug or topic.get("slug", "topic")
+        main_video_path = os.path.join(videos_dir, "production_main.mp4")
+        if not os.path.exists(main_video_path):
+            main_video_path = os.path.join(videos_dir, f"{slug}_Main.mp4")
+        main_thumb_base = os.path.join(thumbnails_dir, "production_branded.jpg")
+        if not os.path.exists(main_thumb_base):
+            main_thumb_base = os.path.join(thumbnails_dir, f"{slug}_branded.jpg")
+        if not os.path.exists(main_thumb_base):
+            main_thumb_base = os.path.join(thumbnails_dir, f"{slug}_thumb.jpg")
 
         # Determine how many shorts to produce
         num_shorts = 2
         if publish_decision:
             num_shorts = publish_decision.num_shorts
             if not publish_decision.produce_main:
-                num_shorts = max(num_shorts, 1)  # at least 1 short if no main
+                num_shorts = max(num_shorts, 1)
             print(f"  📋 Upload plan: produce_main={publish_decision.produce_main}, num_shorts={num_shorts}")
         else:
             print(f"  📋 No publish_decision provided, using defaults: num_shorts={num_shorts}")
@@ -1751,11 +1764,9 @@ Output JSON array:"""
         print(f"  📊 Found {len(existing_videos)} existing videos on channel for dedup check")
 
         # ── 1. Main Video — Best Title Only (variant 0) ──
-        main_video_path = os.path.join(videos_dir, "production_main.mp4")
         main_script_text = script_payload.main_clean if script_payload else ""
         main_duration = script_payload.main_duration if script_payload else 0
         main_title_variants = script_payload.main_title_variants if script_payload else []
-        main_thumb_base = os.path.join(thumbnails_dir, "production_branded.jpg")
 
         produce_main = True
         if publish_decision:
@@ -1836,6 +1847,8 @@ Output JSON array:"""
         for s_idx in range(1, num_shorts + 1):
             short_key = f"short_{s_idx}"
             short_video_path = os.path.join(videos_dir, f"production_short_{s_idx}.mp4")
+            if not os.path.exists(short_video_path):
+                short_video_path = os.path.join(videos_dir, f"{slug}_Short{s_idx}.mp4")
             short_title_variants = getattr(script_payload, f"{short_key}_title_variants", []) if script_payload else []
             short_script_text = getattr(script_payload, f"{short_key}_raw", "") if script_payload else ""
             short_duration = getattr(script_payload, f"{short_key}_duration", 0) if script_payload else 0
@@ -1844,6 +1857,11 @@ Output JSON array:"""
             short_thumb_v2 = os.path.join(thumbnails_dir, f"short_{s_idx}_branded.jpg")
             if not os.path.exists(short_thumb) and os.path.exists(short_thumb_v2):
                 short_thumb = short_thumb_v2
+            # Also check <slug>_short_N naming
+            if not os.path.exists(short_thumb):
+                short_thumb_v3 = os.path.join(thumbnails_dir, f"{slug}_short_{s_idx}.jpg")
+                if os.path.exists(short_thumb_v3):
+                    short_thumb = short_thumb_v3
 
             if os.path.exists(short_video_path) and short_title_variants:
                 # Pick best title (variant 0)

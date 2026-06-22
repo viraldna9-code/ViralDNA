@@ -853,9 +853,19 @@ class VDNA2Director:
             audio_path = voiceover_assets.get("main")
             if audio_path:
                 main_filename = f"{topic_slug}_Main.mp4"
-                # Calculate target duration from word count (~150 wpm speaking rate)
+                # v86.0: Target 3-5 minutes (180-300s) for main video
+                # At 140 WPM: 180s = ~420 words, 300s = ~700 words
+                # Use actual script word count but enforce min/max bounds
                 word_count = len(main_text.split()) if main_text else 200
-                target_duration = max(60, min(word_count * 0.4, 600))
+                # Calculate duration from words at 140 WPM (2.33 words/sec)
+                # Then enforce: min 180s (3 min), max 300s (5 min), ideal 240s (4 min)
+                speaking_duration = word_count / 2.33
+                target_duration = max(180, min(speaking_duration, 600))
+                # If script is too short for 3 min, we need more content
+                if speaking_duration < 180:
+                    print(f"   ⚠️ Main script only {word_count} words (~{speaking_duration:.0f}s) — extending to 180s minimum")
+                    target_duration = 180
+                print(f"   🎬 Main: {word_count} words → target {target_duration:.0f}s")
                 va.assemble_video(
                     main_filename, audio_path, None,
                     main_filename, target_duration,
@@ -878,7 +888,9 @@ class VDNA2Director:
                 short_audio = voiceover_assets[key]
                 short_filename = f"{topic_slug}_Short{i}.mp4"
                 short_word_count = len(short_text.split()) if short_text else 30
-                short_duration = max(15, min(short_word_count * 0.4, 60))
+                # v86.0: Shorts target 15-60s. At 140 WPM: 15s = ~35 words, 60s = ~140 words
+                short_speaking = short_word_count / 2.33
+                short_duration = max(15, min(short_speaking, 60))
                 va.assemble_video(
                     short_filename, short_audio, None,
                     short_filename, short_duration,
@@ -949,9 +961,10 @@ class VDNA2Director:
 
     def _phase_upload(self, state):
         """Phase 9: YouTube upload.
-        VDNA 3.0: Upload time optimizer enforces IST window (4PM-8PM).
-        Fixed: Properly constructs YouTube service, resolves branded thumbnail
-        from subdirectory, and calls upload_single_video with correct args.
+        VDNA 3.0: Uses upload_production_slot for full metadata, title variants,
+        thumbnail upload, pinned comments, playlist routing, and dedup checking.
+        Fixed: Title variants from script_generator are now actually used.
+        Fixed: Thumbnail path resolution checks both _branded.jpg and _thumb.jpg.
         """
         print("   📤 Uploading to YouTube...")
 
@@ -966,11 +979,9 @@ class VDNA2Director:
             with open(cred_file) as f:
                 creds_data = json.load(f)
             creds = Credentials.from_authorized_user_info(creds_data)
-            # Auto-refresh expired access token using the stored refresh_token
             if creds.expired and creds.refresh_token:
                 print("   🔄 YouTube token expired — refreshing...")
                 creds.refresh(Request())
-                # Save refreshed token back to disk
                 with open(cred_file, "w") as f:
                     f.write(creds.to_json())
                 print("   ✅ Token refreshed and saved")
@@ -984,36 +995,34 @@ class VDNA2Director:
         from youtube_uploader import YouTubeUploader
         uploader = YouTubeUploader(youtube_service, config.YOUTUBE_UPLOAD_CONFIG)
 
-        compiled_videos = state.get("compiled_videos", [])
         topic = state.get("selected_topic", {})
         topic_slug = state.get("topic_slug", "topic")
-        results = []
+        script_payload = state.get("script_payload")
+        publish_decision = state.get("publish_decision")
 
-        # Resolve branded thumbnail path
-        # ThumbnailCreator saves to: thumbnails/<slug>_thumb.jpg/<slug>_branded.jpg
-        branded_thumb_dir = state.get("branded_thumbnail", "")
-        branded_thumb = ""
-        if branded_thumb_dir:
-            if os.path.isdir(branded_thumb_dir):
-                for f in os.listdir(branded_thumb_dir):
-                    if f.endswith("_branded.jpg"):
-                        branded_thumb = os.path.join(branded_thumb_dir, f)
-                        break
-            elif os.path.isfile(branded_thumb_dir):
-                branded_thumb = branded_thumb_dir
-            if not branded_thumb:
-                flat_thumb = os.path.join(
-                    config.DRIVE.get("THUMBNAILS", "thumbnails"),
-                    f"{topic_slug}_branded.jpg")
-                if os.path.isfile(flat_thumb):
-                    branded_thumb = flat_thumb
+        # ── Resolve thumbnail directory for upload_production_slot ──
+        # ThumbnailCreator saves to: thumbnails/<slug>_branded.jpg (or _thumb.jpg)
+        thumbnails_dir = config.DRIVE.get("THUMBNAILS", "/home/jay/ViralDNA/thumbnails")
+        # Also check the branded_thumbnail state path
+        branded_thumb_state = state.get("branded_thumbnail", "")
+        if branded_thumb_state and os.path.isdir(branded_thumb_state):
+            thumbnails_dir = branded_thumb_state
+        elif branded_thumb_state and os.path.isfile(branded_thumb_state):
+            thumbnails_dir = os.path.dirname(branded_thumb_state)
 
-        if branded_thumb:
-            print(f"   🖼️  Thumbnail: {os.path.basename(branded_thumb)}")
+        # Verify thumbnail files exist — log what we find
+        branded_main = os.path.join(thumbnails_dir, f"{topic_slug}_branded.jpg")
+        if not os.path.exists(branded_main):
+            # Fallback: try _thumb.jpg naming
+            branded_main = os.path.join(thumbnails_dir, f"{topic_slug}_thumb.jpg")
+        if os.path.exists(branded_main):
+            print(f"   🖼️  Main thumbnail: {os.path.basename(branded_main)}")
         else:
-            print("   ⚠️  No branded thumbnail found — YouTube will auto-generate")
+            print(f"   ⚠️  No branded thumbnail found for '{topic_slug}' in {thumbnails_dir}")
+            print(f"      Checked: {topic_slug}_branded.jpg / {topic_slug}_thumb.jpg")
 
         # VDNA 3.0: Primetime scheduler — delay upload if outside optimal window
+        upload_schedule = None
         try:
             sched = self.skills["primetime_scheduler"]
             run_mode = sched.get_run_mode()
@@ -1025,14 +1034,13 @@ class VDNA2Director:
             window_name = upload_schedule.get("main_upload", {}).get("window_name", "normal")
             print(f"   ⏰ Run mode: {run_mode['mode']} | Window: {window_name} | Recommended: {recommended_time} IST")
 
-            # If quiet hours, delay upload to recommended time
             if run_mode.get("is_quiet") and recommended_time:
                 from datetime import datetime as _dt
                 now_ist = _dt.now(config.IST)
                 rec_hour, rec_min = map(int, recommended_time.split(":"))
                 delay_min = (rec_hour - now_ist.hour) * 60 + (rec_min - now_ist.minute)
                 if delay_min > 0:
-                    delay_sec = min(delay_min * 60, 3600)  # max 1 hour delay
+                    delay_sec = min(delay_min * 60, 3600)
                     print(f"   ⏳ Quiet hours — delaying upload {delay_min}min ({delay_sec}s) until {recommended_time} IST")
                     import time as _time
                     _time.sleep(delay_sec)
@@ -1040,49 +1048,68 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Primetime scheduling failed: {e} — uploading immediately")
 
-        title = topic.get("title", "ViralDNA News")
-        description = self._build_description(state)
-        tags = topic.get("tags", ["news", "india", "viral", "ViralDNA"])
-        if isinstance(tags, str):
-            tags = [t.strip() for t in tags.split(",")]
+        # ── Use upload_production_slot (full-featured uploader) ──
+        # This uses title variants from script_generator, uploads thumbnails,
+        # adds pinned comments, routes to playlists, and checks for duplicates.
+        videos_dir = config.DRIVE.get("VIDEO_OUTPUT", "/home/jay/ViralDNA/videos")
 
-        for video_path in compiled_videos:
-            if not os.path.exists(video_path):
-                print(f"   ⚠️ Video not found: {video_path} — skipping")
-                results.append({"status": "failed", "error": f"Video not found: {video_path}"})
-                continue
+        # Ensure script_payload is in the right format for the uploader
+        # The uploader expects a ScriptPayload object with title_variants
+        sp = script_payload
+        if isinstance(sp, dict):
+            # Reconstruct from dict — the director stores it as __dict__ sometimes
+            from data_flow_registry import ScriptPayload
+            try:
+                sp = ScriptPayload(sp)
+            except Exception as e:
+                print(f"   ⚠️ Could not reconstruct ScriptPayload from dict: {e}")
+                sp = None
 
-            is_short = "Short" in os.path.basename(video_path)
-            short_index = 0
-            if is_short:
-                import re as _re
-                m = _re.search(r'Short(\d+)', os.path.basename(video_path))
-                short_index = int(m.group(1)) if m else 0
+        if sp:
+            # Log the CTR-optimized titles that will be used
+            for seg_name in ["main", "short_1", "short_2"]:
+                variants = getattr(sp, f"{seg_name}_title_variants", [])
+                if variants:
+                    best = variants[0]
+                    print(f"   🏷️  [{seg_name}] Best title: \"{best.get('title', '')[:60]}\"")
+        else:
+            print("   ⚠️ No script_payload available — upload will use fallback titles")
 
-            # Only pass thumbnail for main videos (shorts use frame injection)
-            thumb = branded_thumb if not is_short else None
+        print(f"   📤 Calling upload_production_slot (videos_dir={videos_dir})...")
+        upload_results = uploader.upload_production_slot(
+            topic=topic,
+            videos_dir=videos_dir,
+            thumbnails_dir=thumbnails_dir,
+            script_payload=sp,
+            publish_decision=publish_decision,
+            upload_schedule=upload_schedule,
+            topic_slug=topic_slug,
+        )
 
-            print(f"   📤 Uploading: {os.path.basename(video_path)} ({'short' if is_short else 'main'})")
-            result = uploader.upload_single_video(
-                title_raw=title[:100],
-                desc_raw=description[:5000],
-                rag_context=title[:300],
-                video_path=video_path,
-                thumbnail_path=thumb or "",
-                is_short=is_short,
-                short_index=short_index,
-                variant_idx=0,
-                topic=topic,
-            )
-            results.append(result)
+        state["upload_results"] = upload_results
 
-            if result.get("status") == "success":
-                print(f"   ✅ Uploaded: {result.get('youtube_url', result.get('youtube_id', 'N/A'))}")
+        # Log results
+        main_res = upload_results.get("main")
+        if main_res:
+            status = main_res.get("status", "unknown")
+            if status == "success":
+                print(f"   ✅ Main uploaded: {main_res.get('youtube_url', 'N/A')}")
+                print(f"      Title: {main_res.get('title_used', 'N/A')[:80]}")
+            elif status == "skipped_duplicate":
+                print(f"   ⏭️ Main skipped (duplicate): {main_res.get('title', '')[:60]}")
             else:
-                print(f"   ❌ Upload failed: {result.get('error', 'unknown error')}")
+                print(f"   ❌ Main upload failed: {main_res.get('error', 'unknown')}")
 
-        state["upload_results"] = results
-        print(f"   📤 Uploaded {len(results)} videos")
+        for s_key, s_res in upload_results.get("shorts", {}).items():
+            status = s_res.get("status", "unknown")
+            if status == "success":
+                print(f"   ✅ {s_key} uploaded: {s_res.get('youtube_url', 'N/A')}")
+            elif status == "skipped_duplicate":
+                print(f"   ⏭️ {s_key} skipped (duplicate)")
+            else:
+                print(f"   ❌ {s_key} failed: {s_res.get('error', 'unknown')}")
+
+        print(f"   📤 Upload complete. Overall: {upload_results.get('overall_status', 'unknown')}")
         return state
 
     def _phase_post_pipeline(self, state):

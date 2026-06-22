@@ -84,9 +84,11 @@ class ScriptPayload:
         return text.strip()
 
     def validate(self):
-        # We enforce a strict lower bound to prevent the "2-second video" error
+        # v86.0: Main script must be 400-700 words for 3-5 minute video
         if self.main_word_count < 100:
-            raise ValueError(f"❌ ScriptPayload Validation Failed: Main script too short ({self.main_word_count} words).")
+            raise ValueError(f"❌ ScriptPayload Validation Failed: Main script too short ({self.main_word_count} words, minimum 100).")
+        if self.main_word_count < 400:
+            print(f"   ⚠️ Main script is only {self.main_word_count} words (target: 400-700 for 3-5 min video)")
         # Shorts must have minimum 20 words to produce meaningful 8-10s video
         for short_name, short_wc in [("short_1", self.short_1_word_count),
                                       ("short_2", self.short_2_word_count),
