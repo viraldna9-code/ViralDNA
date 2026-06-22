@@ -431,7 +431,7 @@ class TrendDiscovery:
 
         # --- Tier 1c: Trending RSS (India + US) ---
         print(f"  [Source] Polling {len(self.trending_rss)} trending RSS feeds...")
-        trending_topics = self._poll_rss_sources(self.trending_rss, max_per_feed=5)
+        trending_topics = self._poll_rss_sources(self.trending_rss, max_per_feed=5, lookback_hours=lookback_hours)
         print(f"  [Source] Trending RSS returned {len(trending_topics)} topics")
         all_topics.extend(trending_topics)
 

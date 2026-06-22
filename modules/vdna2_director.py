@@ -477,14 +477,56 @@ class VDNA2Director:
     # PHASE IMPLEMENTATIONS
     # ═══════════════════════════════════════════════════════════════════
 
+    def _hard_freshness_gate(self, topics, lookback_hours, source_label):
+        """
+        HARD GATE: Reject any topic older than lookback_hours.
+        This runs BEFORE scoring — no exceptions, no boosts, no workarounds.
+        A 3-day-old scheme announcement will NEVER enter the pipeline.
+        """
+        from datetime import datetime, timezone, timedelta
+        if not topics:
+            return topics
+        now_utc = datetime.now(timezone.utc)
+        cutoff = now_utc - timedelta(hours=lookback_hours)
+        fresh = []
+        rejected = 0
+        for t in topics:
+            pub_date_str = t.get("published", t.get("date", ""))
+            if not pub_date_str:
+                # No publish date — reject (can't verify freshness)
+                rejected += 1
+                continue
+            try:
+                if isinstance(pub_date_str, str):
+                    pub_date = datetime.fromisoformat(pub_date_str.replace("Z", "+00:00"))
+                    if pub_date.tzinfo is None:
+                        pub_date = pub_date.replace(tzinfo=timezone.utc)
+                else:
+                    pub_date = pub_date_str
+                if pub_date < cutoff:
+                    rejected += 1
+                    continue  # Too old — hard reject
+                fresh.append(t)
+            except Exception:
+                rejected += 1
+                continue  # Unparseable date — reject
+        if rejected:
+            print(f"   🚫 Freshness gate: rejected {rejected} stale topic(s) from {source_label}")
+        return fresh
+
     def _phase_discovery(self, state):
         """Phase 1: Discover trending news topics."""
         print("   🔍 Discovering trending topics...")
         td = self.skills["trend_discovery"]
         lookback = state.get("lookback_hours", 12)
         raw_news = td.run(lookback_hours=lookback)
+
+        # ── HARD FRESHNESS GATE (v96.3) ──
+        # Reject stale topics BEFORE they enter scoring. No exceptions.
+        raw_news = self._hard_freshness_gate(raw_news, lookback, "all sources")
+
         state["raw_news"] = raw_news
-        print(f"   📰 Found {len(raw_news)} news items")
+        print(f"   📰 Found {len(raw_news)} fresh news items")
         return state
 
     def _phase_weighting(self, state):
