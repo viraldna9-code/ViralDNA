@@ -286,6 +286,10 @@ class VDNA2Director:
         from growth_alignment import rank_topics_by_growth
         from spike_detector import SpikeDetector
         from growth_observer import GrowthObserver
+        # VDNA 3.0 P2 Growth Modules (v87.2)
+        from retention_curve_analyzer import RetentionCurveAnalyzer
+        from engagement_loop import EngagementLoop
+        from subscribe_cta_optimizer import SubscribeCTOptimizer
 
         self.skills = {
             "trend_discovery": TrendDiscovery(config_instance=config),
@@ -330,6 +334,10 @@ class VDNA2Director:
             "growth_alignment": rank_topics_by_growth,
             "spike_detector": SpikeDetector(config_instance=config),
             "growth_observer": GrowthObserver(),
+            # VDNA 3.0 P2 Growth Modules (v87.2)
+            "retention_curve": RetentionCurveAnalyzer(),
+            "engagement_loop": EngagementLoop(),
+            "subscribe_cta": SubscribeCTOptimizer(),
         }
         print(f"   📦 Loaded {len(self.skills)} skill modules")
 
@@ -635,6 +643,30 @@ class VDNA2Director:
                     print(f"      💡 [{rec.get('priority', '')}] {rec.get('suggestion', '')[:60]}")
         except Exception as e:
             print(f"   ⚠️ Growth observer failed: {e} — continuing without recommendations")
+
+        # Step 5: VDNA 3.0 (v87.2): Analytics feedback — retention insights → topic scoring
+        try:
+            retention_insights = state.get("retention_insights", [])
+            analytics_summary = state.get("analytics_summary", {})
+            if retention_insights or analytics_summary:
+                # Build a feedback signal: boost topics similar to high-retention videos
+                # and penalize topics similar to low-retention ones
+                feedback_bonus = {}
+                for vid, m in analytics_summary.items():
+                    if isinstance(m, dict):
+                        avg_pct = m.get("avg_view_percentage", 0)
+                        if avg_pct > 50:
+                            feedback_bonus[vid] = 1.2  # boost
+                        elif avg_pct < 25:
+                            feedback_bonus[vid] = 0.8  # penalize
+                if feedback_bonus:
+                    avg_bonus = sum(feedback_bonus.values()) / len(feedback_bonus)
+                    for t in sorted_topics:
+                        current = t.get("cpm_weight", 1.0)
+                        t["cpm_weight"] = current * avg_bonus
+                    print(f"   📊 Analytics feedback: avg modifier {avg_bonus:.2f} applied to topic weights")
+        except Exception as e:
+            print(f"   ⚠️ Analytics feedback failed: {e} — continuing without")
 
         # VDNA 3.0: Apply content calendar category bonus (1.3x for preferred category)
         if category_bonus and sorted_topics:
@@ -1044,6 +1076,27 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Shorts optimization failed: {e} — continuing without")
 
+        # VDNA 3.0 (v87.2): Subscribe CTA for shorts
+        try:
+            cta = self.skills["subscribe_cta"]
+            shorts_ctas = []
+            for i in range(decision.num_shorts):
+                cta_result = cta.get_shorts_cta(topic=topic)
+                shorts_ctas.append(cta_result)
+            state["shorts_ctas"] = shorts_ctas
+            print(f"   🔔 Shorts CTAs: {len(shorts_ctas)} generated")
+        except Exception as e:
+            print(f"   ⚠️ Shorts CTA generation failed: {e} — continuing without")
+
+        # VDNA 3.0 (v87.2): Engagement loop — end-screen engagement prompt
+        try:
+            el = self.skills["engagement_loop"]
+            engagement_prompt = el.generate_engagement_prompt(topic)
+            state["engagement_prompt"] = engagement_prompt
+            print(f"   💬 Engagement prompt: {engagement_prompt[:60]}...")
+        except Exception as e:
+            print(f"   ⚠️ Engagement prompt generation failed: {e} — continuing without")
+
         return state
 
     def _phase_forensic_audit(self, state):
@@ -1252,6 +1305,58 @@ class VDNA2Director:
             print("   🧠 RAG feedback stored for next run")
         except Exception as e:
             print(f"   ⚠️ RAG feedback storage failed: {e}")
+
+        # ── 10.2b: VDNA 3.0 (v87.2): Pinned comment via engagement_loop ──
+        try:
+            el = self.skills["engagement_loop"]
+            topic = state.get("selected_topic", {})
+            upload_results = state.get("upload_results", {})
+            main_video_id = ""
+            if isinstance(upload_results, dict):
+                main_res = upload_results.get("main", {})
+                if isinstance(main_res, dict):
+                    main_video_id = main_res.get("video_id", "")
+            if main_video_id:
+                pinned = el.generate_pinned_comment(topic, video_id=main_video_id)
+                state["pinned_comment"] = pinned
+                print(f"   📌 Pinned comment generated: {pinned.get('strategy', 'N/A')}")
+            else:
+                print("   📌 No video ID yet — pinned comment deferred to next run")
+        except Exception as e:
+            print(f"   ⚠️ Pinned comment generation failed: {e}")
+
+        # ── 10.2c: VDNA 3.0 (v87.2): Retention curve analysis → feedback to next run ──
+        try:
+            rc = self.skills["retention_curve"]
+            analytics = state.get("analytics_summary", {})
+            if analytics and isinstance(analytics, dict):
+                # Build retention-like data from analytics avg_view_percentage
+                retention_data = []
+                for vid, m in analytics.items():
+                    if isinstance(m, dict) and m.get("avg_view_percentage"):
+                        # Synthetic retention curve from avg view percentage
+                        avg_pct = m["avg_view_percentage"]
+                        dur = m.get("avg_view_duration_seconds", 60)
+                        retention_data.append({
+                            "video_id": vid,
+                            "avg_retention_pct": avg_pct,
+                            "avg_duration_sec": dur,
+                        })
+                if retention_data:
+                    insights = []
+                    for rd in retention_data:
+                        if rd["avg_retention_pct"] < 30:
+                            insights.append(f"Video {rd['video_id'][:8]}...: LOW retention ({rd['avg_retention_pct']:.0f}%). Hook needs work.")
+                        elif rd["avg_retention_pct"] > 60:
+                            insights.append(f"Video {rd['video_id'][:8]}...: STRONG retention ({rd['avg_retention_pct']:.0f}%). Replicate this format.")
+                        else:
+                            insights.append(f"Video {rd['video_id'][:8]}...: OK retention ({rd['avg_retention_pct']:.0f}%). Tighten pacing.")
+                    state["retention_insights"] = insights
+                    print(f"   📉 Retention insights: {len(insights)} video(s) analyzed")
+                    for ins in insights[:3]:
+                        print(f"      → {ins}")
+        except Exception as e:
+            print(f"   ⚠️ Retention curve analysis failed: {e}")
 
         # ── 10.3: Community Tab Posting ──
         try:
