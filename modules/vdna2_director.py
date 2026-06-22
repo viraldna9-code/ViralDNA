@@ -280,6 +280,12 @@ class VDNA2Director:
         from cross_platform_distributor import CrossPlatformDistributor
         from subscribe_cta_optimizer import SubscribeCTOptimizer
         from retention_curve_analyzer import RetentionCurveAnalyzer
+        # VDNA 3.0 P1 Growth Scorers (v87.0)
+        from edge_scorer import batch_score_topics as edge_scorer_batch
+        from editorial_scorer import editorial_score
+        from growth_alignment import rank_topics_by_growth
+        from spike_detector import SpikeDetector
+        from growth_observer import GrowthObserver
 
         self.skills = {
             "trend_discovery": TrendDiscovery(config_instance=config),
@@ -318,6 +324,12 @@ class VDNA2Director:
             "cross_platform": CrossPlatformDistributor(),
             "subscribe_cta": SubscribeCTOptimizer(),
             "retention_curve": RetentionCurveAnalyzer(),
+            # VDNA 3.0 P1 Growth Scorers (v87.0)
+            "edge_scorer": edge_scorer_batch,
+            "editorial_scorer": editorial_score,
+            "growth_alignment": rank_topics_by_growth,
+            "spike_detector": SpikeDetector(config_instance=config),
+            "growth_observer": GrowthObserver(),
         }
         print(f"   📦 Loaded {len(self.skills)} skill modules")
 
@@ -524,6 +536,25 @@ class VDNA2Director:
         # Reject stale topics BEFORE they enter scoring. No exceptions.
         raw_news = self._hard_freshness_gate(raw_news, lookback, "all sources")
 
+        # ── SPIKE DETECTION (v87.0) ──
+        # Detect trending spikes — prioritize breaking news over stale stories
+        try:
+            sd = self.skills["spike_detector"]
+            spike_result = sd.run(raw_news)
+            state["spike_result"] = spike_result
+            if spike_result.get("spike_detected"):
+                print(f"   ⚡ Spike level: {spike_result['spike_level']} (max jump: {spike_result['max_jump']}x)")
+                # If urgent/storm, override lookback to 3 hours for maximum freshness
+                if spike_result["spike_level"] in ("URGENT", "STORM"):
+                    print(f"   🔴 BREAKING: Re-filtering to 3h window for maximum freshness")
+                    state["lookback_hours"] = 3
+                    raw_news = td.run(lookback_hours=3)
+                    raw_news = self._hard_freshness_gate(raw_news, 3, "spike re-discovery")
+            else:
+                print(f"   🟢 No spike detected — normal discovery")
+        except Exception as e:
+            print(f"   ⚠️ Spike detection failed: {e} — continuing with normal discovery")
+
         state["raw_news"] = raw_news
         print(f"   📰 Found {len(raw_news)} fresh news items")
         return state
@@ -531,6 +562,7 @@ class VDNA2Director:
     def _phase_weighting(self, state):
         """Phase 2: Weight and rank topics.
         VDNA 3.0: Content calendar injects category rotation bonus.
+        VDNA 3.0 (v87.0): Growth scorers — edge, editorial, growth alignment.
         """
         print("   ⚖️  Weighting and ranking topics...")
         pf = self.skills["post_filter"]
@@ -549,6 +581,61 @@ class VDNA2Director:
             pass
 
         sorted_topics = pf.run(raw_news)
+
+        # ── GROWTH SCORING PIPELINE (v87.0) ──
+        # Step 1: Edge Scorer — breaks ties with 8-factor growth intelligence
+        try:
+            edge_fn = self.skills["edge_scorer"]
+            sorted_topics = edge_fn(sorted_topics)
+            if sorted_topics:
+                top = sorted_topics[0]
+                print(f"   🏷️  Edge: top topic '{top.get('title', '')[:40]}...' edge={top.get('edge_score', 0)} final={top.get('final_score', 0)}")
+        except Exception as e:
+            print(f"   ⚠️ Edge scorer failed: {e} — continuing without edge scores")
+
+        # Step 2: Editorial Scorer — growth-oriented topic filter
+        try:
+            ed_fn = self.skills["editorial_scorer"]
+            for t in sorted_topics:
+                ed_result = ed_fn(t)
+                t["editorial_score"] = ed_result.get("score", 0)
+                t["editorial_verdict"] = ed_result.get("recommendation", "")
+            # Filter: drop topics with editorial score < 10 (not worth producing)
+            before_count = len(sorted_topics)
+            sorted_topics = [t for t in sorted_topics if t.get("editorial_score", 0) >= 10]
+            dropped = before_count - len(sorted_topics)
+            if dropped:
+                print(f"   📋 Editorial filter: dropped {dropped} low-growth topics (score < 10)")
+            if sorted_topics:
+                top = sorted_topics[0]
+                print(f"   📋 Editorial: top topic score={top.get('editorial_score', 0)} — {top.get('editorial_verdict', '')}")
+        except Exception as e:
+            print(f"   ⚠️ Editorial scorer failed: {e} — continuing without editorial scores")
+
+        # Step 3: Growth Alignment — 6-dimension scoring with modifier
+        try:
+            ga_fn = self.skills["growth_alignment"]
+            sorted_topics = ga_fn(sorted_topics, verbose=True)
+            if sorted_topics:
+                top = sorted_topics[0]
+                print(f"   📈 Growth: top topic score={top.get('growth_score', 0)} modifier={top.get('growth_modifier', 1.0)}")
+        except Exception as e:
+            print(f"   ⚠️ Growth alignment failed: {e} — continuing without growth scores")
+
+        # Step 4: Growth Observer — load user reviews + recommendations
+        try:
+            go = self.skills["growth_observer"]
+            ledger = go.load_ledger()
+            recommendations = ledger.get("growth_recommendations", [])
+            active_recs = [r for r in recommendations if r.get("status") == "active"]
+            if active_recs:
+                state["growth_recommendations"] = active_recs
+                print(f"   🧠 GrowthObserver: {len(active_recs)} active recommendation(s) loaded")
+                for rec in active_recs[:2]:
+                    print(f"      💡 [{rec.get('priority', '')}] {rec.get('suggestion', '')[:60]}")
+        except Exception as e:
+            print(f"   ⚠️ Growth observer failed: {e} — continuing without recommendations")
+
         # VDNA 3.0: Apply content calendar category bonus (1.3x for preferred category)
         if category_bonus and sorted_topics:
             preferred = category_bonus.get("preferred_category", "")
@@ -632,6 +719,18 @@ class VDNA2Director:
                 print("   🧠 RAG producer brief loaded for script context")
         except Exception as e:
             print(f"   ⚠️ RAG brief load failed: {e} — continuing without")
+
+        # VDNA 3.0 (v87.0): Append growth recommendations to producer brief
+        growth_recs = state.get("growth_recommendations", [])
+        if growth_recs:
+            rec_lines = []
+            for rec in growth_recs[:3]:
+                priority = rec.get("priority", "")
+                suggestion = rec.get("suggestion", "")
+                rec_lines.append(f"[{priority}] {suggestion}")
+            if rec_lines:
+                producer_brief += "\n\nGROWTH RECOMMENDATIONS:\n" + "\n".join(f"- {r}" for r in rec_lines)
+                print(f"   🧠 Injected {len(rec_lines)} growth recommendation(s) into script brief")
 
         script = sg.run(topic=topic, producer_brief=producer_brief)
         # VDNA 3.0: Convert ScriptPayload to dict for JSON checkpoint serialization
