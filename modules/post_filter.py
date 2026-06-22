@@ -325,27 +325,43 @@ class PostFilter:
             num_sources = t.get("num_sources", 1)
             source_score = min(num_sources * 7, 14)
 
-            # ── TERTIARY: Recency decay (0-15) ──
+            # ── TERTIARY: Recency decay (0-35) ──
+            # VIRAL NEWS CHANNEL: Freshness is EVERYTHING.
+            # A trending topic from 30min ago > Andhra scheme from 3 days ago.
             recency_score = 0
             pub_date_str = t.get("published", t.get("date", ""))
             if pub_date_str:
                 try:
                     if isinstance(pub_date_str, str):
                         pub_date = datetime.fromisoformat(pub_date_str.replace("Z", "+00:00"))
+                        if pub_date.tzinfo is None:
+                            pub_date = pub_date.replace(tzinfo=timezone.utc)
                     else:
                         pub_date = pub_date_str
                     now_dt = datetime.now(timezone.utc)
                     age_hours = (now_dt - pub_date).total_seconds() / 3600
-                    if age_hours < 2:
-                        recency_score = 15
-                    elif age_hours < 6:
-                        recency_score = 10
-                    elif age_hours < 12:
+                    age_days = age_hours / 24
+
+                    # HARD GATE: Anything >48h is OLD NEWS — score 0
+                    if age_days > 2:
+                        recency_score = 0
+                    # Soft penalty: >24h gets partial credit at best
+                    elif age_hours > 24:
                         recency_score = 5
+                    elif age_hours < 1:
+                        recency_score = 35  # Breaking: within the hour
+                    elif age_hours < 3:
+                        recency_score = 30  # Very fresh
+                    elif age_hours < 6:
+                        recency_score = 20  # Still fresh
+                    elif age_hours < 12:
+                        recency_score = 10  # Same day but stale
+                    else:
+                        recency_score = 5   # >12h, barely relevant
                 except Exception:
-                    recency_score = 5
+                    recency_score = 5  # Assume stale if date unparseable
             else:
-                recency_score = 5
+                recency_score = 3  # No date = suspicious, low score
 
             # ── QUATERNARY: Telugu relevance boost (0-20) ──
             # v71.0: Expanded from max +5 to max +20.

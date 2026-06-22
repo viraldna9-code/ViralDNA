@@ -1,17 +1,20 @@
-# VERSION: 1.0
+# VERSION: 1.1
 # MODULE: growth_alignment.py
 # PURPOSE: Channel Growth Alignment Scorer — forces the pipeline to justify every
 #          topic through the lens of "will this grow MY channel?" before picking it.
 #
-# Scores each topic on 5 dimensions (0-100 total):
+# Scores each topic on 6 dimensions (0-120 total):
 #   1. Audience Fit (0-25) — Does our audience care about this?
 #   2. Differentiation (0-25) — Are we unique covering this, or just noise?
 #   3. Emotional Hook (0-20) — Will this stop the scroll?
 #   4. Viral Coefficient (0-15) — Will people SHARE this?
 #   5. Historical Performance (0-15) — Has our channel grown with similar topics?
+#   6. Recency (0-20) — Is this CURRENT viral news or a stale scheme announcement?
+#      VIRAL NEWS CHANNEL: A 3-day-old Andhra scheme NEVER beats a 30-min-old
+#      breaking story. Recency is a first-class growth signal.
 #
-# Output: growth_score (0-100) multiplied into the existing cpm_weight as a modifier.
-#         Topics scoring < 40 get a 0.5x penalty (halved weight).
+# Output: growth_score (0-120) multiplied into the existing cpm_weight as a modifier.
+#         Topics scoring < 40 get a 0.4x penalty (heavy weight reduction).
 #         Topics scoring >= 70 get a 1.3x bonus.
 #         Topics scoring >= 85 get a 1.6x bonus.
 
@@ -338,6 +341,56 @@ def score_historical_performance(title: str, ledger_path: str = "") -> float:
     return score
 
 
+def score_recency(topic: dict) -> float:
+    """
+    Score 0-20: Is this CURRENT news or a stale announcement?
+
+    For a viral news channel, recency IS growth. A 3-day-old scheme
+    announcement will NEVER get views — people already know about it.
+    Only breaking/fresh news drives clicks.
+
+    Scoring:
+        < 1h old    = 20  (breaking — maximum virality window)
+        < 3h old    = 16  (very fresh — still trending)
+        < 6h old    = 12  (fresh — same news cycle)
+        < 12h old   = 8   (same day but losing momentum)
+        < 24h old   = 4   (yesterday's news — stale)
+        > 24h old   = 0   (old news — will NOT sustain on channel)
+        no date     = 2   (suspicious — assume stale)
+    """
+    from datetime import datetime, timezone
+
+    pub_date_str = topic.get("published", topic.get("date", ""))
+    if not pub_date_str:
+        return 2  # No date = suspicious
+
+    try:
+        if isinstance(pub_date_str, str):
+            pub_date = datetime.fromisoformat(pub_date_str.replace("Z", "+00:00"))
+            if pub_date.tzinfo is None:
+                pub_date = pub_date.replace(tzinfo=timezone.utc)
+        else:
+            pub_date = pub_date_str
+
+        now_dt = datetime.now(timezone.utc)
+        age_hours = (now_dt - pub_date).total_seconds() / 3600
+
+        if age_hours < 1:
+            return 20
+        elif age_hours < 3:
+            return 16
+        elif age_hours < 6:
+            return 12
+        elif age_hours < 12:
+            return 8
+        elif age_hours < 24:
+            return 4
+        else:
+            return 0  # >24h = old news, zero recency score
+    except Exception:
+        return 2
+
+
 def score_topic_growth_alignment(
     topic: dict,
     ledger_path: str = "",
@@ -358,9 +411,10 @@ def score_topic_growth_alignment(
     emotional_hook = score_emotional_hook(title, description)
     viral_coefficient = score_viral_coefficient(title, description)
     historical_performance = score_historical_performance(title, ledger_path)
+    recency = score_recency(topic)
 
-    # Total growth score (0-100)
-    growth_score = audience_fit + differentiation + emotional_hook + viral_coefficient + historical_performance
+    # Total growth score (0-120)
+    growth_score = audience_fit + differentiation + emotional_hook + viral_coefficient + historical_performance + recency
 
     # Growth modifier for cpm_weight
     if growth_score >= 85:
@@ -387,6 +441,7 @@ def score_topic_growth_alignment(
             "emotional_hook": round(emotional_hook, 1),
             "viral_coefficient": round(viral_coefficient, 1),
             "historical_performance": round(historical_performance, 1),
+            "recency": round(recency, 1),
         },
         "growth_verdict": _growth_verdict(growth_score),
     }

@@ -9,7 +9,7 @@ import feedparser
 import requests
 import re
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from data_flow_registry import NewsPayload
 
@@ -64,16 +64,29 @@ class TrendDiscovery:
     # ================================================================
     #  SOURCE 1: RSS FEED POLLING (existing, extended)
     # ================================================================
-    def _poll_rss_sources(self, source_list: list, max_per_feed: int = 3) -> list:
+    def _poll_rss_sources(self, source_list: list, max_per_feed: int = 3, lookback_hours: int = 12) -> list:
         topics = []
+        now_utc = datetime.now(timezone.utc)
+        cutoff = now_utc - timedelta(hours=lookback_hours)
         for url in source_list:
             try:
                 feed = feedparser.parse(url)
                 if feed.entries:
-                    for entry in feed.entries[:max_per_feed]:
+                    added = 0
+                    for entry in feed.entries:
+                        if added >= max_per_feed:
+                            break
                         title = entry.get("title", "")
                         if not title:
                             continue
+                        # ── HARD DATE FILTER: Skip stale RSS items ──
+                        pub_date = None
+                        if hasattr(entry, "published_parsed") and entry.published_parsed:
+                            pub_date = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+                        elif hasattr(entry, "updated_parsed") and entry.updated_parsed:
+                            pub_date = datetime(*entry.updated_parsed[:6], tzinfo=timezone.utc)
+                        if pub_date and pub_date < cutoff:
+                            continue  # Too old — skip
                         desc = entry.get("summary", title)
                         link = entry.get("link", url)
                         context = self._fetch_rag_context(title)
@@ -82,9 +95,11 @@ class TrendDiscovery:
                             "description": desc,
                             "link": link,
                             "source": url,
-                            "rag_context": context
+                            "rag_context": context,
+                            "published": pub_date.isoformat() if pub_date else ""
                         })
                         topics.append(payload.to_dict())
+                        added += 1
             except Exception as e:
                 print(f"    ⚠️ RSS failed: {url} | {e}")
         return topics
@@ -404,13 +419,13 @@ class TrendDiscovery:
 
         # --- Tier 1: Core RSS (16 sources) ---
         print(f"  [Source] Polling {len(self.rss_sources)} RSS feeds...")
-        rss_topics = self._poll_rss_sources(self.rss_sources, max_per_feed=3)
+        rss_topics = self._poll_rss_sources(self.rss_sources, max_per_feed=3, lookback_hours=lookback_hours)
         print(f"  [Source] RSS returned {len(rss_topics)} topics")
         all_topics.extend(rss_topics)
 
         # --- Tier 1b: Diaspora RSS ---
         print(f"  [Source] Polling {len(self.diaspora_rss)} diaspora RSS feeds...")
-        diaspora_topics = self._poll_rss_sources(self.diaspora_rss, max_per_feed=2)
+        diaspora_topics = self._poll_rss_sources(self.diaspora_rss, max_per_feed=2, lookback_hours=lookback_hours)
         print(f"  [Source] Diaspora RSS returned {len(diaspora_topics)} topics")
         all_topics.extend(diaspora_topics)
 
