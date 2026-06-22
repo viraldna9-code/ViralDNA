@@ -7,7 +7,25 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-22
 
-### 11:15 IST — Fix: Auto-Refresh YouTube OAuth Token When Expired (v96.4)
+### 12:18 IST — Production Pipeline Run — YouTube Upload Success (v96.5)
+
+**Full end-to-end production run with YouTube upload enabled.**
+
+- **Topic:** "Over 20 lakh medical aspirants appear for NEET-UG re-exam" (fresh Indian news, freshness gate working)
+- **Videos produced:** 3 (1 main + 2 shorts)
+- **Upload status:** All 3 uploaded to YouTube successfully
+  - Main: https://youtube.com/watch?v=hz4rb5zASTA
+  - Short 1: https://youtube.com/watch?v=30dGp8JIO-g
+  - Short 2: https://youtube.com/watch?v=dGNqNY8V1Tw
+- **Forensic audit:** Passed
+- **Errors:** 0
+- **YouTube token:** Refreshed via OOB OAuth flow (both access + refresh tokens were revoked)
+
+**Issues noticed (minor):**
+- TTS debug showed "isame" instead of "same" (contraction expansion bug) and "N E E T" letter-spacing (acronym handling) — cosmetic only, does not affect video output
+- Telegram notification failed (WSL network unreachable to api.telegram.org)
+
+---
 
 **Problem:** YouTube upload fails with `invalid_grant: Token has been expired or revoked`.
 The access token expired on Jun 19 and the code never refreshed it.
