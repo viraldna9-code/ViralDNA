@@ -7,6 +7,35 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-22
 
+### 23:00 IST — Typewriter Renderer Redesign + News Layout (v87.3)
+
+**Problem:** Videos rendered as flat black screen with tiny white text in corner. No visual identity. Subtitles had been removed in v95.5 with no replacement.
+
+**What changed — `typewriter_renderer.py` (full rewrite):**
+- **Background:** Changed from flat black (0x050503) to rich dark blue-purple (0x0c0c20) — subtle but noticeably warmer
+- **Text panel:** Now fills ~70% of frame width with semi-transparent dark panel (0x08081a@0.80) + red accent bar at top — creates a clear "news reading" zone
+- **Font size:** Increased from 42px to 48-64px (frame-height dependent) — much more readable
+- **Text width:** Increased from 28-40 chars to 32-48 chars per line — fewer, longer lines = cleaner look
+- **Line reveal:** Lines appear one-by-one synced to voice timing using `enable=` expressions — text shows exactly when spoken
+- **Bottom bar:** Full-width dark bar (10% of frame) with "THE VIRAL DNA" branding + red accent strip — gives channel identity on every video
+- **Progress bar:** Thin red progress indicator above bottom bar — viewers can see video length
+- **Fallback:** If complex filter chain fails, falls back to minimal centered text (never produces blank video)
+
+**What this means for viewers:**
+- Videos now look like a proper news channel, not a terminal screen
+- Text is large, centered, and easy to read
+- Brand identity on every video (bottom bar)
+- No subtitles needed — text IS the visual, synced to voice
+
+**Technical notes:**
+- All ffmpeg drawtext/drawbox filters — no external images, no AI visuals
+- No typewriter per-character animation (was too complex, caused ffmpeg errors) — line-by-line reveal instead
+- Graceful degradation: complex filter → minimal fallback → blank scene (3-layer fallback)
+
+---
+
+## 2026-06-22
+
 ### 22:00 IST — P2 Growth Modules Wired into Director (v87.2)
 
 **Wired 3 growth-critical modules into the director's Phase 7, Phase 8, and Phase 9 pipeline.**

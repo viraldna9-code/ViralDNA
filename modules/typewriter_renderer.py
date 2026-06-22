@@ -1,22 +1,19 @@
 """
-Typewriter text renderer for VDNA 3.0.
+Typewriter text renderer for VDNA 3.0 — News Edition.
 
-Renders text with a per-character typewriter effect using ffmpeg drawtext.
-No subtitles — text is burned directly onto the video frames.
-Semi-transparent background box behind text for readability.
-
-For shorts (9:16 vertical): larger font, narrower wrap, safe margins.
-For main (16:9): standard font, wider wrap.
+Renders text with per-line reveal effect over a premium dark background.
+Layout: text centered in the full frame with a large semi-transparent panel,
+bottom news bar with branding, and progress indicator.
+All ffmpeg filters — no external images, no AI visuals.
 """
 
 import os
 import re
 import subprocess
-import tempfile
 
 
 class TypewriterRenderer:
-    """Renders typewriter-style text animation over a dark background."""
+    """Renders typewriter-style text animation for news videos."""
 
     def __init__(self, ffmpeg_bin="ffmpeg"):
         self.ffmpeg = ffmpeg_bin
@@ -26,40 +23,27 @@ class TypewriterRenderer:
     @staticmethod
     def _font_size(out_h, is_short=False):
         if is_short:
-            # 1080x1920: 80px for comfortable mobile reading
-            return max(68, min(90, out_h // 24))
+            return max(72, min(100, out_h // 18))
         else:
-            # 1280x720: 48px
-            return max(40, min(56, out_h // 14))
+            # Large, readable font — fills the frame
+            return max(48, min(64, out_h // 12))
 
     @staticmethod
     def _max_chars(out_w, is_short=False):
         if is_short:
-            # 1080px wide, ~80px font, ~120px side margins → ~13 chars
-            return max(12, min(18, out_w // 64))
+            return max(14, min(20, out_w // 56))
         else:
-            return 38
+            # Wide text area — fewer, longer lines
+            return max(32, min(48, out_w // 28))
 
     @staticmethod
     def _line_height(font_size):
-        return int(font_size * 1.5)
-
-    @staticmethod
-    def _safe_zone(out_h, is_short=False):
-        if is_short:
-            # Keep text in middle 60% to avoid top/bottom UI overlays
-            top = int(out_h * 0.20)
-            bottom = int(out_h * 0.80)
-        else:
-            top = int(out_h * 0.12)
-            bottom = int(out_h * 0.88)
-        return top, bottom
+        return int(font_size * 1.55)
 
     # ── word wrap ───────────────────────────────────────────────────
 
     @staticmethod
     def _wrap_text(text, max_chars=38):
-        """Word-wrap at max_chars, breaking at spaces."""
         words = text.split()
         lines = []
         current = ""
@@ -74,303 +58,230 @@ class TypewriterRenderer:
             lines.append(current)
         return "\n".join(lines)
 
-    # ── drawtext filter builder ─────────────────────────────────────
+    # ── scene render ────────────────────────────────────────────────
 
-    def _build_typewriter_filter(self, text, out_w, out_h, duration_s, is_short=False, global_cps=None):
-        """
-        Build an ffmpeg drawtext filter with real per-character typewriter effect.
-        Uses a single drawtext per line with text expression that reveals characters.
-        No overlapping — each line is one drawtext element.
+    def render_scene(self, text, output_path, duration_s, out_w=1280, out_h=720,
+                     is_short=False, bg_color=None, global_cps=None):
+        """Render a single scene with news-style text presentation."""
+        if not text.strip():
+            text = "..."
 
-        TIMING STRATEGY:
-        - cps (chars/sec) = global_cps if provided, else calculated locally
-        - Each line starts when its first character's time is reached:
-          line_start = chars_before_this_line / cps
-        - Each line's typewriter reveals chars at the same global cps.
-        - This ensures text appears in sync with the voice.
-        """
         font_size = self._font_size(out_h, is_short)
         max_chars = self._max_chars(out_w, is_short)
         lh = self._line_height(font_size)
-        safe_top, safe_bottom = self._safe_zone(out_h, is_short)
 
         wrapped = self._wrap_text(text, max_chars=max_chars)
         lines = [l for l in wrapped.split('\n') if l.strip()]
+        if not lines:
+            lines = ["..."]
         num_lines = len(lines)
 
-        if num_lines == 0:
-            return "null"
+        # Center text block in the frame (leave 8% top, 18% bottom for bar)
+        top_margin = int(out_h * 0.10)
+        bottom_margin = int(out_h * 0.16)
+        available_h = out_h - top_margin - bottom_margin
+        total_text_h = num_lines * lh
+        start_y = top_margin + max(0, (available_h - total_text_h) // 2)
 
-        # Total text block height
-        total_h = num_lines * lh
-        safe_height = safe_bottom - safe_top
-        start_y = safe_top + max(0, (safe_height - total_h) // 2)
+        # Panel: full width minus generous side padding
+        panel_pad_lr = int(out_w * 0.04)
+        panel_pad_top = int(font_size * 0.8)
+        panel_pad_bot = int(font_size * 0.6)
+        panel_x = panel_pad_lr
+        panel_w = out_w - 2 * panel_pad_lr
+        panel_y = start_y - panel_pad_top
+        panel_h = total_text_h + panel_pad_top + panel_pad_bot
 
-        # Horizontal margin for shorts
-        x_margin = int(out_w * 0.08) if is_short else 0
+        # Clamp panel to frame
+        panel_x = max(0, panel_x)
+        panel_w = min(panel_w, out_w - panel_x)
+        panel_y = max(0, panel_y)
+        panel_h = min(panel_h, out_h - panel_y)
 
-        # ── Global typewriter rate ──────────────────────────────────
-        # Use global_cps if provided (calculated from full video text + audio duration).
-        # Otherwise, estimate from this scene's text and duration.
+        # Compute CPS
         total_chars = sum(len(l) for l in lines)
         if global_cps is not None:
             cps = global_cps
         else:
-            # Fallback: estimate from scene duration, accounting for silence
-            speaking_time = duration_s * 0.90
-            cps = max(8, min(14, total_chars / max(speaking_time, 0.5)))
+            speaking_time = duration_s * 0.88
+            cps = max(8, min(16, total_chars / max(speaking_time, 0.5)))
 
-        # Per-line start times: proportional to cumulative char count
-        # line N starts when char index = sum(len(lines[0..N-1])) / cps
+        # Line start times
         char_offsets = [0]
         for line in lines:
             char_offsets.append(char_offsets[-1] + len(line))
-        # char_offsets[i] = total chars before line i
 
-        # ── Background box ──────────────────────────────────────────
-        box_pad_top = int(font_size * 0.5)
-        box_pad_bot = int(font_size * 0.3)
-        box_x = x_margin
-        box_w = out_w - 2 * x_margin
-        box_y = start_y - box_pad_top
-        box_h = total_h + box_pad_top + box_pad_bot
+        # ── Build filter chain ──────────────────────────────────────
+        filter_parts = []
 
-        # Red accent bar at top of frame (drawn as part of bg box border)
-        # Since we can't add a 3rd filter to the chain (pad issues),
-        # we draw the red line as the top edge of the text bg box
-        filter_parts = [
-            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h={box_h}:color=0x050503@0.65:t=fill",
-            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h=3:color=0xc33731@0.9:t=fill"
-        ]
+        # 1. Text background panel (large, prominent)
+        filter_parts.append(
+            f"drawbox=x={panel_x}:y={panel_y}:w={panel_w}:h={panel_h}:"
+            f"color=0x08081a@0.80:t=fill"
+        )
+        # Red accent at top of panel
+        filter_parts.append(
+            f"drawbox=x={panel_x}:y={panel_y}:w={panel_w}:h=4:"
+            f"color=0xc33731@1.0:t=fill"
+        )
 
-        # ── Typewriter text: one drawtext per line ──────────────────
-        # Each line uses substr() to reveal characters at global cps.
-        # Line N starts at char_offsets[N] / cps.
+        # 2. Text lines with enable= for reveal timing
         for i, line in enumerate(lines):
             line_start = char_offsets[i] / cps
-            n_chars = len(line)
-
-            # Escape the line for ffmpeg
-            escaped = (line
-                       .replace("\\", "\\\\")
-                       .replace("'", "'\\\\''")
-                       .replace(":", "\\\\:")
-                       .replace("%", "%%")
-                       .replace("[", "\\\\[")
-                       .replace("]", "\\\\]")
-                       .replace(",", "\\\\,")
-                       .replace(";", "\\\\;"))
-
-            # Build text expression: reveal characters based on global time
-            text_expr = (
-                f"if(gt(t\\,{line_start:.3f})\\,"
-                f"substr('{escaped}'\\,0\\,"
-                f"min({n_chars}\\,floor((t-{line_start:.3f})*{cps:.1f})))\\,"
-                f"'')"
-            )
-
-            # Alpha: fade in at line start, fade out at line end
-            # Line ends when all its chars are revealed + a small hold
-            line_type_dur = n_chars / cps
-            line_end = line_start + line_type_dur + 0.3  # 300ms hold after last char
-            fade_dur = min(0.2, line_type_dur * 0.3)  # quick fade
-            fade_in_end = line_start + fade_dur
-            fade_out_start = line_end - fade_dur
-            alpha_expr = (
-                f"if(lte(t\\,{line_start:.3f})\\,0\\,"
-                f"if(lte(t\\,{fade_in_end:.3f})\\,((t-{line_start:.3f})/{max(fade_dur,0.01):.3f})\\,"
-                f"if(gte(t\\,{fade_out_start:.3f})\\,(1-((t-{fade_out_start:.3f})/{max(fade_dur,0.01):.3f}))\\,"
-                f"1))"
-            )
+            esc = (line
+                   .replace("\\", "\\\\")
+                   .replace("'", "'\\\\''")
+                   .replace(":", "\\\\:")
+                   .replace("%", "%%")
+                   .replace("[", "\\\\[")
+                   .replace("]", "\\\\]")
+                   .replace(",", "\\\\,")
+                   .replace(";", "\\\\;"))
 
             y_pos = start_y + i * lh
-            x_pos = (f"({out_w}-text_w)/2" if not is_short
-                     else f"{x_margin}+({out_w}-2*{x_margin}-text_w)/2")
+            x_pos = f"({out_w}-text_w)/2"
 
             filter_parts.append(
                 f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
-                f"text='{text_expr}':"
-                f"fontsize={font_size}:"
-                f"fontcolor=0xf7f7f7:"
-                f"x={x_pos}:"
-                f"y={y_pos}:"
-                f"shadowcolor=0x050503@0.9:"
-                f"shadowx=2:"
-                f"shadowy=2:"
-                f"alpha='{alpha_expr}'"
+                f"text='{esc}':fontsize={font_size}:fontcolor=0xf8f8ff:"
+                f"x={x_pos}:y={y_pos}:"
+                f"shadowcolor=0x000000@0.9:shadowx=2:shadowy=2:"
+                f"enable='gte(t\\,{line_start:.2f})'"
             )
 
-        return ','.join(filter_parts)
+        # 3. Bottom news bar
+        bar_h = int(out_h * 0.10)
+        bar_y = out_h - bar_h
+        bar_font = max(18, min(28, out_h // 28))
+        bar_pad = int(out_w * 0.03)
+        accent_w = max(4, int(out_w * 0.005))
 
-    # ── scene render ────────────────────────────────────────────────
+        filter_parts.append(
+            f"drawbox=x=0:y={bar_y}:w={out_w}:h={bar_h}:color=0x060612@0.90:t=fill"
+        )
+        filter_parts.append(
+            f"drawbox=x=0:y={bar_y}:w={out_w}:h=3:color=0xc33731@1.0:t=fill"
+        )
+        filter_parts.append(
+            f"drawbox=x=0:y={bar_y}:w={accent_w}:h={bar_h}:color=0xc33731@1.0:t=fill"
+        )
+        filter_parts.append(
+            f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
+            f"text='THE VIRAL DNA':fontsize={bar_font}:fontcolor=0xf0f0f0:"
+            f"x={bar_pad+accent_w+int(out_w*0.01)}:"
+            f"y={bar_y}+({bar_h}-{bar_font})/2:"
+            f"shadowcolor=0x000000@0.9:shadowx=2:shadowy=1"
+        )
 
-    def render_scene(self, text, output_path, duration_s, out_w=1280, out_h=720,
-                     is_short=False, bg_color="0x050503", global_cps=None):
-        """
-        Render a single scene: dark background + typewriter text + bg box.
-        global_cps: if provided, use this global chars/sec rate instead of
-                    calculating per-scene. This ensures all scenes type at the
-                    same rate, matching the voice.
-        Returns True on success.
-        """
-        if not text.strip():
-            text = "..."
+        # 4. Progress bar (1px above bottom bar)
+        prog_y = bar_y - 2
+        filter_parts.append(
+            f"drawbox=x=0:y={prog_y}:w={out_w}:h=2:color=0x1a1a2e@0.6:t=fill"
+        )
+        filter_parts.append(
+            f"drawbox=x=0:y={prog_y}:"
+            f"w='if(gte(t\\,0.3)\\,min(iw\\,(t/{max(duration_s,0.1):.2f})*iw)\\,0)':"
+            f"h=2:color=0xc33731@0.95:t=fill"
+        )
 
-        dt_filter = self._build_typewriter_filter(text, out_w, out_h, duration_s, is_short, global_cps)
+        vf = ','.join(filter_parts)
 
+        # ── Build ffmpeg command ────────────────────────────────────
         cmd = [
-            self.ffmpeg, "-y",
-            "-f", "lavfi",
-            "-i", f"color=c={bg_color}:s={out_w}x{out_h}:d={duration_s}:r=25",
-            "-filter_complex", dt_filter,
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-crf", "23",
-            "-pix_fmt", "yuv420p",
-            "-r", "25",
-            "-t", f"{duration_s:.2f}",
+            self.ffmpeg, '-y',
+            '-f', 'lavfi',
+            '-i', f'color=c=0x0c0c20:s={out_w}x{out_h}:d={duration_s}:r=25',
+            '-vf', vf,
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-crf', '23',
+            '-pix_fmt', 'yuv420p',
+            '-r', '25',
+            '-t', f'{duration_s:.2f}',
             output_path
         ]
 
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
             if result.returncode != 0:
-                return self._render_simple(text, output_path, duration_s, out_w, out_h, is_short, bg_color)
-            return os.path.exists(output_path) and os.path.getsize(output_path) > 1024
+                return self._render_minimal(text, output_path, duration_s, out_w, out_h, is_short, cps)
+            ok = os.path.exists(output_path) and os.path.getsize(output_path) > 1024
+            if not ok:
+                return self._render_minimal(text, output_path, duration_s, out_w, out_h, is_short, cps)
+            return ok
         except Exception as e:
-            print(f"    [Typewriter] Render failed: {e}")
-            return self._render_simple(text, output_path, duration_s, out_w, out_h, is_short, bg_color)
+            print(f"    [Typewriter] Exception: {e}")
+            return self._render_minimal(text, output_path, duration_s, out_w, out_h, is_short, cps)
 
-    def _render_simple(self, text, output_path, duration_s, out_w, out_h, is_short, bg_color):
-        """Fallback: full text with background box + fade-in, no typewriter."""
-        font_size = self._font_size(out_h, is_short)
-        max_chars = self._max_chars(out_w, is_short)
-        lh = self._line_height(font_size)
-        safe_top, safe_bottom = self._safe_zone(out_h, is_short)
-
-        wrapped = self._wrap_text(text, max_chars=max_chars)
-        lines = [l for l in wrapped.split('\n') if l.strip()]
-        num_lines = len(lines)
-        if num_lines == 0:
-            lines = ["..."]
-            num_lines = 1
-
-        escaped = wrapped.replace("\\", "\\\\").replace("'", "'\\\\''").replace(":", "\\\\:").replace("%", "%%")
-
-        total_h = num_lines * lh
-        safe_height = safe_bottom - safe_top
-        start_y = safe_top + max(0, (safe_height - total_h) // 2)
-
-        x_margin = int(out_w * 0.08) if is_short else 0
-        x_pos = f"(w-text_w)/2" if not is_short else f"{x_margin}+(w-2*{x_margin}-text_w)/2"
-
-        # Background box with red accent border
-        box_pad_x = int(font_size * 0.8)
-        box_pad_top = int(font_size * 0.5)
-        box_pad_bot = int(font_size * 0.3)
-        box_x = x_margin
-        box_w = out_w - 2 * x_margin
-        box_y = start_y - box_pad_top
-        box_h = total_h + box_pad_top + box_pad_bot
-
-        # Fade in over 0.5s
-        alpha = "if(lte(t,0),0,if(lte(t,0.5),t/0.5,1))"
-
-        dt = (
-            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h={box_h}:color=0x050503@0.7:t=fill,"
-            f"drawbox=x={box_x}:y={box_y}:w={box_w}:h=3:color=0xc33731@0.9:t=fill,"
-            f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
-            f"text='{escaped}':"
-            f"fontsize={font_size}:"
-            f"fontcolor=0xf7f7f7:"
-            f"x={x_pos}:"
-            f"y={start_y}:"
-            f"shadowcolor=0x050503@0.9:"
-            f"shadowx=2:"
-            f"shadowy=2:"
-            f"alpha='{alpha}'"
-        )
-
-        cmd = [
-            self.ffmpeg, "-y",
-            "-f", "lavfi",
-            "-i", f"color=c={bg_color}:s={out_w}x{out_h}:d={duration_s}:r=25",
-            "-vf", dt,
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-crf", "23",
-            "-pix_fmt", "yuv420p",
-            "-r", "25",
-            "-t", f"{duration_s:.2f}",
-            output_path
-        ]
-
+    def _render_minimal(self, text, output_path, duration_s, out_w, out_h, is_short, cps):
+        """Minimal fallback: text on dark background."""
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            font_size = min(52, out_h // 12)
+            max_chars = self._max_chars(out_w, is_short)
+            wrapped = self._wrap_text(text, max_chars=max_chars)
+            wrapped = wrapped.replace("\\", "\\\\").replace("'", "'\\\\''").replace(":", "\\\\:").replace("%", "%%")
+
+            vf = (
+                f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
+                f"text='{wrapped}':fontsize={font_size}:fontcolor=0xf8f8ff:"
+                f"x=(w-text_w)/2:y=(h-text_h)/2:"
+                f"shadowcolor=0x000000@0.8:shadowx=2:shadowy=2"
+            )
+
+            cmd = [
+                self.ffmpeg, '-y',
+                '-f', 'lavfi',
+                '-i', f'color=c=0x0c0c20:s={out_w}x{out_h}:d={duration_s}:r=25',
+                '-vf', vf,
+                '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+                '-pix_fmt', 'yuv420p', '-r', '25',
+                '-t', f'{duration_s:.2f}',
+                output_path
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             return os.path.exists(output_path) and os.path.getsize(output_path) > 1024
-        except Exception as e:
-            print(f"    [Typewriter] Simple render also failed: {e}")
+        except Exception:
             return False
 
     # ── multi-scene render ──────────────────────────────────────────
 
     def render_all_scenes(self, script_text, num_scenes, duration_s, output_dir,
                           out_w=1280, out_h=720, is_short=False, voice_wps=None):
-        """
-        Render all scenes for a video. Returns list of scene clip paths.
-        All scenes share a global cps (chars/sec) matching the voice rate.
-        """
         os.makedirs(output_dir, exist_ok=True)
         chunks = self._split_script(script_text, num_scenes)
 
         chunk_words = [max(1, len(chunk.split())) for chunk in chunks]
         total_words = sum(chunk_words)
 
-        # Compute global voice rate from audio duration and word count
         if voice_wps is None:
-            # Account for silence pauses (~5% of total duration)
             voice_wps = total_words / (duration_s * 0.95)
 
-        # Global cps: chars per second the typewriter should reveal text
-        # Total chars ≈ total_words * 5 (avg 4 chars/word + 1 space between words)
-        # Speaking time = total_words / voice_wps
-        # cps = total_chars / speaking_time
-        total_chars_estimate = total_words * 5  # includes spaces between words
+        total_chars_estimate = total_words * 5
         speaking_time = total_words / voice_wps
         global_cps = total_chars_estimate / max(speaking_time, 0.5)
-        global_cps = max(8, min(14, global_cps))  # clamp to reasonable range
+        global_cps = max(8, min(16, global_cps))
 
-        # Total silence time (distributed across scenes)
         total_silence = duration_s - speaking_time
 
         paths = []
         elapsed = 0.0
 
         for i, chunk in enumerate(chunks):
-            # Active typing time for this scene (using global cps)
             scene_speaking_time = chunk_words[i] / voice_wps
-            # Distribute silence proportionally by word count
             scene_silence = (chunk_words[i] / total_words) * total_silence if total_words > 0 else 0
-            # Total scene duration = speaking time + silence share
             scene_duration = scene_speaking_time + scene_silence
 
             out_path = os.path.join(output_dir, f"tw_scene_{i}.mp4")
             ok = self.render_scene(
-                text=chunk,
-                output_path=out_path,
-                duration_s=scene_duration,
-                out_w=out_w,
-                out_h=out_h,
-                is_short=is_short,
-                global_cps=global_cps,
+                text=chunk, output_path=out_path, duration_s=scene_duration,
+                out_w=out_w, out_h=out_h, is_short=is_short, global_cps=global_cps,
             )
             if ok:
                 paths.append(out_path)
                 print(f"    [Typewriter] Scene {i+1}/{num_scenes} OK "
-                      f"({chunk_words[i]}w, {scene_duration:.1f}s, "
-                      f"t={elapsed:.1f}s-{elapsed+scene_duration:.1f}s)")
+                      f"({chunk_words[i]}w, {scene_duration:.1f}s)")
             else:
-                print(f"    [Typewriter] Scene {i+1}/{num_scenes} FAILED — using blank")
+                print(f"    [Typewriter] Scene {i+1}/{num_scenes} FAILED")
                 blank_path = os.path.join(output_dir, f"tw_scene_{i}_blank.mp4")
                 self._render_blank(blank_path, scene_duration, out_w, out_h)
                 paths.append(blank_path)
@@ -380,16 +291,13 @@ class TypewriterRenderer:
         return paths
 
     def _render_blank(self, output_path, duration_s, out_w, out_h):
-        """Render a blank dark clip as ultimate fallback."""
         cmd = [
-            self.ffmpeg, "-y",
-            "-f", "lavfi",
-            "-i", f"color=c=0x1a1a2e:s={out_w}x{out_h}:d={duration_s}:r=25",
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-crf", "23",
-            "-pix_fmt", "yuv420p",
-            "-t", f"{duration_s:.2f}",
+            self.ffmpeg, '-y',
+            '-f', 'lavfi',
+            '-i', f'color=c=0x0c0c20:s={out_w}x{out_h}:d={duration_s}:r=25',
+            '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+            '-pix_fmt', 'yuv420p', '-r', '25',
+            '-t', f'{duration_s:.2f}',
             output_path
         ]
         try:
@@ -401,7 +309,6 @@ class TypewriterRenderer:
 
     @staticmethod
     def _split_script(script_text, num_scenes):
-        """Split script into num_scenes roughly equal chunks by sentences."""
         sentences = re.split(r'(?<=[.!?])\s+', script_text.strip())
         sentences = [s for s in sentences if s.strip()]
         if not sentences:
@@ -415,8 +322,6 @@ class TypewriterRenderer:
             chunk = " ".join(sentences[start:end])
             if chunk.strip():
                 chunks.append(chunk)
-
         while len(chunks) < num_scenes:
             chunks.append(chunks[-1] if chunks else "...")
-
         return chunks[:num_scenes]
