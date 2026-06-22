@@ -5,7 +5,7 @@ VDNA 3.0 — Clean Pipeline Entrypoint
 This is the ONLY entry point for the ViralDNA pipeline.
 
 It wraps the proven VDNA 2.0 Director (vdna2_director.py) which provides:
-  - 9-phase pipeline with FactoryWorker crash isolation
+  - 10-phase pipeline with FactoryWorker crash isolation
   - Checkpoint/resume (any phase can crash and resume)
   - Per-phase timeout enforcement
   - Graceful degradation with fallback functions
@@ -19,14 +19,12 @@ Architecture:
         ├── Phase 3:  Scripting        (script_generator.py v84.3)
         ├── Phase 4:  Voice            (voiceover.py v63.0)
         │             └─ Fallback: gTTS-only
-        ├── Phase 5:  Visuals          (local_visual_generator.py v87.8 → visual_fetcher.py v70.0)
-        │             └─ Fallback: local background gen
-        ├── Phase 6:  Thumbnail       (thumbnail_creator.py v22.0)
-        ├── Phase 7:  Assembly        (video_assembler.py v84.3)
-        ├── Phase 8:  Forensic Audit  (forensic_audit.py)
-        ├── Phase 9:  Upload          (youtube_uploader.py v1.8)
+        ├── Phase 5:  Thumbnail       (thumbnail_creator.py v22.0)
+        ├── Phase 6:  Assembly        (video_assembler.py v84.3) [typewriter renderer]
+        ├── Phase 7:  Forensic Audit  (forensic_audit.py)
+        ├── Phase 8:  Upload          (youtube_uploader.py v1.8)
         │             └─ Skipped if VIRALDNA_UPLOAD_ENABLED=false
-        └── Phase 10: Post-Pipeline   (analytics + Telegram notification)
+        └── Phase 9:  Post-Pipeline   (analytics + Telegram notification)
 
 Modules NOT used in VDNA 3.0 (legacy/v80 monolith — do not call):
     - run_multi_agent_pipeline.py  (old 3687-line orchestrator)
