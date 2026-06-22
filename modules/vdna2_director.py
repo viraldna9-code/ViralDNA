@@ -20,17 +20,19 @@ Key improvements over v80.0 monolithic orchestrator:
 10. Upload time optimization — IST window enforced
 11. YouTube Analytics — real metrics pulled post-pipeline
 
-Architecture:
+Architecture (10 phases, Phase 0–9):
     Director.run()
+        ├── Phase 0: Pre-Pipeline    → inline (cleanup + primetime scheduling)
         ├── Phase 1: Discovery        → FactoryWorker("discovery")
         ├── Phase 2: Weighting        → FactoryWorker("weighting")
+        ├── Phase 2.5: Quality Gate   → FactoryWorker("pre_production") [fact_check + compliance]
         ├── Phase 3: Scripting        → FactoryWorker("scripting") [+ RAG brief]
         ├── Phase 4: Voice            → FactoryWorker("voice") [Fish Speech + gTTS fallback]
         ├── Phase 5: Thumbnail       → FactoryWorker("thumbnail") [+ CTR optimizer]
-        ├── Phase 6: Assembly         → FactoryWorker("assembly") [+ Shorts optimizer]
+        ├── Phase 6: Assembly         → FactoryWorker("assembly") [+ typewriter + shorts optimizer]
         ├── Phase 7: Forensic Audit  → FactoryWorker("forensic_audit")
-        ├── Phase 8: Upload           → FactoryWorker("upload") [+ Upload time optimizer]
-        └── Phase 9: Post-pipeline   → FactoryWorker("post_pipeline") [+ Analytics + RAG]
+        ├── Phase 8: Upload           → FactoryWorker("upload") [+ publish decision]
+        └── Phase 9: Post-pipeline   → FactoryWorker("post_pipeline") [+ Analytics + RAG + growth agents]
 """
 
 import os
@@ -1034,7 +1036,7 @@ class VDNA2Director:
         return state
 
     def _phase_post_pipeline(self, state):
-        """Phase 10: Post-pipeline tasks (analytics, RAG feedback, notifications).
+        """Phase 9: Post-pipeline tasks (analytics, RAG feedback, growth agents, notifications).
         VDNA 3.0: Pulls YouTube Analytics, stores metrics, generates producer brief.
         VDNA 3.0 Tier 1: Community engagement, competitor intel, retention,
         content quality, milestone detection.

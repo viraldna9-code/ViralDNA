@@ -725,7 +725,7 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 
 **Problem:** Two parallel pipeline systems existed causing confusion:
 - **System A (OLD):** `modules/run_multi_agent_pipeline.py` — 3687-line monolith, no checkpoint/resume, no timeout enforcement, no signal handling. What cron was calling.
-- **System B (VDNA 2.0):** `modules/vdna2_director.py` — 780-line clean director with checkpoint/resume, per-phase timeout, signal handling, disk monitoring. What user ran manually on June 14 and it worked.
+- **System B (VDNA 2.0):** `modules/vdna2_director.py` — clean director with checkpoint/resume, per-phase timeout, signal handling, disk monitoring. What user ran manually on June 14 and it worked.
 
 Cron was calling System A (old/broken), not System B (proven). This caused "today it works tomorrow it fails" intermittent failures.
 
@@ -733,36 +733,32 @@ Cron was calling System A (old/broken), not System B (proven). This caused "toda
 
 Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the proven VDNA 2.0 Director with clear naming and proper CLI interface.
 
-**What VDNA 3.0 includes (from VDNA 2.0):**
-- 9-phase pipeline with FactoryWorker crash isolation
+**VDNA 3.0 Phase Map (10 phases, Phase 0 through Phase 9):**
+
+| Phase | Name | FactoryWorker Key | Key Modules | Description |
+|-------|------|-------------------|-------------|-------------|
+| **0** | Pre-Pipeline | (inline) | `cleanup_agent`, `primetime_scheduler` | Cleanup temp files, check disk, determine run mode & upload schedule |
+| **1** | Discovery | `discovery` | `trend_discovery` (v70.0) | Discover trending news via Google Trends RSS + Serper |
+| **2** | Weighting | `weighting` | `post_filter` (v71.0) | Score, weight, deduplicate topics |
+| **2.5** | Quality Gate | `pre_production` | `fact_check`, `compliance_check`, `content_quality` | Pre-production fact-check + compliance validation |
+| **3** | Scripting | `scripting` | `script_generator` (v84.3), `rag_feedback` | Write scripts with Gemini AI + RAG brief |
+| **4** | Voice | `voice` | `voiceover` (v64.0) | Fish Speech primary, gTTS fallback; RVC voice cloning |
+| **5** | Thumbnail | `thumbnail` | `thumbnail_creator` (v22.0), `thumbnail_ab_tester`, `title_optimizer` | Smart thumbnail + CTR optimization + A/B testing |
+| **6** | Assembly | `assembly` | `video_assembler` (v84.3), `typewriter_renderer`, `shorts_optimizer_v3` | FFmpeg video assembly with typewriter text + shorts |
+| **7** | Forensic Audit | `forensic_audit` | `forensic_audit` (v84.3), `pre_ship_check` | 14-item quality audit before upload |
+| **8** | Upload | `upload` | `youtube_uploader` (v1.8), `publish_decision_engine` (v10.0), `upload_reliability` | YouTube Data API v3 upload + publish decision + reliability |
+| **9** | Post-Pipeline | `post_pipeline` | `yt_analytics`, `rag_feedback`, `community_engagement`, `competitor_intel`, `retention_analyzer`, `content_calendar`, `license_compliance`, `intelligence_agent`, `collaboration_agent`, `audience_channel_manager`, `continuous_auditor`, `engagement_loop`, `subscribe_cta`, `cross_platform`, `retention_curve` | Analytics, RAG feedback, community, competitor intel, retention, calendar, compliance, growth agents |
+
+**VDNA 3.0 Architecture:**
+- 10-phase pipeline (Phase 0–9) with FactoryWorker crash isolation
 - Checkpoint/resume via `vdna2_checkpoint.py` (any phase can crash and resume)
-- Per-phase timeout enforcement
+- Per-phase timeout enforcement (11 timeout configs in PHASE_TIMEOUTS)
 - Graceful degradation with fallback functions per phase
 - Disk space monitoring
 - Signal handling (SIGTERM/SIGINT graceful shutdown)
-- 11 skill modules loaded by the Director
-
-**VDNA 3.0 Module Map (every file, its version, its purpose):**
-
-| File | Version | Purpose | Used By |
-|------|---------|---------|---------|
-| `run_vdna3.py` | v3.0 | **ENTRYPOINT** — CLI wrapper, loads Director | Cron jobs |
-| `modules/vdna2_director.py` | v2.0 | **DIRECTOR** — 9-phase orchestrator, FactoryWorker pattern | run_vdna3.py |
-| `modules/vdna2_checkpoint.py` | v1.0 | **CHECKPOINT** — save/resume, PhaseTimer, disk monitor, signal handlers | vdna2_director.py |
-| `modules/config.py` | v50.4 | **CONFIG** — all paths, API keys, YouTube settings | All modules |
-| `modules/trend_discovery.py` | v70.0 | **PHASE 1** — discover trending news via Google Trends RSS + Serper | vdna2_director |
-| `modules/post_filter.py` | v71.0 | **PHASE 2** — score, weight, deduplicate topics | vdna2_director |
-| `modules/script_generator.py` | v84.3 | **PHASE 3** — write scripts with Gemini AI | vdna2_director |
-| `modules/voiceover.py` | v63.0 | **PHASE 4** — Fish Speech 1.4 primary, gTTS fallback | vdna2_director |
-| `modules/local_visual_generator.py` | v87.8 | **PHASE 5a** — Stable Diffusion 1.5 image generation | vdna2_director |
-| `modules/visual_fetcher.py` | v80.0 | **PHASE 5b** — news image fetch with Gemini Vision gate | vdna2_director |
-| `modules/thumbnail_creator.py` | v22.0 | **PHASE 6** — smart thumbnail with text overlay | vdna2_director |
-| `modules/video_assembler.py` | v84.3 | **PHASE 7** — FFmpeg video assembly (main + shorts) | vdna2_director |
-| `modules/forensic_audit.py` | v1.0 | **PHASE 8** — video quality audit before upload | vdna2_director |
-| `modules/pre_ship_check.py` | v1.0 | **PHASE 8b** — pre-upload validation | vdna2_director |
-| `modules/youtube_uploader.py` | v1.8 | **PHASE 9** — YouTube Data API v3 upload (skipped if upload disabled) | vdna2_director |
-| `modules/publish_decision_engine.py` | v1.0 | **PHASE 9b** — decides main + shorts count (min 2 shorts) | vdna2_director |
-| `modules/gemini_engine.py` | v1.0 | **SHARED** — Gemini API wrapper used by multiple phases | vdna2_director |
+- 30 skill modules loaded by the Director (as of v96.1)
+- Typewriter renderer replaces old image pipeline for text display
+- No subtitles — text burned directly via FFmpeg drawtext filters
 
 **Files NOT used in VDNA 3.0 (legacy — do NOT call):**
 - `modules/run_multi_agent_pipeline.py` — old 3687-line monolith (System A)
@@ -775,10 +771,11 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 - Other cron jobs (Health Monitor, Daily/Weekly Analytics, Callback Poller) — unchanged
 
 **Verified:**
-- All 16 imports pass cleanly
-- Director initializes with 11 skill modules loaded
+- All imports pass cleanly
+- Director initializes with 30 skill modules loaded
 - Checkpoint directory created correctly
 - Entrypoint compiles without errors
+- All 10 phases confirmed active (verified Jun 22, 2026)
 
 **FILES CREATED:** `run_vdna3.py`
 **FILES MODIFIED:** cron job prompts (Morning, Evening)
