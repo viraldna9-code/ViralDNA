@@ -7,6 +7,18 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-22
 
+### 11:03 IST — Fix: NewsPayload.to_dict() Now Preserves published Field (v96.3)
+
+**Root cause of all-44-rejected bug:** NewsPayload.to_dict() only output 6 fields
+(title, description, link, source, rag_context, trending_score) — the `published`
+date field was silently dropped. The hard freshness gate saw empty `published`
+on ALL topics and rejected all 44.
+
+**Fix:**
+- Added `self.published` to `NewsPayload.__init__`
+- Added `"published"` key to `NewsPayload.to_dict()`
+- Added debug logging to `_hard_freshness_gate` to show rejection reasons per topic
+
 ### 10:57 IST — Fix: Non-RSS Sources Set published=now() for Hard Freshness Gate (v96.3)
 
 **Problem:** Hard freshness gate rejected ALL 43 topics because Google Trends, Reddit, YouTube, Inshorts, and fallback payloads had no `published` field. Gate treats missing date as "reject".
