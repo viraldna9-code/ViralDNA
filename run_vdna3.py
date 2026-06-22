@@ -46,6 +46,18 @@ Environment variables (loaded from ~/.env):
 import os
 import sys
 import argparse
+from datetime import datetime, timezone, timedelta
+
+# ── IST timezone ──────────────────────────────────────────────────────────
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def now_ist():
+    """Return current time in IST as a formatted string."""
+    return datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S IST")
+
+def now_ist_ts():
+    """Return current IST datetime object."""
+    return datetime.now(IST)
 
 # ── Ensure project root is on sys.path ────────────────────────────────────
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -97,6 +109,7 @@ Examples:
     print("=" * 60)
     print("  VIRALDNA 3.0 — Clean Pipeline Entrypoint")
     print("=" * 60)
+    print(f"[Pipeline started: {now_ist()}]")
 
     # ── Check upload mode ──
     upload_enabled = os.environ.get("VIRALDNA_UPLOAD_ENABLED", "false").lower() == "true"
@@ -148,6 +161,7 @@ Examples:
     print("\n" + "=" * 60)
     print("  VIRALDNA 3.0 — EXECUTION SUMMARY")
     print("=" * 60)
+    print(f"  Pipeline completed: {now_ist()}")
     print(f"  Videos produced: {len(compiled)}")
     for v in compiled:
         size = os.path.getsize(v) / (1024 * 1024) if os.path.exists(v) else 0

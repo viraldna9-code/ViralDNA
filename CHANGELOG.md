@@ -7,25 +7,49 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-22
 
-### 12:18 IST — Production Pipeline Run — YouTube Upload Success (v96.5)
+### 12:18 IST — YouTube OAuth Re-auth + Production Pipeline Success (v96.5)
 
-**Full end-to-end production run with YouTube upload enabled.**
+**YouTube OAuth token fully re-authorized and production pipeline ran end-to-end.**
 
-- **Topic:** "Over 20 lakh medical aspirants appear for NEET-UG re-exam" (fresh Indian news, freshness gate working)
-- **Videos produced:** 3 (1 main + 2 shorts)
-- **Upload status:** All 3 uploaded to YouTube successfully
+**YouTube OAuth process (for next time token expires):**
+
+The ONLY working approach is the OOB (out-of-band) flow:
+
+1. Run `python3 /home/jay/ViralDNA/refresh_youtube_token.py` directly in WSL terminal
+   (NOT through the agent — the agent's terminal is non-interactive, `input()` gets EOF)
+2. Script prints a long URL. Copy it and open in browser
+3. Sign in with the Google account for "The ViralDNA" channel
+4. Approve all 4 permission requests
+5. Google shows an authorization code on the page (no localhost redirect)
+6. Copy that code and paste into the terminal
+7. Script exchanges code for token + saves to `credentials/youtube_token.json`
+
+**Why other approaches fail:**
+- `run_local_server()` overwrites `redirect_uri` to `http://localhost:PORT` which is NOT registered in Google Cloud Console
+- `http://localhost` (no port) redirects to port 80 which requires root
+- `urn:ietf:wg:oauth:2.0:oob` is NOT registered as a redirect URI in GCS — but `InstalledAppFlow` with `flow.redirect_uri = 'urn:ietf:wg:oauth:2.0:oob'` + `flow.authorization_url()` WORKS because it uses PKCE, not redirect_uri validation
+- Background/agent processes cannot receive stdin for `input()`
+
+**Scripts available:**
+- `refresh_youtube_token.py` — Python script (primary, recommended)
+- `refresh_youtube_token.sh` — Bash wrapper (calls the Python script)
+
+**Production run result:**
+- Topic: "Over 20 lakh medical aspirants appear for NEET-UG re-exam" (fresh Indian news)
+- Videos: 3 produced (1 main + 2 shorts), all uploaded to YouTube
   - Main: https://youtube.com/watch?v=hz4rb5zASTA
   - Short 1: https://youtube.com/watch?v=30dGp8JIO-g
   - Short 2: https://youtube.com/watch?v=dGNqNY8V1Tw
-- **Forensic audit:** Passed
-- **Errors:** 0
-- **YouTube token:** Refreshed via OOB OAuth flow (both access + refresh tokens were revoked)
+- Forensic audit: Passed | Errors: 0
+- YouTube API verified: channel "The Viral DNA", 9 subscribers
 
-**Issues noticed (minor):**
-- TTS debug showed "isame" instead of "same" (contraction expansion bug) and "N E E T" letter-spacing (acronym handling) — cosmetic only, does not affect video output
+**Minor issues:**
+- TTS: "isame" instead of "same" (contraction expansion) and "N E E T" letter-spacing — cosmetic only
 - Telegram notification failed (WSL network unreachable to api.telegram.org)
 
 ---
+
+### 11:15 IST — Fix: Auto-Refresh YouTube OAuth Token When Expired (v96.4)
 
 **Problem:** YouTube upload fails with `invalid_grant: Token has been expired or revoked`.
 The access token expired on Jun 19 and the code never refreshed it.
@@ -35,9 +59,7 @@ The access token expired on Jun 19 and the code never refreshed it.
 - Calls `creds.refresh(Request())` using the stored `refresh_token`
 - Saves the refreshed token back to `youtube_token.json`
 
-**Note:** The current `refresh_token` is ALSO expired/revoked on Google's side.
-Jay needs to re-authorize via OAuth flow to get a fresh token+refresh_token.
-Once a valid token is in place, the auto-refresh logic will keep it alive.
+**Note:** When BOTH access token AND refresh_token are revoked on Google's side, auto-refresh cannot work. Manual re-authorization via `refresh_youtube_token.py` is required.
 
 ### 11:03 IST — Fix: NewsPayload.to_dict() Now Preserves published Field (v96.3)
 
