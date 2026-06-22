@@ -7,6 +7,20 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-22
 
+### 11:15 IST — Fix: Auto-Refresh YouTube OAuth Token When Expired (v96.4)
+
+**Problem:** YouTube upload fails with `invalid_grant: Token has been expired or revoked`.
+The access token expired on Jun 19 and the code never refreshed it.
+
+**Fix:** Added token refresh logic in `_phase_upload`:
+- Checks `creds.expired` before building the YouTube service
+- Calls `creds.refresh(Request())` using the stored `refresh_token`
+- Saves the refreshed token back to `youtube_token.json`
+
+**Note:** The current `refresh_token` is ALSO expired/revoked on Google's side.
+Jay needs to re-authorize via OAuth flow to get a fresh token+refresh_token.
+Once a valid token is in place, the auto-refresh logic will keep it alive.
+
 ### 11:03 IST — Fix: NewsPayload.to_dict() Now Preserves published Field (v96.3)
 
 **Root cause of all-44-rejected bug:** NewsPayload.to_dict() only output 6 fields
