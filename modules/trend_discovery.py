@@ -144,6 +144,7 @@ class TrendDiscovery:
                             "source": "Google Trends (India Daily)",
                             "rag_context": context,
                             "trending_score": "high",
+                            "published": datetime.now(timezone.utc).isoformat(),
                         })
                         topics.append(payload.to_dict())
                         count += 1
@@ -179,6 +180,7 @@ class TrendDiscovery:
                             "source": "Google News RSS (India Top)",
                             "rag_context": context,
                             "trending_score": "high",
+                            "published": datetime.now(timezone.utc).isoformat(),
                         })
                         topics.append(payload.to_dict())
                         count += 1
@@ -214,7 +216,8 @@ class TrendDiscovery:
                                 "description": post_data.get("selftext", title)[:200] or title,
                                 "link": "https://reddit.com" + post_data.get("permalink", ""),
                                 "source": f"Reddit r/{sub}",
-                                "rag_context": context
+                                "rag_context": context,
+                                "published": datetime.now(timezone.utc).isoformat(),
                             })
                             topics.append(payload.to_dict())
             except Exception as e:
@@ -245,7 +248,8 @@ class TrendDiscovery:
                             "description": f"Trending on YouTube India: {title}",
                             "link": "https://www.youtube.com/feed/trending",
                             "source": "YouTube Trending (India)",
-                            "rag_context": context
+                            "rag_context": context,
+                            "published": datetime.now(timezone.utc).isoformat(),
                         })
                         topics.append(payload.to_dict())
         except Exception as e:
@@ -273,7 +277,8 @@ class TrendDiscovery:
                             "description": f"Inshorts trending: {h}",
                             "link": "https://inshorts.com/en/read",
                             "source": "Inshorts",
-                            "rag_context": context
+                            "rag_context": context,
+                            "published": datetime.now(timezone.utc).isoformat(),
                         })
                         topics.append(payload.to_dict())
         except Exception as e:
@@ -472,7 +477,8 @@ class TrendDiscovery:
                 "description": "The government has approved a new tech-hub project in Vizag to create over 10,000 jobs for regional developers and attract global NRI investments.",
                 "link": "https://www.ap.gov.in",
                 "source": "Local Fallback Database",
-                "rag_context": "Visakhapatnam is the largest city and financial capital of Andhra Pradesh, known for its IT parks and steel industries."
+                "rag_context": "Visakhapatnam is the largest city and financial capital of Andhra Pradesh, known for its IT parks and steel industries.",
+                "published": datetime.now(timezone.utc).isoformat(),
             }).to_dict())
 
         print(f"▶ Phase 1.1 COMPLETE: {len(all_topics)} candidates discovered from expanded sources.")
