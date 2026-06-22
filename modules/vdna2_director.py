@@ -957,6 +957,7 @@ class VDNA2Director:
 
         # Build YouTube service
         try:
+            from google.auth.transport.requests import Request
             from google.oauth2.credentials import Credentials
             from googleapiclient.discovery import build as gbuild
             cred_file = os.path.join(config.DRIVE.get("CREDENTIALS", "credentials"), "youtube_token.json")
@@ -965,6 +966,14 @@ class VDNA2Director:
             with open(cred_file) as f:
                 creds_data = json.load(f)
             creds = Credentials.from_authorized_user_info(creds_data)
+            # Auto-refresh expired access token using the stored refresh_token
+            if creds.expired and creds.refresh_token:
+                print("   🔄 YouTube token expired — refreshing...")
+                creds.refresh(Request())
+                # Save refreshed token back to disk
+                with open(cred_file, "w") as f:
+                    f.write(creds.to_json())
+                print("   ✅ Token refreshed and saved")
             youtube_service = gbuild("youtube", "v3", credentials=creds)
             print("   🔑 YouTube service authenticated")
         except Exception as e:
