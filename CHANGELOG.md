@@ -192,7 +192,7 @@ Affects: main videos + shorts with subtitle burn-in.
 
 ## 2026-06-20
 
-### 14:30 IST — Phase 5 CPU Hang Fix + RAG Ledger Seed (Performance & Analytics Run)
+### 11:23 IST — Phase 5 CPU Hang Fix + RAG Ledger Seed (Performance & Analytics Run)
 
 **Problem:** Phase 5 (Visuals) hung for 25+ minutes at "Loading weights: 14% (55/396)" on WSL CPU-only environment. Stable Diffusion v1.5 loads 3.4GB+ weights on CPU before failing — PhaseTimer is cooperative and cannot interrupt the blocking load call.
 
@@ -219,7 +219,60 @@ Affects: main videos + shorts with subtitle burn-in.
 
 ## 2026-06-14
 
-### 09:00 IST — v87.8 Visual Fetch Overhaul (CRITICAL — Stable Diffusion + Image Relevance)
+
+### 09:52 IST — v87.11 Top 5 Growth Blockers Fixed (CRITICAL)
+
+- **FIXED** YouTube Analytics stub — replaced 10-line `yt_analytics.py` with full YouTube Analytics API v2 integration (views, CTR, avg watch %, likes, subscribers, impressions)
+  - ACTION REQUIRED: Token needs `yt-analytics.readonly` scope — re-authorize YouTube OAuth
+- **FIXED** YouTubeAnalyticsAgent wired to real analytics — pulls metrics for all uploaded videos, saves to growth ledger for producer brief
+- **FIXED** A/B test variants — was testing title vs itself (350/350 broken); now skips original title variant and deduplicates
+- **FIXED** A/B test resolution — real YouTube Analytics CTR/views data now fed into `record_result()` to declare winners
+- **FIXED** RSS sources doubled 8→16 — added business (ET, LiveMint), tech (Gadgets360, The Hindu Tech), international (BBC India, Google News World), politics (The Hindu Politics, TOI Politics)
+- **FIXED** New Tier 3 trending RSS — India + US trending feeds for viral signal detection
+- **FIXED** Expanded diaspora RSS — added Siasat World + Telugu community USA/UK feeds
+- **CLEANED** 350 broken A/B tests from `ab_test_db.json` (87 identical pairs + 263 synthetic data archived)
+- **COMMIT** `6bd800b` — 5 top growth blocker fixes
+
+### 09:22 IST — RAG Feedback Loop Wiring (v87.11)
+
+- **FIXED** Producer brief from growth ledger now injected into ScriptGenerator
+- **WIRED** `ScriptingAgent.execute()` → loads latest `producer_brief` from ledger → passes to `sg.run(topic, producer_brief=...)`
+- **CLOSED** the feedback loop: post-pipeline analytics → producer brief → next run's script prompt
+- **ROOT CAUSE**: `rag_injection_text` was stored in state post-upload but never fed back; `ScriptingAgent` called `sg.run(topic)` without brief
+- **COMMIT** a9206f1 — v87.11 RAG feedback loop wiring
+
+---
+
+
+### 08:53 IST — VDNA218 Uploaded (Papikondalu Boat Rescue)
+
+- **UPLOADED** VDNA218 — "89 tourists rescued after boat develops snag en route to Papikondalu"
+  - Main: `OlVYqYUQlyk` (92s, 1280x720, 47MB)
+  - Short 1: `4rZUtoiQP1A` ✅
+  - Short 2: `amC2IRSA3EQ` ✅
+  - Thumbnail, captions, playlists all uploaded
+
+### 08:53 IST — v87.10 Bug Fixes (CRITICAL)
+
+- **FIXED** `upload_approved.py` module path — added `modules/` to `sys.path` so `import config` works
+- **FIXED** stale symlink crash — `production_main.mp4` symlink from old VDNA218 (UNSC/Iran) caused `FileExistsError`; now removes old symlinks before creating new ones
+- **FIXED** short dedup false-positive — shorts were being deduped against main video titles; now shorts only dedup against other shorts and main only against other mains (`is_short` flag in `existing_videos`)
+- **FIXED** short title collision — Short 2 uploaded with unique title to avoid self-dedup
+- **ISSUE** Pinned comment API returns 403 (insufficient permissions for commentThreads) — needs OAuth scope fix
+- **ISSUE** Gemini flash-lite and 2.0-flash quota exceeded; pipeline falls back to gemini-2.5-flash
+
+### 08:45 IST — Fresh Pipeline Run (v87.9, Papikondalu topic re-selected)
+
+- Pipeline ran end-to-end in ~8.2 minutes
+- Main video assembled with .ass subtitles (v87.9 fix confirmed working)
+- Visual generation via SD/RSS/Serper with fallback backgrounds
+- Approval gate sent to Telegram; approved via direct script
+- Upload disabled (VIRALDNA_UPLOAD_ENABLED=false) for pipeline run; upload done separately
+- **COMMIT** 21503ce — v87.10 short dedup fix, upload_approved path fix, CHANGELOG update
+- **COMMIT** a0139b5 — approval_gate metadata fix
+- **COMMIT** 0feaedc — voice models, test scripts, SD scenes, gitignore
+
+### 07:09 IST — v87.8 Visual Fetch Overhaul (CRITICAL — Stable Diffusion + Image Relevance)
 
 **Problem:** Two visual issues:
 1. `news_image_fetcher.py` `_visual_relevance_check` always returned True (ignored Gemini Vision's NO) — irrelevant images passed through
@@ -261,9 +314,7 @@ Affects: main videos + shorts with subtitle burn-in.
 - SD GPU test: loaded 9s, generated image in 7.8s on RTX 3050 6GB ✅
 - All model files present: unet, vae, text_encoder, safety_checker safetensors
 
----
-
-## 2026-06-13
+---## 2026-06-13
 
 ### 10:00 IST — v63.0 Fish Speech Voice Cloning (CRITICAL — RVC Replacement)
 
@@ -535,8 +586,6 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 
 ---
 
-## 2026-06-10
-
 ### 13:15 IST — v86.1 All Visuals in Approval Request
 
 - **ADDED** Scene visuals (viz_*.jpg) sent automatically with every approval request
@@ -582,14 +631,14 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 
 ## 2026-06-09
 
-### 19:00 IST — v85.4 Agent & Fact-Check Fixes
+### 19:13 IST — v85.4 Agent & Fact-Check Fixes
 - **FIXED** Fact-check UNCERTAIN on empty RSS descriptions — now passes topic_desc as fallback source to Gemini
 - **FIXED** CompetitorIntel missing `analyze_content_gaps()` → corrected to `get_content_gap_result()`
 - **FIXED** CompetitorIntelAgent not storing results in state — now stores summary + content_gaps
 - **FIXED** UploadTimingAgent calling non-existent `run()` → now calls `get_optimal_upload_time()` + `get_shorts_schedule()`
 - **ADDED** Topic-slug consistency log at approval gate (debug for topic-title mismatch)
 
-### 18:30 IST — v85.3 Critical Fixes
+### 18:44 IST — v85.3 Critical Fixes
 - **FIXED** Topic IDs always showing "UNKNOWN" — Pipeline PostFilter never assigned VDNA IDs.
   Now reads topics_history.json max ID and auto-assigns VDNA218+ to new topics.
 - **FIXED** Main video low bitrate (1422kbps) — No ffmpeg bitrate target was set.
@@ -600,7 +649,7 @@ Old entries with missing video files will be auto-cleaned on next approval reque
   to trace photo vs text-only fallback at runtime.
 - Commit: d3c8957
 
-### 17:55 IST — v85.2 Health Check Enhanced with YouTube Analytics
+### 17:56 IST — v85.2 Health Check Enhanced with YouTube Analytics
 - **ADDED** `check_youtube_channel_stats()` — runs every 2h, ~3 quota units
   → subscriber count, view count, video count, delta since last check
 - **ADDED** `check_youtube_recent_videos()` — runs every 6h (cached), ~5 quota units
@@ -611,7 +660,7 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 - **FIXED** `format_report()` — handles cached video data (int vs list)
 - **COMMIT** f546b13
 
-### 16:30 IST — v85.1 Audit Fixes (10 fixes)
+### 17:02 IST — v85.1 Audit Fixes (10 fixes)
 - **FIXED** YouTube token refresh — token was expired (2026-06-09T10:15:56 UTC). Refreshed and verified (8 subs, 30 videos, 13345 views).
 - **ADDED** `https://www.googleapis.com/auth/youtube.commentThreads` scope to YOUTUBE_SCOPES in `run_multi_agent_pipeline.py` and `upload_approved.py`. Requires re-authorization on next OAuth flow.
 - **IMPLEMENTED** all 13 integration agents with real validation logic (were stubs that just returned state):
@@ -649,7 +698,7 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 - **COMMIT** `4708dc2` — telegram dotenv fix
 - **SCORE** Evening Publish reliability: 8.5/10 (was 6.5 before fixes)
 
-### 2026-06-08
+## 2026-06-08
 - **ADDED** Semi-auto approval gate (v85.0) — pipeline → Telegram → manual /approve → upload
 - **RESUMED** Morning + Evening cron jobs
 - **FIXED** ResilientUploader `'str' object has no attribute 'get'` bug (line 1184 isinstance check)
@@ -663,120 +712,12 @@ Old entries with missing video files will be auto-cleaned on next approval reque
 - **COMMIT** `a10fdf3`, `ee0da7f`, FactCheckAgent commit
 
 ## Template for future entries:
-```
-### YYYY-MM-DD
 - **ADDED** what — detail
 - **UPDATED** what — detail
 - **FIXED** what — detail
 - **REMOVED** what — detail
 - **COMMIT** hash — description
 ```
-
-## 2026-06-14 (continued)
-
-### 04:00 IST — v87.11 Top 5 Growth Blockers Fixed (CRITICAL)
-
-- **FIXED** YouTube Analytics stub — replaced 10-line `yt_analytics.py` with full YouTube Analytics API v2 integration (views, CTR, avg watch %, likes, subscribers, impressions)
-  - ACTION REQUIRED: Token needs `yt-analytics.readonly` scope — re-authorize YouTube OAuth
-- **FIXED** YouTubeAnalyticsAgent wired to real analytics — pulls metrics for all uploaded videos, saves to growth ledger for producer brief
-- **FIXED** A/B test variants — was testing title vs itself (350/350 broken); now skips original title variant and deduplicates
-- **FIXED** A/B test resolution — real YouTube Analytics CTR/views data now fed into `record_result()` to declare winners
-- **FIXED** RSS sources doubled 8→16 — added business (ET, LiveMint), tech (Gadgets360, The Hindu Tech), international (BBC India, Google News World), politics (The Hindu Politics, TOI Politics)
-- **FIXED** New Tier 3 trending RSS — India + US trending feeds for viral signal detection
-- **FIXED** Expanded diaspora RSS — added Siasat World + Telugu community USA/UK feeds
-- **CLEANED** 350 broken A/B tests from `ab_test_db.json` (87 identical pairs + 263 synthetic data archived)
-- **COMMIT** `6bd800b` — 5 top growth blocker fixes
-
-### 03:00 IST — VDNA218 Uploaded (Papikondalu Boat Rescue)
-
-- **UPLOADED** VDNA218 — "89 tourists rescued after boat develops snag en route to Papikondalu"
-  - Main: `OlVYqYUQlyk` (92s, 1280x720, 47MB)
-  - Short 1: `4rZUtoiQP1A` ✅
-  - Short 2: `amC2IRSA3EQ` ✅
-  - Thumbnail, captions, playlists all uploaded
-
-### 03:00 IST — v87.10 Bug Fixes (CRITICAL)
-
-- **FIXED** `upload_approved.py` module path — added `modules/` to `sys.path` so `import config` works
-- **FIXED** stale symlink crash — `production_main.mp4` symlink from old VDNA218 (UNSC/Iran) caused `FileExistsError`; now removes old symlinks before creating new ones
-- **FIXED** short dedup false-positive — shorts were being deduped against main video titles; now shorts only dedup against other shorts and main only against other mains (`is_short` flag in `existing_videos`)
-- **FIXED** short title collision — Short 2 uploaded with unique title to avoid self-dedup
-- **ISSUE** Pinned comment API returns 403 (insufficient permissions for commentThreads) — needs OAuth scope fix
-- **ISSUE** Gemini flash-lite and 2.0-flash quota exceeded; pipeline falls back to gemini-2.5-flash
-
-### 02:00 IST — Fresh Pipeline Run (v87.9, Papikondalu topic re-selected)
-
-- Pipeline ran end-to-end in ~8.2 minutes
-- Main video assembled with .ass subtitles (v87.9 fix confirmed working)
-- Visual generation via SD/RSS/Serper with fallback backgrounds
-- Approval gate sent to Telegram; approved via direct script
-- Upload disabled (VIRALDNA_UPLOAD_ENABLED=false) for pipeline run; upload done separately
-- **COMMIT** 21503ce — v87.10 short dedup fix, upload_approved path fix, CHANGELOG update
-- **COMMIT** a0139b5 — approval_gate metadata fix
-- **COMMIT** 0feaedc — voice models, test scripts, SD scenes, gitignore
-
-### 2026-06-14 — RAG Feedback Loop Wiring (v87.11)
-
-- **FIXED** Producer brief from growth ledger now injected into ScriptGenerator
-- **WIRED** `ScriptingAgent.execute()` → loads latest `producer_brief` from ledger → passes to `sg.run(topic, producer_brief=...)`
-- **CLOSED** the feedback loop: post-pipeline analytics → producer brief → next run's script prompt
-- **ROOT CAUSE**: `rag_injection_text` was stored in state post-upload but never fed back; `ScriptingAgent` called `sg.run(topic)` without brief
-- **COMMIT** a9206f1 — v87.11 RAG feedback loop wiring
-
----
-
-## 2026-06-15 — Remaining Audit Fixes (v87.12)
-
-### 09:00 IST — Forensic Audit Items #7,#9,#10,#11,#12,#14
-
-**14-item forensic audit status: 13/14 fixed (1 cancelled as audit was wrong)**
-
-**#7 — CTR Optimizer Ignores Thumbnails (FIXED)**
-- Added `_analyze_thumbnail()` method to `CTROptimizer.optimize()`
-- Uses OpenCV for: face detection (Haar cascade), brightness/contrast measurement, text coverage estimation, dominant color vibrancy analysis
-- `optimize()` now returns `thumbnail_score` (0-50) combined with title score for total `ctr_score`
-- Gracefully skips when `thumbnail_path` is empty or cv2 unavailable
-
-**#9 — No Keyword/Search Volume Data (FIXED)**
-- Enhanced `_generate_topic_tags()` Gemini prompt with search volume strategy
-- New prompt instructs LLM to generate: high-volume broad tags, medium-volume specific tags, long-tail query-style tags, real-time intent suffixes ("today", "latest", "update")
-- Tags now optimized for what viewers actually type in search bar
-
-**#10 — Upload Schedule Advisory Only (FIXED)**
-- Wired `state["upload_schedule"]` from `UploadTimeOptimizationAgent` through entire upload chain
-- `ResilientUploaderAgent.execute()` now reads schedule from state and passes to `upload_production_slot()`
-- `upload_production_slot()` passes through to `upload_single_video()` → `_get_scheduled_publish_time(upload_schedule=...)`
-- Premiere time now uses optimizer's recommended time instead of static config default
-- Schedule logged in pipeline output for visibility
-
-**#11 — Shorts Titles Formulaic (FIXED)**
-- Replaced 3 hardcoded title templates ("X — What Happened", "What X Means for You", "X — Telugu States React") with LLM-based generation
-- `generate_shorts_title_batch()` now accepts `topic_context` and `source` parameters
-- Tries Gemini LLM first with creative prompt requiring emoji, power words, curiosity angles, non-formulaic patterns
-- Falls back to enhanced heuristic with 10 diverse templates (randomly sampled) injecting hooks/emoji/power words
-- Signature formulaic patterns explicitly banned in LLM prompt
-
-**#12 — Shorts CTA Generic "Link in Bio" (FIXED)**
-- Removed `CTA_PHRASES` class attribute (was generic static list)
-- `build_shorts_cta()` now always uses `main_video_url` when available — never falls back to "link in bio"
-- Fallback CTA (no main video URL) now says "Full video on my channel — subscribe for more 🔔" not "link in bio"
-- Pinned comment now includes 🤝 emoji and full URL
-
-**#13 — Telegram Notifications Disabled (CANCELLED)**
-- Audit was incorrect — Telegram is enabled and working
-- You receive approval messages and pipeline summary notifications
-- No code change needed
-
-**#14 — Thumbnails Template-Only (FIXED)**
-- `_calc_text_position()` now content-aware: divides image into 6 horizontal bands, computes edge density per band via numpy gradient analysis, places text in cleanest (lowest edge density) region
-- Added `_find_salient_region()` helper using grid-based edge concentration analysis
-- Fixed lower-third placement regardless of image content
-- Falls back to original behavior if numpy unavailable
-
-**FILES CHANGED:** `modules/ctr_optimizer.py`, `modules/shorts_optimizer.py`, `modules/thumbnail_creator.py`, `modules/youtube_uploader.py`, `modules/run_multi_agent_pipeline.py`
-**COMMIT** db5867c — v87.12 remaining audit fixes
-
----
 
 ## 2026-06-15
 
@@ -844,9 +785,83 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 **NAMING CONVENTION:** VDNA 3.0 = run_vdna3.py entrypoint + VDNA 2.0 Director internals. The "3.0" refers to the clean system architecture and naming, not a rewrite of the director.
 
 ---
+### 14:00 IST — VDNA 3.0 Pipeline Fix: ScriptPayload Dict Serialization (CRITICAL)
 
-## 2026-06-15
+**Problem:** Pipeline crashed at Phase 7 (Assembly) with `AttributeError: 'dict' object has no attribute 'get_segment'`. Root cause: checkpoint system stored `ScriptPayload` as `str()` representation, and the scripting phase was updated to store `ScriptPayload.__dict__` (a dict) for JSON serialization. But voice, visuals, assembly, and forensic_audit phases still called `.get_segment()` — a method only on `ScriptPayload` objects.
 
+**Solution (four-pronged):**
+
+**A) Scripting phase — store as dict:**
+- `modules/vdna2_director.py` — Scripting phase now stores `script_payload.__dict__` instead of the raw object
+- Added `_extract_script_text()` helper method that handles all three formats: live object, dict (from checkpoint), string (legacy)
+
+**B) Voice phase — handle all formats:**
+- Voice phase already had inline dict/string handling — verified correct
+
+**C) Assembly phase — use helper:**
+- Replaced `script_payload.get_segment("main")` and `script_payload.get_segment(key)` with `self._extract_script_text()` and dict-safe access
+
+**D) Forensic audit — handle dict payloads:**
+- `modules/forensic_audit.py` — Added `isinstance(script_payload, dict)` branch that extracts text from `{seg}_clean`/`{seg}_raw` keys and runs all audit checks (state accuracy, forbidden phrases, PII, medical red flags, short hooks)
+
+**E) gTTS timeout fix:**
+- `modules/voiceover.py` — Added 60-second timeout to gTTS network calls using `concurrent.futures` with `future.result(timeout=60)`. Prevents indefinite hangs on slow network.
+
+**FILES MODIFIED:** `modules/vdna2_director.py`, `modules/forensic_audit.py`, `modules/voiceover.py`
+**VERIFICATION:** All files compile OK. Pipeline ran successfully — 3 videos produced (1 main + 2 shorts). Forensic audit passed on re-run.
+**BREAKING CHANGES:** None. All changes are backward-compatible with live `ScriptPayload` objects.
+
+---
+### 11:30 IST — Forensic Audit Items #7,#9,#10,#11,#12,#14 (v87.12)
+
+**14-item forensic audit status: 13/14 fixed (1 cancelled as audit was wrong)**
+
+**#7 — CTR Optimizer Ignores Thumbnails (FIXED)**
+- Added `_analyze_thumbnail()` method to `CTROptimizer.optimize()`
+- Uses OpenCV for: face detection (Haar cascade), brightness/contrast measurement, text coverage estimation, dominant color vibrancy analysis
+- `optimize()` now returns `thumbnail_score` (0-50) combined with title score for total `ctr_score`
+- Gracefully skips when `thumbnail_path` is empty or cv2 unavailable
+
+**#9 — No Keyword/Search Volume Data (FIXED)**
+- Enhanced `_generate_topic_tags()` Gemini prompt with search volume strategy
+- New prompt instructs LLM to generate: high-volume broad tags, medium-volume specific tags, long-tail query-style tags, real-time intent suffixes ("today", "latest", "update")
+- Tags now optimized for what viewers actually type in search bar
+
+**#10 — Upload Schedule Advisory Only (FIXED)**
+- Wired `state["upload_schedule"]` from `UploadTimeOptimizationAgent` through entire upload chain
+- `ResilientUploaderAgent.execute()` now reads schedule from state and passes to `upload_production_slot()`
+- `upload_production_slot()` passes through to `upload_single_video()` → `_get_scheduled_publish_time(upload_schedule=...)`
+- Premiere time now uses optimizer's recommended time instead of static config default
+- Schedule logged in pipeline output for visibility
+
+**#11 — Shorts Titles Formulaic (FIXED)**
+- Replaced 3 hardcoded title templates ("X — What Happened", "What X Means for You", "X — Telugu States React") with LLM-based generation
+- `generate_shorts_title_batch()` now accepts `topic_context` and `source` parameters
+- Tries Gemini LLM first with creative prompt requiring emoji, power words, curiosity angles, non-formulaic patterns
+- Falls back to enhanced heuristic with 10 diverse templates (randomly sampled) injecting hooks/emoji/power words
+- Signature formulaic patterns explicitly banned in LLM prompt
+
+**#12 — Shorts CTA Generic "Link in Bio" (FIXED)**
+- Removed `CTA_PHRASES` class attribute (was generic static list)
+- `build_shorts_cta()` now always uses `main_video_url` when available — never falls back to "link in bio"
+- Fallback CTA (no main video URL) now says "Full video on my channel — subscribe for more 🔔" not "link in bio"
+- Pinned comment now includes 🤝 emoji and full URL
+
+**#13 — Telegram Notifications Disabled (CANCELLED)**
+- Audit was incorrect — Telegram is enabled and working
+- You receive approval messages and pipeline summary notifications
+- No code change needed
+
+**#14 — Thumbnails Template-Only (FIXED)**
+- `_calc_text_position()` now content-aware: divides image into 6 horizontal bands, computes edge density per band via numpy gradient analysis, places text in cleanest (lowest edge density) region
+- Added `_find_salient_region()` helper using grid-based edge concentration analysis
+- Fixed lower-third placement regardless of image content
+- Falls back to original behavior if numpy unavailable
+
+**FILES CHANGED:** `modules/ctr_optimizer.py`, `modules/shorts_optimizer.py`, `modules/thumbnail_creator.py`, `modules/youtube_uploader.py`, `modules/run_multi_agent_pipeline.py`
+**COMMIT** db5867c — v87.12 remaining audit fixes
+
+---
 ### 10:00 IST — v87.9 VDNA 3.0 Module Wiring (CRITICAL — All Modules Now Active in Pipeline)
 
 **STATUS:** DONE | **COMMIT:** pending
@@ -912,37 +927,6 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 **BREAKING CHANGES:** privacy_status now public (was private). Videos immediately visible on upload.
 
 ---
-
-## 2026-06-15
-
-### 14:00 IST — VDNA 3.0 Pipeline Fix: ScriptPayload Dict Serialization (CRITICAL)
-
-**Problem:** Pipeline crashed at Phase 7 (Assembly) with `AttributeError: 'dict' object has no attribute 'get_segment'`. Root cause: checkpoint system stored `ScriptPayload` as `str()` representation, and the scripting phase was updated to store `ScriptPayload.__dict__` (a dict) for JSON serialization. But voice, visuals, assembly, and forensic_audit phases still called `.get_segment()` — a method only on `ScriptPayload` objects.
-
-**Solution (four-pronged):**
-
-**A) Scripting phase — store as dict:**
-- `modules/vdna2_director.py` — Scripting phase now stores `script_payload.__dict__` instead of the raw object
-- Added `_extract_script_text()` helper method that handles all three formats: live object, dict (from checkpoint), string (legacy)
-
-**B) Voice phase — handle all formats:**
-- Voice phase already had inline dict/string handling — verified correct
-
-**C) Assembly phase — use helper:**
-- Replaced `script_payload.get_segment("main")` and `script_payload.get_segment(key)` with `self._extract_script_text()` and dict-safe access
-
-**D) Forensic audit — handle dict payloads:**
-- `modules/forensic_audit.py` — Added `isinstance(script_payload, dict)` branch that extracts text from `{seg}_clean`/`{seg}_raw` keys and runs all audit checks (state accuracy, forbidden phrases, PII, medical red flags, short hooks)
-
-**E) gTTS timeout fix:**
-- `modules/voiceover.py` — Added 60-second timeout to gTTS network calls using `concurrent.futures` with `future.result(timeout=60)`. Prevents indefinite hangs on slow network.
-
-**FILES MODIFIED:** `modules/vdna2_director.py`, `modules/forensic_audit.py`, `modules/voiceover.py`
-**VERIFICATION:** All files compile OK. Pipeline ran successfully — 3 videos produced (1 main + 2 shorts). Forensic audit passed on re-run.
-**BREAKING CHANGES:** None. All changes are backward-compatible with live `ScriptPayload` objects.
-
----
-
 ## 2026-06-16
 
 ### 06:00 IST — Fish Speech Fix + Telegram Debug
@@ -962,7 +946,7 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 
 ## 2026-06-17
 
-### 15:00 IST — Persistent Memory Files
+### 15:54 IST — Persistent Memory Files
 
 **Problem:** Session memory lost between sessions. No persistent context for OWL agent.
 
@@ -980,117 +964,219 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 
 ## 2026-06-21
 
-### 18:00 IST — Image Mismatch Fix v88.0 (12 videos affected)
 
-**Problem:** 12 out of 25 videos had image count mismatches — API sources returned fewer images than `num_scenes`, causing static/frozen frames. Worst cases: "Driver Dead" videos had 0/5 images (fully static). SSC Main had only 2/3 images for 58.8s.
+### 20:42 IST — Typewriter Filter Fix: Single Drawtext Per Line (v95.7)
 
-**Root Causes:**
-1. NewsRSS only returned 1 article per topic; subsequent scenes got nothing (dedup starvation)
-2. Serper off-topic rejection too aggressive — rejected images with 0 keyword overlap even when quality was good
-3. RSS keyword overlap threshold >=3 too strict for niche topics (e.g. "SSC Supplementary Results")
-4. Assembly had no partial-fill logic — only triggered PIL fallback on completely empty results
+**Bug:** Text appeared "mixed up" and "glimpsed" — overlapping/jumbled.
+Root cause: old approach used N drawtext layers per line (one per cumulative
+substring like 'P', 'Pa', 'Pap', ...), all visible simultaneously with
+between(t) enable. All layers stacked on top of each other = overlapping mess.
 
-**Solution:**
-- `video_assembler.py`: Added partial-fill logic — when API returns < num_scenes images, remaining slots filled with PIL fallback (0.13s each on CPU)
-- `video_assembler.py`: Relaxed Serper off-topic gate — accept images that pass quality checks even with 0 keyword overlap (only reject non-news-domain images)
-- `video_assembler.py`: Added generic news visual words to topic set ("india", "people", "crowd", "protest", etc.)
-- `news_image_fetcher.py`: Lowered keyword overlap threshold from >=3 to >=2
-- `video_assembler.py`: RSS fetcher now requests 3 candidates per scene instead of 1
+**Fix:**
+- Replaced multi-layer approach with ONE drawtext per line
+- Uses substr() expression: text='substr(escaped, 0, if(gt(t,start), min(len, floor((t-start)*cps)), 0))'
+- Each line is a single element — no overlap, no flicker
+- Fixed fade-out alpha (was inverted: fading in instead of out)
+- Frame size now stable at ~130KB (was oscillating 13K-49K)
 
-**Result:** All scenes now guaranteed to have an image — either from API sources or PIL fallback. No more static videos.
+**COMMIT:** 14b478a
 
-**COMMIT:** 183734c
+### 17:18 IST — Pipeline Run + Bug Fixes (v95.1)
 
-### 18:30 IST — VDNA 3.0 Run 20260621_0629
+**PIPELINE RUN 20260621_1134:**
+- Topic: "Man kills three daughters, hangs self in Andhra Pradesh"
+- Phase 0: Cleanup 87 files, primetime mode (16 IST), recommended upload 18:00 IST
+- Phase 1: 50 candidates from RSS (37+4+10+6), 0 from Reddit/YouTube/Inshorts
+- Phase 2: Growth alignment scored — top topic 46/100 (WEAK — commoditized)
+- Phase 2.5: Quality gate — score 0/100 (key mismatch), fact-check UNCERTAIN (no article text)
+- Phase 3: Script generated (89s)
+- Phase 4: TTS via Edge-TTS PrabhatNeural
+- Phase 5: 5 scene images (PIL fallback on CPU), thumbnail A/B scored 81/100, title optimized 63/100
+- Phase 6: Main 89.2s 1280×720 + 2 Shorts (13.4s, 18.2s) 1080×1920
+- Phase 10: Engagement loop, CTA, cross-platform plan, retention (no curve data), competitor (no YT service)
+- Upload: skipped (VIRALDNA_UPLOAD_ENABLED=false)
+- Telegram: failed (India ban — Network unreachable)
+- **Result: 3 videos, 0 errors**
 
-**Topic:** "Permanent yoga centres to be set up in A.P.'s Swarna Grama and Ward Secretariats" (CM Naidu + Baba Ramdev initiative)
+**BUG FIXES (commit 3d848cd):**
+1. `PostFilter.run()` doesn't accept `category_bonus` kwarg — moved bonus to post-processing
+2. `content_quality.check_quality()` → `run_quality_check(script_text=...)`
+3. `fact_check.fact_check_script()` → `check_script()`
+4. Quality score key: `overall_pass` not `quality_score` — added fallback chain
+5. Fact check verdict: `verdict` key (VERIFIED/PASS/UNCERTAIN) not `verified` boolean
 
-**Growth Scorer:** 49/100 (WEAK, 1.0x) — Low audience fit for international commodity yoga news, but selected as highest-scored topic available.
+**COMMIT:** 3d848cd
+**FILES:** `modules/vdna2_director.py` (20 insertions, 8 deletions)
+### 14:22 IST — 10 Critical Growth Gaps: Build + Wire (v95.0)
 
-**Results:**
-- All 3 videos produced with 5/5 images each — v88.0 image mismatch fix working perfectly
-- Scene 0: NewsRSS ✅ (100KB, The Hindu AP)
-- Scene 1-4: Serper ✅ (relaxed gate accepting quality images despite 0 keyword overlap)
-- Short2 Scene 4: PIL fallback ✅ (API sources exhausted, PIL filled the gap)
-- Voice: Edge-TTS PrabhatNeural — Main 1689KB (~73s), Short1 472KB, Short2 546KB, Short3 559KB
-- All 10/10 phases completed, 0 errors
-- Forensic audit: PASSED
-- Upload: 3 videos uploaded as private
+**CONTEXT:** Forensic audit (v94.0) identified 10 critical growth gaps. This commit builds all 10 and wires them into the pipeline.
 
-**YouTube URLs (private):**
-- Main: https://www.youtube.com/watch?v=lvxICCFRN7g
-- Short1: https://www.youtube.com/watch?v=EJl-E9lDdIM
-- Short2: https://www.youtube.com/watch?v=r6ZCn5Ud8ik
+**8 NEW MODULES (+1,050 lines):**
+
+| Module | Gap Addressed | Wired Into |
+|--------|--------------|------------|
+| `thumbnail_ab_tester.py` | Gap 1: No thumbnail A/B testing | Phase 5 (post-thumbnail) |
+| `title_optimizer_v3.py` | Gap 2: No title A/B testing | Phase 5 (post-thumbnail) |
+| `engagement_loop.py` | Gap 6: No comment pinning/response | Phase 10.18 |
+| `shorts_optimizer_v3.py` | Gap 7: No Shorts hook/format optimization | Phase 7 (shorts assembly) |
+| `cross_platform_distributor.py` | Gap 8: No Reels/FB/X clipping | Phase 10.20 |
+| `subscribe_cta_optimizer.py` | Gap 9: Hardcoded CTA | Phase 10.19 |
+| `retention_curve_analyzer.py` | Gap 10: No retention curve parsing | Phase 10.21 |
+| `competitor_intel_v3.py` | Gap 3: Hardcoded fake data → YouTube Data API | Phase 10.22 |
+
+**DIRECTOR CHANGES (`vdna2_director.py`):**
+- Removed old `ctr_optimizer`, `shorts_optimizer`, `upload_time_optimizer` imports + skill entries (replaced by superior v3 modules)
+- Added 8 new imports + 8 skill entries (36 total skills)
+- Phase 2 (weighting): content_calendar injects category rotation bonus (1.3x multiplier)
+- Phase 2.5 (new): content_quality pre-production gate — fact-check + bias detection BEFORE scripting
+- Phase 5 (thumbnail): thumbnail A/B testing + title optimization after thumbnail creation
+- Phase 6 (upload): primetime_scheduler enforces upload delay (sleeps until optimal window)
+- Phase 7 (shorts): shorts_optimizer_v3 generates hooks, titles, CTAs, descriptions
+- Phase 10.18: Engagement loop — pinned comment + engagement prompt generation
+- Phase 10.19: Subscribe CTA optimization — dynamic CTAs based on series plan
+- Phase 10.20: Cross-platform distribution plan — Reels/FB/X clipping strategy
+- Phase 10.21: Retention curve analysis — parses YouTube Analytics retention data
+- Phase 10.22: Competitor intel — YouTube Data API service injection for live scanning
+
+**GAP 4 (upload scheduling):** primetime_scheduler now sleeps until optimal window instead of just printing recommendation.
+**GAP 5 (series funnel):** retention_analyzer series plan stored in state; subscribe_cta reads it for series-aware CTAs.
+
+**SKILLS IN DIRECTOR:** 36 (was 28)
+**TOTAL MODULES:** 37 (was 29)
+
+**COMMIT:** 3ebc608
+**FILES:** 8 new modules, `modules/vdna2_director.py` (+200 lines for 10 new sub-phases)
 
 ---
 
-## 2026-06-21
+### 13:54 IST — Forensic Growth Audit + Prune (v94.0)
 
-### 20:00 IST — Upload Phase Fix v89.0 (custom thumbnails + upload wiring)
+**FINDING:** 4 of 19 ported modules were dead weight — no measurable growth impact.
 
-**Problem:** Custom thumbnails were never uploaded to YouTube. Every video had auto-generated thumbnails only.
+**PRUNED (D-tier, deleted):**
+- `community_poster_v3.py` — Generated weekly post schedule that was never consumed by any module
+- `ad_friendly_check_v3.py` — Channel not monetized (needs 1K subs + 4K watch hours)
+- `blog_companion_v3.py` — Generated blog articles but no blog exists to publish to
+- `newsletter_agent_v3.py` — Generated newsletter but no email list or platform exists
 
-**Root Causes:**
-1. `_phase_upload()` called `uploader.upload()` — method DOES NOT EXIST on YouTubeUploader
-2. Only `upload_single_video()` and `upload_production_slot()` exist — `AttributeError` silently caught by FactoryWorker
-3. Thumbnail creator saves to `thumbnails/<topic>_thumb.jpg/<topic>_branded.jpg` (subdirectory per topic)
-4. Uploader expects `thumbnails/production_branded.jpg` (flat file) — path mismatch
-5. `topic_tags.split(",")` crashes when tags is already a list
+**GRADE SUMMARY (19 modules audited):**
+- A-tier (direct growth driver, keep+wire): 3 — upload_reliability, retention_analyzer, primetime_scheduler
+- B-tier (indirect growth, keep+improve): 5 — community_engagement, content_quality, content_calendar, fact_check, audience_channel_manager
+- C-tier (operational hygiene, keep): 6 — license_compliance, cleanup_agent, continuous_auditor, compliance_check, intelligence_agent, collaboration_agent
+- D-tier (dead weight, pruned): 4 — community_poster, ad_friendly_check, blog_companion, newsletter_agent
+- F-tier (actively harmful): 1 — competitor_intel (hardcoded fake data, wastes quota)
 
-**Solution:**
-- Rewrote `_phase_upload()` to properly construct YouTube OAuth service and call `upload_single_video()` with correct paths
-- Fixed `topic_tags` handling to accept both str and list
-- Thumbnail path resolved from subdirectory: `thumbnails/<topic>_thumb.jpg/<topic>_branded.jpg`
-- All 3 yoga videos re-uploaded with custom branded thumbnails verified
+**CRITICAL GAPS IDENTIFIED (not yet built):**
+1. Thumbnail A/B testing — no module generates multiple thumbnails
+2. Title optimization — no A/B testing of titles
+3. Real competitor intelligence — competitor_intel has hardcoded data
+4. Upload scheduling — primetime_scheduler detects optimal time but doesn't delay upload
+5. Series funnel execution — retention_analyzer generates plans but pipeline never produces series
+6. Engagement loop — no comment response or pinning
+7. Shorts-specific optimization — no hook/format optimization for Shorts feed
+8. Cross-platform distribution — no Reels/Facebook/X clipping
+9. Subscribe CTA optimization — hardcoded CTA in script template
+10. Retention curve analysis — no YouTube Analytics retention curve parsing
 
-**YouTube URLs (re-uploaded with custom thumbnails):**
-- Main: https://www.youtube.com/watch?v=lvxICCFRN7g (custom_thumb=True ✅)
-- Short1: https://www.youtube.com/watch?v=EJl-E9lDdIM
-- Short2: https://www.youtube.com/watch?v=r6ZCn5Ud8ik
-
-**COMMIT:** 774e7c3
+**REMAINING MODULES:** 15 (was 19)
+**SKILLS IN DIRECTOR:** 28 (was 32)
 
 ---
 
-## 2026-06-21
+### 13:38 IST — Tier 3 Remaining Agents Port (Complete Old Pipeline Coverage)
 
-### 22:00 IST — Thumbnail Relevance Filter v90.0 (3-layer image defense)
+**Problem:** VDNA 3.0 was still missing 11 agents from the old multi-agent pipeline: primetime scheduling, cleanup, continuous auditing, fact-checking, compliance verification, ad-friendly checking, growth intelligence, blog companion, newsletter digest, collaboration tracking, and audience channel management. These represent the final gaps between old and new pipelines.
 
-**Problem:** Thumbnail background images often show unrelated people (e.g., Odisha CM + Central Minister in a yoga centres video). Root cause: `thumbnail_creator.py` picked the first available image with no relevance checking.
+**Solution — 11 new modules ported from old pipeline:**
 
-**Layer 1 — Featured-image-first selection:**
-- `scene_img_*` (Serper/real news photos) already preferred over `scene_*` (pack) and `viz_news_*`
-
-**Layer 2 — Face detection (OpenCV Haar cascade):**
-- Non-political topics: reject ANY image with faces (politician stock photos = #1 source of irrelevant thumbs)
-- Political topics: allow up to 4 faces, reject group photos with 5+
-- Uses `cv2.CascadeClassifier` with `haarcascade_frontalface_default.xml`
-- Lazy-loads cascade, downloads if not present
-
-**Layer 3 — Gemini Vision relevance check:**
-- Sends image + topic to Gemini 2.0 Flash / 1.5 Flash
-- Asks: "Is this image RELEVANT to the topic? YES or NO"
-- Gracefully degrades if API key missing or quota exceeded
-- Only runs if Layer 2 passed (avoids wasting API calls)
+| Module | Class | Ported From | Key Methods |
+|--------|-------|-------------|-------------|
+| `modules/primetime_scheduler_v3.py` (+100 lines) | `PrimetimeScheduler` | `PrimetimeSchedulerAgent` | `get_run_mode()`, `get_upload_schedule()` |
+| `modules/cleanup_agent_v3.py` (+130 lines) | `CleanupAgent` | `CleanupAgent` | `cleanup()`, `check_disk_space()` |
+| `modules/continuous_auditor_v3.py` (+115 lines) | `ContinuousAuditor` | `ContinuousAuditorAgent` | `audit_pipeline_run()`, `commit_telemetry()` |
+| `modules/fact_check_v3.py` (+65 lines) | `FactCheckV3` | `FactCheckAgent` | `check_script()` |
+| `modules/compliance_check_v3.py` (+55 lines) | `ComplianceCheckV3` | `ComplianceAgent` | `check_compliance()` |
+| `modules/ad_friendly_check_v3.py` (+50 lines) | `AdFriendlyCheckV3` | `AdFriendlyCheckAgent` | `check_content()` |
+| `modules/intelligence_agent_v3.py` (+110 lines) | `IntelligenceAgentV3` | `IntelligenceAgent` | `analyze()` |
+| `modules/blog_companion_v3.py` (+50 lines) | `BlogCompanionV3` | `BlogCompanionAgent` | `generate()` |
+| `modules/newsletter_agent_v3.py` (+50 lines) | `NewsletterAgentV3` | `NewsletterAgent` | `generate()` |
+| `modules/collaboration_agent_v3.py` (+50 lines) | `CollaborationAgentV3` | `CollaborationAgent` | `run()` |
+| `modules/audience_channel_manager_v3.py` (+70 lines) | `AudienceChannelManagerV3` | `AudienceChannelManagerAgent` | `notify()` |
 
 **Integration:**
-- New `_load_background_images_filtered()` replaces `_load_background_images()` in `create_thumbnail()`
-- Collects candidate paths → `_rank_images_by_relevance()` → loads only filtered images
-- Falls back to unfiltered if ALL images rejected
+- All 11 modules added to `vdna2_director.py` skills dict (now 35 skills)
+- Phase 0 (Pre-Pipeline) added with 2 sub-phases:
+  - 0.1: Cleanup (temp file removal + disk space check)
+  - 0.2: Primetime Scheduling (run mode + upload schedule)
+- Phase 10 expanded with 9 new sub-phases:
+  - 10.11: Fact Check (Named Entity Verification)
+  - 10.12: Compliance Check
+  - 10.13: Ad-Friendly Check
+  - 10.14: Intelligence Analysis
+  - 10.15: Blog Companion
+  - 10.16: Newsletter Digest
+  - 10.17: Collaboration Tracking
+  - 10.18: Audience Channel Notifications
+  - 10.19: Continuous Auditor (Telemetry Commit)
+  - 10.20: Telegram Summary (enhanced with all new data)
 
 **Tested:**
-- Yoga topic: `scene_img_0.jpg` (5 faces) correctly REJECTED → 4/5 images passed
-- Political topic: face filter allows up to 4 faces
-- Module imports clean, all 9 new methods verified
+- All 11 modules import and compile cleanly
+- All 19 total new modules (Tier 1+2+3) import cleanly
+- Director compiles cleanly with all 35 skills
+- Skills dict: 35 skills loaded (was 16)
 
-**COMMIT:** f4fed56
-**FILES:** `modules/thumbnail_creator.py` (+311 lines)
+**COMMIT:** e37ddc9
 
 ---
 
-## 2026-06-21
+### 13:22 IST — Tier 2 Operational Reliability Agents Port (Quota, License, Calendar)
 
-### 18:00 IST — Tier 1 Growth Agents Port (Community, Competitor, Retention, Quality, Milestone)
+**Problem:** VDNA 3.0 had no API quota monitoring, no license compliance checking, and no content calendar alignment. These are operational reliability gaps that could lead to quota exhaustion, copyright strikes, or content strategy misalignment.
+
+**Solution — 3 new modules ported from old pipeline:**
+
+1. **UploadReliability v3** (`modules/upload_reliability_v3.py`)
+   - YouTube API quota tracking (10K daily limit)
+   - Per-operation quota cost tracking (search=100, upload=1600, etc.)
+   - Failover account switching when quota critical
+   - Rate limit backoff with cooldown tracking
+   - Upload queue management (pending/failed tracking)
+   - Persistent state in `diagnostics/api_quota_log.json`
+
+2. **LicenseCompliance v3** (`modules/license_compliance_v3.py`)
+   - Wraps existing `LicenseTracker` with VDNA 3.0 state integration
+   - Pre-pipeline license compliance report
+   - Safe source verification (7+ approved sources)
+   - Non-fatal: won't block production if check fails
+
+3. **ContentCalendarV3** (`modules/content_calendar_v3.py`)
+   - Wraps existing `ContentCalendar` with VDNA 3.0 state integration
+   - Topic alignment checking against content strategy
+   - Weekly schedule (7 shorts/week, 2 mains/week)
+   - Category rotation based on weights (POLITICS=3, ECONOMICS=2, etc.)
+   - Category cooldown enforcement
+
+**Integration:**
+- All 3 modules added to `vdna2_director.py` skills dict (now 24 skills)
+- Phase 10 expanded with 3 new sub-phases:
+  - 10.8: API Quota & Reliability Check
+  - 10.9: License Compliance
+  - 10.10: Content Calendar Alignment
+  - 10.11: Telegram Summary (enhanced with reliability + license + calendar data)
+
+**Tested:**
+- All 3 modules import and compile cleanly
+- All 3 pass smoke tests (quota status, license report, calendar alignment)
+- Director compiles cleanly with all new imports
+- Skills dict: 24 skills loaded (was 21)
+
+**COMMIT:** ff10201
+**FILES:** `modules/upload_reliability_v3.py` (+145 lines), `modules/license_compliance_v3.py` (+70 lines), `modules/content_calendar_v3.py` (+70 lines), `modules/vdna2_director.py` (+60 lines in Phase 10)
+
+---
+
+### 13:15 IST — Tier 1 Growth Agents Port (Community, Competitor, Retention, Quality, Milestone)
 
 **Problem:** VDNA 3.0 dropped 30+ specialized agents from the old multi-agent pipeline. Tier 1 gaps (community engagement, competitor intelligence, retention optimization, content quality, milestone detection) directly impact channel growth.
 
@@ -1149,208 +1235,106 @@ Created `run_vdna3.py` — the ONLY entry point for the pipeline. It wraps the p
 
 ---
 
-## 2026-06-21
+### 12:47 IST — Upload Phase Fix v89.0 (custom thumbnails + upload wiring)
 
-### 20:00 IST — Tier 2 Operational Reliability Agents Port (Quota, License, Calendar)
+**Problem:** Custom thumbnails were never uploaded to YouTube. Every video had auto-generated thumbnails only.
 
-**Problem:** VDNA 3.0 had no API quota monitoring, no license compliance checking, and no content calendar alignment. These are operational reliability gaps that could lead to quota exhaustion, copyright strikes, or content strategy misalignment.
+**Root Causes:**
+1. `_phase_upload()` called `uploader.upload()` — method DOES NOT EXIST on YouTubeUploader
+2. Only `upload_single_video()` and `upload_production_slot()` exist — `AttributeError` silently caught by FactoryWorker
+3. Thumbnail creator saves to `thumbnails/<topic>_thumb.jpg/<topic>_branded.jpg` (subdirectory per topic)
+4. Uploader expects `thumbnails/production_branded.jpg` (flat file) — path mismatch
+5. `topic_tags.split(",")` crashes when tags is already a list
 
-**Solution — 3 new modules ported from old pipeline:**
+**Solution:**
+- Rewrote `_phase_upload()` to properly construct YouTube OAuth service and call `upload_single_video()` with correct paths
+- Fixed `topic_tags` handling to accept both str and list
+- Thumbnail path resolved from subdirectory: `thumbnails/<topic>_thumb.jpg/<topic>_branded.jpg`
+- All 3 yoga videos re-uploaded with custom branded thumbnails verified
 
-1. **UploadReliability v3** (`modules/upload_reliability_v3.py`)
-   - YouTube API quota tracking (10K daily limit)
-   - Per-operation quota cost tracking (search=100, upload=1600, etc.)
-   - Failover account switching when quota critical
-   - Rate limit backoff with cooldown tracking
-   - Upload queue management (pending/failed tracking)
-   - Persistent state in `diagnostics/api_quota_log.json`
+**YouTube URLs (re-uploaded with custom thumbnails):**
+- Main: https://www.youtube.com/watch?v=lvxICCFRN7g (custom_thumb=True ✅)
+- Short1: https://www.youtube.com/watch?v=EJl-E9lDdIM
+- Short2: https://www.youtube.com/watch?v=r6ZCn5Ud8ik
 
-2. **LicenseCompliance v3** (`modules/license_compliance_v3.py`)
-   - Wraps existing `LicenseTracker` with VDNA 3.0 state integration
-   - Pre-pipeline license compliance report
-   - Safe source verification (7+ approved sources)
-   - Non-fatal: won't block production if check fails
+**COMMIT:** 774e7c3
 
-3. **ContentCalendarV3** (`modules/content_calendar_v3.py`)
-   - Wraps existing `ContentCalendar` with VDNA 3.0 state integration
-   - Topic alignment checking against content strategy
-   - Weekly schedule (7 shorts/week, 2 mains/week)
-   - Category rotation based on weights (POLITICS=3, ECONOMICS=2, etc.)
-   - Category cooldown enforcement
+---
+
+### 12:47 IST — Thumbnail Relevance Filter v90.0 (3-layer image defense)
+
+**Problem:** Thumbnail background images often show unrelated people (e.g., Odisha CM + Central Minister in a yoga centres video). Root cause: `thumbnail_creator.py` picked the first available image with no relevance checking.
+
+**Layer 1 — Featured-image-first selection:**
+- `scene_img_*` (Serper/real news photos) already preferred over `scene_*` (pack) and `viz_news_*`
+
+**Layer 2 — Face detection (OpenCV Haar cascade):**
+- Non-political topics: reject ANY image with faces (politician stock photos = #1 source of irrelevant thumbs)
+- Political topics: allow up to 4 faces, reject group photos with 5+
+- Uses `cv2.CascadeClassifier` with `haarcascade_frontalface_default.xml`
+- Lazy-loads cascade, downloads if not present
+
+**Layer 3 — Gemini Vision relevance check:**
+- Sends image + topic to Gemini 2.0 Flash / 1.5 Flash
+- Asks: "Is this image RELEVANT to the topic? YES or NO"
+- Gracefully degrades if API key missing or quota exceeded
+- Only runs if Layer 2 passed (avoids wasting API calls)
 
 **Integration:**
-- All 3 modules added to `vdna2_director.py` skills dict (now 24 skills)
-- Phase 10 expanded with 3 new sub-phases:
-  - 10.8: API Quota & Reliability Check
-  - 10.9: License Compliance
-  - 10.10: Content Calendar Alignment
-  - 10.11: Telegram Summary (enhanced with reliability + license + calendar data)
+- New `_load_background_images_filtered()` replaces `_load_background_images()` in `create_thumbnail()`
+- Collects candidate paths → `_rank_images_by_relevance()` → loads only filtered images
+- Falls back to unfiltered if ALL images rejected
 
 **Tested:**
-- All 3 modules import and compile cleanly
-- All 3 pass smoke tests (quota status, license report, calendar alignment)
-- Director compiles cleanly with all new imports
-- Skills dict: 24 skills loaded (was 21)
+- Yoga topic: `scene_img_0.jpg` (5 faces) correctly REJECTED → 4/5 images passed
+- Political topic: face filter allows up to 4 faces
+- Module imports clean, all 9 new methods verified
 
-**COMMIT:** ff10201
-**FILES:** `modules/upload_reliability_v3.py` (+145 lines), `modules/license_compliance_v3.py` (+70 lines), `modules/content_calendar_v3.py` (+70 lines), `modules/vdna2_director.py` (+60 lines in Phase 10)
-
----
-
-## 2026-06-21
-
-### 20:00 IST — Tier 3 Remaining Agents Port (Complete Old Pipeline Coverage)
-
-**Problem:** VDNA 3.0 was still missing 11 agents from the old multi-agent pipeline: primetime scheduling, cleanup, continuous auditing, fact-checking, compliance verification, ad-friendly checking, growth intelligence, blog companion, newsletter digest, collaboration tracking, and audience channel management. These represent the final gaps between old and new pipelines.
-
-**Solution — 11 new modules ported from old pipeline:**
-
-| Module | Class | Ported From | Key Methods |
-|--------|-------|-------------|-------------|
-| `modules/primetime_scheduler_v3.py` (+100 lines) | `PrimetimeScheduler` | `PrimetimeSchedulerAgent` | `get_run_mode()`, `get_upload_schedule()` |
-| `modules/cleanup_agent_v3.py` (+130 lines) | `CleanupAgent` | `CleanupAgent` | `cleanup()`, `check_disk_space()` |
-| `modules/continuous_auditor_v3.py` (+115 lines) | `ContinuousAuditor` | `ContinuousAuditorAgent` | `audit_pipeline_run()`, `commit_telemetry()` |
-| `modules/fact_check_v3.py` (+65 lines) | `FactCheckV3` | `FactCheckAgent` | `check_script()` |
-| `modules/compliance_check_v3.py` (+55 lines) | `ComplianceCheckV3` | `ComplianceAgent` | `check_compliance()` |
-| `modules/ad_friendly_check_v3.py` (+50 lines) | `AdFriendlyCheckV3` | `AdFriendlyCheckAgent` | `check_content()` |
-| `modules/intelligence_agent_v3.py` (+110 lines) | `IntelligenceAgentV3` | `IntelligenceAgent` | `analyze()` |
-| `modules/blog_companion_v3.py` (+50 lines) | `BlogCompanionV3` | `BlogCompanionAgent` | `generate()` |
-| `modules/newsletter_agent_v3.py` (+50 lines) | `NewsletterAgentV3` | `NewsletterAgent` | `generate()` |
-| `modules/collaboration_agent_v3.py` (+50 lines) | `CollaborationAgentV3` | `CollaborationAgent` | `run()` |
-| `modules/audience_channel_manager_v3.py` (+70 lines) | `AudienceChannelManagerV3` | `AudienceChannelManagerAgent` | `notify()` |
-
-**Integration:**
-- All 11 modules added to `vdna2_director.py` skills dict (now 35 skills)
-- Phase 0 (Pre-Pipeline) added with 2 sub-phases:
-  - 0.1: Cleanup (temp file removal + disk space check)
-  - 0.2: Primetime Scheduling (run mode + upload schedule)
-- Phase 10 expanded with 9 new sub-phases:
-  - 10.11: Fact Check (Named Entity Verification)
-  - 10.12: Compliance Check
-  - 10.13: Ad-Friendly Check
-  - 10.14: Intelligence Analysis
-  - 10.15: Blog Companion
-  - 10.16: Newsletter Digest
-  - 10.17: Collaboration Tracking
-  - 10.18: Audience Channel Notifications
-  - 10.19: Continuous Auditor (Telemetry Commit)
-  - 10.20: Telegram Summary (enhanced with all new data)
-
-**Tested:**
-- All 11 modules import and compile cleanly
-- All 19 total new modules (Tier 1+2+3) import cleanly
-- Director compiles cleanly with all 35 skills
-- Skills dict: 35 skills loaded (was 16)
-
-**COMMIT:** e37ddc9
+**COMMIT:** f4fed56
+**FILES:** `modules/thumbnail_creator.py` (+311 lines)
 
 ---
 
-## 2026-06-21
+### 12:11 IST — VDNA 3.0 Run 20260621_0629
 
-### 16:00 IST — Forensic Growth Audit + Prune (v94.0)
+**Topic:** "Permanent yoga centres to be set up in A.P.'s Swarna Grama and Ward Secretariats" (CM Naidu + Baba Ramdev initiative)
 
-**FINDING:** 4 of 19 ported modules were dead weight — no measurable growth impact.
+**Growth Scorer:** 49/100 (WEAK, 1.0x) — Low audience fit for international commodity yoga news, but selected as highest-scored topic available.
 
-**PRUNED (D-tier, deleted):**
-- `community_poster_v3.py` — Generated weekly post schedule that was never consumed by any module
-- `ad_friendly_check_v3.py` — Channel not monetized (needs 1K subs + 4K watch hours)
-- `blog_companion_v3.py` — Generated blog articles but no blog exists to publish to
-- `newsletter_agent_v3.py` — Generated newsletter but no email list or platform exists
+**Results:**
+- All 3 videos produced with 5/5 images each — v88.0 image mismatch fix working perfectly
+- Scene 0: NewsRSS ✅ (100KB, The Hindu AP)
+- Scene 1-4: Serper ✅ (relaxed gate accepting quality images despite 0 keyword overlap)
+- Short2 Scene 4: PIL fallback ✅ (API sources exhausted, PIL filled the gap)
+- Voice: Edge-TTS PrabhatNeural — Main 1689KB (~73s), Short1 472KB, Short2 546KB, Short3 559KB
+- All 10/10 phases completed, 0 errors
+- Forensic audit: PASSED
+- Upload: 3 videos uploaded as private
 
-**GRADE SUMMARY (19 modules audited):**
-- A-tier (direct growth driver, keep+wire): 3 — upload_reliability, retention_analyzer, primetime_scheduler
-- B-tier (indirect growth, keep+improve): 5 — community_engagement, content_quality, content_calendar, fact_check, audience_channel_manager
-- C-tier (operational hygiene, keep): 6 — license_compliance, cleanup_agent, continuous_auditor, compliance_check, intelligence_agent, collaboration_agent
-- D-tier (dead weight, pruned): 4 — community_poster, ad_friendly_check, blog_companion, newsletter_agent
-- F-tier (actively harmful): 1 — competitor_intel (hardcoded fake data, wastes quota)
-
-**CRITICAL GAPS IDENTIFIED (not yet built):**
-1. Thumbnail A/B testing — no module generates multiple thumbnails
-2. Title optimization — no A/B testing of titles
-3. Real competitor intelligence — competitor_intel has hardcoded data
-4. Upload scheduling — primetime_scheduler detects optimal time but doesn't delay upload
-5. Series funnel execution — retention_analyzer generates plans but pipeline never produces series
-6. Engagement loop — no comment response or pinning
-7. Shorts-specific optimization — no hook/format optimization for Shorts feed
-8. Cross-platform distribution — no Reels/Facebook/X clipping
-9. Subscribe CTA optimization — hardcoded CTA in script template
-10. Retention curve analysis — no YouTube Analytics retention curve parsing
-
-**REMAINING MODULES:** 15 (was 19)
-**SKILLS IN DIRECTOR:** 28 (was 32)
+**YouTube URLs (private):**
+- Main: https://www.youtube.com/watch?v=lvxICCFRN7g
+- Short1: https://www.youtube.com/watch?v=EJl-E9lDdIM
+- Short2: https://www.youtube.com/watch?v=r6ZCn5Ud8ik
 
 ---
 
-## 2026-06-21
+### 11:59 IST — Image Mismatch Fix v88.0 (12 videos affected)
 
-### 23:30 IST — 10 Critical Growth Gaps: Build + Wire (v95.0)
+**Problem:** 12 out of 25 videos had image count mismatches — API sources returned fewer images than `num_scenes`, causing static/frozen frames. Worst cases: "Driver Dead" videos had 0/5 images (fully static). SSC Main had only 2/3 images for 58.8s.
 
-**CONTEXT:** Forensic audit (v94.0) identified 10 critical growth gaps. This commit builds all 10 and wires them into the pipeline.
+**Root Causes:**
+1. NewsRSS only returned 1 article per topic; subsequent scenes got nothing (dedup starvation)
+2. Serper off-topic rejection too aggressive — rejected images with 0 keyword overlap even when quality was good
+3. RSS keyword overlap threshold >=3 too strict for niche topics (e.g. "SSC Supplementary Results")
+4. Assembly had no partial-fill logic — only triggered PIL fallback on completely empty results
 
-**8 NEW MODULES (+1,050 lines):**
+**Solution:**
+- `video_assembler.py`: Added partial-fill logic — when API returns < num_scenes images, remaining slots filled with PIL fallback (0.13s each on CPU)
+- `video_assembler.py`: Relaxed Serper off-topic gate — accept images that pass quality checks even with 0 keyword overlap (only reject non-news-domain images)
+- `video_assembler.py`: Added generic news visual words to topic set ("india", "people", "crowd", "protest", etc.)
+- `news_image_fetcher.py`: Lowered keyword overlap threshold from >=3 to >=2
+- `video_assembler.py`: RSS fetcher now requests 3 candidates per scene instead of 1
 
-| Module | Gap Addressed | Wired Into |
-|--------|--------------|------------|
-| `thumbnail_ab_tester.py` | Gap 1: No thumbnail A/B testing | Phase 5 (post-thumbnail) |
-| `title_optimizer_v3.py` | Gap 2: No title A/B testing | Phase 5 (post-thumbnail) |
-| `engagement_loop.py` | Gap 6: No comment pinning/response | Phase 10.18 |
-| `shorts_optimizer_v3.py` | Gap 7: No Shorts hook/format optimization | Phase 7 (shorts assembly) |
-| `cross_platform_distributor.py` | Gap 8: No Reels/FB/X clipping | Phase 10.20 |
-| `subscribe_cta_optimizer.py` | Gap 9: Hardcoded CTA | Phase 10.19 |
-| `retention_curve_analyzer.py` | Gap 10: No retention curve parsing | Phase 10.21 |
-| `competitor_intel_v3.py` | Gap 3: Hardcoded fake data → YouTube Data API | Phase 10.22 |
+**Result:** All scenes now guaranteed to have an image — either from API sources or PIL fallback. No more static videos.
 
-**DIRECTOR CHANGES (`vdna2_director.py`):**
-- Removed old `ctr_optimizer`, `shorts_optimizer`, `upload_time_optimizer` imports + skill entries (replaced by superior v3 modules)
-- Added 8 new imports + 8 skill entries (36 total skills)
-- Phase 2 (weighting): content_calendar injects category rotation bonus (1.3x multiplier)
-- Phase 2.5 (new): content_quality pre-production gate — fact-check + bias detection BEFORE scripting
-- Phase 5 (thumbnail): thumbnail A/B testing + title optimization after thumbnail creation
-- Phase 6 (upload): primetime_scheduler enforces upload delay (sleeps until optimal window)
-- Phase 7 (shorts): shorts_optimizer_v3 generates hooks, titles, CTAs, descriptions
-- Phase 10.18: Engagement loop — pinned comment + engagement prompt generation
-- Phase 10.19: Subscribe CTA optimization — dynamic CTAs based on series plan
-- Phase 10.20: Cross-platform distribution plan — Reels/FB/X clipping strategy
-- Phase 10.21: Retention curve analysis — parses YouTube Analytics retention data
-- Phase 10.22: Competitor intel — YouTube Data API service injection for live scanning
-
-**GAP 4 (upload scheduling):** primetime_scheduler now sleeps until optimal window instead of just printing recommendation.
-**GAP 5 (series funnel):** retention_analyzer series plan stored in state; subscribe_cta reads it for series-aware CTAs.
-
-**SKILLS IN DIRECTOR:** 36 (was 28)
-**TOTAL MODULES:** 37 (was 29)
-
-**COMMIT:** 3ebc608
-**FILES:** 8 new modules, `modules/vdna2_director.py` (+200 lines for 10 new sub-phases)
-
----
-
-## 2026-06-21
-
-### 17:04 IST — Pipeline Run + Bug Fixes (v95.1)
-
-**PIPELINE RUN 20260621_1134:**
-- Topic: "Man kills three daughters, hangs self in Andhra Pradesh"
-- Phase 0: Cleanup 87 files, primetime mode (16 IST), recommended upload 18:00 IST
-- Phase 1: 50 candidates from RSS (37+4+10+6), 0 from Reddit/YouTube/Inshorts
-- Phase 2: Growth alignment scored — top topic 46/100 (WEAK — commoditized)
-- Phase 2.5: Quality gate — score 0/100 (key mismatch), fact-check UNCERTAIN (no article text)
-- Phase 3: Script generated (89s)
-- Phase 4: TTS via Edge-TTS PrabhatNeural
-- Phase 5: 5 scene images (PIL fallback on CPU), thumbnail A/B scored 81/100, title optimized 63/100
-- Phase 6: Main 89.2s 1280×720 + 2 Shorts (13.4s, 18.2s) 1080×1920
-- Phase 10: Engagement loop, CTA, cross-platform plan, retention (no curve data), competitor (no YT service)
-- Upload: skipped (VIRALDNA_UPLOAD_ENABLED=false)
-- Telegram: failed (India ban — Network unreachable)
-- **Result: 3 videos, 0 errors**
-
-**BUG FIXES (commit 3d848cd):**
-1. `PostFilter.run()` doesn't accept `category_bonus` kwarg — moved bonus to post-processing
-2. `content_quality.check_quality()` → `run_quality_check(script_text=...)`
-3. `fact_check.fact_check_script()` → `check_script()`
-4. Quality score key: `overall_pass` not `quality_score` — added fallback chain
-5. Fact check verdict: `verdict` key (VERIFIED/PASS/UNCERTAIN) not `verified` boolean
-
-**COMMIT:** 3d848cd
-**FILES:** `modules/vdna2_director.py` (20 insertions, 8 deletions)
+**COMMIT:** 183734c
