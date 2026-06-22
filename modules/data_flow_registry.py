@@ -11,6 +11,7 @@ class NewsPayload:
         self.source = str(data.get("source", "")).strip()
         self.rag_context = str(data.get("rag_context", "No additional background context.")).strip()
         self.trending_score = str(data.get("trending_score", "normal")).strip()
+        self.published = str(data.get("published", "")).strip()
         self.validate()
 
     def validate(self):
@@ -27,6 +28,7 @@ class NewsPayload:
             "source": self.source,
             "rag_context": self.rag_context,
             "trending_score": self.trending_score,
+            "published": str(self.published) if hasattr(self, "published") else "",
         }
 
 

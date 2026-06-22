@@ -493,8 +493,8 @@ class VDNA2Director:
         for t in topics:
             pub_date_str = t.get("published", t.get("date", ""))
             if not pub_date_str:
-                # No publish date — reject (can't verify freshness)
                 rejected += 1
+                print(f"      🚫 No date: {t.get('title', 'N/A')[:50]}")
                 continue
             try:
                 if isinstance(pub_date_str, str):
@@ -505,11 +505,14 @@ class VDNA2Director:
                     pub_date = pub_date_str
                 if pub_date < cutoff:
                     rejected += 1
-                    continue  # Too old — hard reject
+                    age_h = (now_utc - pub_date).total_seconds() / 3600
+                    print(f"      🚫 Too old ({age_h:.1f}h): {t.get('title', 'N/A')[:50]}")
+                    continue
                 fresh.append(t)
-            except Exception:
+            except Exception as e:
                 rejected += 1
-                continue  # Unparseable date — reject
+                print(f"      🚫 Parse error ({e}): {t.get('title', 'N/A')[:50]} | date='{pub_date_str}'")
+                continue
         if rejected:
             print(f"   🚫 Freshness gate: rejected {rejected} stale topic(s) from {source_label}")
         return fresh
