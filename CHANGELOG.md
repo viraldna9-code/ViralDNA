@@ -7,7 +7,22 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-22
 
-### 10:30 IST — Fix: Enforce Current Viral News — 3-Layer Recency Fix (v96.2)
+### 10:48 IST — Fix: Hard Freshness Gate at Discovery — Reject Stale Topics Before Scoring (v96.3)
+
+**Problem:** Even with 3-layer recency scoring (v96.2), stale topics still entered the scoring pipeline. The Telugu keyword boost could still push an old topic to the top if no fresh topics had strong scores.
+
+**Fix:** Added `_hard_freshness_gate()` in `vdna2_director.py` that runs immediately after `td.run()` returns, BEFORE any scoring/weighting.
+
+**Gate rules:**
+- No publish date = REJECT (cannot verify freshness)
+- Older than `lookback_hours` (12h) = REJECT (hard gate)
+- Unparseable date = REJECT
+
+**Also fixed:** `trending_rss` call in `trend_discovery.py` was missing `lookback_hours` parameter.
+
+**Result:** Stale topics never reach Phase 2 (weighting) or Phase 2.5 (quality gate). The pipeline will only score and produce videos for content published within the last 12 hours.
+
+### 10:41 IST — Fix: Enforce Current Viral News — 3-Layer Recency Fix (v96.2)
 
 **Problem:** Pipeline picked old news (Yoga Centres scheme announcement) because recency was weighted too low (max 15 pts) vs Telugu keyword boost (max 20 pts). A 3-day-old Andhra article could beat a 30-min-old breaking story.
 
