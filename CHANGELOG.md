@@ -7,6 +7,23 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ## 2026-06-22
 
+### 10:30 IST — Fix: Enforce Current Viral News — 3-Layer Recency Fix (v96.2)
+
+**Problem:** Pipeline picked old news (Yoga Centres scheme announcement) because recency was weighted too low (max 15 pts) vs Telugu keyword boost (max 20 pts). A 3-day-old Andhra article could beat a 30-min-old breaking story.
+
+**Root cause:** Three layers all had weak recency enforcement:
+1. `_poll_rss_sources` had NO date filtering — RSS items of any age passed through
+2. `post_filter.py` recency maxed at 15 points, Telugu boost was 20 — stale Telugu news always won
+3. `growth_alignment.py` had zero recency component — stale topics got no penalty
+
+**Fix 1 — trend_discovery.py:** Added hard date filter to `_poll_rss_sources`. RSS items older than `lookback_hours` (default 12h) are rejected at discovery. `published` field now passed through in topic payload.
+
+**Fix 2 — post_filter.py:** Recency score increased from 0-15 to 0-35. New tiers: <1h=35, <3h=30, <6h=20, <12h=10, >24h=5, >48h=0 (hard gate). No-date items get 3 (suspicious).
+
+**Fix 3 — growth_alignment.py:** Added `score_recency()` as 6th dimension (0-20 pts). New tiers: <1h=20, <3h=16, <6h=12, <12h=8, <24h=4, >24h=0. Growth score scale now 0-120 (was 0-100).
+
+**Result:** Old scheme announcements will no longer outrank current viral news. Fresh breaking stories get maximum boost at all 3 layers.
+
 ### 00:44 IST — Color Scheme: Match Channel Profile Pic (v96.1)
 
 **Change:** Updated video color scheme to match The Viral DNA channel profile pic.
