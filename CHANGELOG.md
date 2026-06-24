@@ -5,6 +5,40 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ---
 
+## 2026-06-24 (continued)
+
+### 15:30 IST — Thumbnail Fix v22.1: Source Suffix Stripping + Category False Positive
+
+**Problem:** Generated thumbnails contained wrong text:
+1. "Telangana Today" appeared in headline — Google News RSS appends ` - Source Name` to article titles
+2. "Tech Report" instead of "Policy Watch" — category detector false-matched `"ai "` on Indian name "**Sai** Krishna"
+
+**Root Causes:**
+1. `thumbnail_creator.py` line 898 only stripped `|` segments from titles, not `- Source` suffixes
+2. Category detection keyword `"ai "` (TECHNOLOGY) matched "Sai" in person names (Gade Sai Krishna)
+
+**What changed — `modules/data_flow_registry.py` (NewsPayload):**
+- Added `import re` at module level
+- `NewsPayload.__init__()` now strips trailing ` - Source Name` from raw titles before storing
+- Uses known-sources list of 35+ Indian/international news outlets (Telangana Today, NDTV, BBC, The Hindu, Reuters, Eenadu, etc.)
+- Regex: `r'\s*-\s+(Source1|Source2|...)$'` — anchored at end, sorted longest-first
+- Class-level compiled regex cache via `_get_source_re()` classmethod
+- This fix propagates to ALL downstream consumers: thumbnails, video titles, YouTube uploads, shorts, scripts
+
+**What changed — `modules/thumbnail_creator.py` (category detection):**
+- Changed `"ai "` to `" ai "` (with leading space) to avoid matching Indian names like "Sai"
+- Added court/litigation keywords to POLICY category: "court", "high court", "pil", "litigation"
+
+**Result:**
+- Thumbnail headline now shows: "Andhra Pradesh High Court adjourns PIL on custodial death of Gade Sai Krishna" (no source suffix)
+- Subtitle now shows: "The Viral DNA | Policy Watch" (not "Tech Report")
+- Future pipeline runs generate clean thumbnails from source — no manual pixel-covering needed
+
+**COMMIT:** a826cc2 (data_flow_registry) + fb9eaf9 (thumbnail_creator)
+**FILES:** `modules/data_flow_registry.py` (+28 lines), `modules/thumbnail_creator.py` (keyword fix)
+
+---
+
 ## 2026-06-24
 
 ### 14:00 IST — Typewriter Renderer v88.0: Background Images + Ken Burns (News Broadcast Upgrade)
