@@ -73,8 +73,9 @@ class TypewriterRenderer:
         Searches multiple sources in priority order:
         1. slideshow_production_{slug}/ (Serper-fetched real news photos)
         2. runtime_dir/slideshow_production_main/
-        3. runtime_dir/ (any scene_img_*, viz_news_*, scene_* files)
-        4. Local image pack fallback
+        3. output/runtime/sd_scenes/ (stable diffusion / image pack fallback)
+        4. runtime_dir/ (any scene_img_*, viz_news_*, scene_* files)
+        5. Local image pack fallback
         
         Returns list of image paths (may be fewer than num_scenes).
         """
@@ -88,6 +89,25 @@ class TypewriterRenderer:
             search_dirs.append(os.path.join(runtime_dir, "slideshow_production_main"))
             search_dirs.append(os.path.join(runtime_dir, f"slideshow_{topic_slug}_main"))
             search_dirs.append(runtime_dir)
+
+        # v88.1: Also search the output/runtime/ directory (where sd_scenes lives)
+        try:
+            from modules import config as _cfg
+            _runtime = _cfg.DRIVE.get("RUNTIME", "")
+            if _runtime and os.path.isdir(_runtime):
+                if _runtime not in search_dirs:
+                    search_dirs.append(_runtime)
+                # Check for sd_scenes subdirectory
+                _sd = os.path.join(_runtime, "sd_scenes")
+                if os.path.isdir(_sd):
+                    search_dirs.insert(0, _sd)  # Highest priority
+                # Check for topic-specific subdirectories
+                if topic_slug:
+                    _topic_dir = os.path.join(_runtime, topic_slug)
+                    if os.path.isdir(_topic_dir):
+                        search_dirs.insert(0, _topic_dir)
+        except Exception:
+            pass
 
         for sdir in search_dirs:
             if not os.path.isdir(sdir):
