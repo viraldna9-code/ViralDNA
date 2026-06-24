@@ -1001,7 +1001,8 @@ class VDNA2Director:
                     main_filename, audio_path, None,
                     main_filename, target_duration,
                     async_mode=False, script_text=main_text_display,
-                    is_short=False, topic_title=topic.get("title", "")
+                    is_short=False, topic_title=topic.get("title", ""),
+                    topic_slug=topic_slug,
                 )
                 main_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], main_filename)
                 if os.path.exists(main_path) and os.path.getsize(main_path) > 100000:
@@ -1026,7 +1027,8 @@ class VDNA2Director:
                     short_filename, short_audio, None,
                     short_filename, short_duration,
                     async_mode=False, script_text=short_text_display,
-                    is_short=True, topic_title=topic.get("title", "")
+                    is_short=True, topic_title=topic.get("title", ""),
+                    topic_slug=topic_slug,
                 )
                 short_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], short_filename)
                 if os.path.exists(short_path) and os.path.getsize(short_path) > 50000:

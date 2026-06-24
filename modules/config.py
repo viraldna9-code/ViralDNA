@@ -1,4 +1,4 @@
-# VERSION: 50.4
+# VERSION: 50.5 (v88.0: typewriter renderer background images + Ken Burns)
 # MODULE: config.py
 # PURPOSE: Central configuration for ViralDNA pipeline
 #          v50.4: Added growth-critical defaults (embeddable, publicStatsViewable,

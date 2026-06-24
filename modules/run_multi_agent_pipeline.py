@@ -1271,7 +1271,8 @@ class SequentialAssemblyAgent(BaseAgent):
                     main_filename, audio_path, background_canvas,
                     main_filename, main_seg["target_duration_s"],
                     async_mode=False, script_text=main_seg["text"], is_short=False,
-                    topic_title=selected_topic.get("title", "")
+                    topic_title=selected_topic.get("title", ""),
+                    topic_slug=topic_slug,
                 )
                 main_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], main_filename)
                 if self._validate_compiled_video(main_path):
@@ -1293,7 +1294,8 @@ class SequentialAssemblyAgent(BaseAgent):
                         short_filename, short_audio, background_canvas,
                         short_filename, short_seg["target_duration_s"],
                         async_mode=False, script_text=short_seg["text"], is_short=True,
-                        topic_title=selected_topic.get("title", "")
+                        topic_title=selected_topic.get("title", ""),
+                        topic_slug=topic_slug,
                     )
                     short_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], short_filename)
                     if self._validate_compiled_video(short_path):

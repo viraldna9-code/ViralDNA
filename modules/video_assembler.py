@@ -1445,7 +1445,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     def assemble_video(self, slot, audio_path, visual_path, output_name,
                        target_duration_s: float = 30.0, async_mode: bool = False,
                        script_text: str = None, is_short: bool = False,
-                       topic_title: str = ""):
+                       topic_title: str = "", topic_slug: str = None):
         output_path = os.path.join(config.DRIVE["VIDEO_OUTPUT"], output_name)
 
         real_duration = self.get_audio_duration(audio_path)
@@ -1457,12 +1457,18 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         duration_str = f"{target_duration_s:.2f}"
         runtime_dir = os.path.dirname(audio_path)
 
+        # v88.0: Derive topic_slug from output_name if not provided
+        if not topic_slug:
+            # output_name format: {topic_slug}_Main.mp4 or {topic_slug}_Short1.mp4
+            topic_slug = output_name.replace(".mp4", "").split("_")[0]
+
         if is_short:
             out_w, out_h = 1080, 1920
         else:
             out_w, out_h = 1280, 720
 
         # VDNA 3.0: No subtitles — text is burned directly onto video by typewriter renderer
+        # v88.0: Typewriter now supports background images from runtime_dir
 
         # VDNA 3.0: Typewriter text scenes (replaces entire image pipeline)
         scene_clip_paths = []
@@ -1489,6 +1495,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                     out_w=out_w,
                     out_h=out_h,
                     is_short=is_short,
+                    runtime_dir=runtime_dir,
+                    topic_slug=topic_slug,
+                    ken_burns=True,
                 )
             except Exception as e:
                 print(f"    Assembler: Typewriter renderer failed: {e}")
@@ -1537,6 +1546,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 out_w=out_w,
                 out_h=out_h,
                 is_short=is_short,
+                bg_image_path=None,  # Fallback uses dark background
             )
         except Exception as e:
             print(f"    Assembler: Full text fallback also failed: {e}")

@@ -5,6 +5,40 @@ Format: `STATUS | DATE | WHAT | DETAIL`
 
 ---
 
+## 2026-06-24
+
+### 14:00 IST — Typewriter Renderer v88.0: Background Images + Ken Burns (News Broadcast Upgrade)
+
+**Problem:** Videos rendered as solid dark blue background + text only. No background imagery. Looked like a terminal screen, not a news broadcast. Poor CTR compared to thumbnails which have real news images.
+
+**What changed — `typewriter_renderer.py` (full rewrite):**
+- **Background images:** Renderer now accepts optional background images per scene. Real news photos (scene_img_*) from `runtime_dir` are layered behind text. Falls back to dark background if no images available.
+- **Ken Burns effect:** Slow zoom (100% to 105%) over scene duration using ffmpeg zoompan filter. Adds subtle motion to static images for professional broadcast feel.
+- **Text panel upgrade:** Semi-transparent dark panel (0x06060e@0.75) overlays background image behind text for readability. Red accent bar at top + gold accent line below.
+- **Text positioning:** Centered text with drop shadows, professional news lower-third feel.
+- **Image discovery:** `_find_background_images()` searches multiple paths in priority: scene_img_* (Serper/real photos) > viz_news_* > scene_* (image pack fallback). Filters watermarked/copyrighted images via EXIF. Minimum 320x240 resolution.
+- **Multi-scene support:** `render_all_scenes()` now accepts `runtime_dir` and `topic_slug` to auto-discover background images per video.
+
+**What changed — `video_assembler.py`:**
+- `assemble_video()` now accepts `topic_slug` parameter and passes `runtime_dir` + `topic_slug` to renderer for background image discovery.
+- Auto-derives `topic_slug` from `output_name` if not explicitly provided.
+
+**What changed — `vdna2_director.py` + `run_multi_agent_pipeline.py`:**
+- All `assemble_video()` calls now pass `topic_slug` to enable background image discovery.
+
+**What this means for viewers:**
+- Videos now show REAL news photos behind text — matches thumbnail quality
+- Professional news broadcast look: background image + text overlay + branding
+- Ken Burns zoom adds cinematic motion
+- Text remains perfectly readable over any background
+- Falls back gracefully to dark background if no images available
+
+**Technical notes:**
+- No new dependencies — uses same ffmpeg + optional PIL for EXIF filtering
+- Backward compatible: if no bg images found, behaves like v87.3 (dark bg + text)
+
+---
+
 ## 2026-06-22
 
 ### 23:00 IST — Typewriter Renderer Redesign + News Layout (v87.3)
