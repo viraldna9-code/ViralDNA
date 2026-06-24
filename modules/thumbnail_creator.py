@@ -101,13 +101,13 @@ class ThumbnailCreator:
         categories = {
             "DISASTER": ["flood", "cyclone", "earthquake", "disaster", "tragedy", "collapse", "fire accident", "accident"],
             "CRIME": ["murder", "theft", "arrest", "police", "crime", "scam", "fraud", "drug", "gang"],
-            "POLICY": ["scheme", "welfare", "policy", "government", "bill", "act", "law", "regulation"],
-            "POLITICS": ["election", "party", "minister", "cm ", "mla", "mp ", "vote", "campaign", "bypoll"],
+            "POLICY": ["scheme", "welfare", "policy", "government", "bill", "act", "law", "regulation", "court", "high court", "pil", "litigation"],
+            "POLITICS": ["election", "party", "minister", "cm ", "mla", "mp ", "vote", "campaign", "bypoll", "congress", "bjp", "tdp", "ysrcp", "janasena", "chandrababu", "mamata"],
             "ECONOMICS": ["budget", "tax", "price", "market", "economy", "gst", "inflation", "trade"],
             "SPORTS": ["cricket", "match", "tournament", "ipl", "player", "score", "win", "sports", "game"],
             "ENTERTAINMENT": ["movie", "film", "actor", "actress", "tollywood", "cinema", "song", "music", "album"],
             "HEALTH": ["hospital", "doctor", "health", "disease", "covid", "medicine", "medical", "vaccine"],
-            "TECHNOLOGY": ["tech", "ai ", "app", "software", "digital", "cyber", "mobile", "internet", "startup"],
+            "TECHNOLOGY": ["tech ", " ai ", "app ", "software", "digital", "cyber", "mobile ", "internet", "startup", "artificial intelligence"],
         }
         for cat, keywords in categories.items():
             if any(kw in text for kw in keywords):
@@ -896,6 +896,10 @@ class ThumbnailCreator:
             title = title_text.strip()
             # Remove trailing pipe segments for cleaner display
             title = re.sub(r'\s*[|]\s*[^|]*$', '', title).strip()
+            # Remove trailing " - Source Name" suffix from Google News RSS titles
+            # e.g. "Andhra High Court Adjourns PIL - Telangana Today" -> "Andhra High Court Adjourns PIL"
+            # Common Indian news sources: Telangana Today, NDTV, BBC, The Guardian, Times of India, etc.
+            title = re.sub(r'\s*-\s*(Telangana Today|Telugu News|NDTV|BBC|The Guardian|Times of India|Indian Express|Deccan Chronicle|Hindustan Times|ANI|PTI|IANS|UNI|Reuters|AP|AFP|Al Jazeera|News18|India Today| Zee News|Republic TV|NDTV India).*$', '', title, flags=re.IGNORECASE).strip()
 
             # A4.6: Adaptive font size based on title length
             font_size = self._get_adaptive_font_size(title)
@@ -949,10 +953,10 @@ class ThumbnailCreator:
                 "ENTERTAINMENT": "Entertainment Desk",
                 "HEALTH": "Health Desk",
                 "TECHNOLOGY": "Tech Report",
-                "DEFAULT": "Telugu News Report",
+                "DEFAULT": "News Report",
             }
             cat_label = category_labels.get(category, category_labels["DEFAULT"])
-            subtitle = f"The ViralDNA  |  {cat_label}  |  Telugu News"
+            subtitle = f"The Viral DNA  |  {cat_label}"
             self._draw_text_with_shadow(
                 draw,
                 (self.tr["margin_left"], text_y_start + len(lines) * line_spacing + 10),
