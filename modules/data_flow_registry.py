@@ -2,10 +2,37 @@
 # MODULE: data_flow_registry.py
 # PURPOSE: Strict Pipeline State Machine & Schema Validator (Zero-Tolerance)
 
+import re
+
+
 class NewsPayload:
     """Schema Validator for Discovery (Phase 1) Output."""
+    _KNOWN_SOURCES = [
+        "Telangana Today", "Telugu News", "The Hindu", "Times of India", "NDTV",
+        "BBC", "BBC News", "CNN", "Reuters", "Al Jazeera",
+        "Indian Express", "Deccan Chronicle", "Hindustan Times", "ANI", "PTI",
+        "IANS", "News18", "India Today", "Zee News", "Republic TV",
+        "Eenadu", "Andhra Jyothi", "Sakshi", "Vaartha",
+        "The Guardian", "Washington Post", "New York Times", "Bloomberg",
+        "Livemint", "Economic Times", "Business Standard", "Mint",
+        "Google News", "Yahoo News", "MSN News",
+    ]
+    _source_re = None
+
+    @classmethod
+    def _get_source_re(cls):
+        if cls._source_re is None:
+            sources = sorted(cls._KNOWN_SOURCES, key=len, reverse=True)
+            cls._source_re = re.compile(
+                r'\s*-\s+(' + '|'.join(re.escape(s) for s in sources) + r')$'
+            )
+        return cls._source_re
+
     def __init__(self, data: dict):
-        self.title = str(data.get("title", "")).strip()
+        raw_title = str(data.get("title", "")).strip()
+        # Strip trailing " - Source Name" that Google News RSS and other feeds append
+        # e.g. "Andhra High Court Adjourns PIL - Telangana Today" -> "Andhra High Court Adjourns PIL"
+        self.title = self._get_source_re().sub('', raw_title).strip()
         self.description = str(data.get("description", "")).strip()
         self.link = str(data.get("link", "")).strip()
         self.source = str(data.get("source", "")).strip()
