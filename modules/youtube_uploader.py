@@ -142,32 +142,48 @@ class YouTubeUploader:
 
     # ─── Upload Dedup: Title Similarity Check ───
     def _is_duplicate_title(self, new_title: str, existing_videos: list,
-                            threshold: float = 0.75) -> tuple:
+                            threshold: float = 0.50) -> tuple:
         """
         Check if new_title is too similar to any existing video title.
-        Uses word-overlap Jaccard similarity.
+        Uses word-overlap Jaccard similarity + prefix match detection.
+        v1.8.1: Lowered threshold from 0.75 to 0.50 to catch near-duplicates
+        (e.g., "Why It Matters" vs "What Happened" sharing 54% words).
+        Also detects prefix-identical titles where only the last word differs.
         Returns (is_duplicate: bool, matched_title: str or None)
         """
         if not existing_videos or not new_title:
             return False, None
 
-        new_words = set(new_title.lower().split())
-        if not new_words:
+        new_words = new_title.lower().split()
+        new_word_set = set(new_words)
+        if not new_word_set:
             return False, None
 
         for video in existing_videos:
             existing_title = video.get("title", "")
-            existing_words = set(existing_title.lower().split())
-            if not existing_words:
+            existing_words = existing_title.lower().split()
+            existing_word_set = set(existing_words)
+            if not existing_word_set:
                 continue
 
-            # Jaccard similarity: intersection / union
-            intersection = new_words & existing_words
-            union = new_words | existing_words
-            similarity = len(intersection) / len(union) if union else 0
+            # Check 1: Jaccard similarity (word set overlap)
+            intersection = new_word_set & existing_word_set
+            union = new_word_set | existing_word_set
+            jaccard_sim = len(intersection) / len(union) if union else 0
 
-            if similarity >= threshold:
+            if jaccard_sim >= threshold:
                 return True, existing_title
+
+            # Check 2: Prefix-identical detection (same words except last 1-2)
+            # Catches "DMK to boycott June 8 — Why It Matters" vs "DMK to boycott June 8 — What Happened"
+            if len(new_words) >= 5 and len(existing_words) >= 5:
+                # Compare first 80% of words (by count of shorter title)
+                min_len = min(len(new_words), len(existing_words))
+                prefix_len = max(3, int(min_len * 0.7))
+                new_prefix = new_words[:prefix_len]
+                existing_prefix = existing_words[:prefix_len]
+                if new_prefix == existing_prefix and jaccard_sim >= 0.45:
+                    return True, existing_title
 
         return False, None
 
@@ -848,23 +864,41 @@ class YouTubeUploader:
 
     # ─── Pinned Comment ───
     def _add_pinned_comment(self, video_id: str, comment_text: str) -> bool:
-        try:
-            self.service.commentThreads().insert(
-                part="snippet",
-                body={
-                    "snippet": {
-                        "videoId": video_id,
-                        "topLevelComment": {
-                            "snippet": {"textOriginal": comment_text}
+        """Add a top-level comment to the video with retry logic."""
+        max_attempts = 2
+        for attempt in range(1, max_attempts + 1):
+            try:
+                resp = self.service.commentThreads().insert(
+                    part="snippet",
+                    body={
+                        "snippet": {
+                            "videoId": video_id,
+                            "topLevelComment": {
+                                "snippet": {"textOriginal": comment_text}
+                            }
                         }
                     }
-                }
-            ).execute()
-            print(f"    🟢 Pinned comment added to {video_id}")
-            return True
-        except HttpError as e:
-            print(f"    ❌ Comment failed: {e}")
-            return False
+                ).execute()
+                comment_id = resp.get("id", "")
+                print(f"    🟢 Comment added to {video_id} (id: {comment_id})")
+                return True
+            except HttpError as e:
+                if e.resp.status == 403:
+                    print(f"    ⚠️ Comments disabled on {video_id} or quota exceeded")
+                    return False
+                elif e.resp.status == 429 and attempt < max_attempts:
+                    import time
+                    wait = 5 * attempt
+                    print(f"    ⏳ Rate limited, retrying in {wait}s...")
+                    time.sleep(wait)
+                    continue
+                else:
+                    print(f"    ⚠️ Comment failed ({e.resp.status}): {e}")
+                    return False
+            except Exception as e:
+                print(f"    ⚠️ Comment error: {e}")
+                return False
+        return False
 
     # ─── Playlist ───
     def _add_to_playlist(self, video_id: str, playlist_id: str) -> bool:
@@ -1793,9 +1827,10 @@ Output JSON array:"""
             best_variant = main_title_variants[0]
             title_raw = best_variant.get("title", "BREAKING NEWS")
 
-            # ── Dedup check for main video — only against other main videos, not shorts ──
-            main_existing = [v for v in existing_videos if not v.get("is_short", False)]
-            is_dup, matched = self._is_duplicate_title(title_raw, main_existing)
+            # ── Dedup check for main video — against ALL existing videos ──
+            # v1.8.1: Compare against all videos (including shorts) since
+            # _get_existing_video_titles doesn't provide is_short flag.
+            is_dup, matched = self._is_duplicate_title(title_raw, existing_videos)
             if is_dup:
                 print(f"  ⏭️ SKIPPING main video — duplicate title detected!")
                 print(f"     New:      \"{title_raw[:80]}\"")
@@ -1884,9 +1919,10 @@ Output JSON array:"""
                 best_variant = short_title_variants[0]
                 title_raw = best_variant.get("title", f"Short {s_idx}")
 
-                # ── Dedup check for short — only against other shorts, not main videos ──
-                short_existing = [v for v in existing_videos if v.get("is_short", False)]
-                is_dup, matched = self._is_duplicate_title(title_raw, short_existing)
+                # ── Dedup check for short — against ALL existing videos ──
+                # v1.8.1: Compare against all videos (including mains) since
+                # _get_existing_video_titles doesn't provide is_short flag.
+                is_dup, matched = self._is_duplicate_title(title_raw, existing_videos)
                 if is_dup:
                     print(f"  ⏭️ SKIPPING {short_key} — duplicate title detected!")
                     print(f"     New:      \"{title_raw[:80]}\"")

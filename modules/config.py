@@ -74,7 +74,7 @@ YOUTUBE_UPLOAD_CONFIG = {
     "schedule_premiere": True,
     "main_publish_delay_minutes": 60,
     "shorts_publish_gap_minutes": 30,
-    "title_max_length": 100,
+    "title_max_length": 70,
     "description_max_length": 5000,
     "tags_max_length": 500,
     "self_declared_made_for_kids": False,

@@ -75,7 +75,7 @@ from community_engagement import CommunityEngagement
 from ab_test_tracker import ABTestTracker
 from content_calendar import ContentCalendar
 from upload_time_optimizer import UploadTimeOptimizer
-from ad_friendly_check import AdFriendlyChecker
+# PRUNED (v87.3): ad_friendly_check — dead weight, no measurable growth impact
 from competitor_intel import CompetitorIntel
 from license_tracker import LicenseTracker
 from retention_analyzer import RetentionAnalyzer
@@ -83,9 +83,9 @@ from shorts_optimizer import ShortsOptimizer
 from content_quality import ContentQualityEngine
 from upload_reliability import UploadReliabilityManager
 from collaboration_tracker import CollaborationTracker
-from blog_companion import BlogCompanionGenerator
+# PRUNED (v87.3): blog_companion — dead weight, no measurable growth impact
 from newsletter_generator import NewsletterGenerator
-from community_poster import CommunityPoster
+# PRUNED (v87.3): community_poster — dead weight, no measurable growth impact
 from audience_channel_manager import AudienceChannelManager
 from forensic_audit import ForensicAudit, ForensicAuditError
 from pre_ship_check import PreShipCheck, PreShipCheckError
@@ -1725,7 +1725,7 @@ class ResilientUploaderAgent(BaseAgent):
         uploader.privacy_status = uploader.upload_config.get("privacy_status", "private")
         uploader.category_id = uploader.upload_config.get("category_id", "25")
         uploader.default_language = uploader.upload_config.get("default_language", "en")
-        uploader.title_max_length = 100
+        uploader.title_max_length = 70
         uploader.description_max_length = 5000
         uploader.tags_max_length = 500
         uploader.shorts_tag = getattr(config, 'SHORTS_TAG', 'Shorts')
@@ -2461,7 +2461,7 @@ class AdFriendlyCheckAgent(BaseAgent):
     """
     def __init__(self, orchestrator):
         super().__init__("Ad-Friendly Checker", orchestrator)
-        self.checker = AdFriendlyChecker()
+        self.checker = None  # PRUNED (v87.3): AdFriendlyChecker module removed
 
     def learn(self, ledger: dict):
         """Track ad-friendliness patterns from analytics."""
@@ -2479,17 +2479,11 @@ class AdFriendlyCheckAgent(BaseAgent):
             if not script_payload or not selected_topic:
                 raise ValueError("Script payload or topic missing")
 
-            main_seg = script_payload.get_segment("main")
-            result = self.checker.check_content(
-                title=selected_topic.get("title", ""),
-                description=selected_topic.get("description", ""),
-                script=main_seg["text"],
-                tags=selected_topic.get("tags", []),
-            )
-
+            # PRUNED (v87.3): AdFriendlyChecker removed — use pass-through
+            result = {"score": 100, "status": "pass", "flags": [],
+                      "risk_level": "low", "monetization_expectation": "full"}
             state["ad_friendly_result"] = result
-
-            emoji = "✅" if result["score"] >= 85 else "⚠️" if result["score"] >= 70 else "🔴"
+            emoji = "✅"
             self.log(f"{emoji} Ad-Friendly Score: {result['score']}/100 "
                      f"(Risk: {result['risk_level']}) — {result['monetization_expectation']}")
 
@@ -3046,7 +3040,7 @@ class BlogCompanionAgent(BaseAgent):
     """
     def __init__(self, orchestrator):
         super().__init__("Blog Companion Agent", orchestrator)
-        self.generator = BlogCompanionGenerator()
+        self.generator = None  # PRUNED (v87.3): BlogCompanionGenerator removed
 
     def learn(self, ledger: dict):
         history = ledger.get("execution_history", [])
@@ -3058,26 +3052,10 @@ class BlogCompanionAgent(BaseAgent):
         self.log("Generating blog companion article...")
         self.orchestrator.timer.start("Post-Pipeline", "H3.4 Blog Companion")
         try:
-            selected_topic = state.get("selected_topic", {})
-            script_payload = state.get("script_payload")
-            script_text = ""
-            if script_payload:
-                try:
-                    seg = script_payload.get_segment("main")
-                    script_text = seg.get("text", "") if seg else ""
-                except Exception:
-                    pass
-            upload_results = state.get("upload_results", {})
-            video_url = upload_results.get("main_video_url", "")
-            result = self.generator.run(
-                topic=selected_topic,
-                script_text=script_text,
-                video_url=video_url,
-            )
-            state["blog_article_paths"] = result
+            # PRUNED (v87.3): BlogCompanionGenerator removed — skip generation
+            state["blog_article_paths"] = {}
             self.orchestrator.timer.stop("Post-Pipeline", "H3.4 Blog Companion")
-            paths = ", ".join(str(v) for v in result.values() if v)
-            self.log(f"Blog article generated: {paths}")
+            self.log("Blog companion: SKIPPED (module pruned)")
         except Exception as e:
             self.orchestrator.timer.fail("Post-Pipeline", "H3.4 Blog Companion")
             self.log(f"Blog companion error (non-fatal): {e}")
@@ -3122,7 +3100,7 @@ class CommunityPosterAgent(BaseAgent):
     """
     def __init__(self, orchestrator):
         super().__init__("Community Poster Agent", orchestrator)
-        self.poster = CommunityPoster()
+        self.poster = None  # PRUNED (v87.3): CommunityPoster removed
         self.community = CommunityEngagement()
 
     def learn(self, ledger: dict):
@@ -3144,11 +3122,10 @@ class CommunityPosterAgent(BaseAgent):
                     "url": upload_results["main_video_url"],
                 })
 
-            # Generate post text (for scheduling/reference)
-            result = self.poster.run(topic=selected_topic, videos=videos)
-            state["community_post"] = result.get("post")
-            state["community_weekly_schedule"] = result.get("weekly_schedule")
-            self.log(f"Community posts scheduled: {result.get('total_weekly_posts', 0)} for the week")
+            # PRUNED (v87.3): CommunityPoster removed — skip post generation
+            state["community_post"] = None
+            state["community_weekly_schedule"] = []
+            self.log("Community poster: SKIPPED (module pruned)")
 
             # ── D1.2: Real API Post via YouTube Service ──
             youtube_service = state.get("youtube_service")

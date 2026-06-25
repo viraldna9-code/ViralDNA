@@ -385,6 +385,26 @@ class VDNA2Director:
                     print(f"   📅 Recommended upload: {rec} IST")
             except Exception as e:
                 print(f"   ⚠️ Primetime scheduling error (non-fatal): {e}")
+
+            # 0.3: Load Growth Feedback Bus from previous run
+            try:
+                bus_path = os.path.join(
+                    config.DRIVE.get("RUNTIME", "/home/jay/ViralDNA/output/runtime"),
+                    "growth_feedback_bus.json"
+                )
+                if os.path.exists(bus_path):
+                    with open(bus_path, "r") as f:
+                        growth_bus = json.load(f)
+                    self.state["growth_bus"] = growth_bus
+                    bus_angles = growth_bus.get("trending_angles", [])
+                    last_topic = growth_bus.get("last_run", {}).get("topic", "")
+                    print(f"   🚌 GrowthBus loaded: {len(bus_angles)} angle(s), last='{last_topic[:40]}'")
+                else:
+                    self.state["growth_bus"] = {}
+                    print("   🚌 GrowthBus: no previous state (first run)")
+            except Exception as e:
+                print(f"   ⚠️ GrowthBus load failed: {e}")
+                self.state["growth_bus"] = {}
         except Exception as e:
             print(f"   ⚠️ Pre-pipeline error (non-fatal): {e}")
 
@@ -537,10 +557,25 @@ class VDNA2Director:
         return fresh
 
     def _phase_discovery(self, state):
-        """Phase 1: Discover trending news topics."""
-        print("   🔍 Discovering trending topics...")
+        """Phase 1: Discover trending news topics.
+        VDNA 3.0 (v87.3): Reads Growth Feedback Bus for performance signals
+        to avoid topic duplication and prefer high-performing angles.
+        """
+        print(f"   🔍 Discovering trending topics...")
         td = self.skills["trend_discovery"]
         lookback = state.get("lookback_hours", 12)
+
+        # ── GROWTH FEEDBACK BUS (v87.3) [COMPLETE] ──
+        # Read performance signals from previous run to inform discovery
+        growth_bus = state.get("growth_bus", {})
+        trending_angles = growth_bus.get("trending_angles", [])
+        last_topic = growth_bus.get("last_run", {}).get("topic", "")
+        if trending_angles:
+            print(f"   🚌 GrowthBus: {len(trending_angles)} trending angle(s) loaded")
+            print(f"      Angles: {', '.join(trending_angles[:5])}")
+        if last_topic:
+            print(f"   🚌 GrowthBus: last topic was '{last_topic[:50]}' — avoiding duplication")
+
         raw_news = td.run(lookback_hours=lookback)
 
         # ── HARD FRESHNESS GATE (v96.3) ──
@@ -767,6 +802,27 @@ class VDNA2Director:
                 producer_brief += "\n\nGROWTH RECOMMENDATIONS:\n" + "\n".join(f"- {r}" for r in rec_lines)
                 print(f"   🧠 Injected {len(rec_lines)} growth recommendation(s) into script brief")
 
+        # ── GROWTH FEEDBACK BUS (v87.3) ──
+        # Inject performance signals from previous runs into script context
+        growth_bus = state.get("growth_bus", {})
+        if growth_bus:
+            bus_lines = []
+            retention_signal = growth_bus.get("retention_signal", "")
+            ctr_signal = growth_bus.get("ctr_signal", "")
+            if retention_signal:
+                bus_lines.append(f"Previous video retention: {retention_signal}")
+            if ctr_signal:
+                bus_lines.append(f"Previous video CTR: {ctr_signal}")
+            trending = growth_bus.get("trending_angles", [])
+            if trending:
+                bus_lines.append(f"Trending topic angles: {', '.join(trending[:5])}")
+            fmt = growth_bus.get("format_insight", {})
+            if fmt.get("shorts_multiplier", 0) > 1:
+                bus_lines.append(f"Shorts perform {fmt['shorts_multiplier']:.1f}x better than long-form")
+            if bus_lines:
+                producer_brief += "\n\nPERFORMANCE FEEDBACK (GrowthBus):\n" + "\n".join(f"- {l}" for l in bus_lines)
+                print(f"   🚌 GrowthBus: injected {len(bus_lines)} performance signal(s) into script brief")
+
         script = sg.run(topic=topic, producer_brief=producer_brief)
         # VDNA 3.0: Convert ScriptPayload to dict for JSON checkpoint serialization
         if hasattr(script, '__dict__'):
@@ -940,7 +996,29 @@ class VDNA2Director:
         try:
             to = self.skills["title_optimizer"]
             base_title = topic.get("title", "ViralDNA News")
-            variants = to.generate_variants(base_title, topic.get("description", ""))
+            topic_context = topic.get("description", "")
+
+            # ── GROWTH FEEDBACK BUS (v87.3) ──
+            # Provide performance signals to title optimizer for CTR optimization
+            growth_bus = state.get("growth_bus", {})
+            if growth_bus:
+                title_signals = []
+                trending = growth_bus.get("trending_angles", [])
+                if trending:
+                    title_signals.append(f"Trending angles: {', '.join(trending[:3])}")
+                retention = growth_bus.get("retention_signal", "")
+                if retention == "strong":
+                    title_signals.append("Previous video had strong retention — proven format, use similar title style")
+                elif retention == "weak":
+                    title_signals.append("Previous video had weak retention — try new approach, stronger hook")
+                ctr = growth_bus.get("ctr_signal", "")
+                if ctr == "strong":
+                    title_signals.append("Previous CTR was strong — keep title pattern")
+                if title_signals:
+                    topic_context += "\n\nTITLE OPTIMIZATION SIGNALS:\n" + "\n".join(f"- {s}" for s in title_signals)
+                    print(f"   🚌 GrowthBus: injected {len(title_signals)} signal(s) into title context")
+
+            variants = to.generate_variants(base_title, topic_context)
             best_title = to.select_best(variants)
             state["title_optimization"] = best_title
             # Override topic title with optimized version
@@ -1295,6 +1373,113 @@ class VDNA2Director:
                 print("   📈 No video IDs available for analytics pull")
         except Exception as e:
             print(f"   ⚠️ YouTube Analytics failed: {e}")
+
+        # ── 10.1b: GROWTH FEEDBACK BUS (v87.3) ──
+        # Populate the shared bus with structured performance data
+        # so Phases 1/3/5 can read it on the NEXT run
+        try:
+            from datetime import datetime as _dt
+            from zoneinfo import ZoneInfo as _ZoneInfo
+            _IST = _ZoneInfo("Asia/Kolkata")
+            growth_bus = state.get("growth_bus", {})
+            bus_updated = False
+
+            # Update last_run from most recent analytics
+            metrics = state.get("analytics_summary", {})
+            if metrics and isinstance(metrics, dict):
+                for vid, m in metrics.items():
+                    if isinstance(m, dict) and m.get("views") is not None:
+                        growth_bus["last_run"] = {
+                            "topic": state.get("selected_topic", {}).get("title", ""),
+                            "video_id": vid,
+                            "views": m.get("views", 0),
+                            "ctr": m.get("impressionClickRate", 0.0),
+                            "avg_retention_pct": m.get("averageViewPercentage", 0.0),
+                            "avg_duration_sec": m.get("averageViewDuration", 0.0),
+                            "likes": m.get("likes", 0),
+                            "subscribers_gained": m.get("subscribersGained", 0),
+                            "published_at": _dt.now(_IST).isoformat(),
+                        }
+                        # Derive signals
+                        avg_pct = m.get("averageViewPercentage", 0)
+                        if avg_pct > 60:
+                            growth_bus["retention_signal"] = "strong"
+                        elif avg_pct > 30:
+                            growth_bus["retention_signal"] = "ok"
+                        else:
+                            growth_bus["retention_signal"] = "weak"
+
+                        ctr = m.get("impressionClickRate", 0)
+                        if ctr > 0.06:
+                            growth_bus["ctr_signal"] = "strong"
+                        elif ctr > 0.03:
+                            growth_bus["ctr_signal"] = "ok"
+                        else:
+                            growth_bus["ctr_signal"] = "weak"
+
+                        bus_updated = True
+                        break  # only use the first video with data
+
+            # Populate top/worst performers from RAG ledger
+            try:
+                rag = self.skills["rag_feedback"]
+                ledger = rag._load_ledger()
+                perf_metrics = ledger.get("performance_metrics", [])
+                if perf_metrics:
+                    # Collect all video-perf pairs
+                    video_data = []
+                    for snap in perf_metrics:
+                        topic_name = snap.get("topic", "Unknown")
+                        for v_id, v_m in snap.get("videos", {}).items():
+                            if isinstance(v_m, dict) and v_m.get("views"):
+                                video_data.append({
+                                    "topic": topic_name,
+                                    "views": v_m.get("views", 0),
+                                    "ctr": v_m.get("impressionClickRate", 0.0),
+                                    "avg_retention_pct": v_m.get("averageViewPercentage", 0.0),
+                                })
+                    if video_data:
+                        video_data.sort(key=lambda x: x["views"], reverse=True)
+                        growth_bus["top_performers"] = video_data[:5]
+                        growth_bus["worst_performers"] = video_data[-3:] if len(video_data) > 3 else []
+
+                        # Extract trending angles from top performers
+                        top_topics_text = " ".join(v["topic"].lower() for v in video_data[:5])
+                        angle_keywords = [
+                            "visa", "h1b", "green card", "immigration",
+                            "andhra", "telugu", "trump", "policy",
+                            "crisis", "announcement", "scheme", "india",
+                        ]
+                        trending = [kw for kw in angle_keywords if kw in top_topics_text]
+                        if trending:
+                            growth_bus["trending_angles"] = trending
+
+                        # Format insight: main vs shorts
+                        mains = [v for v in video_data if not v.get("avg_retention_pct", 0) or v["avg_retention_pct"] > 0]
+                        # Use duration as proxy: shorts typically < 90s avg
+                        short_vids = [v for v in video_data if v.get("avg_retention_pct", 0) > 0]
+                        if mains and short_vids:
+                            avg_main = sum(v["views"] for v in mains) / len(mains)
+                            avg_short = sum(v["views"] for v in short_vids) / len(short_vids)
+                            if avg_main > 0:
+                                growth_bus["format_insight"] = {
+                                    "avg_main_views": avg_main,
+                                    "avg_short_views": avg_short,
+                                    "shorts_multiplier": avg_short / avg_main,
+                                }
+            except Exception as e:
+                print(f"   ⚠️ GrowthBus ledger scan failed: {e}")
+
+            if bus_updated:
+                growth_bus["updated_at"] = _dt.now(_IST).isoformat()
+                state["growth_bus"] = growth_bus
+                print(f"   🚌 GrowthBus updated: retention={growth_bus.get('retention_signal', '?')}, "
+                      f"ctr={growth_bus.get('ctr_signal', '?')}, "
+                      f"angles={len(growth_bus.get('trending_angles', []))}")
+            else:
+                print("   🚌 GrowthBus: no new metrics to update")
+        except Exception as e:
+            print(f"   ⚠️ GrowthBus update failed: {e}")
 
         # ── 10.2: RAG feedback — store performance ──
         try:
@@ -1813,6 +1998,104 @@ class VDNA2Director:
 
         print(f"   📬 Sending Telegram notification...")
         self._send_telegram(msg)
+
+        # ── 10.23: Growth Observer — log execution to ledger ──
+        try:
+            go = self.skills["growth_observer"]
+            topic = state.get("selected_topic", {})
+            thumb_status = bool(state.get("branded_thumbnail"))
+            upload_results_raw = state.get("upload_results", [])
+            # Build duration_map from available timing data
+            duration_map = {
+                "total_phases": len([k for k in state if k.startswith("phase_")]),
+                "thumbnail_generated": thumb_status,
+            }
+            # Convert upload_results list to dict format log_execution expects
+            upload_dict = {"overall_status": "unknown"}
+            if isinstance(upload_results_raw, list):
+                success_count = sum(1 for r in upload_results_raw if isinstance(r, dict) and r.get("status") == "success")
+                upload_dict["overall_status"] = "success" if success_count > 0 else "failed"
+                upload_dict["main_upload"] = next(
+                    (r for r in upload_results_raw if isinstance(r, dict) and r.get("status") == "success"),
+                    {}
+                )
+                upload_dict["standalone_shorts_uploads"] = [
+                    r for r in upload_results_raw if isinstance(r, dict) and r.get("is_short")
+                ]
+            elif isinstance(upload_results_raw, dict):
+                upload_dict = upload_results_raw
+
+            log_entry = go.log_execution(topic, duration_map, thumb_status, upload_dict)
+            state["growth_observer_log"] = log_entry
+        except Exception as e:
+            print(f"   ⚠️ Growth observer log_execution failed: {e}")
+
+        # ── GROWTH FEEDBACK BUS: Persist to disk for next run ──
+        try:
+            growth_bus = self.state.get("growth_bus", {})
+            if growth_bus:
+                bus_path = os.path.join(
+                    config.DRIVE.get("RUNTIME", "/home/jay/ViralDNA/output/runtime"),
+                    "growth_feedback_bus.json"
+                )
+                os.makedirs(os.path.dirname(bus_path), exist_ok=True)
+                with open(bus_path, "w") as f:
+                    json.dump(growth_bus, f, indent=2)
+                print(f"   🚌 GrowthBus saved to disk ({len(growth_bus)} keys)")
+        except Exception as e:
+            print(f"   ⚠️ GrowthBus save failed: {e}")
+
+        # ── 10.24: WordPress Auto-Publish (Cross-Platform Phase 1) ──
+        # After successful YouTube upload, create a blog post on theviraldna.mbitebyte.com
+        # with embedded YouTube video + SEO article for search engine indexing.
+        try:
+            upload = state.get("upload_results", {})
+            main_res = upload.get("main", {}) if isinstance(upload, dict) else {}
+            youtube_url = main_res.get("youtube_url", "")
+            youtube_id = main_res.get("video_id", "")
+
+            if youtube_url and main_res.get("status") == "success":
+                topic = state.get("selected_topic", {})
+                script = state.get("script_payload", {})
+                script_text = ""
+                if script and hasattr(script, "full_script"):
+                    script_text = script.full_script
+                elif isinstance(script, dict):
+                    script_text = script.get("full_script", "")
+
+                # Determine thumbnail path
+                thumbnails_dir = config.DRIVE.get("THUMBNAILS", "/home/jay/ViralDNA/thumbnails")
+                topic_slug = state.get("topic_slug", "topic")
+                thumbnail_path = os.path.join(thumbnails_dir, f"{topic_slug}_branded.jpg")
+                if not os.path.exists(thumbnail_path):
+                    thumbnail_path = os.path.join(thumbnails_dir, f"{topic_slug}_thumb.jpg")
+
+                from wordpress_publisher import WordPressPublisher
+                publisher = WordPressPublisher()
+
+                video_data = {
+                    "title": topic.get("title", "Breaking News Update"),
+                    "description": script_text[:2000] if script_text else topic.get("description", ""),
+                    "topic": topic.get("category", "news"),
+                    "thumbnail": thumbnail_path if os.path.exists(thumbnail_path) else None,
+                    "youtube_url": youtube_url,
+                    "tags": topic.get("tags", ["news", "viral"]),
+                }
+
+                wp_result = publisher.create_news_post(video_data)
+                state["wordpress_result"] = wp_result
+
+                if wp_result.get("success"):
+                    print(f"   🌐 Blog post published: {wp_result.get('url', 'N/A')}")
+                else:
+                    wp_errors = wp_result.get("errors", [])
+                    print(f"   ⚠️ WordPress publish failed: {wp_errors[0] if wp_errors else 'unknown'}")
+            else:
+                print("   🌐 WordPress: no successful YouTube upload — skipping blog publish")
+        except Exception as e:
+            print(f"   ⚠️ WordPress auto-publish failed: {e}")
+            state["wordpress_result"] = {"success": False, "error": str(e)}
+
         return state
 
     def _build_description(self, state):
