@@ -1749,12 +1749,32 @@ Output JSON array:"""
             main_thumb_base = os.path.join(thumbnails_dir, f"{slug}_thumb.jpg")
 
         # Determine how many shorts to produce
+        # Handle publish_decision as object, dict, or string (checkpoint round-trip)
         num_shorts = 2
+        produce_main = True
         if publish_decision:
-            num_shorts = publish_decision.num_shorts
-            if not publish_decision.produce_main:
+            if isinstance(publish_decision, str):
+                # Dataclass was serialized to string via json.dumps(default=str)
+                print(f"  📋 publish_decision is a string (serialized): {publish_decision[:80]}")
+                # Parse num_shorts from string representation
+                import re
+                m = re.search(r'num_shorts=(\d+)', publish_decision)
+                if m:
+                    num_shorts = int(m.group(1))
+                m_main = re.search(r'produce_main=(True|False)', publish_decision)
+                if m_main:
+                    produce_main = m_main.group(1) == 'True'
+            elif isinstance(publish_decision, dict):
+                num_shorts = publish_decision.get("num_shorts", 2)
+                produce_main = publish_decision.get("produce_main", True)
+                print(f"  📋 Upload plan: produce_main={produce_main}, num_shorts={num_shorts}")
+            else:
+                # Original dataclass object
+                num_shorts = publish_decision.num_shorts
+                produce_main = publish_decision.produce_main
+                print(f"  📋 Upload plan: produce_main={produce_main}, num_shorts={num_shorts}")
+            if not produce_main:
                 num_shorts = max(num_shorts, 1)
-            print(f"  📋 Upload plan: produce_main={publish_decision.produce_main}, num_shorts={num_shorts}")
         else:
             print(f"  📋 No publish_decision provided, using defaults: num_shorts={num_shorts}")
 
@@ -1767,10 +1787,6 @@ Output JSON array:"""
         main_script_text = script_payload.main_clean if script_payload else ""
         main_duration = script_payload.main_duration if script_payload else 0
         main_title_variants = script_payload.main_title_variants if script_payload else []
-
-        produce_main = True
-        if publish_decision:
-            produce_main = publish_decision.produce_main
 
         if produce_main and os.path.exists(main_video_path) and main_title_variants:
             # Pick best title (variant 0 = highest-scoring from Gemini)

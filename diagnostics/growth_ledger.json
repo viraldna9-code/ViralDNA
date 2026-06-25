@@ -1,7 +1,7 @@
 {
   "competitor_intel": [
     {
-      "last_scan": "2026-06-22T14:56:29.033796",
+      "last_scan": "2026-06-25T05:53:46.381068",
       "channels_tracked": 6,
       "high_threats": 3,
       "content_gaps": 1,
@@ -30,11 +30,11 @@
   ],
   "execution_history": [
     {
-      "timestamp": "2026-06-22T14:56:29.082666",
-      "topic": "Karnataka delegation invites Naidu for inauguration of Tungabhadra crest gates",
+      "timestamp": "2026-06-25T05:53:46.383224",
+      "topic": "Ketan Agarwal Murder Case: Pune Court Remands Accused Fiance, Friend To 7-Day Police Custody - Live Law",
       "category": "unknown",
       "videos_produced": 3,
-      "upload_status": "unknown",
+      "upload_status": "success",
       "error_count": 0
     }
   ]

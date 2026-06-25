@@ -1,8 +1,8 @@
 # ViralDNA Channel Health Report
-### Last updated: Monday, June 22 2026 — 19:53 IST
+### Last updated: Thursday, June 25 2026 — 10:52 IST
 
 ## Channel: The Viral DNA
-- **Views:** 16,757 | **Subscribers:** 9 | **Videos:** 56 (38 shorts)
+- **Views:** 16,896 | **Subscribers:** 9 | **Videos:** 59 (40 shorts)
 - **Monetization:** 9/1000 subs (0.9%)
 
 
@@ -11,11 +11,11 @@
   -> Check titles, thumbnails, descriptions
 
 ## 🟡 MEDIUM (This Week)
+- **[ENGAGEMENT]** Low like rate (0.0%) on 'Andhra HC Adjourns PIL — What Happens Ne'
+  -> Improve thumbnails and titles
+- **[ENGAGEMENT]** Low like rate (0.0%) on 'GTA VI Trend: What it means for YOU (202'
+  -> Improve thumbnails and titles
 - **[ENGAGEMENT]** Low like rate (0.0%) on 'Is your name on the voter list? Check it'
-  -> Improve thumbnails and titles
-- **[ENGAGEMENT]** Low like rate (0.9%) on 'TDP was forced to respond to a cockroach'
-  -> Improve thumbnails and titles
-- **[ENGAGEMENT]** Low like rate (0.0%) on 'A father from Guntur came all the way to'
   -> Improve thumbnails and titles
 - **[SEO]** 12 video(s) with titles >70 chars (truncated in search): 'Is your name on the voter list? Che...' (75 chars), '89 lakh Telugu voter records flagge...' (76 chars), 'Are Your Voter Details Safe? The SI...' (78 chars)
   -> Shorten titles to <70 chars -- use tags for extra keywords
@@ -40,9 +40,8 @@
 
 ## ℹ️ INFO
 - **[MONETIZATION]** Monetization NOT enabled (9/1000 subs)
-- **[PERFORMANCE]** Shorts outperforming mains (435 vs 13 avg views)
+- **[PERFORMANCE]** Shorts outperforming mains (419 vs 14 avg views)
 - **[MONETIZATION]** Monetization: 9/1000 subs (0.9%). Need 991 more.
-- **[CADENCE]** Cadence good: 0.9 mains/day, 1.9 shorts/day -- keep it up
 - **[ANALYTICS]** YouTube Analytics API access denied (400)
 
 ---

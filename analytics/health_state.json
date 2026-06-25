@@ -1,12 +1,12 @@
 {
   "checks": [
     {
-      "timestamp": "2026-06-22T19:53:50.383228+05:30",
-      "total_views": 16757,
+      "timestamp": "2026-06-25T10:52:42.718983+05:30",
+      "total_views": 16896,
       "subscribers": 9,
-      "video_count": 56,
-      "shorts_count": 38,
-      "issues_count": 18,
+      "video_count": 59,
+      "shorts_count": 40,
+      "issues_count": 17,
       "critical_count": 1,
       "auto_fixed": []
     }

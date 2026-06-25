@@ -197,8 +197,11 @@ class FactoryWorker:
         for key in keys:
             if key in state:
                 val = state[key]
-                # Only save JSON-serializable values
+                # Convert dataclasses to dicts for proper serialization
                 try:
+                    if hasattr(val, '__dataclass_fields__'):
+                        import dataclasses
+                        val = dataclasses.asdict(val)
                     json.dumps(val, default=str)
                     checkpoint_data["state_updates"][key] = val
                 except (TypeError, ValueError):
