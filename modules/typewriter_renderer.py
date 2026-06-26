@@ -181,19 +181,34 @@ class TypewriterRenderer:
 
         font_size = self._font_size(out_h, is_short)
         max_chars = self._max_chars(out_w, is_short)
-        lh = self._line_height(font_size)
-
-        wrapped = self._wrap_text(text, max_chars=max_chars)
-        lines = [l for l in wrapped.split('\n') if l.strip()]
-        if not lines:
-            lines = ["..."]
-        num_lines = len(lines)
 
         # Text positioning: lower third (news style) with background
         top_margin = int(out_h * 0.08)
         bottom_margin = int(out_h * 0.14)
         available_h = out_h - top_margin - bottom_margin
-        total_text_h = num_lines * lh
+
+        # ── Dynamic font scaling: shrink text if it overflows frame ──
+        base_font = self._font_size(out_h, is_short)
+        lh = self._line_height(font_size)
+        wrapped = self._wrap_text(text, max_chars=max_chars)
+        lines = [l for l in wrapped.split('\n') if l.strip()]
+        if not lines:
+            lines = ["..."]
+        total_text_h = len(lines) * lh
+
+        while total_text_h > available_h and font_size > 18:
+            font_size -= 2
+            lh = self._line_height(font_size)
+            # Scale max_chars inversely with font size: smaller font → more chars per line
+            scale_factor = base_font / max(font_size, 1)
+            adjusted_max_chars = max(20, int(max_chars * scale_factor))
+            wrapped = self._wrap_text(text, max_chars=adjusted_max_chars)
+            lines = [l for l in wrapped.split('\n') if l.strip()]
+            if not lines:
+                lines = ["..."]
+            total_text_h = len(lines) * lh
+
+        num_lines = len(lines)
         start_y = top_margin + max(0, (available_h - total_text_h) // 2)
 
         # Panel: semi-transparent overlay for text readability
