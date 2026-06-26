@@ -308,7 +308,7 @@ class TypewriterRenderer:
                 f"text='{esc}':fontsize={font_size}:fontcolor=0xf8f8ff:"
                 f"x={x_pos}:y={y_pos}:"
                 f"shadowcolor=0x000000@0.95:shadowx=2:shadowy=2:"
-                f"enable='gte(t\\\\,{line_start:.2f})'"
+                f"enable='gte(t,{line_start:.2f})'"
             )
 
         # ── 4. Bottom news bar ──
@@ -342,7 +342,7 @@ class TypewriterRenderer:
         )
         filter_parts.append(
             f"drawbox=x=0:y={prog_y}:"
-            f"w='if(gte(t\\\\,0.3)\\\\,min(iw\\\\,(t/{max(duration_s,0.1):.2f})*iw)\\\\,0)':"
+            f"w='if(gte(t,0.3)\\,min(iw,(t/{max(duration_s,0.1):.2f})*iw),0)':"
             f"h=2:color=0xc33731@0.95:t=fill"
         )
 
