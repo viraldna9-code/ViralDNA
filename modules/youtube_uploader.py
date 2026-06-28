@@ -192,10 +192,14 @@ class YouTubeUploader:
                                      upload_schedule: dict = None) -> str:
         """Return ISO-8601 UTC publish time for YouTube API.
 
+        PUBLISH SCHEDULE RULE (Jun 28 2026):
+          Main video: +1 hour from upload time
+          Shorts:     +30 minutes from upload time
+
         Priority:
         1. upload_schedule dict from UploadTimeOptimizer (state["upload_schedule"])
-        2. Static main_publish_time_ist / shorts_publish_time_ist from config
-        3. Relative delay from now (fallback)
+        2. Static main_publish_time_ist / shorts_publish_time_ist from config (if set)
+        3. Relative delay from now (default fallback — 60min main, 30min shorts)
 
         upload_schedule format: {"recommended_time_ist": "18:00", ...}
         """
@@ -227,11 +231,10 @@ class YouTubeUploader:
             if self.shorts_publish_time_ist:
                 gap = self.shorts_publish_gap_minutes
                 return _next_occurrence(self.shorts_publish_time_ist, extra_minutes=gap * short_index)
-            # Fallback: relative
+            # Fallback: relative — shorts publish 30min after upload
             now_utc = datetime.now(self.utc)
-            main_delay = timedelta(minutes=self.main_publish_delay_minutes)
             gap = timedelta(minutes=self.shorts_publish_gap_minutes)
-            target = now_utc + main_delay + (gap * short_index)
+            target = now_utc + gap + (gap * short_index)
         else:
             # Main video: use schedule's recommended time if available
             if upload_schedule and upload_schedule.get("recommended_time_ist"):

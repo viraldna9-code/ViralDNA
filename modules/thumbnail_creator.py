@@ -68,17 +68,18 @@ class ThumbnailCreator:
             "DEFAULT": (220, 50, 50),      # Red fallback
         },
         # A4.6: Text overlay rules
+        # Updated Jun 28 2026: Large centered text for full-frame readability
         "text_rules": {
-            "headline_min_size": 36,
-            "headline_max_size": 56,
-            "headline_width": 32,           # wrap width
-            "max_lines": 3,
-            "subtitle_size": 22,
-            "badge_size": 20,
-            "margin_left": 50,
-            "margin_right": 50,             # leave space for watermark
-            "safe_zone_top": 60,            # below badge
-            "safe_zone_bottom": 80,         # above watermark
+            "headline_min_size": 52,
+            "headline_max_size": 80,
+            "headline_width": 28,           # wrap width (shorter lines = bigger font)
+            "max_lines": 4,
+            "subtitle_size": 28,
+            "badge_size": 22,
+            "margin_left": 80,
+            "margin_right": 80,
+            "safe_zone_top": 40,
+            "safe_zone_bottom": 60,
         },
     }
 
@@ -118,14 +119,14 @@ class ThumbnailCreator:
 
     def _calc_text_position(self, img: Image.Image, title: str, lines: list) -> tuple:
         """
-        Calculate optimal text Y position based on image content.
-        v22.1 (v87.12): Content-aware placement — avoids faces/salient regions.
+        Calculate optimal text Y position — CENTERED vertically.
+        Updated Jun 28 2026: Text is centered in frame for full-frame readability.
+        Previous behavior (bottom-anchored, small font) made text unreadable.
         
         Strategy:
-        1. Divide image into a 3x3 grid of regions
-        2. Score each region by visual complexity (edge density)
-        3. Place text in the region with LOWEST complexity (cleanest area)
-        4. If the image has detected faces, avoid the face region
+        1. Center the text block vertically in the safe zone
+        2. If image has high visual content, try to avoid salient regions
+        3. Fallback: pure vertical center
         
         Returns (text_y_start, is_upper_safe) tuple.
         """
@@ -135,15 +136,16 @@ class ThumbnailCreator:
         safe_top = self.tr["safe_zone_top"]
         line_height = int(self.tr["headline_max_size"] * 1.25)
         total_text_height = len(lines) * line_height + 40
+        safe_height = safe_bottom - safe_top
 
-        # Try to find cleanest horizontal band using edge analysis
+        # Primary: center the text block vertically in the safe zone
+        text_y_start = safe_top + (safe_height - total_text_height) // 2
+
+        # If there's a strong visual region, try to avoid it
         try:
             import numpy as np
-            # Convert to grayscale numpy array for analysis
             gray = img.convert("L")
             arr = np.array(gray)
-
-            # Divide into horizontal bands and compute edge density per band
             num_bands = 6
             band_height = H // num_bands
             band_scores = []
@@ -151,38 +153,31 @@ class ThumbnailCreator:
                 y_start = b * band_height
                 y_end = min((b + 1) * band_height, H)
                 band = arr[y_start:y_end, :]
-                # Simple gradient-based edge detection
                 gy, gx = np.gradient(band.astype(float))
                 edge_density = np.mean(np.sqrt(gx**2 + gy**2))
-                band_scores.append((edge_density, y_start, y_end))
+                band_scores.append((edge_density, y_start))
 
-            # Find the band with lowest edge density that can fit our text block
-            # Prefer lower portion but avoid the very bottom (watermark zone)
-            candidate_bands = []
-            for score, y_start, y_end in band_scores:
-                region_height = y_end - y_start
-                if region_height >= total_text_height:
-                    # Check this band doesn't overlap with bottom watermark zone
-                    if y_start + total_text_height <= safe_bottom:
-                        candidate_bands.append((score, y_start))
-
-            if candidate_bands:
-                # Pick the cleanest (lowest edge density) band
-                candidate_bands.sort(key=lambda x: x[0])
-                best_y = candidate_bands[0][1]
-                # Ensure minimum safe zone
-                text_y_start = max(best_y, safe_top)
-                # Ensure text fits above watermark
-                if text_y_start + total_text_height > safe_bottom:
-                    text_y_start = safe_bottom - total_text_height
-                return text_y_start, (text_y_start < H // 3)
-
+            # Only adjust if there's a very busy region (edge density > 3x average)
+            avg_edge = sum(s for s, _ in band_scores) / len(band_scores)
+            if avg_edge > 5:  # there's actual visual content
+                # Find the band our centered text would overlap
+                center_band = min(range(num_bands),
+                                  key=lambda b: abs(b * band_height - text_y_start))
+                center_score = band_scores[center_band][0]
+                if center_score > avg_edge * 3:
+                    # Center band is very busy, find a cleaner band
+                    clean_bands = [(s, y) for s, y in band_scores
+                                   if s < avg_edge * 1.5 and y + total_text_height <= safe_bottom]
+                    if clean_bands:
+                        clean_bands.sort(key=lambda x: x[0])
+                        text_y_start = max(clean_bands[0][1], safe_top)
         except Exception:
             pass
 
-        # Fallback: position in lower third above watermark (original behavior)
-        text_y_start = safe_bottom - total_text_height
+        # Clamp to safe zone
         text_y_start = max(text_y_start, safe_top)
+        if text_y_start + total_text_height > safe_bottom:
+            text_y_start = safe_bottom - total_text_height
         return text_y_start, False
 
     def _find_salient_region(self, img: Image.Image) -> tuple:
@@ -237,16 +232,19 @@ class ThumbnailCreator:
         Shorter titles get larger fonts for visual impact.
         """
         title_len = len(title)
-        if title_len <= 30:
-            return self.tr["headline_max_size"]  # 56
+        # Updated Jun 28 2026: Larger sizes for full-frame centered text
+        if title_len <= 25:
+            return self.tr["headline_max_size"]  # 80
+        elif title_len <= 40:
+            return 72
         elif title_len <= 60:
-            return 48
-        elif title_len <= 90:
-            return 42
-        elif title_len <= 120:
-            return 38
+            return 64
+        elif title_len <= 80:
+            return 58
+        elif title_len <= 100:
+            return 54
         else:
-            return self.tr["headline_min_size"]  # 36
+            return self.tr["headline_min_size"]  # 52
 
     # ── A4.6: Check if news is actually breaking ──
 
@@ -514,20 +512,21 @@ class ThumbnailCreator:
             try:
                 import importlib.util
                 lip_path = os.path.join(os.path.dirname(__file__), "local_image_pack.py")
-                spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
-                if spec and spec.loader:
-                    mod = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(mod)
-                    pack = mod.LocalImagePack()
-                    images = pack.get_images(topic_text, count=5)
-                    if images:
-                        # Pick the largest image (best quality)
-                        images.sort(key=lambda p: os.path.getsize(p), reverse=True)
-                        img = self._try_load_image(images[0])
-                        if img:
-                            return img
+                if os.path.exists(lip_path):
+                    spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
+                    if spec and spec.loader:
+                        mod = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(mod)
+                        pack = mod.LocalImagePack()
+                        images = pack.get_images(topic_text, count=5)
+                        if images:
+                            # Pick the largest image (best quality)
+                            images.sort(key=lambda p: os.path.getsize(p), reverse=True)
+                            img = self._try_load_image(images[0])
+                            if img:
+                                return img
             except Exception as e:
-                print(f"  ⚠️ Thumbnail local image pack fallback failed: {e}")
+                pass  # local_image_pack fallback — skip silently
 
         # 4. LAST RESORT: solid color (should almost never reach this)
         return None
@@ -625,21 +624,22 @@ class ThumbnailCreator:
             try:
                 import importlib.util
                 lip_path = os.path.join(os.path.dirname(__file__), "local_image_pack.py")
-                spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
-                if spec and spec.loader:
-                    mod = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(mod)
-                    pack = mod.LocalImagePack()
-                    images = pack.get_images(topic_text, count=count * 2)
-                    if images:
-                        images.sort(key=lambda p: os.path.getsize(p), reverse=True)
-                        for ipath in images:
-                            img = self._try_load_image(ipath)
-                            _add_image(img)
-                            if len(results) >= count:
-                                break
-            except Exception as e:
-                print(f"  Thumbnail local image pack fallback failed: {e}")
+                if os.path.exists(lip_path):
+                    spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
+                    if spec and spec.loader:
+                        mod = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(mod)
+                        pack = mod.LocalImagePack()
+                        images = pack.get_images(topic_text, count=count * 2)
+                        if images:
+                            images.sort(key=lambda p: os.path.getsize(p), reverse=True)
+                            for ipath in images:
+                                img = self._try_load_image(ipath)
+                                _add_image(img)
+                                if len(results) >= count:
+                                    break
+            except Exception:
+                pass  # local_image_pack fallback — skip silently
 
         # ── v90.0: Layer 1 — Featured-image-first reordering ──
         # Reorder so that scene_img_* (Serper/real news photos) come first,
@@ -735,18 +735,19 @@ class ThumbnailCreator:
             try:
                 import importlib.util
                 lip_path = os.path.join(os.path.dirname(__file__), "local_image_pack.py")
-                spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
-                if spec and spec.loader:
-                    mod = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(mod)
-                    pack = mod.LocalImagePack()
-                    images = pack.get_images(topic_text, count=max_paths)
-                    for ipath in images:
-                        _add(ipath)
-                        if len(paths) >= max_paths:
-                            break
+                if os.path.exists(lip_path):
+                    spec = importlib.util.spec_from_file_location("local_image_pack", lip_path)
+                    if spec and spec.loader:
+                        mod = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(mod)
+                        pack = mod.LocalImagePack()
+                        images = pack.get_images(topic_text, count=max_paths)
+                        for ipath in images:
+                            _add(ipath)
+                            if len(paths) >= max_paths:
+                                break
             except Exception:
-                pass
+                pass  # local_image_pack fallback — skip silently
 
         return paths
 
@@ -923,15 +924,12 @@ class ThumbnailCreator:
 
             line_spacing = int(font_size * 1.25)
             for i, line in enumerate(lines):
-                # Add gold left border accent on first line for readability
-                if i == 0:
-                    draw.rectangle(
-                        [(self.tr["margin_left"] - 8, text_y_start + 6),
-                         (self.tr["margin_left"] - 4, text_y_start + line_spacing - 8)],
-                        fill=self.sg["brand_colors"]["gold"]
-                    )
+                # Center each line horizontally
+                bbox = draw.textbbox((0, 0), line, font=headline_font)
+                line_w = bbox[2] - bbox[0]
+                text_x = (W - line_w) // 2  # horizontal center
                 self._draw_text_with_shadow(
-                    draw, (self.tr["margin_left"], text_y_start + i * line_spacing), line,
+                    draw, (text_x, text_y_start + i * line_spacing), line,
                     headline_font, fill=self.sg["brand_colors"]["white"],
                     shadow_color=self.sg["brand_colors"]["dark"], offset=2
                 )

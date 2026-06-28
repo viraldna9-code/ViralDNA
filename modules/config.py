@@ -72,8 +72,15 @@ YOUTUBE_UPLOAD_CONFIG = {
     "category_id": "25",  # News & Politics
     "default_language": "en",
     "schedule_premiere": True,
+    # PUBLISH SCHEDULE RULE (Jun 28 2026):
+    # Main video goes live 1 hour after upload, shorts 30 min after upload.
+    # These relative delays are used by _get_scheduled_publish_time() fallback.
     "main_publish_delay_minutes": 60,
     "shorts_publish_gap_minutes": 30,
+    # Static publish times — leave None to use relative delays above.
+    # If set (e.g. "19:00"), overrides relative delay.
+    "main_publish_time_ist": None,
+    "shorts_publish_time_ist": None,
     "title_max_length": 70,
     "description_max_length": 5000,
     "tags_max_length": 500,

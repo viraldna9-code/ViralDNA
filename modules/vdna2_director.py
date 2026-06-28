@@ -1310,7 +1310,9 @@ class VDNA2Director:
         else:
             print("   ⚠️ No script_payload available — upload will use fallback titles")
 
+        # PUBLISH SCHEDULE RULE: main +1hr, shorts +30min from upload time
         print(f"   📤 Calling upload_production_slot (videos_dir={videos_dir})...")
+        print(f"   ⏰ Schedule rule: main +60min, shorts +30min from upload")
         upload_results = uploader.upload_production_slot(
             topic=topic,
             videos_dir=videos_dir,
