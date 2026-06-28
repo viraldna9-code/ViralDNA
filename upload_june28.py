@@ -375,6 +375,25 @@ def main():
     print(f"  Privacy: private (scheduled)")
     print("=" * 60)
 
+    # Write manifest for pipeline blog-publish (decoupled from upload gate)
+    manifest_dir = os.path.join(os.path.dirname(__file__), ".vdna2", "manual_uploads")
+    os.makedirs(manifest_dir, exist_ok=True)
+    manifest = {
+        "topic_slug": TOPIC_SLUG,
+        "youtube_url": f"https://youtu.be/{main_id}" if main_id else "",
+        "video_id": main_id,
+        "shorts": [
+            {"video_id": short1_id, "youtube_url": f"https://youtu.be/{short1_id}"},
+            {"video_id": short2_id, "youtube_url": f"https://youtu.be/{short2_id}"},
+        ],
+        "uploaded_at": datetime.now().isoformat(),
+        "source": "upload_june28.py",
+    }
+    manifest_path = os.path.join(manifest_dir, f"{TOPIC_SLUG}.json")
+    with open(manifest_path, "w") as f:
+        json.dump(manifest, f, indent=2)
+    print(f"  📋 Manifest written: {manifest_path}")
+
 
 if __name__ == "__main__":
     main()

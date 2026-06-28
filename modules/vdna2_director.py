@@ -2048,52 +2048,79 @@ class VDNA2Director:
             print(f"   ⚠️ GrowthBus save failed: {e}")
 
         # ── 10.24: WordPress Auto-Publish (Cross-Platform Phase 1) ──
-        # After successful YouTube upload, create a blog post on theviraldna.mbitebyte.com
-        # with embedded YouTube video + SEO article for search engine indexing.
+        # Decoupled (Jun 28): publishes regardless of upload status.
+        # Uses YouTube URL from upload if available, otherwise from state/manifest.
         try:
             upload = state.get("upload_results", {})
             main_res = upload.get("main", {}) if isinstance(upload, dict) else {}
+
+            # Gather YouTube URL from multiple sources (decoupled from upload gate)
             youtube_url = main_res.get("youtube_url", "")
             youtube_id = main_res.get("video_id", "")
+            upload_status = main_res.get("status", "")
 
-            if youtube_url and main_res.get("status") == "success":
-                topic = state.get("selected_topic", {})
-                script = state.get("script_payload", {})
-                script_text = ""
-                if script and hasattr(script, "full_script"):
-                    script_text = script.full_script
-                elif isinstance(script, dict):
-                    script_text = script.get("full_script", "")
+            # If upload was skipped, check for manually-uploaded video manifest
+            if not youtube_url:
+                manifest_path = os.path.join(
+                    config.DRIVE.get("DRIVE", "/home/jay/ViralDNA"), ".vdna2",
+                    "manual_uploads", f"{state.get('topic_slug', 'topic')}.json"
+                )
+                if os.path.exists(manifest_path):
+                    with open(manifest_path) as mf:
+                        manifest = json.load(mf)
+                    youtube_url = manifest.get("youtube_url", "")
+                    youtube_id = manifest.get("video_id", "")
+                    upload_status = "manual"
+                    print(f"   📋 Using manual upload manifest: {youtube_url}")
 
-                # Determine thumbnail path
-                thumbnails_dir = config.DRIVE.get("THUMBNAILS", "/home/jay/ViralDNA/thumbnails")
-                topic_slug = state.get("topic_slug", "topic")
-                thumbnail_path = os.path.join(thumbnails_dir, f"{topic_slug}_branded.jpg")
-                if not os.path.exists(thumbnail_path):
-                    thumbnail_path = os.path.join(thumbnails_dir, f"{topic_slug}_thumb.jpg")
+            # Also check state-level youtube_url (populated by upload_june28.py etc.)
+            if not youtube_url:
+                youtube_url = state.get("youtube_url", "")
+            if not youtube_id:
+                youtube_id = state.get("youtube_id", "")
 
-                from wordpress_publisher import WordPressPublisher
-                publisher = WordPressPublisher()
+            # Publish to blog regardless of upload status — uses youtube_url if available
+            topic = state.get("selected_topic", {})
+            script = state.get("script_payload", {})
+            script_text = ""
+            if script and hasattr(script, "full_script"):
+                script_text = script.full_script
+            elif isinstance(script, dict):
+                script_text = script.get("full_script", "")
 
-                video_data = {
-                    "title": topic.get("title", "Breaking News Update"),
-                    "description": script_text[:2000] if script_text else topic.get("description", ""),
-                    "topic": topic.get("category", "news"),
-                    "thumbnail": thumbnail_path if os.path.exists(thumbnail_path) else None,
-                    "youtube_url": youtube_url,
-                    "tags": topic.get("tags", ["news", "viral"]),
-                }
+            # Determine thumbnail path (check subdirectory structure too)
+            thumbnails_dir = config.DRIVE.get("THUMBNAILS", "/home/jay/ViralDNA/thumbnails")
+            topic_slug = state.get("topic_slug", "topic")
+            thumbnail_path = os.path.join(thumbnails_dir, f"{topic_slug}_branded.jpg")
+            if not os.path.exists(thumbnail_path):
+                thumbnail_path = os.path.join(thumbnails_dir, f"{topic_slug}_thumb.jpg")
+            if not os.path.exists(thumbnail_path):
+                # Check subdirectory: thumbnails/{slug}_thumb.jpg/{slug}_branded.jpg
+                subdir_path = os.path.join(thumbnails_dir, f"{topic_slug}_thumb.jpg", f"{topic_slug}_branded.jpg")
+                if os.path.exists(subdir_path):
+                    thumbnail_path = subdir_path
 
-                wp_result = publisher.create_news_post(video_data)
-                state["wordpress_result"] = wp_result
+            from wordpress_publisher import WordPressPublisher
+            publisher = WordPressPublisher()
 
-                if wp_result.get("success"):
-                    print(f"   🌐 Blog post published: {wp_result.get('url', 'N/A')}")
-                else:
-                    wp_errors = wp_result.get("errors", [])
-                    print(f"   ⚠️ WordPress publish failed: {wp_errors[0] if wp_errors else 'unknown'}")
+            video_data = {
+                "title": topic.get("title", "Breaking News Update"),
+                "description": script_text[:2000] if script_text else topic.get("description", ""),
+                "topic": topic.get("category", "news"),
+                "thumbnail": thumbnail_path if thumbnail_path and os.path.exists(thumbnail_path) else None,
+                "youtube_url": youtube_url or None,
+                "tags": topic.get("tags", ["news", "viral"]),
+            }
+
+            wp_result = publisher.create_news_post(video_data)
+            state["wordpress_result"] = wp_result
+
+            if wp_result.get("success"):
+                upload_note = f" (upload={upload_status})" if upload_status else ""
+                print(f"   🌐 Blog post published{upload_note}: {wp_result.get('url', 'N/A')}")
             else:
-                print("   🌐 WordPress: no successful YouTube upload — skipping blog publish")
+                wp_errors = wp_result.get("errors", [])
+                print(f"   ⚠️ WordPress publish failed: {wp_errors[0] if wp_errors else 'unknown'}")
         except Exception as e:
             print(f"   ⚠️ WordPress auto-publish failed: {e}")
             state["wordpress_result"] = {"success": False, "error": str(e)}

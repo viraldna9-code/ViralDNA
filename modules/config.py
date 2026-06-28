@@ -71,6 +71,10 @@ YOUTUBE_UPLOAD_CONFIG = {
     "privacy_status": "public",
     "category_id": "25",  # News & Politics
     "default_language": "en",
+    "title_max_length": 70,
+    # WordPress blog publish — decoupled from upload gate (Jun 28 2026).
+    # Pipeline always attempts blog post even if upload was skipped.
+    "wp_publish_enabled": True,
     "schedule_premiere": True,
     # PUBLISH SCHEDULE RULE (Jun 28 2026):
     # Main video goes live 1 hour after upload, shorts 30 min after upload.
@@ -81,7 +85,6 @@ YOUTUBE_UPLOAD_CONFIG = {
     # If set (e.g. "19:00"), overrides relative delay.
     "main_publish_time_ist": None,
     "shorts_publish_time_ist": None,
-    "title_max_length": 70,
     "description_max_length": 5000,
     "tags_max_length": 500,
     "self_declared_made_for_kids": False,
