@@ -2105,7 +2105,7 @@ class VDNA2Director:
 
             video_data = {
                 "title": topic.get("title", "Breaking News Update"),
-                "description": script_text[:2000] if script_text else topic.get("description", ""),
+                "description": script_text[:4000] if script_text else topic.get("description", ""),
                 "topic": topic.get("category", "news"),
                 "thumbnail": thumbnail_path if thumbnail_path and os.path.exists(thumbnail_path) else None,
                 "youtube_url": youtube_url or None,
