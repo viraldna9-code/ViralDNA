@@ -26,6 +26,25 @@ from pathlib import Path
 from datetime import datetime
 
 
+def _clean_description(text):
+    """Remove pipeline artifact prefixes from descriptions."""
+    if not text:
+        return ""
+    # Remove common pipeline prefixes
+    artifacts = [
+        "Here is the perfect description to copy and paste for your upload:",
+        "Top story on Google News India",
+        "Here is the summary:",
+        "Summary:",
+        "Description:",
+    ]
+    cleaned = text.strip()
+    for artifact in artifacts:
+        if cleaned.startswith(artifact):
+            cleaned = cleaned[len(artifact):].strip()
+    return cleaned
+
+
 class WordPressPublisher:
     """Publishes content to WordPress via WP-CLI or REST API.
 
@@ -408,6 +427,9 @@ class WordPressPublisher:
         thumbnail = video_data.get("thumbnail")
         youtube_url = video_data.get("youtube_url")
         tags = video_data.get("tags", [])
+
+        # Clean description: remove pipeline artifacts
+        description = _clean_description(description)
 
         # Build article content
         content_parts = []
