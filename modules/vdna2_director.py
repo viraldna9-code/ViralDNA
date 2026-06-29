@@ -341,6 +341,8 @@ class VDNA2Director:
             "retention_curve": RetentionCurveAnalyzer(),
             "engagement_loop": EngagementLoop(),
             "subscribe_cta": SubscribeCTOptimizer(),
+            # Data Guard (Jun 2026) — prevents LLM fabrication of analytics
+            "data_guard": None,  # stateless module, imported on use
         }
         print(f"   📦 Loaded {len(self.skills)} skill modules")
 
@@ -439,10 +441,24 @@ class VDNA2Director:
 
         # ── PHASE 2.5: Pre-Production Quality Gate ──
         worker = FactoryWorker("pre_production", self)
-        self.state, _ = worker.run(
+        self.state, ok = worker.run(
             self.state,
             primary_fn=self._phase_pre_production_gate,
         )
+        if not ok:
+            print("🛑 Pre-production gate failed — halting pipeline")
+            return self.state
+        # Check gate verdict — abort if quality/fact-check hard-fails
+        gate_quality = self.state.get("pre_production_quality", {})
+        gate_fact = self.state.get("pre_production_fact_check", {})
+        quality_score = gate_quality.get("quality_score", gate_quality.get("overall_score", 50))
+        fact_verdict = gate_fact.get("verdict", gate_fact.get("status", "PASS"))
+        if isinstance(quality_score, (int, float)) and quality_score < 20:
+            print(f"🛑 Quality score too low ({quality_score}/100) — halting before scripting")
+            return self.state
+        if str(fact_verdict).upper() in ("REJECT", "FABRICATED", "CONTRADICTED"):
+            print(f"🛑 Fact check FAILED ({fact_verdict}) — halting before scripting")
+            return self.state
 
         # ── PHASE 3: Scripting ──
         worker = FactoryWorker("scripting", self)
@@ -728,14 +744,28 @@ class VDNA2Director:
         return state
 
     def _phase_pre_production_gate(self, state):
-        """Phase 2.5: Pre-production quality gate.
+        """Phase 2.5: Pre-production quality gate (MANDATORY — aborts on hard failure).
         VDNA 3.0: Content quality check BEFORE scripting — reject low-quality topics early.
         Fact-check named entities in the selected topic title/description.
+        Keyword research for SEO targeting.
         """
-        print("   🔬 Pre-production quality gate...")
+        print("   � Pre-production quality gate...")
         topic = state.get("selected_topic", {})
 
-        # Content quality check
+        # 1. Truth-first research (pre-generation NER — feeds script_generator's LLM prompt)
+        try:
+            sg = self.skills["script_generator"]
+            brief = sg._truth_first_research(
+                topic.get("title", ""),
+                topic.get("description", topic.get("summary", ""))
+            )
+            state["pre_production_ner_brief"] = brief
+            if brief:
+                print("   🔍 Truth-first brief generated — will inject into script prompt")
+        except Exception as e:
+            print(f"   ⚠️ Truth-first research failed: {e}")
+
+        # 2. Content quality check
         try:
             cq = self.skills["content_quality"]
             title = topic.get("title", "")
@@ -744,13 +774,13 @@ class VDNA2Director:
             state["pre_production_quality"] = quality_result
             score = quality_result.get("quality_score", quality_result.get("overall_score", 0))
             if isinstance(score, (int, float)) and score < 30:
-                print(f"   ⚠️ Low quality score ({score}/100) — proceeding with caution")
+                print(f"   ⚠️ Low quality score ({score}/100) — flagging")
             else:
                 print(f"   ✅ Quality score: {score}/100")
         except Exception as e:
             print(f"   ⚠️ Quality check failed: {e}")
 
-        # Fact-check named entities
+        # 3. Fact-check named entities (HARD FAIL on REJECT/FABRICATED)
         try:
             fc = self.skills["fact_check"]
             title = topic.get("title", "")
@@ -761,13 +791,29 @@ class VDNA2Director:
                 source_url=source_url,
             )
             state["pre_production_fact_check"] = fc_result
-            verdict = fc_result.get("verdict", fc_result.get("status", "unknown"))
-            if verdict in ("VERIFIED", "PASS", "verified", "pass"):
+            verdict = str(fc_result.get("verdict", fc_result.get("status", "PASS"))).upper()
+            if verdict in ("VERIFIED", "PASS", "UNCERTAIN"):
                 print(f"   ✅ Fact check: {verdict}")
             else:
-                print(f"   ⚠️ Fact check: {verdict} — flag for review")
+                print(f"   🔴 Fact check: {verdict} — BLOCKING this topic")
         except Exception as e:
             print(f"   ⚠️ Fact check failed: {e}")
+
+        # 4. Keyword research for SEO targeting (feeds both blog H1 and video title)
+        try:
+            from keyword_research import research_keywords_for_topic
+            kw_result = research_keywords_for_topic(
+                topic.get("title", ""),
+                topic.get("description", "")
+            )
+            state["pre_production_keywords"] = kw_result
+            best = kw_result.get("best_keyword", "")
+            if best:
+                print(f"   � Target keyword: {best} (source: {kw_result.get('source', '?')})")
+            else:
+                print(f"   🔑 No keyword match — will use raw title for SEO")
+        except Exception as e:
+            print(f"   ⚠️ Keyword research failed: {e}")
 
         return state
 
@@ -821,9 +867,22 @@ class VDNA2Director:
                 bus_lines.append(f"Shorts perform {fmt['shorts_multiplier']:.1f}x better than long-form")
             if bus_lines:
                 producer_brief += "\n\nPERFORMANCE FEEDBACK (GrowthBus):\n" + "\n".join(f"- {l}" for l in bus_lines)
-                print(f"   🚌 GrowthBus: injected {len(bus_lines)} performance signal(s) into script brief")
+                print(f"   � GrowthBus injected {len(bus_lines)} performance signal(s) into brief")
 
+        # Inject pre-production NER brief (truth-first research) and keyword targeting
+        ner_brief = state.get("pre_production_ner_brief", "")
+        if ner_brief:
+            producer_brief += "\n\nTRUTH-FIRST ENTITY BRIEF (pre-verified):\n" + ner_brief
+            print("   🔍 Truth-first entity brief injected into script context")
+        kw_data = state.get("pre_production_keywords", {})
+        best_kw = kw_data.get("best_keyword", "")
+        if best_kw:
+            producer_brief += f"\n\nSEO TARGET KEYWORD: {best_kw} (use naturally in first 30 seconds)"
+            print(f"   🔑 SEO keyword injected: {best_kw}")
+
+        # Generate the bilingual script
         script = sg.run(topic=topic, producer_brief=producer_brief)
+
         # VDNA 3.0: Convert ScriptPayload to dict for JSON checkpoint serialization
         if hasattr(script, '__dict__'):
             state["script_payload"] = script.__dict__
@@ -1355,7 +1414,20 @@ class VDNA2Director:
         VDNA 3.0 Tier 1: Community engagement, competitor intel, retention,
         content quality, milestone detection.
         """
-        print("   📊 Post-pipeline: analytics + growth agents...")
+        print("   � Post-pipeline: analytics + growth agents...")
+
+        # ── DATA GUARD INTEGRATION (Issue 7) — validate data availability before answering ──
+        try:
+            from data_guard import guard_check, get_data_inventory
+            inventory = get_data_inventory()
+            available_metrics = [k for k, v in inventory.items() if v.get("available")]
+            blocked_metrics = [k for k, v in inventory.items() if not v.get("available")]
+            print(f"   🛡️ Data Guard: {len(available_metrics)} metrics available, {len(blocked_metrics)} blocked")
+            if blocked_metrics:
+                print(f"      � Cannot answer: {', '.join(blocked_metrics[:3])}")
+            state["data_guard_inventory"] = inventory
+        except Exception as e:
+            print(f"   ⚠️ Data guard init failed: {e}")
 
         # ── 10.1: YouTube Analytics — pull metrics for uploaded videos ──
         try:
@@ -1370,7 +1442,33 @@ class VDNA2Director:
             if video_ids:
                 metrics = yta.pull_metrics(video_ids=video_ids, days=7)
                 state["analytics_summary"] = metrics
-                print(f"   📈 Analytics pulled for {len(video_ids)} videos")
+                print(f"   � Analytics pulled for {len(video_ids)} videos")
+
+                # Issue 6: Update content_registry with fresh metrics
+                try:
+                    from content_registry import ContentRegistry
+                    from config import DRIVE_BASE
+                    registry = ContentRegistry(registry_path=os.path.join(DRIVE_BASE, ".vdna2", "content_registry.json"))
+                    topic = state.get("selected_topic", {})
+                    title = topic.get("title", "")
+                    content_id = None
+                    # Find matching content_unit by title
+                    for entry in registry.get_all_units():
+                        if entry.get("title", "").lower() == title.lower():
+                            content_id = entry.get("content_id")
+                            break
+                    if content_id:
+                        for vid, m in metrics.items():
+                            if isinstance(m, dict):
+                                registry.update_video_metrics(content_id,
+                                    views=m.get("views", 0),
+                                    ctr=m.get("impressionClickRate"),
+                                    avg_view_duration=m.get("avgViewDurationSeconds"),
+                                    likes=m.get("likes")
+                                )
+                        print(f"   📋 Content registry updated ({content_id[:8]}...)")
+                except Exception as e:
+                    print(f"   ⚠️ Content registry update failed: {e}")
             else:
                 print("   📈 No video IDs available for analytics pull")
         except Exception as e:
@@ -1472,6 +1570,25 @@ class VDNA2Director:
             except Exception as e:
                 print(f"   ⚠️ GrowthBus ledger scan failed: {e}")
 
+            # Issue 5: Feed keyword research performance back to Discovery
+            # Track which keywords/topics get best CTR for future topic selection
+            try:
+                from keyword_research import get_search_volume
+                topic = state.get("selected_topic", {})
+                title = topic.get("title", "")
+                if title:
+                    kw_perf = get_search_volume(title)
+                    if kw_perf.get("tracked"):
+                        growth_bus["last_keyword_perf"] = {
+                            "title": title,
+                            "search_volume": kw_perf.get("volume", "unknown"),
+                            "trend": kw_perf.get("trend", "unknown"),
+                            "ctr_at_selection": growth_bus.get("last_run", {}).get("ctr", 0),
+                        }
+                        print(f"   🔑 Keyword perf tracked: volume={kw_perf.get('volume', '?')}")
+            except Exception as e:
+                pass  # keyword research optional, don't fail bus update
+
             if bus_updated:
                 growth_bus["updated_at"] = _dt.now(_IST).isoformat()
                 state["growth_bus"] = growth_bus
@@ -1497,25 +1614,7 @@ class VDNA2Director:
             print("   🧠 RAG feedback stored for next run")
         except Exception as e:
             print(f"   ⚠️ RAG feedback storage failed: {e}")
-
-        # ── 10.2b: VDNA 3.0 (v87.2): Pinned comment via engagement_loop ──
-        try:
-            el = self.skills["engagement_loop"]
-            topic = state.get("selected_topic", {})
-            upload_results = state.get("upload_results", {})
-            main_video_id = ""
-            if isinstance(upload_results, dict):
-                main_res = upload_results.get("main", {})
-                if isinstance(main_res, dict):
-                    main_video_id = main_res.get("video_id", "")
-            if main_video_id:
-                pinned = el.generate_pinned_comment(topic, video_id=main_video_id)
-                state["pinned_comment"] = pinned
-                print(f"   📌 Pinned comment generated: {pinned.get('strategy', 'N/A')}")
-            else:
-                print("   📌 No video ID yet — pinned comment deferred to next run")
-        except Exception as e:
-            print(f"   ⚠️ Pinned comment generation failed: {e}")
+        # NOTE: 10.2b was a duplicate pinned-comment sub-phase — merged into 10.18 below
 
         # ── 10.2c: Retention curve analysis → feedback to next run ──
         # Uses REAL data from YouTube Analytics API (relativeRetentionPerformance + audienceWatchRatio)
@@ -1639,9 +1738,14 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Milestone check failed: {e}")
 
-        # ── 10.5: Competitor Intelligence ──
+        # ── 10.5: Competitor Intelligence (incl. YouTube API setup from old 10.22) ──
         try:
             ci = self.skills["competitor_intel"]
+            # Setup YouTube service for live scanning (merged from 10.22)
+            youtube_service = state.get("youtube_service")
+            if youtube_service and hasattr(ci, 'set_youtube_service'):
+                ci.set_youtube_service(youtube_service)
+                print(f"   � Competitor intel: YouTube API connected for live scanning")
             # Push intel to ledger
             ledger = ci.load_ledger() if hasattr(ci, 'load_ledger') else {}
             ci.push_to_ledger(ledger)
@@ -1657,6 +1761,7 @@ class VDNA2Director:
                     print(f"      → Gap: {gap.get('topic', 'N/A')}")
         except Exception as e:
             print(f"   ⚠️ Competitor intel failed: {e}")
+            raise RuntimeError(f"Competitor intel failed: {e}")
 
         # ── 10.6: Retention Analysis ──
         try:
@@ -1967,36 +2072,8 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Cross-platform planning failed: {e}")
 
-        # ── 10.21: Retention Curve Analysis ──
-        try:
-            rca = self.skills["retention_curve"]
-            analytics = state.get("analytics_summary", {})
-            # If we have retention data, analyze it
-            retention_data = analytics.get("retention_curve", [])
-            video_duration = analytics.get("avg_duration_sec", 300)
-            if retention_data:
-                retention_analysis = rca.analyze_retention_curve(retention_data, video_duration)
-                state["retention_analysis"] = retention_analysis
-                print(f"   📉 Retention: avg={retention_analysis.get('average_retention_pct', 'N/A')}%, "
-                      f"first30s={retention_analysis.get('first_30s_retention_pct', 'N/A')}%")
-                for insight in retention_analysis.get("insights", [])[:2]:
-                    print(f"      💡 {insight}")
-            else:
-                print(f"   📉 Retention: no curve data available (will analyze after YouTube processes)")
-        except Exception as e:
-            print(f"   ⚠️ Retention curve analysis failed: {e}")
-
-        # ── 10.22: Competitor Intel — pass YouTube service for live scanning ──
-        try:
-            ci = self.skills["competitor_intel"]
-            youtube_service = state.get("youtube_service")
-            if youtube_service:
-                ci.set_youtube_service(youtube_service)
-                print(f"   🔍 Competitor intel: YouTube API connected for live scanning")
-            else:
-                print(f"   🔍 Competitor intel: no YouTube service in state (set_youtube_service to enable)")
-        except Exception as e:
-            print(f"   ⚠️ Competitor intel setup failed: {e}")
+        # NOTE: 10.21 (duplicate retention curve) — removed, 10.2c handles it with real data
+        # NOTE: 10.22 was a setup-only duplicate of 10.5 — merged into it above
 
         # ── Telegram Summary ──
         upload = state.get("upload_results", [])
@@ -2187,6 +2264,19 @@ class VDNA2Director:
             if wp_result.get("success"):
                 upload_note = f" (upload={upload_status})" if upload_status else ""
                 print(f"   🌐 Blog post published{upload_note}: {wp_result.get('url', 'N/A')}")
+
+                # Register content unit in cross-platform registry
+                try:
+                    from content_registry import register_from_pipeline
+                    content_entry = register_from_pipeline(
+                        title=topic.get("title", ""),
+                        youtube_url=youtube_url or None,
+                        blog_url=wp_result.get("url"),
+                    )
+                    state["content_registry_entry"] = content_entry
+                    print(f"   📊 Content registered (id={content_entry.get('content_id', 'N/A')})")
+                except Exception as reg_err:
+                    print(f"   ⚠️ Content registry warning: {reg_err}")
             else:
                 wp_errors = wp_result.get("errors", [])
                 print(f"   ⚠️ WordPress publish failed: {wp_errors[0] if wp_errors else 'unknown'}")
