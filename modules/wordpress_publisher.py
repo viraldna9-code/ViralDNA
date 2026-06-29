@@ -370,6 +370,10 @@ class WordPressPublisher:
             if tag_ids:
                 post_data["tags"] = tag_ids
 
+        # Store YouTube URL as post meta for CTA button + schema
+        if youtube_url:
+            post_data["meta_input"] = {"youtube_url": youtube_url}
+
         # Upload featured image
         if thumbnail_path and Path(thumbnail_path).exists():
             img_id, err = self.upload_image(thumbnail_path)
