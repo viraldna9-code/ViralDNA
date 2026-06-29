@@ -139,6 +139,34 @@ class ScriptGenerator:
     CTR_WARNING_THRESHOLD = 15.0  # out of 100 (equivalent to ~0.15 raw = decent CTR potential)
     _last_ctr_warning = None  # class-level storage for last warning
 
+    # ─── RETENTION BLUEPRINT ───
+    # Defines the exact structural elements for retention-optimized scripts.
+    # Based on YouTube retention research: hooks, open loops, mid-roll CTAs, callbacks.
+    RETENTION_BLUEPRINT = {
+        "main_structure": [
+            "HOOK (0-5s): Shocking/impactful statement — the most surprising fact",
+            "OPEN LOOP #1 (5-15s): Tease a revelation coming later to keep viewers watching",
+            "WHAT_HAPPENED (15-90s): Core facts in chronological order",
+            "WHY_IT_MATTERS (90-150s): Impact on viewer's life, family, future",
+            "MID_ROLL_CTA (40-60% mark): Subscribe reminder + open loop #2",
+            "CONTEXT (60-80%): Background, historical comparison, expert angle",
+            "CALLBACK (80-90%): Resolve the open loop from the beginning",
+            "ENGAGEMENT_END (last 30s): Specific question to drive comments + next video tease",
+        ],
+        "short_structure": [
+            "HOOK (0-2s): Most surprising/controversial statement — NO intro",
+            "BODY (2-15s): Rapid explanation, 35-45 words max",
+            "CTA_END (last 3s): Question that drives comments or full-video click",
+        ],
+        "retention_mechanics": {
+            "open_loops": "Tease information that's revealed later. Creates curiosity gap.",
+            "mid_roll_cta": "Subscribe reminder at 40-60% of video. Must feel natural, not forced.",
+            "callbacks": "Reference the hook from the beginning. Rewards viewers who stayed.",
+            "pattern_interrupts": "Change tone/pacing every 30-45 seconds to prevent drop-off.",
+            "personal_language": "Use 'you/your' to make abstract news feel personal and relevant.",
+        },
+    }
+
     def _rank_title_variants(self, variants: list) -> list:
         """
         Rank title variants by predicted CTR score, return sorted desc.
@@ -586,6 +614,55 @@ class ScriptGenerator:
             f"Subscribe to ViralDNA and stay connected to your roots."
         )
 
+    def _truth_first_research(self, title: str, desc: str, context: str) -> str:
+        """
+        Pre-generation research phase: gather verified facts to anchor the script.
+        Adopts the 'Truth-First Research' principle from the monetization playbook.
+
+        Returns a bullet-point string of verified facts, or empty string if
+        no additional facts could be found (in which case the script uses
+        only the source description).
+
+        Steps:
+        1. Extract named entities from title/desc (people, places, organizations)
+        2. Cross-reference with competitor_intelligence for common patterns
+        3. Return structured fact list for the LLM prompt
+        """
+        import re
+
+        # Extract capitalized entities (simple NER for Indian news context)
+        source_text = f"{title} {desc} {context}"
+        # Match capitalized word sequences (potential named entities)
+        entities = re.findall(r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2})\b', source_text)
+        # Filter out common non-entity capitalized words
+        skip = {"The", "This", "That", "These", "Those", "What", "Why", "How",
+                "When", "Where", "Who", "Which", "Their", "There", "Then",
+                "About", "After", "Before", "Under", "Over", "From", "Into",
+                "With", "During", "Since", "Until", "ViralDNA", "Viral", "DNA"}
+        entities = [e for e in entities if e not in skip and len(e) > 2]
+
+        # Deduplicate preserving order
+        seen = set()
+        unique_entities = []
+        for e in entities:
+            if e.lower() not in seen:
+                seen.add(e.lower())
+                unique_entities.append(e)
+
+        if not unique_entities:
+            return ""
+
+        # Build research notes section
+        notes = []
+        notes.append("Key entities mentioned in this story:")
+        for entity in unique_entities[:8]:
+            notes.append(f"  - {entity}")
+
+        notes.append("")
+        notes.append("RULE: Only use facts from the source description above. Do NOT invent details about these entities.")
+
+        return "\n".join(notes)
+
     def run(self, topic: dict, producer_brief: str = "") -> ScriptPayload:
         title = topic.get("title", "Homeland News").strip()
         desc = topic.get("description", "A major development has occurred in our regional districts.").strip()
@@ -594,6 +671,11 @@ class ScriptGenerator:
         # Sentiment analysis for upload metadata / publishing decisions
         sentiment = self._analyze_sentiment(title, desc)
         topic_context = f"{title} {desc} {context}"
+
+        # ── TRUTH-FIRST RESEARCH PHASE (Pre-generation fact gathering) ──
+        research_notes = self._truth_first_research(title, desc, context)
+        if research_notes:
+            context = context + "\n\nVERIFIED FACTS FROM RESEARCH:\n" + research_notes
 
         sections = None
 

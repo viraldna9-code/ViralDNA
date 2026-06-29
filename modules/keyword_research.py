@@ -306,6 +306,36 @@ def research_keywords_for_topic(title: str, description: str = "") -> dict:
     return {"best_keyword": "", "alternatives": [], "source": "none"}
 
 
+def get_search_volume(keyword: str) -> dict:
+    """
+    Get search volume estimate for a keyword from Google Trends RSS.
+    This is the 'per_search' anchor — called by competitor_intelligence.py
+    to assess demand per keyword for saturation scoring.
+
+    Returns dict: {keyword, traffic_score (0-100000+), source}
+    """
+    if not keyword or not keyword.strip():
+        return {"keyword": keyword, "traffic_score": 0, "source": "none"}
+
+    try:
+        trends = fetch_google_trends_keywords()
+        kw_lower = keyword.lower().strip()
+
+        # Exact match
+        if kw_lower in trends:
+            return {"keyword": keyword, "traffic_score": trends[kw_lower], "source": "live"}
+
+        # Partial match (keyword contained in trending phrase)
+        for phrase, traffic in trends.items():
+            if kw_lower in phrase or phrase in kw_lower:
+                return {"keyword": keyword, "traffic_score": traffic, "source": "live"}
+
+        # No match in trends
+        return {"keyword": keyword, "traffic_score": 0, "source": "live"}
+    except Exception:
+        return {"keyword": keyword, "traffic_score": 0, "source": "error"}
+
+
 if __name__ == "__main__":
     # Quick test
     result = research_keywords_for_topic(

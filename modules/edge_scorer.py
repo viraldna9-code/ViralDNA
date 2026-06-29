@@ -654,6 +654,49 @@ def factor_competition_gap(title: str, trending_topics: set, all_topics: list) -
 
 
 # ═══════════════════════════════════════════════════════
+#  FACTOR: Competitor Saturation (YouTube Data API)
+# ═══════════════════════════════════════════════════════
+
+def factor_competitor_saturation(title: str) -> float:
+    """Check how saturated the niche is on YouTube. (0.0-0.15)
+
+    Uses competitor_intelligence to search YouTube for similar content.
+    High saturation = many established videos = lower edge (we face competition).
+    Low saturation = whitespace = higher edge (we can stand out).
+    """
+    try:
+        from competitor_intelligence import search_competitor_videos
+    except ImportError:
+        return 0.08  # neutral if module unavailable
+
+    try:
+        analysis = search_competitor_videos(title, max_results=10)
+    except Exception:
+        return 0.08  # neutral on any error
+
+    if analysis.get("source") == "unavailable":
+        return 0.08  # neutral when no API/quota
+
+    saturation = analysis.get("saturation", 0.5)
+    n = analysis.get("n", 0)
+
+    # Map saturation to edge score:
+    # - saturation 0.0 (empty niche) → 0.15 (great opportunity)
+    # - saturation 0.5 (moderate) → 0.08 (okay)
+    # - saturation 1.0 (very crowded) → 0.02 (tread carefully)
+    if saturation < 0.2 and n < 5:
+        return 0.15  # whitespace!
+    elif saturation < 0.3:
+        return 0.12  # low competition
+    elif saturation < 0.5:
+        return 0.08  # moderate
+    elif saturation < 0.7:
+        return 0.05  # getting crowded
+    else:
+        return 0.02  # very saturated
+
+
+# ═══════════════════════════════════════════════════════
 #  FACTOR 5: Engagement Potential
 # ═══════════════════════════════════════════════════════
 
@@ -830,6 +873,11 @@ def compute_edge_score(topic: dict, all_topics: list = None,
     # Predicts browse CTR based on title patterns that worked in past videos
     ctr_score = score_title_ctr(title)
     factors["ctr_features"] = round(ctr_score, 2)
+
+    # ── COMPETITOR SATURATION (YouTube Data API) ──
+    # Checks how saturated the niche is on YouTube. High saturation = lower edge.
+    sat_score = factor_competitor_saturation(title)
+    factors["competitor_saturation"] = round(sat_score, 2)
 
     # Sum all factors
     raw_edge = sum(factors.values())
