@@ -342,7 +342,7 @@ class VDNA2Director:
             "engagement_loop": EngagementLoop(),
             "subscribe_cta": SubscribeCTOptimizer(),
             # Data Guard (Jun 2026) — prevents LLM fabrication of analytics
-            "data_guard": None,  # stateless module, imported on use
+            "data_guard": None,  # stateless — guard_check/get_data_inventory used inline
         }
         print(f"   📦 Loaded {len(self.skills)} skill modules")
 
@@ -1418,17 +1418,17 @@ class VDNA2Director:
         print("   � Post-pipeline: analytics + growth agents...")
 
         # ── DATA GUARD INTEGRATION (Issue 7) — validate data availability before answering ──
-        try:
-            from data_guard import guard_check, get_data_inventory
-            inventory = get_data_inventory()
-            available_metrics = [k for k, v in inventory.items() if v.get("available")]
-            blocked_metrics = [k for k, v in inventory.items() if not v.get("available")]
-            print(f"   🛡️ Data Guard: {len(available_metrics)} metrics available, {len(blocked_metrics)} blocked")
-            if blocked_metrics:
-                print(f"      � Cannot answer: {', '.join(blocked_metrics[:3])}")
-            state["data_guard_inventory"] = inventory
-        except Exception as e:
-            print(f"   ⚠️ Data guard init failed: {e}")
+        from data_guard import guard_check, get_data_inventory
+        inventory = get_data_inventory()
+        available_metrics = [k for k, v in inventory.items() if v.get("available")]
+        blocked_metrics = [k for k, v in inventory.items() if not v.get("available")]
+        print(f"   🛡️ Data Guard: {len(available_metrics)} metrics available, {len(blocked_metrics)} blocked")
+        if blocked_metrics:
+            print(f"      🚫 Cannot answer: {', '.join(blocked_metrics[:3])}")
+        state["data_guard_inventory"] = inventory
+
+        # Helper: check if a question type is answerable — inject into state for sub-phases
+        state["_guard_check"] = lambda qtype: guard_check(qtype)
 
         # ── 10.1: YouTube Analytics — pull metrics for uploaded videos ──
         try:
@@ -1502,6 +1502,7 @@ class VDNA2Director:
                             "published_at": _dt.now(_IST).isoformat(),
                         }
                         # Derive signals
+                        # Data Guard: only set signals if data is verified
                         avg_pct = m.get("averageViewPercentage", 0)
                         if avg_pct > 60:
                             growth_bus["retention_signal"] = "strong"
@@ -1509,6 +1510,7 @@ class VDNA2Director:
                             growth_bus["retention_signal"] = "ok"
                         else:
                             growth_bus["retention_signal"] = "weak"
+                        growth_bus["retention_source"] = "youtube_analytics_api" if avg_pct else "no_data"
 
                         ctr = m.get("impressionClickRate", 0)
                         if ctr > 0.06:
@@ -1517,6 +1519,7 @@ class VDNA2Director:
                             growth_bus["ctr_signal"] = "ok"
                         else:
                             growth_bus["ctr_signal"] = "weak"
+                        growth_bus["ctr_source"] = "youtube_analytics_api" if ctr else "no_data"
 
                         bus_updated = True
                         break  # only use the first video with data
@@ -1940,9 +1943,23 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Compliance check failed: {e}")
 
-        # ── 10.13: Intelligence Analysis ──
+        # ── 10.13: Intelligence Analysis (with Data Guard) ──
         try:
             ia = self.skills["intelligence_agent"]
+            # Pre-check: does the intelligence agent have the data it needs?
+            guard_fn = state.get("_guard_check")
+            if guard_fn:
+                ctr_guard = guard_fn("ctr_performance")
+                eng_guard = guard_fn("engagement_ratios")
+                data_quality = {
+                    "ctr_available": ctr_guard["can_answer"],
+                    "engagement_available": eng_guard["can_answer"],
+                    "inventory": state.get("data_guard_inventory", {}),
+                }
+                state["data_quality_snapshot"] = data_quality
+                if not ctr_guard["can_answer"] and not eng_guard["can_answer"]:
+                    print(f"   🧠 Intelligence: limited mode — no verified analytics data")
+                    print(f"      💡 Download Studio CSV → run ingest_studio_csv.py")
             intel_result = ia.analyze(state)
             state["intelligence_recommendations"] = intel_result.get("recommendations", [])
             recs = intel_result.get("recommendations", [])
@@ -2123,7 +2140,16 @@ class VDNA2Director:
         if alignment:
             msg += f"📅 Calendar: {alignment.get('category', 'N/A')} ({'aligned' if alignment.get('aligned') else 'check needed'})\n"
 
-        msg += f"━━━━━━━━━━━━━━━━━━━━━"
+        # Data Guard: append data availability note to prevent recipient from asking for unavailable metrics
+        inventory = state.get("data_guard_inventory", {})
+        if inventory:
+            avail = [k for k in inventory if inventory[k].get("available")]
+            blocked = [k for k in inventory if not inventory[k].get("available")]
+            msg += f"\n🛡️ Data: {len(avail)} metrics available"
+            if blocked:
+                msg += f" | {len(blocked)} blocked (download Studio CSV to unlock)"
+
+        msg += f"\n━━━━━━━━━━━━━━━━━━━━━"
 
         print(f"   📬 Sending Telegram notification...")
         self._send_telegram(msg)
