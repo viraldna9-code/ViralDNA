@@ -2105,6 +2105,7 @@ class VDNA2Director:
 
             # Keyword research for blog SEO (H1 targeting)
             target_keyword = ""
+            blog_title = topic.get("title", "Breaking News Update")
             try:
                 from keyword_research import research_keywords_for_topic
                 kw_result = research_keywords_for_topic(
@@ -2113,12 +2114,13 @@ class VDNA2Director:
                 )
                 target_keyword = kw_result.get("best_keyword", "")
                 if target_keyword:
+                    blog_title = f"{topic.get('title', 'Breaking News Update')} | {target_keyword}"
                     print(f"   🔍 Target keyword: {target_keyword} (source: {kw_result.get('source', '?')})")
             except Exception:
                 pass
 
             video_data = {
-                "title": topic.get("title", "Breaking News Update"),
+                "title": blog_title,
                 "description": script_text[:4000] if script_text else topic.get("description", ""),
                 "topic": topic.get("category", "news"),
                 "thumbnail": thumbnail_path if thumbnail_path and os.path.exists(thumbnail_path) else None,
