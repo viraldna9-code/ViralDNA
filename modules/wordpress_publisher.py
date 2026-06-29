@@ -370,9 +370,15 @@ class WordPressPublisher:
             if tag_ids:
                 post_data["tags"] = tag_ids
 
-        # Store YouTube URL as post meta for CTA button + schema
+        # Store YouTube URL + target keyword as post meta for CTA button + SEO
+        meta_input = {}
         if youtube_url:
-            post_data["meta_input"] = {"youtube_url": youtube_url}
+            meta_input["youtube_url"] = youtube_url
+        target_keyword = video_data.get("target_keyword", "")
+        if target_keyword:
+            meta_input["_vdna_target_keyword"] = target_keyword
+        if meta_input:
+            post_data["meta_input"] = meta_input
 
         # Upload featured image
         if thumbnail_path and Path(thumbnail_path).exists():

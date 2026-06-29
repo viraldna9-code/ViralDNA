@@ -2103,6 +2103,20 @@ class VDNA2Director:
             from wordpress_publisher import WordPressPublisher
             publisher = WordPressPublisher()
 
+            # Keyword research for blog SEO (H1 targeting)
+            target_keyword = ""
+            try:
+                from keyword_research import research_keywords_for_topic
+                kw_result = research_keywords_for_topic(
+                    topic.get("title", ""),
+                    topic.get("description", "")
+                )
+                target_keyword = kw_result.get("best_keyword", "")
+                if target_keyword:
+                    print(f"   🔍 Target keyword: {target_keyword} (source: {kw_result.get('source', '?')})")
+            except Exception:
+                pass
+
             video_data = {
                 "title": topic.get("title", "Breaking News Update"),
                 "description": script_text[:4000] if script_text else topic.get("description", ""),
@@ -2110,6 +2124,7 @@ class VDNA2Director:
                 "thumbnail": thumbnail_path if thumbnail_path and os.path.exists(thumbnail_path) else None,
                 "youtube_url": youtube_url or None,
                 "tags": topic.get("tags", ["news", "viral"]),
+                "target_keyword": target_keyword,
             }
 
             wp_result = publisher.create_news_post(video_data)

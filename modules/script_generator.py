@@ -174,32 +174,35 @@ class ScriptGenerator:
         return {"score": ratio, "label": label, "click_emotion": click_emotion}
 
     # ─── Search Volume Keyword Integration (A1.6) ───
-    HIGH_SEARCH_KEYWORDS = {
-        "telugu news": 9500, "andhra pradesh news": 7200,
-        "telangana news": 6800, "h1b visa 2026": 5400,
-        "greencard news": 4200, "visa update": 3800,
-        "nri news": 3200, "indian immigration": 2900,
-        "telugu breaking news": 2500, "visakhapatnam news": 2100,
-        "vijayawada news": 1800, "hyderabad latest news": 3500,
-        "amaravati news": 1500, "tirupati news": 1400,
-    }
+    # HIGH_SEARCH_KEYWORDS removed in v85.0 — now dynamic via keyword_research.py
 
     def _inject_search_keywords(self, title: str, topic_context: str) -> str:
-        """Inject high-search-volume keywords into title for discoverability."""
-        title_lower = title.lower()
-        # Find the best keyword not already in title
-        candidates = []
-        for kw, volume in self.HIGH_SEARCH_KEYWORDS.items():
-            if kw not in title_lower:
-                candidates.append((kw, volume))
-        if not candidates:
-            return title
-        candidates.sort(key=lambda x: x[1], reverse=True)
-        best_kw = candidates[0][0]
-        # Append via pipe separator if space allows
-        candidate = f"{title} | {best_kw.title()}"
-        if len(candidate) <= 100:
-            return candidate
+        """Inject high-search-volume keywords into title for discoverability.
+        v85.0: Uses dynamic keyword research (Google Trends + YouTube Autocomplete)
+        instead of static HIGH_SEARCH_KEYWORDS dict."""
+        try:
+            from modules.keyword_research import research_keywords_for_topic
+            result = research_keywords_for_topic(title, topic_context)
+            best_kw = result.get("best_keyword", "")
+            if not best_kw:
+                return title
+            # Check if keyword is already in title
+            if best_kw.lower() in title.lower():
+                return title
+            # Try to include keyword naturally (pipe format, YouTube style)
+            candidate = f"{title} | {best_kw}"
+            if len(candidate) <= 100:
+                return candidate
+            # Keyword too long — try colon/bracket format
+            candidate2 = f"{title} [{best_kw}]"
+            if len(candidate2) <= 100:
+                return candidate2
+            # Still too long — truncation to fit
+            max_title = 100 - len(best_kw) - 3
+            if max_title > 30:
+                return f"{title[:max_title]} | {best_kw}"
+        except Exception:
+            pass
         return title
 
     # ─── Enhanced Title Variant Builder (A1.4, C1.6) ───
