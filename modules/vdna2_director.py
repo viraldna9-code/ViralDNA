@@ -757,7 +757,8 @@ class VDNA2Director:
             sg = self.skills["script_generator"]
             brief = sg._truth_first_research(
                 topic.get("title", ""),
-                topic.get("description", topic.get("summary", ""))
+                topic.get("description", topic.get("summary", "")),
+                ""  # context: empty dict for pre-production phase
             )
             state["pre_production_ner_brief"] = brief
             if brief:
