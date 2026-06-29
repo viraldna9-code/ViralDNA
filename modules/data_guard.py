@@ -138,21 +138,21 @@ QUESTION_REQUIREMENTS = {
         "description": "Subscriber conversion rate (subs / views)",
         "required_metrics": ["subscribersGained", "views"],
         "required_file": "growth_ledger.json OR channel_stats_cache.json",
-        "studio_path": "Growth ledger (auto) or Studio → Analytics → Audience → Subscribers",
+        "studio_path": "Growth ledger (auto) or YouTube Studio → Analytics → Audience → Subscribers",
         "available": True,  # We have subscribersGained from API
     },
     "ctr_per_video": {
         "description": "CTR (click-through rate) per video",
         "required_metrics": ["impressions", "ctr_percent"],
         "required_file": "ctr_performance_log.json",
-        "studio_path": "Studio → Analytics → Reach → Impressions click-through rate → Export",
+        "studio_path": "YouTube Studio → Analytics → Reach → Impressions click-through rate → Export",
         "available": True,
     },
     "engagement_ratios": {
         "description": "Likes per view, comments per view (engagement ratios)",
         "required_metrics": ["likes", "comments", "views"],
         "required_file": "growth_ledger.json or metrics_history.json",
-        "studio_path": "Studio → Analytics → Engagement → Likes & Comments → Export",
+        "studio_path": "YouTube Studio → Analytics → Engagement → Likes & Comments → Export",
         "available": True,  # Partial — likes available, comments may be limited
     },
     "avg_view_duration": {
@@ -166,35 +166,35 @@ QUESTION_REQUIREMENTS = {
         "description": "Browse Features traffic growth over time",
         "required_metrics": ["traffic_source_type", "views_over_time"],
         "required_file": "traffic_sources_timeseries.csv",
-        "studio_path": "Studio → Analytics → Reach → Traffic Source Types → Compare to previous period",
+        "studio_path": "YouTube Studio → Analytics → Reach → Traffic Source Types → Compare to previous period",
         "available": False,
     },
     "search_terms": {
         "description": "Top search terms driving traffic to channel",
         "required_metrics": ["search_keyword", "views_from_search"],
         "required_file": "search_terms_export.csv",
-        "studio_path": "Studio → Analytics → Reach → Traffic Source → YouTube Search → See search terms",
+        "studio_path": "YouTube Studio → Analytics → Reach → Traffic Source → YouTube Search → See search terms",
         "available": False,  # YouTube hides this for small channels
     },
     "audience_demographics": {
         "description": "Audience age, gender, geography",
         "required_metrics": ["age_group", "gender", "country"],
         "required_file": "audience_demographics.csv",
-        "studio_path": "Studio → Analytics → Audience → Demographics",
+        "studio_path": "YouTube Studio → Analytics → Audience → Demographics",
         "available": False,
     },
     "best_posting_time": {
         "description": "When your audience is online (heat map)",
         "required_metrics": ["viewer_hours", "day_of_week"],
         "required_file": "audience_activity.csv",
-        "studio_path": "Studio → Analytics → Audience → When your viewers are on YouTube",
+        "studio_path": "YouTube Studio → Analytics → Audience → When your viewers are on YouTube",
         "available": False,
     },
     "shorts_sweet_spot": {
         "description": "Optimal Shorts length for maximum reach",
         "required_metrics": ["video_duration_seconds", "views", "traffic_source"],
         "required_file": "ctr_performance_log.json + video duration data",
-        "studio_path": "Requires joining Studio export with video metadata (duration)",
+        "studio_path": "YouTube Studio → Analytics → Reach → Export CSV + join with video metadata (duration)",
         "available": False,  # We have impressions/CTR but not duration per video in the CTR log
     },
     "growth_forecast": {
