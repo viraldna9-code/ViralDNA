@@ -2180,6 +2180,9 @@ class VDNA2Director:
 
             wp_result = publisher.create_news_post(video_data)
             state["wordpress_result"] = wp_result
+            # Carry content_id from blog post for cross-referencing
+            if wp_result.get("success") and video_data.get("content_id"):
+                wp_result["content_id"] = video_data["content_id"]
 
             if wp_result.get("success"):
                 upload_note = f" (upload={upload_status})" if upload_status else ""
@@ -2194,11 +2197,24 @@ class VDNA2Director:
         return state
 
     def _build_description(self, state):
-        """Build YouTube video description."""
+        """Build YouTube video description with bidirectional blog link."""
         topic = state.get("selected_topic", {})
         script = state.get("script_payload", {})
         title = topic.get("title", "ViralDNA News")
-        return f"{title}\n\nProduced by ViralDNA 2.0 — AI-powered news broadcasting.\n\n#News #India #ViralDNA"
+        blog_url = state.get("wordpress_result", {}).get("url", "")
+        content_id = state.get("content_id", "")
+
+        desc = f"{title}\n\nProduced by ViralDNA — AI-powered news broadcasting.\n"
+
+        # Bidirectional: link blog post from video description
+        if blog_url:
+            desc += f"\n📖 Read the full article: {blog_url}\n"
+
+        desc += f"\n🔔 Subscribe: https://youtube.com/@TheViralDNA?sub_confirmation=1"
+        desc += f"\n⏰ New videos at 9 AM & 7 PM IST\n"
+        desc += f"\n#News #India #ViralDNA #TeluguNews #BreakingNews"
+
+        return desc
 
     def _send_telegram(self, message):
         """Send Telegram notification."""

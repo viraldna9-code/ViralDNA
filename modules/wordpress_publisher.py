@@ -314,7 +314,7 @@ class WordPressPublisher:
     def create_post(self, title, content, excerpt="",
                     categories=None, tags=None,
                     thumbnail_path=None, youtube_url=None,
-                    status="publish"):
+                    status="publish", content_id=None):
         """Create a WordPress post.
 
         Args:
@@ -333,12 +333,8 @@ class WordPressPublisher:
         errors = []
         result = {"success": False, "post_id": None, "url": None, "errors": []}
 
-        # Build post content with YouTube embed if provided
-        full_content = ""
-        if youtube_url:
-            # WordPress auto-embeds YouTube URLs on their own line
-            full_content += f"\n\n{youtube_url}\n\n"
-        full_content += content
+        # Build post content — YouTube embed already handled in create_news_post
+        full_content = content
 
         # Prepare post data
         post_data = {
@@ -370,13 +366,15 @@ class WordPressPublisher:
             if tag_ids:
                 post_data["tags"] = tag_ids
 
-        # Store YouTube URL + target keyword as post meta for CTA button + SEO
+        # Store YouTube URL + target keyword + content_id for CTA + SEO + cross-ref
         meta_input = {}
         if youtube_url:
             meta_input["youtube_url"] = youtube_url
         target_keyword = video_data.get("target_keyword", "")
         if target_keyword:
             meta_input["_vdna_target_keyword"] = target_keyword
+        if content_id:
+            meta_input["_vdna_content_id"] = content_id
         if meta_input:
             post_data["meta_input"] = meta_input
 
@@ -458,8 +456,29 @@ class WordPressPublisher:
         # Split into paragraphs (sentences grouped ~3 per paragraph)
         sentences = [s.strip() for s in _re.split(r'(?<=[.!?])\s+', description) if len(s.strip()) > 20]
 
+        # Generate shared content ID for cross-referencing video + blog
+        import hashlib
+        content_id = hashlib.md5(title.encode()).hexdigest()[:12]
+        video_data["content_id"] = content_id  # Pass back to caller
+
         # Build article content — target 600-1200 words
         content_parts = []
+
+        # --- VIDEO EMBED (or placeholder with content_id for matching) ---
+        if youtube_url:
+            # WordPress auto-embeds YouTube URLs on their own line
+            content_parts.append(f'<div class="vdna-video-embed">')
+            content_parts.append(f'\n\n{youtube_url}\n\n')
+            content_parts.append(f'</div>')
+        else:
+            # Video pending — add structured data for later enrichment
+            content_parts.append(
+                f'<!-- vdna:content_id={content_id} -->\n'
+                f'<div class="vdna-video-pending" data-content-id="{content_id}">'
+                f'<p><em>🎬 Video covering this story is being produced — '
+                f'check back soon or <a href="https://www.youtube.com/@TheViralDNA">subscribe on YouTube</a> for instant notification.</em></p>'
+                f'</div>'
+            )
 
         # --- LEAD: Bold opening (first 2 sentences) ---
         lead = ' '.join(sentences[:2]) if len(sentences) >= 2 else description[:300]
@@ -494,6 +513,32 @@ class WordPressPublisher:
             "<p>We will continue to track this story and bring you verified updates as they come in. "
             "Stay connected with The ViralDNA for the latest coverage that matters to Telugu families worldwide.</p>"
         )
+
+        # --- CTA: Promote video at bottom of post ---
+        if youtube_url:
+            cta_section = (
+                '<div class="vdna-cta-box" style="background:#1a1a2e;border:2px solid #e94560;border-radius:8px;padding:20px;margin:30px 0;text-align:center;">'
+                '<h3 style="color:#e94560;margin-top:0;">🎬 Watch the Full Video</h3>'
+                f'<p style="color:#eee;">Prefer video? Watch the complete coverage of this story on our YouTube channel.</p>'
+                f'<a href="{youtube_url}" target="_blank" rel="noopener" '
+                'style="display:inline-block;background:#e94560;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">'
+                '▶ Watch on YouTube</a>'
+                '<p style="color:#aaa;font-size:0.85em;margin-bottom:0;">New videos at 9 AM & 7 PM IST • @TheViralDNA</p>'
+                '</div>'
+            )
+            content_parts.append(cta_section)
+        else:
+            cta_section = (
+                '<div class="vdna-cta-box" style="background:#1a1a2e;border:2px solid #e94560;border-radius:8px;padding:20px;margin:30px 0;text-align:center;">'
+                '<h3 style="color:#e94560;margin-top:0;">🎬 Video Coming Soon</h3>'
+                '<p style="color:#eee;">We are producing a video covering this story. Subscribe to get notified!</p>'
+                '<a href="https://www.youtube.com/@TheViralDNA?sub_confirmation=1" target="_blank" rel="noopener" '
+                'style="display:inline-block;background:#e94560;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">'
+                '🔔 Subscribe on YouTube</a>'
+                '<p style="color:#aaa;font-size:0.85em;margin-bottom:0;">New videos at 9 AM & 7 PM IST • @TheViralDNA</p>'
+                '</div>'
+            )
+            content_parts.append(cta_section)
 
         # --- SOURCES / VERIFICATION ---
         content_parts.append("<h2>Stay Informed</h2>")
@@ -560,7 +605,8 @@ class WordPressPublisher:
             tags=tags or [topic.lower()],
             thumbnail_path=thumbnail,
             youtube_url=youtube_url,
-            status="publish"
+            status="publish",
+            content_id=content_id,
         )
 
 
