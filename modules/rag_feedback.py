@@ -130,6 +130,156 @@ class RagFeedbackLoop:
 
         return results
 
+    # ─── Retention Curve Storage ───────────────────────────────────────
+    def store_retention_curve(self, video_id: str, retention_data: dict):
+        """
+        Store a retention curve snapshot in the growth ledger.
+        Called after pull_retention_curve() succeeds.
+
+        retention_data format (from yt_analytics.pull_retention_curve):
+          {
+            "video_id": str, "days": int,
+            "curve": [{"ratio": float, "relative_retention": float, "audience_watch_ratio": float}, ...],
+            "peak_drop_ratio": float, "avg_relative_retention": float,
+            "has_data": bool, "error": str (if not has_data)
+          }
+        """
+        ledger = self._load_ledger()
+        ledger.setdefault("retention_curves", {})
+
+        entry = {
+            "timestamp": datetime.now(_IST).isoformat(),
+            "days": retention_data.get("days", 30),
+            "has_data": retention_data.get("has_data", False),
+        }
+
+        if retention_data.get("has_data"):
+            entry["curve"] = retention_data.get("curve", [])
+            entry["peak_drop_ratio"] = retention_data.get("peak_drop_ratio", 0.0)
+            entry["avg_relative_retention"] = retention_data.get("avg_relative_retention", 0.0)
+        else:
+            entry["error"] = retention_data.get("error", "unknown")
+
+        ledger["retention_curves"][video_id] = entry
+        self._save_ledger(ledger)
+        status = "stored" if entry["has_data"] else f"no data ({entry.get('error', '?')})"
+        print(f"  📉 RAG: Retention curve for {video_id}: {status}")
+        return entry
+
+    def get_retention_summary(self, video_id: str) -> dict:
+        """
+        Retrieve the latest stored retention curve for a video.
+        Returns dict with has_data flag and curve info, or has_data=False
+        if no curve has been stored yet.
+        """
+        ledger = self._load_ledger()
+        curves = ledger.get("retention_curves", {})
+
+        if video_id not in curves:
+            return {"video_id": video_id, "has_data": False, "error": "no retention data stored for this video"}
+
+        entry = curves[video_id]
+        if not entry.get("has_data"):
+            return {"video_id": video_id, "has_data": False, "error": entry.get("error", "no data")}
+
+        curve = entry.get("curve", [])
+
+        # Extract key milestone points (closest to 30s, 60s, end — approximated from ratios)
+        # Note: ratio is fraction of video duration, not absolute seconds.
+        # We return the raw ratios so the caller can map to actual video length.
+        milestones = {}
+        target_ratios = [0.1, 0.25, 0.5, 0.75, 1.0]
+        for target in target_ratios:
+            closest = min(curve, key=lambda p: abs(p["ratio"] - target), default=None)
+            if closest:
+                milestones[f"ratio_{target:.2f}"] = {
+                    "ratio": closest["ratio"],
+                    "audience_watch_pct": round(closest["audience_watch_ratio"] * 100, 1),
+                    "relative_retention": closest["relative_retention"],
+                }
+
+        return {
+            "video_id": video_id,
+            "has_data": True,
+            "timestamp": entry.get("timestamp"),
+            "days": entry.get("days"),
+            "curve_sample_count": len(curve),
+            "peak_drop_ratio": entry.get("peak_drop_ratio", 0.0),
+            "avg_relative_retention": entry.get("avg_relative_retention", 0.0),
+            "milestones": milestones,
+        }
+
+    def has_retention_data(self, video_id: str) -> bool:
+        """Quick check: does this video have real retention data stored?"""
+        ledger = self._load_ledger()
+        curves = ledger.get("retention_curves", {})
+        entry = curves.get(video_id, {})
+        return entry.get("has_data", False)
+
+    # ─── Q&A Guard: Prevents Fabricated Retention Answers ──────────────
+    def qa_retention_check(self, video_id: str, question: str) -> dict:
+        """
+        Q&A guard for retention-related questions.
+        Returns a dict with:
+          - can_answer (bool): True only if real data exists
+          - answer (str): The real answer if can_answer, or a refusal if not
+          - source (str): Where the data came from
+
+        CRITICAL: This function MUST be called before answering any retention
+        question. If can_answer=False, the caller MUST refuse to give numeric
+        retention percentages — it must return the refusal text instead.
+        """
+        summary = self.get_retention_summary(video_id)
+
+        if not summary.get("has_data"):
+            return {
+                "can_answer": False,
+                "answer": (
+                    "I cannot answer that retention question — no real retention "
+                    "data is available for this video.\n\n"
+                    "This happens when:\n"
+                    "  • The video is less than 24-48 hours old (YouTube hasn't processed it yet)\n"
+                    "  • The YouTube Analytics API scope (yt-analytics.readonly) is not authorized\n"
+                    "  • The video has too few views to generate a retention curve\n\n"
+                    "Retention data will appear automatically once YouTube processes the video. "
+                    "Check back in 24-48 hours."
+                ),
+                "source": "none",
+            }
+
+        # We have real data — generate answer from actual curve
+        milestones = summary.get("milestones", {})
+        avg_rel = summary.get("avg_relative_retention", 0.0)
+        peak_drop = summary.get("peak_drop_ratio", 0.0)
+
+        # Build a factual answer
+        parts = [f"Based on YouTube Analytics API data (last {summary.get('days', 30)} days):"]
+
+        if milestones:
+            parts.append("\nKey retention points (relative to all videos of similar length on your channel):")
+            for key, m in sorted(milestones.items()):
+                parts.append(
+                    f"  • At {m['ratio']:.0%} through the video: "
+                    f"{m['audience_watch_pct']:.1%} of initial viewers still watching "
+                    f"(relative retention: {m['relative_retention']:.2f}x)"
+                )
+
+        parts.append(f"\nOverall average relative retention: {avg_rel:.2f}x YouTube baseline")
+        parts.append(f"Biggest drop-off point: at {peak_drop:.0%} of video duration")
+
+        if avg_rel >= 1.1:
+            parts.append("Verdict: ABOVE average — this format is working well for you.")
+        elif avg_rel >= 0.9:
+            parts.append("Verdict: AVERAGE — there's room for improvement in pacing/hooks.")
+        else:
+            parts.append("Verdict: BELOW average — consider improving the hook or shortening the intro.")
+
+        return {
+            "can_answer": True,
+            "answer": "\n".join(parts),
+            "source": "youtube_analytics_api",
+        }
+
     # ─── Step 2 (alias): Store Run Performance ─────────────────────────
     def store_run_performance(self, topic_title: str, video_ids: list[str] = None,
                               analytics: dict = None):
@@ -327,6 +477,134 @@ class RagFeedbackLoop:
                     break
             brief = "\n".join(trimmed) + "\n..."
         return brief
+
+    # ─── Step 5: Pull + Store Retention Curves ────────────────────────
+    def pull_and_store_retention(self, youtube_service, video_ids: list, days: int = 30) -> dict:
+        """
+        Pull retention curves for multiple videos and store in ledger.
+        Requires the YouTube Analytics service object (youtubeAnalytics v2).
+        Returns {video_id: retention_data_dict}.
+        """
+        results = {}
+        if not youtube_service or not video_ids:
+            return results
+
+        for vid in video_ids:
+            if not vid or len(vid) < 8:
+                continue
+            try:
+                resp = youtube_service.reports().query(
+                    ids="channel==MINE",
+                    startDate=(datetime.now(_IST) - timedelta(days=days)).strftime("%Y-%m-%d"),
+                    endDate=datetime.now(_IST).strftime("%Y-%m-%d"),
+                    metrics="relativeRetentionPerformance,audienceWatchRatio",
+                    dimensions="elapsedVideoTimeRatio",
+                    filters=f"video=={vid}",
+                    sort="elapsedVideoTimeRatio",
+                ).execute()
+
+                rows = resp.get("rows", [])
+                if not rows:
+                    retention = {"video_id": vid, "has_data": False, "error": "no data"}
+                else:
+                    curve = []
+                    for row in rows:
+                        ratio = float(row[0]) if row[0] is not None else 0.0
+                        rel_ret = float(row[1]) if row[1] is not None else 0.0
+                        watch_ratio = float(row[2]) if row[2] is not None else 0.0
+                        curve.append({
+                            "ratio": round(ratio, 4),
+                            "relative_retention": round(rel_ret, 4),
+                            "audience_watch_ratio": round(watch_ratio, 4),
+                        })
+
+                    peak_drop_ratio = 0.0
+                    max_drop = 0.0
+                    for i in range(1, len(curve)):
+                        drop = curve[i - 1]["audience_watch_ratio"] - curve[i]["audience_watch_ratio"]
+                        if drop > max_drop:
+                            max_drop = drop
+                            peak_drop_ratio = curve[i]["ratio"]
+
+                    avg_rel = sum(p["relative_retention"] for p in curve) / len(curve) if curve else 0.0
+                    retention = {
+                        "video_id": vid, "days": days, "curve": curve,
+                        "peak_drop_ratio": round(peak_drop_ratio, 4),
+                        "avg_relative_retention": round(avg_rel, 4),
+                        "has_data": True,
+                    }
+
+                self.store_retention_curve(vid, retention)
+                results[vid] = retention
+
+            except Exception as e:
+                err_data = {"video_id": vid, "has_data": False, "error": str(e)[:120]}
+                self.store_retention_curve(vid, err_data)
+                results[vid] = err_data
+
+        return results
+
+    # ─── Step 6: Generate Human-Readable Retention Report ──────────────
+    def generate_retention_report(self, video_id: str, video_title: str = "",
+                                  video_duration_seconds: int = 0) -> str:
+        """
+        Generate a human-readable retention report for a video.
+        Uses REAL data from the growth ledger.
+        Returns a text summary suitable for Q&A answers.
+        If no data exists, returns a clear "no data" message (NOT fabricated numbers).
+        """
+        summary = self.get_retention_summary(video_id)
+
+        if not summary.get("has_data"):
+            return (
+                f"No retention data available for \"{video_title or video_id}\".\n"
+                f"This usually means the video is too new (needs 24-48h for YouTube to process)\n"
+                f"or the YouTube Analytics API scope is not authorized.\n"
+                f"Retention data will appear automatically once the video accumulates views."
+            )
+
+        milestones = summary.get("milestones", {})
+        peak_drop = summary.get("peak_drop_ratio", 0.0)
+        avg_rel = summary.get("avg_relative_retention", 0.0)
+
+        lines = [f"📉 Audience Retention Report: \"{video_title or video_id}\""]
+
+        if video_duration_seconds > 0:
+            lines.append(f"Duration: {video_duration_seconds}s ({video_duration_seconds // 60}:{video_duration_seconds % 60:02d})")
+            # Map ratio milestones to actual timestamps
+            for key, m in sorted(milestones.items()):
+                ratio = m["ratio"]
+                seconds_at_point = int(ratio * video_duration_seconds)
+                mins, secs = divmod(seconds_at_point, 60)
+                lines.append(
+                    f"  At {mins}:{secs:02d} ({ratio:.0%} through): "
+                    f"~{m['audience_watch_pct']:.0%} of initial audience still watching | "
+                    f"relative: {m['relative_retention']:.2f}x"
+                )
+            peak_sec = int(peak_drop * video_duration_seconds)
+            pm, ps = divmod(peak_sec, 60)
+            lines.append(f"\n  ⚠️ Biggest drop-off point: {pm}:{ps:02d} ({peak_drop:.0%} through)")
+        else:
+            # No duration info — show ratio-only
+            for key, m in sorted(milestones.items()):
+                lines.append(
+                    f"  At {m['ratio']:.0%} through video: "
+                    f"~{m['audience_watch_pct']:.0%} of initial audience | "
+                    f"relative: {m['relative_retention']:.2f}x"
+                )
+            lines.append(f"\n  ⚠️ Biggest drop-off: {peak_drop:.0%} through video")
+
+        # Interpret avg relative retention
+        if avg_rel >= 1.1:
+            lines.append(f"\n  ✅ Overall: ABOVE average retention ({avg_rel:.2f}x YouTube baseline)")
+        elif avg_rel >= 0.9:
+            lines.append(f"\n  📊 Overall: AVERAGE retention ({avg_rel:.2f}x YouTube baseline)")
+        else:
+            lines.append(f"\n  ⚠️ Overall: BELOW average retention ({avg_rel:.2f}x YouTube baseline) — consider improving hooks")
+
+        lines.append(f"\n  Data source: YouTube Analytics API (last {summary.get('days', 30)} days)")
+        lines.append(f"  Samples: {summary.get('curve_sample_count', 0)} data points")
+        return "\n".join(lines)
 
     # ─── Full Pipeline: Run after upload ─────────────────────────────
     def run_feedback_cycle(self, youtube_service, video_ids: list, topic_title: str) -> str:

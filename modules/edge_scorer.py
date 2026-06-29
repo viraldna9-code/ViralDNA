@@ -37,6 +37,13 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ANALYTICS_FILE = os.path.join(PROJECT_ROOT, "analytics", "metrics_history.json")
 TOPICS_FILE = os.path.join(PROJECT_ROOT, "logs", "topics_history.json")
 LEDGER_FILE = os.path.join(PROJECT_ROOT, "diagnostics", "growth_ledger.json")
+AFFINITY_FILE = os.path.join(PROJECT_ROOT, "analytics", "topic_affinity.json")
+CTR_LOG_FILE = os.path.join(PROJECT_ROOT, "analytics", "ctr_performance_log.json")
+
+# ── TOPIC AFFINITY LEARNING ──
+# Tracks which categories actually perform for The ViralDNA based on real data.
+# Studio AI showed politics ≈ 10x better than human interest for this channel.
+# This module persists category → performance scores so edge_scorer can pre-weight.
 
 
 # ── CATEGORY KEYWORDS (for matching topics to past video categories) ──
@@ -109,6 +116,102 @@ ENGAGEMENT_MODERATE = [
 ]
 
 
+CTR_FEATURE_WEIGHTS = {
+    # Positive features (proven to drive high CTR)
+    # Derived from 66-video analysis: differential = %CTR videos WITH feature vs WITHOUT
+    "has_rebel_battle": 0.18,        # +41% differential (strongest predictor)
+    "has_specific_person": 0.11,     # +11% differential
+    "has_high_stakes": 0.10,        # +8% differential (conservative)
+    "title_over_70_chars": 0.08,     # +23% differential (specificity)
+    "has_party_name": 0.06,          # +8% differential
+    "has_dramatic_verb": 0.05,      # present in winning titles
+    "has_colon_structure": 0.03,     # "X: Y" setup:payoff structure
+    "has_specific_number": 0.05,     # positive in raw data, negative only due to GTA noise
+
+    # Negative features (correlate with low CTR)
+    "has_generic_latest_news": -0.12,  # "Latest News" = filler, not news
+    "has_vague_question": -0.10,      # "what's the deal" = no stakes
+    "has_cta_suffix": -0.08,          # "check it now" = not news
+    "starts_with_is_are": -0.05,       # weak hook opener
+}
+
+# Keyword lists for feature detection
+CTR_REBEL_BATTLE = [
+    "rebel", "rebels", "battle", "firestorm", "rift", "clash", "shocker",
+    "shocking", "heated", "heats up", "joins the fray", "tension", "tensions",
+    "showdown", "face-off", "face off", "standoff", "confrontation",
+]
+CTR_SPECIFIC_PERSONS = [
+    "mamata", "banerjee", "pawan", "kalyan", "modi", "rahul", "gandhi",
+    "kejriwal", "stalin", "kcr", "chandrababu", "naidu", "shivakumar",
+    "banerjee", "thackeray", "sharma", "singh",
+]
+CTR_PARTY_NAMES = [
+    "bjp", "congress", "dmk", "tdp", "jana sena", "trinamool", "aimim",
+    "ycp", "rjd", "aap", "sp", "bsp", "tjs", "js",
+]
+CTR_DRAMATIC_VERBS = [
+    "rescued", "tops", "flagged", "reopens", "arrested", "custody",
+    "slams", "attacks", "lashes", "exposed", "revealed", "leaked",
+    "forced", "adjourns", "boycotts", "skips", "expels", "suspended",
+]
+CTR_HIGH_STAKES = [
+    "nuclear", "crisis", "emergency", "war", "attack", "survival",
+    "disaster", "massive", "deadly", "fatal", "collapse", "strike",
+    "curfew", "lockdown", "evacuation",
+]
+CTR_GENERIC_FILLER = [
+    "latest news", "latest update", "update today", "what happened today",
+    "news today", "breaking news", "just in", "developing story",
+]
+CTR_VAGUE_QUESTIONS = [
+    "what's the deal", "what's happening", "what's going on", "what's new",
+    "what's the story", "what's next", "what's the latest",
+]
+CTR_CTA_SUFFIXES = [
+    "check it now", "read more", "learn more", "find out", "click here",
+    "watch now", "see here", "full story", "full video",
+]
+
+
+def _detect_ctr_features(title: str) -> dict:
+    """
+    Detect CTR-predictive features in a title.
+    Returns dict of {feature_name: bool} for each feature.
+    """
+    t = title.lower()
+    features = {}
+
+    # Check each feature category
+    features["has_rebel_battle"] = any(kw in t for kw in CTR_REBEL_BATTLE)
+    features["has_specific_number"] = bool(re.search(r'\b\d{2,}\b', title))
+    features["has_specific_person"] = any(kw in t for kw in CTR_SPECIFIC_PERSONS)
+    features["has_party_name"] = any(kw in t for kw in CTR_PARTY_NAMES)
+    features["has_dramatic_verb"] = any(kw in t for kw in CTR_DRAMATIC_VERBS)
+    features["has_high_stakes"] = any(kw in t for kw in CTR_HIGH_STAKES)
+    features["title_over_70_chars"] = len(title) > 70
+    features["has_colon_structure"] = ":" in title
+
+    features["has_generic_latest_news"] = any(kw in t for kw in CTR_GENERIC_FILLER)
+    features["has_vague_question"] = any(kw in t for kw in CTR_VAGUE_QUESTIONS)
+    features["has_cta_suffix"] = any(kw in t for kw in CTR_CTA_SUFFIXES)
+    features["starts_with_is_are"] = bool(re.match(r'^(is|are|was|were|do|does|can|will|should)\b', t))
+
+    return features
+
+
+def score_title_ctr(title: str) -> float:
+    """
+    Score a title's predicted CTR based on learned feature weights.
+    Returns a score from 0.0 to 1.0.
+    Higher = more likely to get high CTR from browse impressions.
+    """
+    features = _detect_ctr_features(title)
+    raw_score = sum(CTR_FEATURE_WEIGHTS[f] for f, present in features.items() if present)
+    # Clamp to [0.0, 1.0]
+    return max(0.0, min(1.0, raw_score))
+
+
 def _classify_topic(title: str) -> str:
     """Classify a topic title into a category."""
     t = title.lower()
@@ -152,6 +255,125 @@ def _load_growth_ledger() -> dict:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
+
+
+# ═══════════════════════════════════════════════════════
+#  TOPIC AFFINITY LEARNING (Studio AI gap fix #2)
+# ═══════════════════════════════════════════════════════
+# Tracks which categories get views/subs for The ViralDNA.
+# Feeds back into edge scoring so pipeline avoids underperforming topics.
+
+def _load_topic_affinity() -> dict:
+    """Load persistent topic affinity model from disk."""
+    try:
+        with open(AFFINITY_FILE) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"categories": {}, "updated": None}
+
+
+def _save_topic_affinity(affinity: dict):
+    """Persist topic affinity model to disk."""
+    os.makedirs(os.path.dirname(AFFINITY_FILE), exist_ok=True)
+    affinity["updated"] = datetime.now(IST).isoformat()
+    with open(AFFINITY_FILE, "w") as f:
+        json.dump(affinity, f, indent=2)
+
+
+def update_topic_affinity(category: str, views: int = 0, subscribers_gained: int = 0,
+                         engagement_rate: float = 0.0):
+    """Record a video's performance for its category (call after analytics fetch)."""
+    affinity = _load_topic_affinity()
+    cats = affinity.setdefault("categories", {})
+    entry = cats.setdefault(category, {
+        "total_videos": 0, "total_views": 0, "total_subs": 0,
+        "avg_views": 0, "avg_engagement": 0, "affinity_score": 0.5,
+    })
+    entry["total_videos"] += 1
+    entry["total_views"] += views
+    entry["total_subs"] += subscribers_gained
+    entry["avg_views"] = round(entry["total_views"] / entry["total_videos"], 1)
+    # Running average of engagement rate
+    entry["avg_engagement"] = round(
+        (entry["avg_engagement"] * (entry["total_videos"] - 1) + engagement_rate)
+        / entry["total_videos"], 4
+    )
+    # Affinity score: 0.0 (never performs) to 1.0 (always performs)
+    # Based on avg_views relative to channel average and engagement
+    if entry["avg_views"] >= 2000 and entry["avg_engagement"] >= 0.03:
+        entry["affinity_score"] = 1.0
+    elif entry["avg_views"] >= 1000 or entry["avg_engagement"] >= 0.03:
+        entry["affinity_score"] = 0.8
+    elif entry["avg_views"] >= 500 or entry["avg_engagement"] >= 0.01:
+        entry["affinity_score"] = 0.6
+    elif entry["avg_views"] >= 100:
+        entry["affinity_score"] = 0.4
+    else:
+        entry["affinity_score"] = 0.2
+    _save_topic_affinity(affinity)
+
+
+def build_topic_affinity_from_analytics():
+    """
+    Rebuild topic affinity from metrics_history.json + ledger.
+    Call this after each analytics update to refresh the model.
+    """
+    affinity = {"categories": {}, "updated": None}
+    
+    # Pull metrics_history
+    analytics = _load_channel_analytics()
+    top_videos = analytics.get("videos", {}).get("top_videos", [])
+    for video in top_videos:
+        vtitle = video.get("title", "")
+        vviews = video.get("views", 0)
+        vlikes = video.get("likes", 0)
+        vcomments = video.get("comments", 0)
+        vcategory = _classify_topic(vtitle)
+        eng_rate = (vlikes + vcomments) / vviews if vviews > 0 else 0
+        # Accumulate
+        cats = affinity["categories"]
+        entry = cats.setdefault(vcategory, {
+            "total_videos": 0, "total_views": 0, "total_subs": 0,
+            "avg_views": 0, "avg_engagement": 0, "affinity_score": 0.5,
+        })
+        entry["total_videos"] += 1
+        entry["total_views"] += vviews
+        entry["total_subs"] += 0
+        # Recompute running avg eng from accumulated total
+        prev_total_eng = entry["avg_engagement"] * (entry["total_videos"] - 1)
+        entry["avg_views"] = round(entry["total_views"] / entry["total_videos"], 1)
+        entry["avg_engagement"] = round(
+            (prev_total_eng + eng_rate) / entry["total_videos"], 4
+        )
+    # Compute affinity scores
+    for cat, entry in affinity["categories"].items():
+        if entry["avg_views"] >= 2000 and entry["avg_engagement"] >= 0.03:
+            entry["affinity_score"] = 1.0
+        elif entry["avg_views"] >= 1000 or entry["avg_engagement"] >= 0.03:
+            entry["affinity_score"] = 0.8
+        elif entry["avg_views"] >= 500 or entry["avg_engagement"] >= 0.01:
+            entry["affinity_score"] = 0.6
+        elif entry["avg_views"] >= 100:
+            entry["affinity_score"] = 0.4
+        else:
+            entry["affinity_score"] = 0.2
+    _save_topic_affinity(affinity)
+    return affinity
+
+
+def get_topic_affinity_multiplier(category: str) -> float:
+    """
+    Get a multiplier (0.5–1.5) for a category based on past performance.
+    High affinity → multiplier > 1.0 (boost)
+    Low affinity → multiplier < 1.0 (penalize)
+    """
+    affinity = _load_topic_affinity()
+    cats = affinity.get("categories", {})
+    if category not in cats:
+        return 1.0  # Unknown category — neutral
+    score = cats[category].get("affinity_score", 0.5)
+    # Map 0.0–1.0 to 0.5–1.5 multiplier
+    return round(0.5 + score, 2)
 
 
 def _get_trending_topics() -> set:
@@ -604,8 +826,20 @@ def compute_edge_score(topic: dict, all_topics: list = None,
     factors["feedback_analytics"] = factor_feedback_analytics(title, analytics, ledger)
     factors["search_volume"] = factor_youtube_search_demand(title)
 
+    # ── CTR FEATURE SCORER (learns from real YouTube Studio data) ──
+    # Predicts browse CTR based on title patterns that worked in past videos
+    ctr_score = score_title_ctr(title)
+    factors["ctr_features"] = round(ctr_score, 2)
+
     # Sum all factors
     raw_edge = sum(factors.values())
+
+    # ── TOPIC AFFINITY MULTIPLIER (Studio AI gap fix #2) ──
+    # Boost/penalize based on which categories actually get views for this channel
+    category = _classify_topic(title)
+    affinity_mult = get_topic_affinity_multiplier(category)
+    raw_edge *= affinity_mult
+    factors["topic_affinity"] = round(affinity_mult, 2)
 
     # Clamp to [0.1, 0.9] — every topic gets at least 0.1
     edge = max(0.1, min(0.9, raw_edge))

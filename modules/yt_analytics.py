@@ -1,9 +1,16 @@
 """
 YouTube Analytics — Real implementation using YouTube Analytics API v2.
-Pulls views, watch time, avg view duration, likes, and subscriber metrics.
+Pulls views, watch time, avg view duration, likes, subscriber metrics,
+and audience retention curves.
 
 Requires scope: https://www.googleapis.com/auth/yt-analytics.readonly
 Enable API: https://console.developers.google.com/apis/api/youtubeanalytics.googleapis.com/overview
+
+Retention curve API:
+  dimensions=elapsedVideoTimeRatio  (0.0–1.0 = 0%–100% through video)
+  metrics=relativeRetentionPerformance,audienceWatchRatio
+  filters=video==<id>
+  → Returns list of (ratio, relative_perf, watch_ratio) rows
 """
 import datetime
 import json
@@ -124,6 +131,100 @@ class YouTubeAnalytics:
 
         return results
 
+    def pull_retention_curve(self, video_id: str, days: int = 30) -> dict:
+        """
+        Pull the audience retention curve for a single video.
+
+        Uses YouTube Analytics API v2 with:
+          dimension = elapsedVideoTimeRatio  (0.0 to 1.0 = 0% to 100% through video)
+          metrics   = relativeRetentionPerformance, audienceWatchRatio
+
+        Returns:
+          {
+            "video_id": str,
+            "days": int,
+            "curve": [
+              {"ratio": 0.05, "relative_retention": 1.10, "audience_watch_ratio": 0.95},
+              {"ratio": 0.10, "relative_retention": 0.95, "audience_watch_ratio": 0.88},
+              ...
+            ],
+            "peak_drop_ratio": float,     # ratio where steepest drop occurs
+            "avg_relative_retention": float,
+            "has_data": bool,
+          }
+
+        Notes:
+          - relative_retention > 1.0 means this point retains BETTER than
+            YouTube's baseline for videos of the same length.
+          - audience_watch_ratio is the fraction of the *initial audience*
+            still watching at that point (0.0–1.0). This is the closest
+            public-API equivalent of "X% of viewers still watching."
+          - Returns has_data=False if the video is too new or API errors.
+        """
+        if not video_id or len(video_id) < 8:
+            return {"video_id": video_id, "has_data": False, "error": "invalid video_id"}
+
+        try:
+            service = self._get_service()
+        except Exception as e:
+            return {"video_id": video_id, "has_data": False, "error": str(e)[:120]}
+
+        end_date = datetime.date.today().strftime("%Y-%m-%d")
+        start_date = (datetime.date.today() - datetime.timedelta(days=days)).strftime("%Y-%m-%d")
+
+        try:
+            request = service.reports().query(
+                ids="channel==MINE",
+                startDate=start_date,
+                endDate=end_date,
+                metrics="relativeRetentionPerformance,audienceWatchRatio",
+                dimensions="elapsedVideoTimeRatio",
+                filters=f"video=={video_id}",
+                sort="elapsedVideoTimeRatio",
+            )
+            response = request.execute()
+        except Exception as e:
+            return {"video_id": video_id, "has_data": False, "error": str(e)[:120]}
+
+        rows = response.get("rows", [])
+        if not rows:
+            return {"video_id": video_id, "has_data": False, "error": "no data (video too new or no views)"}
+
+        curve = []
+        for row in rows:
+            # Row: [elapsedVideoTimeRatio, relativeRetentionPerformance, audienceWatchRatio]
+            ratio = float(row[0]) if row[0] is not None else 0.0
+            rel_ret = float(row[1]) if row[1] is not None else 0.0
+            watch_ratio = float(row[2]) if row[2] is not None else 0.0
+            curve.append({
+                "ratio": round(ratio, 4),
+                "relative_retention": round(rel_ret, 4),
+                "audience_watch_ratio": round(watch_ratio, 4),
+            })
+
+        if not curve:
+            return {"video_id": video_id, "has_data": False, "error": "empty curve"}
+
+        # Find peak drop: largest negative delta in audience_watch_ratio between consecutive points
+        peak_drop_ratio = 0.0
+        max_drop = 0.0
+        for i in range(1, len(curve)):
+            drop = curve[i - 1]["audience_watch_ratio"] - curve[i]["audience_watch_ratio"]
+            if drop > max_drop:
+                max_drop = drop
+                peak_drop_ratio = curve[i]["ratio"]
+
+        avg_rel_ret = sum(p["relative_retention"] for p in curve) / len(curve)
+
+        return {
+            "video_id": video_id,
+            "days": days,
+            "curve": curve,
+            "peak_drop_ratio": round(peak_drop_ratio, 4),
+            "avg_relative_retention": round(avg_rel_ret, 4),
+            "has_data": True,
+        }
+
     def pull_channel_metrics(self, days: int = 30) -> dict:
         """
         Pull aggregate channel metrics for the last N days.
@@ -172,3 +273,16 @@ def pull_metrics(video_ids: list[str] | None = None, days: int = 30,
     if video_ids:
         return yt.pull_metrics(video_ids, days)
     return yt.pull_channel_metrics(days)
+
+
+def pull_retention_curve(video_id: str, days: int = 30,
+                         credentials_path: str | None = None) -> dict:
+    """
+    Pull the audience retention curve for a single video.
+    Convenience wrapper around YouTubeAnalytics.pull_retention_curve().
+
+    Returns dict with keys: video_id, days, curve, peak_drop_ratio,
+    avg_relative_retention, has_data, error (if any).
+    """
+    yt = YouTubeAnalytics(credentials_path=credentials_path)
+    return yt.pull_retention_curve(video_id, days)

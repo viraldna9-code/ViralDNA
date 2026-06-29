@@ -1517,32 +1517,81 @@ class VDNA2Director:
         except Exception as e:
             print(f"   ⚠️ Pinned comment generation failed: {e}")
 
-        # ── 10.2c: VDNA 3.0 (v87.2): Retention curve analysis → feedback to next run ──
+        # ── 10.2c: Retention curve analysis → feedback to next run ──
+        # Uses REAL data from YouTube Analytics API (relativeRetentionPerformance + audienceWatchRatio)
+        # NOT synthetic/fabricated from avg_view_percentage
         try:
-            rc = self.skills["retention_curve"]
+            from rag_feedback import RagFeedbackLoop
+            from yt_analytics import YouTubeAnalytics
+            from config import DRIVE_BASE
+
+            ledger_path = os.path.join(DRIVE_BASE, "diagnostics", "growth_ledger.json")
+            creds_path = os.path.join(DRIVE_BASE, "credentials", "youtube_token.json")
+
+            rag = RagFeedbackLoop(ledger_path=ledger_path)
+            yt = None
+            try:
+                yt = YouTubeAnalytics(credentials_path=creds_path)
+                _svc = yt._get_service()  # verify service builds
+            except Exception:
+                yt = None  # No analytics service available
+
             analytics = state.get("analytics_summary", {})
             if analytics and isinstance(analytics, dict):
-                # Build retention-like data from analytics avg_view_percentage
                 retention_data = []
                 for vid, m in analytics.items():
-                    if isinstance(m, dict) and m.get("avg_view_percentage"):
-                        # Synthetic retention curve from avg view percentage
-                        avg_pct = m["avg_view_percentage"]
-                        dur = m.get("avg_view_duration_seconds", 60)
+                    if not isinstance(m, dict):
+                        continue
+
+                    # Try real retention curve first
+                    if yt and vid and len(vid) >= 8:
+                        try:
+                            real_curve = yt.pull_retention_curve(vid, days=30)
+                            if real_curve.get("has_data"):
+                                rag.store_retention_curve(vid, real_curve)
+                                retention_data.append({
+                                    "video_id": vid,
+                                    "source": "youtube_analytics_api",
+                                    "avg_relative_retention": real_curve["avg_relative_retention"],
+                                    "peak_drop_ratio": real_curve["peak_drop_ratio"],
+                                    "curve_points": len(real_curve["curve"]),
+                                })
+                                continue
+                        except Exception:
+                            pass
+
+                    # Fallback: check if we have stored retention data from a previous run
+                    if rag.has_retention_data(vid):
+                        summary = rag.get_retention_summary(vid)
                         retention_data.append({
                             "video_id": vid,
-                            "avg_retention_pct": avg_pct,
-                            "avg_duration_sec": dur,
+                            "source": "stored_ledger",
+                            "avg_relative_retention": summary.get("avg_relative_retention", 0),
+                            "peak_drop_ratio": summary.get("peak_drop_ratio", 0),
+                            "curve_points": summary.get("curve_sample_count", 0),
                         })
+                        continue
+
+                    # No real data available — do NOT fabricate
+                    if m.get("avg_view_percentage"):
+                        retention_data.append({
+                            "video_id": vid,
+                            "source": "no_retention_data",
+                            "avg_view_percentage": m.get("avg_view_percentage"),
+                            "note": "Retention curve not yet available (video too new or API scope missing)",
+                        })
+
                 if retention_data:
                     insights = []
                     for rd in retention_data:
-                        if rd["avg_retention_pct"] < 30:
-                            insights.append(f"Video {rd['video_id'][:8]}...: LOW retention ({rd['avg_retention_pct']:.0f}%). Hook needs work.")
-                        elif rd["avg_retention_pct"] > 60:
-                            insights.append(f"Video {rd['video_id'][:8]}...: STRONG retention ({rd['avg_retention_pct']:.0f}%). Replicate this format.")
+                        if rd["source"] == "no_retention_data":
+                            insights.append(f"Video {rd['video_id'][:8]}...: {rd['note']}")
+                        elif rd.get("avg_relative_retention", 0) < 0.9:
+                            insights.append(f"Video {rd['video_id'][:8]}...: BELOW avg retention ({rd['avg_relative_retention']:.2f}x YouTube baseline). Hook needs work.")
+                        elif rd.get("avg_relative_retention", 0) > 1.1:
+                            insights.append(f"Video {rd['video_id'][:8]}...: ABOVE avg retention ({rd['avg_relative_retention']:.2f}x YouTube baseline). Replicate this format.")
                         else:
-                            insights.append(f"Video {rd['video_id'][:8]}...: OK retention ({rd['avg_retention_pct']:.0f}%). Tighten pacing.")
+                            insights.append(f"Video {rd['video_id'][:8]}...: AVERAGE retention ({rd['avg_relative_retention']:.2f}x YouTube baseline). Tighten pacing.")
                     state["retention_insights"] = insights
                     print(f"   📉 Retention insights: {len(insights)} video(s) analyzed")
                     for ins in insights[:3]:

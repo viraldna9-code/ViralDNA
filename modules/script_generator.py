@@ -98,48 +98,80 @@ class ScriptGenerator:
     CTR_NUMBER_PATTERNS = ["Top {}", "{} Facts", "{} Things", "{} Ways"]
 
     def _score_title_ctr(self, title: str) -> float:
-        """Score a title 0-100 for predicted CTR using proven formulas."""
-        score = 30.0  # base
+        """
+        Score a title 0-100 for predicted CTR.
 
-        # Power words boost (+5 each, max +15)
+        Uses data-driven feature scoring learned from 66 real videos on
+        The ViralDNA (Jun 2026). Key findings:
+          - Conflict/drama words ("rebel", "heats up", "battle") = best predictor
+          - Named persons (Mamata, Pawan) = clicks signal relevance
+          - Generic filler ("Latest News") = YouTube buries these
+          - Questions ("Is your name...") = weak hooks (contrary to common wisdom)
+
+        Delegates to edge_scorer.score_title_ctr() for the core scoring,
+        then scales to 0-100 range.
+        """
+        try:
+            from edge_scorer import score_title_ctr as data_score_title_ctr
+            # Data-driven scorer returns 0.0-1.0, scale to 0-100
+            raw = data_score_title_ctr(title)
+            return round(raw * 100, 1)
+        except ImportError:
+            pass
+
+        # Fallback: generic heuristic (only used if edge_scorer import fails)
+        score = 30.0
         pw_count = sum(1 for w in self.CTR_POWER_WORDS if w.lower() in title.lower())
         score += min(pw_count * 5, 15)
-
-        # Numbers in title (+10)
         if re.search(r'\d+', title):
             score += 10
-
-        # Brackets/prefix markers (+8)
         if any(b in title for b in ["|", ":", " - ", " — "]):
             score += 8
-
-        # Length sweet spot: 40-60 chars (+10)
         if 40 <= len(title) <= 60:
             score += 10
-        elif len(title) > 80:
-            score -= 5  # too long, gets truncated
-
-        # Emotional trigger words (+7)
-        emotion_words = ["shocking", "surprising", "secret", "truth", "real",
-                         "biggest", "worst", "best", "first", "only"]
-        if any(w in title.lower() for w in emotion_words):
-            score += 7
-
-        # Question format (+5)
         if title.endswith("?"):
             score += 5
-
-        # Curiosity gap (numbers + colon/pipe pattern) (+8)
-        if re.search(r'\d+\s*[|:-]', title):
-            score += 8
-
         return min(score, 100.0)
 
+    # ─── CTR WARNING THRESHOLD ───
+    # Based on your data: avg CTR for videos with ≥50 imp is ~3.7%.
+    # If no variant scores above this, the pipeline should warn.
+    CTR_WARNING_THRESHOLD = 15.0  # out of 100 (equivalent to ~0.15 raw = decent CTR potential)
+    _last_ctr_warning = None  # class-level storage for last warning
+
     def _rank_title_variants(self, variants: list) -> list:
-        """Rank title variants by predicted CTR score, return sorted desc."""
+        """
+        Rank title variants by predicted CTR score, return sorted desc.
+
+        Also validates that at least one variant exceeds CTR_WARNING_THRESHOLD.
+        If not, stores a warning in self._last_ctr_warning for callers to check.
+        """
         scored = [(v, self._score_title_ctr(v.get("title", ""))) for v in variants]
         scored.sort(key=lambda x: x[1], reverse=True)
+        best_score = scored[0][1] if scored else 0.0
+
+        if best_score < self.CTR_WARNING_THRESHOLD:
+            self._last_ctr_warning = {
+                "message": (
+                    f"⚠️ NO HIGH-CTR TITLE: Best variant scores only {best_score:.0f}/100. "
+                    f"Your top-performing videos average 15-53/100. "
+                    f"Consider adding: specific number, conflict word, or named person."
+                ),
+                "best_score": best_score,
+                "suggestions": [
+                    "Include a specific number (e.g.: '10 MPs', '89 voters', '23 parties')",
+                    "Add a conflict phrase (e.g.: 'rebel', 'heats up', 'battle', 'clash' vs)",
+                    "Name a specific leader (e.g.: 'Mamata', 'Pawan', 'Modi')",
+                    "Avoid generic filler: 'Latest News', 'Update Today', 'Check it now'",
+                ],
+            }
+        else:
+            self._last_ctr_warning = None
         return scored
+
+    def get_ctr_warning(self):
+        """Get the last CTR warning, or None if titles are OK."""
+        return self._last_ctr_warning
 
     # ─── Sentiment / Emotional Score Analysis (A1.5) ───
     SENTIMENT_POSITIVE = [
@@ -467,7 +499,8 @@ class ScriptGenerator:
         """Build main video script with viral YouTube hook-first structure.
 
         v86.0: Expanded to 400-700 words for 3-5 minute video.
-        Structure: Hook -> What Happened -> Why It Matters -> Context -> Engagement CTA.
+        Structure: Hook -> What Happened -> Why It Matters -> MID-ROLL CTA -> Context -> Engagement CTA.
+        v87.3: Added mid-roll subscribe CTA at ~40-60% mark (Studio AI gap fix #4).
         """
         return (
             f"Let me tell you something that is happening right now, and you might not have heard the full story. "
@@ -485,6 +518,13 @@ class ScriptGenerator:
             f"But the real question is — what actually changes for people on the ground? "
             f"Will this help a farmer in Nalgonda? Will this change anything for a student in Hyderabad? "
             f"Will this affect your daily life in any way? "
+            # ── MID-ROLL SUBSCRIBE CTA (Studio AI gap fix #4) ──
+            # Placed at ~40-60% of script to catch viewers before drop-off
+            f"Before I go deeper — if this kind of honest coverage matters to you, "
+            f"hit that subscribe button right now. I cover Telangana and Andhra politics daily, "
+            f"and I don't want you to miss the next update. It takes one click. "
+            f"Now back to the story. "
+            # ── END MID-ROLL CTA ──
             f"That is what we need to talk about. "
             f"Because behind every political decision, every policy announcement, there are real families. "
             f"There are real people waiting to see if things get better. "
@@ -510,21 +550,25 @@ class ScriptGenerator:
         """Short #1: Viral hook format — impact-first, curiosity gap, 'you' language.
 
         v84.2: YouTube Studio feedback — no formal intros, start with conflict/benefit.
+        v87.3: Added short→main verbal CTA (Studio AI gap fix #3).
         """
         return (
             f"Here is something that could directly affect your family in Telangana. "
             f"{title} — and the big question is: will this actually reach people like you? "
-            f"Watch the full breakdown on ViralDNA now. Hit subscribe so you never miss an update."
+            f"I covered the full story on my channel today — check the description for the link. "
+            f"Hit subscribe so you never miss an update."
         )
 
     def _build_short_2(self, title: str) -> str:
         """Short #2: Conversational explanation + community angle.
 
         v84.2: YouTube Studio feedback — simple, relatable, question-driven.
+        v87.3: Added short→main verbal CTA (Studio AI gap fix #3).
         """
         return (
             f"What does {title} really mean for common families in Andhra and Telangana? "
             f"It's not just politics — it could change things in your daily life. "
+            f"I have the full analysis on my channel — link in the description if you want the complete picture. "
             f"Do you think this will help? Tell me in the comments. Follow ViralDNA for more."
         )
 
@@ -532,11 +576,13 @@ class ScriptGenerator:
         """Short #3: NRI direct CTA — personal, emotional, action-driven.
 
         v84.2: YouTube Studio feedback — direct 'you' language, emotional hook.
+        v87.3: Added short→main verbal CTA (Studio AI gap fix #3).
         """
         return (
             f"If you are watching from the US, UK, or Canada, this is about your home. "
             f"{title} is happening right now in our districts. "
             f"Share this with your family — they need to know. "
+            f"I have a full breakdown on my channel — check the description for the link. "
             f"Subscribe to ViralDNA and stay connected to your roots."
         )
 

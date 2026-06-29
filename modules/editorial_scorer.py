@@ -115,6 +115,73 @@ GROWTH_SPECIFIC = [
     "proof", "evidence", "leaked", "caught", "gone wrong",
 ]
 
+# ── HOOK QUALITY (what makes a viewer CLICK and STAY) ──
+# Based on YouTube Studio AI gap analysis for The ViralDNA (Jun 2026):
+# Channels in News & Politics with strong hooks get 3-5x higher CTR.
+# Hook types: personal stakes, curiosity gap, time urgency, question format, specificity.
+
+HOOK_PERSONAL_STAKES = [
+    "you", "your ", "yours", "yourself", "family", "parents", "children",
+    "vote", "voter", "your name", "your mobile", "your aadhaar",
+    "your bank", "your money", "your property", "your job",
+]
+HOOK_CURIOUSITY_GAP = [
+    "what happened", "what really", "the reason", "the truth",
+    "the real", "behind the", "hidden", "secret", "untold",
+    "no one", "nobody", "only one", "the one ", "why ",
+    "how did ", "how this ", "happened next", "finally",
+    "revealed", "exposed", "mystery", "unbelievable",
+]
+HOOK_TIME_URGENCY = [
+    "breaking", "just in", "just hours", "happening now", "alert",
+    "urgent", "latest update", "just announced", "minutes ago",
+    "today", "this hour", "live", "developing", "update:",
+]
+HOOK_QUESTION = [
+    "will ", "can ", "should ", "what if", "is ",
+    "are ", "how ", "why ", "who ", "when ",
+]
+HOOK_SPECIFICITY = [
+    "video", "photo", "watch the", "see how", "proof",
+    "footage", "official", "confirmed", "announced", "declared",
+]
+
+
+def _score_hook_quality(title: str) -> tuple:
+    """
+    Score title for hook quality (0-5 points).
+    Returns (score, reasons_list).
+    Detects: personal stakes, curiosity gap, time urgency, question format, specificity.
+    """
+    score = 0
+    reasons = []
+    title_lower = title.lower()
+
+    if any(kw in title_lower for kw in HOOK_PERSONAL_STAKES):
+        score += 2
+        reasons.append("Personal stakes language +2")
+
+    if any(kw in title_lower for kw in HOOK_CURIOUSITY_GAP):
+        score += 1
+        reasons.append("Curiosity gap +1")
+
+    if any(kw in title_lower for kw in HOOK_TIME_URGENCY):
+        score += 1
+        reasons.append("Time urgency +1")
+
+    # Question format = higher CTR on YouTube
+    if any(title_lower.strip().startswith(q) for q in HOOK_QUESTION):
+        score += 1
+        reasons.append("Question format (CTR hook) +1")
+    elif "?" in title:
+        score += 1
+        reasons.append("Question in title (CTR hook) +1")
+
+    if score > 5:
+        score = 5
+
+    return score, reasons
+
 
 def editorial_score(topic: dict) -> dict:
     """
@@ -202,19 +269,25 @@ def editorial_score(topic: dict) -> dict:
         score += 1
         reasons.append("Viral format +1")
 
-    # ── RECOMMENDATION ──
-    if score >= 18:
-        recommendation = "🟢 PRODUCE — High viral + relevance"
-    elif score >= 14:
+    # ── 6. HOOK QUALITY (0-5) [NEW — Studio AI gap fix #1] ──
+    hook_score, hook_reasons = _score_hook_quality(title)
+    score += hook_score
+    reasons.extend(hook_reasons)
+
+    # ── RECOMMENDATION (max now 35 with hook scoring) ──
+    if score >= 22:
+        recommendation = "� PRODUCE — High viral + relevance + hook"
+    elif score >= 17:
         recommendation = "🟡 CONSIDER — Worth a short"
-    elif score >= 10:
+    elif score >= 12:
         recommendation = "🟠 MARGINAL — Only if slot empty"
     else:
         recommendation = "🔴 SKIP — Not worth producing"
 
     return {
         "score": score,
-        "max_possible": 30,
+        "max_possible": 35,
         "reasons": reasons,
         "recommendation": recommendation,
+        "hook_score": hook_score,
     }

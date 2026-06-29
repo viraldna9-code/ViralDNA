@@ -39,8 +39,198 @@ CATEGORY_COOLDOWN_DAYS = {
 }
 
 
+# ── SERIES / CONTINUITY (Studio AI gap fix #6) ──
+# Series = ongoing narrative threads that encourage returning viewers.
+# When a topic continues an active series, it gets a priority boost.
+SERIES_BOOST_PRIORITY = 3  # Additional priority points for series continuation
+SERIES_MAX_AGE_DAYS = 14    # Series expires after 14 days of no content
+SERIES_MIN_VIDEOS = 2       # Min videos to consider it a series
+
+# Series tracking file
+SERIES_PATH = os.path.expanduser("~/.hermes/viral_dna/series_tracker.json")
+
+# Keyword groups that indicate same series (ordered by specificity)
+SERIES_KEYWORD_GROUPS = [
+    # Telangana politics
+    ["telangana", "cm", "chief minister", "kcr", "revanth", "bharat rashtra"],
+    ["telangana", "assembly", "election", "mla", "ward", "mandal"],
+    ["telangana", "budget", "gs", "pension", "rythu bharosa", "hyd-eco"],
+    # Andhra politics
+    ["andhra", "cm", "chief minister", "chandrababu", "tdp", "ysrcp", "jana sena"],
+    ["andhra", "ap", "capital", "amaravati", "visakhapatnam", "tirupati"],
+    ["pawan kalyan", "jana sena", "jsp", "pawan", "kalyan"],
+    # National news
+    ["modi", "bjp", "narendra", "pm", "india", "election commission"],
+    ["rahul", "congress", "gandhi", "india bloc", "i-n-d-i-a"],
+    ["flood", "rescue", "disaster", "cyclone", "heavy rain", "evacuat"],
+    ["voter", "electoral", "voter list", "election", "eci"],
+    ["budget", "tax", "gst", "income tax", "union budget"],
+    ["court", "supreme court", "high court", "verdict", "hearing"],
+]
+
+
 def _ensure_dirs():
     os.makedirs(os.path.dirname(CALENDAR_PATH), exist_ok=True)
+
+
+def _load_series():
+    """Load series tracker state."""
+    _ensure_dirs()
+    if os.path.exists(SERIES_PATH):
+        with open(SERIES_PATH) as f:
+            return json.load(f)
+    return {"active_series": [], "completed_series": []}
+
+
+def _save_series(series_data):
+    """Persist series tracker state."""
+    _ensure_dirs()
+    with open(SERIES_PATH, "w") as f:
+        json.dump(series_data, f, indent=2, default=str)
+
+
+def _match_series(title: str) -> list:
+    """
+    Match a title against active series keyword groups.
+    Returns list of series indices that match (0-based into SERIES_KEYWORD_GROUPS).
+    """
+    title_lower = title.lower()
+    matches = []
+    for idx, keywords in enumerate(SERIES_KEYWORD_GROUPS):
+        # At least 2 keywords must match for series assignment
+        match_count = sum(1 for kw in keywords if kw in title_lower)
+        if match_count >= 2:
+            matches.append(idx)
+    return matches
+
+
+def update_series_on_publish(title: str, video_id: str = ""):
+    """
+    Call this when a video is published. Updates series tracker:
+    - If title matches an active series, add to it
+    - If title matches a keyword group but no active series, create new one
+    - Expires series older than SERIES_MAX_AGE_DAYS
+    """
+    series_data = _load_series()
+    active = series_data.get("active_series", [])
+    completed = series_data.get("completed_series", [])
+    now = datetime.now()
+
+    # Expire old series
+    still_active = []
+    for s in active:
+        last_date_str = s.get("last_video_date", "")
+        if last_date_str:
+            try:
+                last_date = datetime.fromisoformat(last_date_str)
+                if (now - last_date).days > SERIES_MAX_AGE_DAYS:
+                    # Move to completed if it had enough videos
+                    if len(s.get("videos", [])) >= SERIES_MIN_VIDEOS:
+                        completed.append(s)
+                    continue
+            except (ValueError, TypeError):
+                pass
+        still_active.append(s)
+    active = still_active
+
+    # Match title against keyword groups
+    matching_groups = _match_series(title)
+
+    added_to_series = False
+    for group_idx in matching_groups:
+        # Find existing active series for this group
+        found = False
+        for s in active:
+            if s.get("series_id") == group_idx:
+                s.setdefault("videos", []).append({
+                    "title": title,
+                    "video_id": video_id,
+                    "date": now.isoformat(),
+                })
+                s["last_video_date"] = now.isoformat()
+                s["video_count"] = len(s.get("videos", []))
+                found = True
+                added_to_series = True
+                break
+
+        if not found:
+            # Create new series
+            active.append({
+                "series_id": group_idx,
+                "keywords": SERIES_KEYWORD_GROUPS[group_idx],
+                "videos": [{
+                    "title": title,
+                    "video_id": video_id,
+                    "date": now.isoformat(),
+                }],
+                "created": now.isoformat(),
+                "last_video_date": now.isoformat(),
+                "video_count": 1,
+            })
+            added_to_series = True
+
+    series_data["active_series"] = active
+    series_data["completed_series"] = completed[-50:]  # Keep last 50 completed
+    _save_series(series_data)
+    return series_data
+
+
+def get_continuity_bonus(title: str) -> tuple:
+    """
+    Check if a title continues an active series.
+    Returns (bonus_points, series_info_dict or None).
+    Used by editorial_scorer or director to boost series-continuing topics.
+    """
+    series_data = _load_series()
+    active = series_data.get("active_series", [])
+    matching_groups = _match_series(title)
+
+    for group_idx in matching_groups:
+        for s in active:
+            if s.get("series_id") == group_idx:
+                video_count = s.get("video_count", 0)
+                # More videos in series = higher bonus (loyalty building)
+                if video_count >= 5:
+                    bonus = SERIES_BOOST_PRIORITY + 2  # +5 total
+                elif video_count >= 3:
+                    bonus = SERIES_BOOST_PRIORITY + 1  # +4 total
+                else:
+                    bonus = SERIES_BOOST_PRIORITY  # +3 total
+                return bonus, {
+                    "series_id": group_idx,
+                    "keywords": s.get("keywords", []),
+                    "video_count": video_count,
+                    "series_name": _series_name(group_idx),
+                }
+
+    return 0, None
+
+
+def _series_name(group_idx: int) -> str:
+    """Human-readable series name from keyword group index."""
+    names = [
+        "Telangana Politics Tracker",
+        "Telangana Governance",
+        "Telangana Economy",
+        "Andhra Politics Tracker",
+        "Andhra Development",
+        "Pawan Kalyan / Jana Sena Watch",
+        "National Politics (Modi/BJP)",
+        "National Politics (Congress/INDIA)",
+        "Disaster & Emergency",
+        "Election & Voter Watch",
+        "Budget & Economy",
+        "Court & Justice",
+    ]
+    if 0 <= group_idx < len(names):
+        return names[group_idx]
+    return f"Series #{group_idx}"
+
+
+def get_active_series() -> list:
+    """Return list of active series with metadata."""
+    series_data = _load_series()
+    return series_data.get("active_series", [])
 
 
 def _load_calendar():

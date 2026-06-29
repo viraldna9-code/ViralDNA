@@ -127,19 +127,44 @@ def parse_duration(iso_dur):
 
 
 def get_channel_data(token):
-    url = f"https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet,brandingSettings,status,topicDetails,contentDetails&id={CHANNEL_ID}"
+    """Fetch channel data in two parts to avoid 400 errors from combined parts."""
+    # Part 1: Core stats + snippet + contentDetails (always works)
+    url = (f"https://www.googleapis.com/youtube/v3/channels?"
+           f"part=statistics,snippet,status,contentDetails&id={CHANNEL_ID}")
     data = yt_get(token, url)
     if not data.get("items"):
         return {}
     item = data["items"][0]
-    return {
+    result = {
         "stats": item.get("statistics", {}),
         "snippet": item.get("snippet", {}),
-        "branding": item.get("brandingSettings", {}).get("channel", {}),
+        "branding": {},
         "status": item.get("status", {}),
-        "topics": item.get("topicDetails", {}),
+        "topics": {},
         "playlists_id": item.get("contentDetails", {}).get("relatedPlaylists", {}).get("uploads", ""),
     }
+
+    # Part 2: brandingSettings separately (may fail with 400 on some tokens)
+    try:
+        url2 = (f"https://www.googleapis.com/youtube/v3/channels?"
+                f"part=brandingSettings&id={CHANNEL_ID}")
+        data2 = yt_get(token, url2)
+        if data2.get("items"):
+            result["branding"] = data2["items"][0].get("brandingSettings", {}).get("channel", {})
+    except Exception:
+        pass  # brandingSettings not critical
+
+    # Part 3: topicDetails separately (may fail)
+    try:
+        url3 = (f"https://www.googleapis.com/youtube/v3/channels?"
+                f"part=topicDetails&id={CHANNEL_ID}")
+        data3 = yt_get(token, url3)
+        if data3.get("items"):
+            result["topics"] = data3["items"][0].get("topicDetails", {})
+    except Exception:
+        pass  # topicDetails not critical
+
+    return result
 
 
 def get_all_videos(token, uploads_playlist_id=""):
