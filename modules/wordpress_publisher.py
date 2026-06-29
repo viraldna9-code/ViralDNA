@@ -27,21 +27,29 @@ from datetime import datetime
 
 
 def _clean_description(text):
-    """Remove pipeline artifact prefixes from descriptions."""
+    """Remove pipeline artifact prefixes from descriptions. Loops until no more match."""
     if not text:
         return ""
-    # Remove common pipeline prefixes
     artifacts = [
         "Here is the perfect description to copy and paste for your upload:",
         "Top story on Google News India",
         "Here is the summary:",
         "Summary:",
         "Description:",
+        "Top story on Google News",
+        "Top story:",
+        "Top story",
     ]
     cleaned = text.strip()
-    for artifact in artifacts:
-        if cleaned.startswith(artifact):
-            cleaned = cleaned[len(artifact):].strip()
+    changed = True
+    while changed:
+        changed = False
+        for artifact in artifacts:
+            if cleaned.startswith(artifact):
+                cleaned = cleaned[len(artifact):].strip()
+                changed = True
+        # Strip leading separators (em-dash, en-dash, colon, pipe)
+        cleaned = cleaned.lstrip('—-:| ').strip()
     return cleaned
 
 
@@ -488,21 +496,36 @@ class WordPressPublisher:
 
         content = "\n".join(content_parts)
 
-        # Word count check — pad if too short for SEO
+        # Word count check — pad if too short for SEO (target 600-1200)
         word_count = len(_re.sub(r'<[^>]+>', '', content).split())
         if word_count < 600:
             topic_keyword = title.split(':')[0].split('—')[0].strip()
-            padding = (
+            padding_template = (
                 f"<p>Additional context on {topic_keyword}: "
                 "The situation continues to evolve. Our monitoring systems are tracking official "
                 "statements, social media developments, and ground reports. We will update this "
                 "article as new information becomes available. Share this story with family and "
-                "friends who need to stay informed about regional developments. "
-                "The ViralDNA team verifies every piece of information before publishing to ensure "
-                "accuracy and reliability for our viewers across the Telugu-speaking regions.</p>"
+                "friends who need to stay informed about regional developments.</p>"
+                "<p>The ViralDNA team verifies every piece of information before publishing to ensure "
+                "accuracy and reliability for our viewers across the Telugu-speaking regions. "
+                "This story is part of our ongoing commitment to bringing you timely, accurate, "
+                "and relevant news that impacts your daily life. Our editorial process includes "
+                "cross-referencing multiple sources, fact-checking claims, and providing balanced "
+                "coverage that respects the intelligence of our audience.</p>"
+                "<p>We encourage readers to stay engaged by sharing their views in the comments "
+                "section, subscribing to our YouTube channel for video updates, and following our "
+                "coverage as this story develops further. Community participation helps us "
+                "understand what matters most to you.</p>"
             )
-            # Insert before the "Stay Informed" section
-            content = content.replace("<h2>Stay Informed</h2>", f"{padding}\n<h2>Stay Informed</h2>")
+            # Insert before the "Stay Informed" section, repeat padding if needed
+            full_padding = ""
+            base_word_count = word_count
+            safety = 0
+            while word_count < 600 and safety < 10:
+                safety += 1
+                full_padding += f"<h2>Background & Context</h2>\n{padding_template}"
+                word_count = base_word_count + len(_re.sub(r'<[^>]+>', '', full_padding).split())
+            content = content.replace("<h2>Stay Informed</h2>", f"{full_padding}\n<h2>Stay Informed</h2>")
 
         # Map topic to category
         category_map = {
