@@ -542,7 +542,13 @@ class VDNA4Director:
         else:
             result = worker.run_with_timeout(self._run_discovery_fallback)
 
-        self.state["discovery_topics"] = result.get("topics", []) if result else []
+        # Normalize: discovery may return a list or a dict with "topics" key
+        if isinstance(result, list):
+            self.state["discovery_topics"] = result
+        elif isinstance(result, dict):
+            self.state["discovery_topics"] = result.get("topics", [])
+        else:
+            self.state["discovery_topics"] = []
         topics_found = len(self.state["discovery_topics"])
         print(f"   ✅ Discovery complete: {topics_found} topics found")
         print()
@@ -766,7 +772,13 @@ class VDNA4Director:
 
         if result:
             self.state["script_payload"] = result
-            script_len = len(result.get("full_script", result.get("script", "")))
+            # ScriptPayload object or dict — extract main script length
+            if hasattr(result, 'main_raw'):
+                script_len = len(result.main_raw)
+            elif isinstance(result, dict):
+                script_len = len(result.get("full_script", result.get("script", "")))
+            else:
+                script_len = len(str(result))
             print(f"   ✅ Script generated: {script_len} chars")
         else:
             raise RuntimeError("STRICT: Scripting returned None")
@@ -800,15 +812,21 @@ class VDNA4Director:
         except ImportError:
             pass
 
-        # Generate script
-        if hasattr(sg, 'generate_script'):
-            result = sg.generate_script(
-                topic=topic,
-                rag_context=rag_context,
-                keyword=target_keyword if target_keyword else None,
-            )
+        # Build producer brief for RAG feedback
+        producer_brief_parts = []
+        if rag_context.get("format_boost"):
+            producer_brief_parts.append(f"Best format: {rag_context['format_boost']}")
+        if rag_context.get("trending_keywords"):
+            producer_brief_parts.append(f"Top keywords: {', '.join(rag_context['trending_keywords'])}")
+        producer_brief = "\n".join(producer_brief_parts)
+        if not producer_brief:
+            producer_brief = "No performance data available yet. Rely on RETENTION_BLUEPRINT."
+
+        # Generate script via .run() method
+        if hasattr(sg, 'run'):
+            result = sg.run(topic=topic, producer_brief=producer_brief)
         else:
-            raise RuntimeError(f"ScriptGenerator has no generate_script method")
+            raise RuntimeError(f"ScriptGenerator has no run method")
 
         # Build topic slug for later use
         if isinstance(topic, dict) and topic.get("title"):
@@ -827,7 +845,12 @@ class VDNA4Director:
         """Sub-phase 3.5: Validate script length + entity coverage."""
         print("   🔍 Phase 3.5 — Script Review")
         payload = self.state.get("script_payload", {})
-        script = payload.get("full_script", payload.get("script", "")) if isinstance(payload, dict) else ""
+        if hasattr(payload, 'main_raw'):
+            script = payload.main_raw
+        elif isinstance(payload, dict):
+            script = payload.get("full_script", payload.get("script", ""))
+        else:
+            script = ""
 
         if not script or len(script) < 100:
             raise RuntimeError(f"STRICT: Script too short ({len(script)} chars, need ≥100)")
@@ -851,10 +874,10 @@ class VDNA4Director:
 
         payload = self.state.get("script_payload", {})
         script = ""
-        if isinstance(payload, dict):
+        if hasattr(payload, 'main_raw'):
+            script = payload.main_raw
+        elif isinstance(payload, dict):
             script = payload.get("full_script", payload.get("script", ""))
-        elif hasattr(payload, 'full_script'):
-            script = payload.full_script
 
         if not script:
             raise RuntimeError("STRICT: No script text for voice generation")
@@ -997,10 +1020,19 @@ class VDNA4Director:
     def _run_thumbnail_primary(self, title, topic_slug):
         """Primary thumbnail via ThumbnailCreator."""
         thumb = self.skills["thumbnail"]
+
         if hasattr(thumb, 'create_thumbnail'):
-            return thumb.create_thumbnail(title=title, slug=topic_slug)
-        elif hasattr(thumb, 'run'):
-            return thumb.run(title=title)
+            # Signature: (topic: dict, thumb_output_dir: str, sk: str, runtime_dir=None, title_variants=None)
+            runtime_dir = config.DRIVE.get("RUNTIME", "/home/jay/ViralDNA/output/runtime")
+            thumb_dir = os.path.join(runtime_dir, "thumbnails")
+            os.makedirs(thumb_dir, exist_ok=True)
+            topic_dict = self.state.get("selected_topic", {"title": title})
+            return thumb.create_thumbnail(
+                topic=topic_dict,
+                thumb_output_dir=thumb_dir,
+                sk=topic_slug,
+                runtime_dir=runtime_dir,
+            )
         else:
             raise RuntimeError("ThumbnailCreator has no usable method")
 
@@ -1067,10 +1099,10 @@ class VDNA4Director:
         thumb_path = self.state.get("branded_thumbnail", "")
         payload = self.state.get("script_payload", {})
         script_text = ""
-        if isinstance(payload, dict):
+        if hasattr(payload, 'main_raw'):
+            script_text = payload.main_raw
+        elif isinstance(payload, dict):
             script_text = payload.get("full_script", payload.get("script", ""))
-        elif hasattr(payload, 'full_script'):
-            script_text = payload.full_script
 
         if not voice_path or not os.path.exists(voice_path):
             raise RuntimeError(f"STRICT: No audio file for assembly")
@@ -1114,18 +1146,22 @@ class VDNA4Director:
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, f"{topic_slug}.mp4")
 
-        if hasattr(asm, 'assemble'):
-            return asm.assemble(
-                audio=voice_path,
-                thumbnail=thumb_path,
-                script=script_text,
-                output=output_path,
-                title=topic_slug,
+        # Get audio duration for target_duration_s
+        target_duration = asm.get_audio_duration(voice_path) if hasattr(asm, 'get_audio_duration') else 30.0
+
+        if hasattr(asm, 'assemble_video'):
+            return asm.assemble_video(
+                slot=None,
+                audio_path=voice_path,
+                visual_path=thumb_path,
+                output_name=output_path,
+                target_duration_s=target_duration,
+                script_text=script_text,
+                topic_title=topic_slug,
+                topic_slug=topic_slug,
             )
-        elif hasattr(asm, 'run'):
-            return asm.run()
         else:
-            raise RuntimeError("VideoAssembler has no assemble/run method")
+            raise RuntimeError("VideoAssembler has no assemble_video method")
 
     # ═══════════════════════════════════════════════════════════════════
     # PHASE 6.5: ASSEMBLY VERIFY (sub-phase)
@@ -1600,10 +1636,10 @@ class VDNA4Director:
             # Get script text
             payload = self.state.get("script_payload", {})
             script_text = ""
-            if isinstance(payload, dict):
+            if hasattr(payload, 'main_raw'):
+                script_text = payload.main_raw
+            elif isinstance(payload, dict):
                 script_text = payload.get("full_script", payload.get("script", ""))
-            elif hasattr(payload, 'full_script'):
-                script_text = payload.full_script
 
             # Determine thumbnail
             thumb_path = self.state.get("branded_thumbnail", "")

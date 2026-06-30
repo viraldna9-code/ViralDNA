@@ -1505,7 +1505,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         # If typewriter rendered successfully, concatenate scene clips
         if scene_clip_paths and all(os.path.exists(p) and os.path.getsize(p) > 1024 for p in scene_clip_paths):
             print(f"    Assembler: Concatenating {len(scene_clip_paths)} typewriter scenes...")
-            concat_file = os.path.join(runtime_dir, f"tw_concat_{output_name.replace('.mp4', '')}.txt")
+            concat_base = os.path.basename(output_name).replace('.mp4', '')
+            concat_file = os.path.join(runtime_dir, f"tw_concat_{concat_base}.txt")
             with open(concat_file, 'w') as f:
                 for clip_path in scene_clip_paths:
                     f.write(f"file '{clip_path}'\n")
