@@ -306,7 +306,7 @@ class VDNA4Director:
         # RagFeedbackLoop(ledger_path: str = None)
         try:
             from rag_feedback import RagFeedbackLoop
-            ledger = config.DRIVE.get("RUNTIME", "/home/jay/ViralDNA/output/runtime")
+            ledger = config.DRIVE.get("GROWTH_LEDGER", "/home/jay/ViralDNA/diagnostics/growth_ledger.json")
             skills["rag_feedback"] = RagFeedbackLoop(ledger_path=ledger)
         except (ImportError, TypeError) as e:
             skills["rag_feedback"] = None
@@ -344,7 +344,7 @@ class VDNA4Director:
         # GrowthObserver(ledger_path: str = None)
         try:
             from growth_observer import GrowthObserver
-            ledger = config.DRIVE.get("RUNTIME", "/home/jay/ViralDNA/output/runtime")
+            ledger = config.DRIVE.get("GROWTH_LEDGER", "/home/jay/ViralDNA/diagnostics/growth_ledger.json")
             skills["growth_observer"] = GrowthObserver(ledger_path=ledger)
         except (ImportError, TypeError) as e:
             skills["growth_observer"] = None
@@ -867,7 +867,7 @@ class VDNA4Director:
     # ═══════════════════════════════════════════════════════════════════
 
     def _phase_voice(self):
-        """Phase 4: Generate voiceover (RVC primary, gTTS fallback)."""
+        """Phase 4: Generate voiceover — main + 3 shorts (RVC primary, gTTS fallback)."""
         print("━" * 60)
         print("🎙️ PHASE 4 — VOICE GENERATION")
         print("━" * 60)
@@ -891,9 +891,16 @@ class VDNA4Director:
             checkpoint = worker.get_checkpoint()
             print(f"   ⏭️ Resuming from checkpoint")
             self.state["voiceover_path"] = checkpoint.get("result", {}).get("audio_path", "")
+            # Restore shorts voiceover paths from checkpoint
+            for i in range(1, 4):
+                key = f"short_{i}_audio"
+                if key in checkpoint.get("result", {}):
+                    self.state[key] = checkpoint["result"][key]
             return
 
-        # Generate voiceover (RVC → gTTS fallback chain)
+        voiceover_assets = {"main": ""}
+
+        # Generate main voiceover (RVC → gTTS fallback chain)
         result = worker.run_with_timeout(
             self._run_voice_primary, script, topic_slug,
             fallback=(None if self.strict else self._run_voice_fallback)
@@ -901,15 +908,39 @@ class VDNA4Director:
 
         if result:
             audio_path = result if isinstance(result, str) else result.get("audio_path", "")
+            voiceover_assets["main"] = audio_path
             self.state["voiceover_path"] = audio_path
             size_mb = os.path.getsize(audio_path) / (1024 * 1024) if audio_path and os.path.exists(audio_path) else 0
-            print(f"   ✅ Voice generated: {os.path.basename(audio_path)} ({size_mb:.1f}MB)")
+            print(f"   ✅ Main voice: {os.path.basename(audio_path)} ({size_mb:.1f}MB)")
         elif not self.strict:
+            voiceover_assets["main"] = ""
             self.state["voiceover_path"] = ""
-            print("   ⚠️ Voice generation failed (non-strict mode, continuing)")
+            print("   ⚠️ Main voice generation failed (non-strict mode, continuing)")
         else:
             raise RuntimeError("STRICT: Voice generation failed and no fallback available")
 
+        # Generate shorts voiceover (short_1, short_2, short_3)
+        if hasattr(payload, 'short_1_raw'):
+            for i in range(1, 4):
+                short_raw = getattr(payload, f"short_{i}_raw", "")
+                if short_raw and len(short_raw.split()) >= 5:
+                    short_key = f"short_{i}"
+                    short_slug = f"{topic_slug}_Short{i}"
+                    try:
+                        short_result = self._run_voice_fallback(short_raw, short_slug)
+                        if short_result and os.path.exists(short_result):
+                            voiceover_assets[short_key] = short_result
+                            self.state[f"{short_key}_audio"] = short_result
+                            print(f"   ✅ Short {i} voice: {os.path.basename(short_result)} ({os.path.getsize(short_result)/(1024*1024):.1f}MB)")
+                        else:
+                            print(f"   ⚠️ Short {i} voice failed — skipping")
+                    except Exception as e:
+                        print(f"   ⚠️ Short {i} voice error: {e} — skipping")
+                else:
+                    print(f"   ⚠️ Short {i} text too short or missing — skipping")
+
+        self.state["voiceover_assets"] = voiceover_assets
+        print(f"   🎙️ Voice assets: {list(voiceover_assets.keys())}")
         print()
 
     def _run_voice_primary(self, script, topic_slug):
@@ -1107,6 +1138,15 @@ class VDNA4Director:
         if not voice_path or not os.path.exists(voice_path):
             raise RuntimeError(f"STRICT: No audio file for assembly")
 
+        # Preprocess text for typewriter (contractions, acronyms, smart quotes)
+        # so displayed text matches what the voice actually speaks
+        try:
+            from modules.voiceover import VoiceoverGenerator
+            vg = VoiceoverGenerator.__new__(VoiceoverGenerator)
+            script_text = vg.preprocess_text(script_text)
+        except Exception:
+            pass  # If preprocessing fails, use raw text
+
         topic = self.state.get("selected_topic", {})
         title = topic.get("title", "video") if isinstance(topic, dict) else str(topic)
         topic_slug = self.state.get("topic_slug", title.replace(" ", "_")[:50])
@@ -1129,14 +1169,62 @@ class VDNA4Director:
         if result:
             video_path = result if isinstance(result, str) else result.get("video_path", result.get("path", ""))
             if video_path and os.path.exists(video_path):
-                self.state["compiled_videos"] = [video_path]
+                compiled_videos = [video_path]
                 size_mb = os.path.getsize(video_path) / (1024 * 1024)
-                print(f"   ✅ Assembly complete: {os.path.basename(video_path)} ({size_mb:.1f}MB)")
+                print(f"   ✅ Main assembled: {os.path.basename(video_path)} ({size_mb:.1f}MB)")
             else:
                 raise RuntimeError(f"STRICT: Assembly returned invalid path")
         else:
             raise RuntimeError("STRICT: Assembly returned None")
 
+        # Shorts assembly
+        voiceover_assets = self.state.get("voiceover_assets", {})
+        asm = self.skills.get("assembly")
+        output_dir = config.DRIVE.get("VIDEOS", "/home/jay/ViralDNA/videos")
+        if asm and hasattr(asm, 'assemble_video'):
+            for i in range(1, 4):
+                short_key = f"short_{i}"
+                short_audio = voiceover_assets.get(short_key, "")
+                if short_audio and os.path.exists(short_audio):
+                    short_slug = f"{topic_slug}_Short{i}"
+                    short_output = os.path.join(output_dir, f"{short_slug}.mp4")
+                    try:
+                        short_script = ""
+                        if hasattr(payload, f'short_{i}_raw'):
+                            short_script = getattr(payload, f'short_{i}_raw', "")
+                        if not short_script:
+                            short_script = title
+                        # Preprocess for typewriter
+                        try:
+                            from modules.voiceover import VoiceoverGenerator
+                            vg = VoiceoverGenerator.__new__(VoiceoverGenerator)
+                            short_script = vg.preprocess_text(short_script)
+                        except Exception:
+                            pass
+
+                        short_result = asm.assemble_video(
+                            slot=None,
+                            audio_path=short_audio,
+                            visual_path=thumb_path,
+                            output_name=short_output,
+                            target_duration_s=30.0,
+                            script_text=short_script,
+                            is_short=True,
+                            topic_title=title,
+                            topic_slug=short_slug,
+                        )
+                        if isinstance(short_result, dict):
+                            short_result = short_result.get("path", "")
+                        if short_result and isinstance(short_result, str) and os.path.exists(short_result) and os.path.getsize(short_result) > 50000:
+                            compiled_videos.append(short_result)
+                            print(f"   ✅ Short {i}: {os.path.basename(short_result)} ({os.path.getsize(short_result)/(1024*1024):.1f}MB)")
+                        else:
+                            print(f"   ⚠️ Short {i} failed validation — skipping")
+                    except Exception as e:
+                        print(f"   ⚠️ Short {i} assembly error: {e} — skipping")
+
+        self.state["compiled_videos"] = compiled_videos
+        print(f"   🎬 Total videos: {len(compiled_videos)}")
         print()
 
     def _run_assembly_primary(self, voice_path, thumb_path, script_text, topic_slug):

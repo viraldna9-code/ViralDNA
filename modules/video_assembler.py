@@ -1515,6 +1515,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 "-f", "concat", "-i", concat_file,
                 "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
                 "-pix_fmt", "yuv420p", "-r", "25",
+                "-vf", f"scale={out_w}:{out_h}:force_original_aspect_ratio=decrease,"
+                       f"pad={out_w}:{out_h}:(ow-iw)/2:(oh-ih)/2",
                 output_path
             ]
             try:
