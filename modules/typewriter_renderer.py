@@ -528,26 +528,31 @@ class TypewriterRenderer:
     # ── script splitting ────────────────────────────────────────────
 
     @staticmethod
-    def _split_script(script_text, num_scenes, max_words_per_scene=80):
-        """Split script into scene chunks, each capped at ~max_words_per_scene words."""
+    def _split_script(script_text, num_scenes, max_chars_per_scene=300):
+        """Split script into scene chunks, each capped at ~max_chars_per_scene characters.
+
+        Character count (not word count) is what determines how many lines the
+        typewriter needs, so we cap by chars to guarantee frame fit regardless
+        of word length (Indian news text has many long words).
+        """
         sentences = re.split(r'(?<=[.!?])\s+', script_text.strip())
         sentences = [s for s in sentences if s.strip()]
         if not sentences:
             return ["..."] * num_scenes
 
-        # Greedily group sentences into small text chunks (each ≤ max_words_per_scene)
+        # Greedily group sentences into small text chunks (each ≤ max_chars_per_scene)
         raw_text_chunks = []
         current_chunk = []
-        current_wc = 0
+        current_len = 0
         for s in sentences:
-            wc = len(s.split())
-            if current_wc + wc > max_words_per_scene and current_chunk:
+            sent_len = len(s)
+            if current_len + sent_len > max_chars_per_scene and current_chunk:
                 raw_text_chunks.append(" ".join(current_chunk))
                 current_chunk = [s]
-                current_wc = wc
+                current_len = sent_len
             else:
                 current_chunk.append(s)
-                current_wc += wc
+                current_len += sent_len
         if current_chunk:
             raw_text_chunks.append(" ".join(current_chunk))
 
@@ -558,45 +563,50 @@ class TypewriterRenderer:
         elif len(raw_text_chunks) < num_scenes:
             # Not enough chunks — split the largest ones in half
             while len(raw_text_chunks) < num_scenes:
-                # Find the chunk with the most words
+                # Find the chunk with the most characters
                 longest_idx = max(range(len(raw_text_chunks)),
-                                  key=lambda i: len(raw_text_chunks[i].split()))
-                words = raw_text_chunks[longest_idx].split()
-                if len(words) < 3:
-                    raw_text_chunks.append(raw_text_chunks[longest_idx])
+                                  key=lambda i: len(raw_text_chunks[i]))
+                chunk_text = raw_text_chunks[longest_idx]
+                if len(chunk_text) < 30:
+                    raw_text_chunks.append(chunk_text)
                     break
-                mid = len(words) // 2
-                # Try to split at a sentence boundary near the midpoint
+                mid = len(chunk_text) // 2
+                # Try to split at sentence boundary near midpoint
                 split_at = mid
                 for offset in range(mid):
-                    if mid + offset < len(words) and words[mid + offset][-1] in '.!?':
-                        split_at = mid + offset + 1
+                    if mid + offset < len(chunk_text) and chunk_text[mid + offset] in '.!?' :
+                        # Find next space after punctuation
+                        while split_at < len(chunk_text) and chunk_text[split_at] != ' ':
+                            split_at += 1
+                        split_at += 1
                         break
-                    if mid - offset > 0 and words[mid - offset][-1] in '.!?':
+                    if mid - offset > 0 and chunk_text[mid - offset] in '.!?':
                         split_at = mid - offset + 1
+                        while split_at < len(chunk_text) and chunk_text[split_at] == ' ':
+                            split_at += 1
                         break
-                raw_text_chunks[longest_idx] = " ".join(words[:split_at])
-                raw_text_chunks.append(" ".join(words[split_at:]))
+                raw_text_chunks[longest_idx] = chunk_text[:split_at].strip()
+                raw_text_chunks.append(chunk_text[split_at:].strip())
         else:
-            # Too many chunks — merge consecutive ones up to max_words_per_scene
+            # Too many chunks — merge consecutive ones up to max_chars_per_scene
             merged = []
             current = ""
-            current_wc = 0
+            current_len = 0
             for chunk in raw_text_chunks:
-                wc = len(chunk.split())
-                if current_wc + wc <= max_words_per_scene:
+                chunk_len = len(chunk)
+                if current_len + chunk_len <= max_chars_per_scene:
                     current = (current + " " + chunk).strip() if current else chunk
-                    current_wc += wc
+                    current_len += chunk_len
                 else:
                     if current:
                         merged.append(current)
                     current = chunk
-                    current_wc = wc
+                    current_len = chunk_len
                 # If we already have enough, dump rest
                 if len(merged) >= num_scenes - 1:
                     remaining = " ".join(raw_text_chunks[raw_text_chunks.index(chunk) + 1:])
                     if remaining.strip():
-                        merged.append(" ".join(remaining.split()))
+                        merged.append(remaining.strip())
                     else:
                         merged.append((current or chunk))
                     break
@@ -605,14 +615,22 @@ class TypewriterRenderer:
                     merged.append(current)
             result = merged
 
-        # Final safety: enforce max_words_per_scene on every chunk
+        # Final safety: enforce max_chars_per_scene on every chunk
         final = []
         for chunk in result:
-            words = chunk.split()
-            if len(words) > max_words_per_scene:
-                # Hard split
-                for i in range(0, len(words), max_words_per_scene):
-                    final.append(" ".join(words[i:i + max_words_per_scene]))
+            if len(chunk) > max_chars_per_scene:
+                # Hard split at word boundaries
+                words = chunk.split()
+                sub = ""
+                for w in words:
+                    if len(sub) + len(w) + 1 > max_chars_per_scene:
+                        if sub:
+                            final.append(sub)
+                        sub = w
+                    else:
+                        sub = (sub + " " + w).strip() if sub else w
+                if sub:
+                    final.append(sub)
             else:
                 final.append(chunk)
         result = final
